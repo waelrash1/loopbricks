@@ -63,7 +63,7 @@ export default function Sidebar({
       className="border-b md:border-b-0 md:border-r border-border p-4 md:sticky md:top-0 md:h-screen md:overflow-y-auto"
     >
       <button onClick={showMap} className="block px-3 pt-1 pb-4 text-left text-[18px] font-bold tracking-tight rounded-lg">
-        Molecules of Structure
+        LoopBricks
       </button>
 
       <div className="flex md:flex-col gap-1">

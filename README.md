@@ -1,4 +1,4 @@
-# Molecule Lab
+# LoopBricks
 
 Run, poke and predict the 71 building blocks of system-dynamics models. Every
 molecule has a live stock-and-flow diagram, a causal loop diagram, its
