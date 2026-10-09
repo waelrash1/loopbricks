@@ -107,6 +107,12 @@ export default function MoleculeMap({ onSelect, onStartTour }: { onSelect: (k: s
           </div>
         </section>
       ))}
+
+      <footer className="border-t border-border pt-6 pb-10 text-[13px] leading-[1.6] text-muted-foreground max-w-[68ch]">
+        Main reference: Jim Hines, <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03 (2015).
+        The molecules and their equations are his; the lessons and causal loop diagrams were added for this app. Created by Wael
+        Rashwan.
+      </footer>
     </div>
   );
 }

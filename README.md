@@ -1,6 +1,29 @@
-# System Dynamics · Molecules of Structure
+# Molecule Lab
 
-Interactive simulator + causal-loop explainer. Vite + React + TypeScript + Tailwind + shadcn/ui.
+Run, poke and predict the 71 building blocks of system-dynamics models. Every
+molecule has a live stock-and-flow diagram, a causal loop diagram, its
+equations, and a short lesson that asks you to guess the behaviour before you
+press play.
+
+## Main reference
+
+This app is an interactive companion to:
+
+> Jim Hines, *Molecules of Structure: Building Blocks for System Dynamics
+> Models*, Version 2.03. Copyright © 1996, 1997, 2004, 2005, 2015 Jim Hines.
+
+The molecules, their names, their family tree ("immediate parents") and their
+equations come from that book. The causal loop diagrams, default parameter
+values, lessons and the small wrapper stocks used to animate stockless
+molecules are additions made for this app, and any mistakes in them are ours,
+not the book's. The book itself is not included in this repository.
+
+## Acknowledgements
+
+Created and directed by **Wael Rashwan**, who conceived the app, chose the
+design directions and reviewed every molecule against the book.
+Thanks to Jim Hines and the many modellers he credits for the molecules.
+Built with the help of Claude Code.
 
 ## Run
 
@@ -8,28 +31,20 @@ Interactive simulator + causal-loop explainer. Vite + React + TypeScript + Tailw
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # production build to dist/
-npm run typecheck  # tsc --noEmit
+npm run check      # verifies every molecule simulates and every diagram is readable
 ```
-
-## Get it into Lovable
-
-This is already Lovable's stack. Either:
-- **Push to GitHub** and use Lovable's "Import from GitHub", or
-- Paste files into a new Lovable project — paths and aliases (`@/`) already match.
 
 ## Add a molecule
 
-Everything is data-driven. To add one, append an entry to `MODELS` in
-`src/data/molecules.ts`: define `stocks`, `params`, `rates()`, `derivs()`,
-the `diagram` geometry, the `cld` (causal loop) spec, and the `desc` HTML.
-No component changes needed — the engine, diagram, CLD and chart all read it.
+Everything is data-driven. Append an entry to `MODELS` in
+`src/data/molecules.ts` (or a file in `src/data/extra/`): `stocks`, `params`,
+`rates()`, `derivs()`, the `diagram` geometry, the `cld` spec and the `desc`
+HTML. Add it to a group in `GROUPS`, then run `npm run check`.
 
 ## Layout
 
-- `src/sim/engine.ts` — pure Euler integrator (`stepOnce`, history).
-- `src/hooks/useSimulation.ts` — rAF loop; drives animation via a subscriber
-  pattern so React never re-renders at 60fps.
-- `src/components/` — `StockFlowDiagram`, `CausalLoopDiagram`, `TimeSeriesChart`,
-  `Controls`, `Sidebar`.
-- `src/data/molecules.ts` — all model definitions + prose.
-- `src/pages/MoleculeExplorer.tsx` — the page.
+- `src/sim/engine.ts`: Euler integrator.
+- `src/data/`: molecule definitions, lessons, presets, family tree.
+- `src/components/`: diagrams, chart, controls, sidebar, overview map.
+- `src/lib/cldGeometry.ts`: causal loop layout and the clarity lint.
+- `src/themes.css`: the seven switchable themes.
