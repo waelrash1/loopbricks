@@ -1,15 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { GraduationCap, Map as MapIcon, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { TOUR, groupOf, search } from "@/data/catalog";
 import { cn } from "@/lib/utils";
-import { THEMES, applyTheme, storedTheme } from "@/lib/theme";
 
 const item = (active: boolean) =>
   cn(
-    "flex items-center gap-2.5 w-full text-left rounded-btn px-3 py-2 text-sm transition-colors",
-    active ? "bg-accent text-accent-foreground font-medium" : "text-foreground/80 hover:bg-secondary"
+    "flex items-baseline gap-2.5 w-full text-left rounded-btn px-3 py-1.5 text-sm transition-colors",
+    active ? "bg-accent text-accent-foreground font-medium" : "text-foreground/85 hover:bg-muted"
   );
+
+// two studs on a brick
+export const BrickMark = () => (
+  <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden>
+    <path d="M7 5h6v5H7zM19 5h6v5h-6z" fill="hsl(var(--foreground))" />
+    <path d="M3 10h26v17H3z" fill="hsl(var(--accent))" stroke="hsl(var(--foreground))" strokeWidth="2" />
+  </svg>
+);
 
 export default function Sidebar({
   current,
@@ -26,7 +33,6 @@ export default function Sidebar({
   startTour: () => void;
   tourActive: boolean;
 }) {
-  const [theme, setTheme] = useState(storedTheme);
   const [query, setQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set([GROUPS[0].title]));
   const searchBox = useRef<HTMLInputElement>(null);
@@ -58,55 +64,22 @@ export default function Sidebar({
   };
 
   return (
-    <nav
-      aria-label="Molecules"
-      className="border-b md:border-b-0 md:border-r border-border p-4 md:sticky md:top-0 md:h-screen md:overflow-y-auto"
-    >
-      <button onClick={showMap} className="block px-3 pt-1 pb-4 text-left text-[18px] font-bold tracking-tight rounded-lg">
-        LoopBricks
+    <nav aria-label="Molecules" className="border-b md:border-b-0 md:border-r border-border px-3 py-4 md:sticky md:top-0 md:h-[100dvh] md:overflow-y-auto">
+      <button onClick={showMap} className="flex items-center gap-2.5 px-3 pb-4 rounded-btn">
+        <BrickMark />
+        <span className="heading text-[21px]">LoopBricks</span>
       </button>
 
-      <div className="flex md:flex-col gap-1">
+      <div className="flex md:flex-col gap-0.5">
         <button onClick={showMap} aria-current={mapActive ? "page" : undefined} className={item(mapActive)}>
-          <MapIcon size={16} aria-hidden />
-          Overview map
+          All molecules
         </button>
         <button onClick={startTour} aria-current={tourActive ? "page" : undefined} className={item(tourActive)}>
-          <GraduationCap size={16} aria-hidden />
           Guided tour
         </button>
       </div>
 
-      <fieldset className="mt-4 px-3">
-        <legend className="text-xs font-medium text-muted-foreground mb-2">
-          Theme: <span className="text-foreground">{THEMES.find((t) => t.id === theme)?.label}</span>
-        </legend>
-        <div className="flex flex-wrap gap-2">
-          {THEMES.map((t) => (
-            <label key={t.id} title={t.label} className="cursor-pointer">
-              <input
-                type="radio"
-                name="theme"
-                value={t.id}
-                checked={theme === t.id}
-                onChange={() => {
-                  applyTheme(t.id);
-                  setTheme(t.id);
-                }}
-                className="peer sr-only"
-              />
-              <span
-                aria-hidden
-                className="block h-6 w-6 rounded-full border border-foreground/25 peer-checked:ring-2 peer-checked:ring-foreground peer-checked:ring-offset-2 peer-checked:ring-offset-background peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-link"
-                style={{ background: `linear-gradient(135deg, ${t.swatch[0]} 50%, ${t.swatch[1]} 50%)` }}
-              />
-              <span className="sr-only">{t.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <label className="relative block mt-5">
+      <label className="relative block mt-4">
         <span className="sr-only">Find a molecule</span>
         <Search size={15} aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -119,11 +92,14 @@ export default function Sidebar({
             if (e.key === "Escape") setQuery("");
           }}
           placeholder="Find a molecule"
-          className="w-full h-10 rounded-btn border border-input bg-card pl-9 pr-3 text-sm placeholder:text-muted-foreground"
+          className="w-full h-10 rounded-btn border border-input bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:border-foreground"
         />
+        <kbd aria-hidden className="hidden md:block absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[11px] text-muted-foreground border border-border rounded-btn px-1.5">
+          /
+        </kbd>
       </label>
 
-      <div ref={list} className="mt-2">
+      <div ref={list} className="mt-3">
         {query.trim() ? (
           results.length ? (
             results.map(({ key, via }) => (
@@ -144,7 +120,7 @@ export default function Sidebar({
               aria-label="Open a molecule"
               value={current}
               onChange={(e) => onSelect(e.target.value)}
-              className="md:hidden w-full h-11 rounded-card border border-input bg-card px-3 text-sm"
+              className="md:hidden w-full h-11 rounded-btn border border-input bg-card px-3 text-sm"
             >
               <option value="" disabled>
                 Open a molecule…
@@ -165,6 +141,7 @@ export default function Sidebar({
                 <details
                   key={group.title}
                   open={openGroups.has(group.title)}
+                  className="border-t border-border first:border-t-0"
                   onToggle={(e) => {
                     const isOpen = e.currentTarget.open;
                     setOpenGroups((s) => {
@@ -176,21 +153,21 @@ export default function Sidebar({
                     });
                   }}
                 >
-                  <summary className="flex cursor-pointer items-baseline justify-between gap-2 rounded-btn px-3 py-2 mt-1 text-[13px] font-medium hover:bg-secondary">
+                  <summary className="flex cursor-pointer items-baseline justify-between gap-2 rounded-btn px-3 py-2.5 text-[13px] font-semibold hover:bg-muted">
                     {group.title}
-                    <span className="text-xs font-normal text-muted-foreground tabular-nums">{group.keys.length}</span>
+                    <span className="font-mono text-[11px] font-normal text-muted-foreground">{group.keys.length}</span>
                   </summary>
-                  {group.keys.map((k) => {
-                    const active = current === k;
-                    return (
-                      <button key={k} onClick={() => onSelect(k)} aria-current={active ? "page" : undefined} className={item(active)}>
-                        <span className={cn("tabular-nums text-xs w-5 shrink-0", active ? "text-link" : "text-muted-foreground")}>
-                          {TOUR.indexOf(k) + 1}
-                        </span>
-                        {MODELS[k].name}
-                      </button>
-                    );
-                  })}
+                  <div className="pb-2">
+                    {group.keys.map((k) => {
+                      const active = current === k;
+                      return (
+                        <button key={k} onClick={() => onSelect(k)} aria-current={active ? "page" : undefined} className={item(active)}>
+                          <span className={cn("font-mono text-[11px] w-5 shrink-0", !active && "text-muted-foreground")}>{TOUR.indexOf(k) + 1}</span>
+                          {MODELS[k].name}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </details>
               ))}
             </div>

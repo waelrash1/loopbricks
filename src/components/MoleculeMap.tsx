@@ -1,117 +1,129 @@
+import { useEffect } from "react";
 import { GROUPS, MODELS } from "@/data/molecules";
+import { GROUP_BLURB } from "@/data/catalog";
+import { PRESETS } from "@/data/presets";
+import { useSimulation } from "@/hooks/useSimulation";
 import MiniDiagram from "@/components/MiniDiagram";
+import StockFlowDiagram from "@/components/StockFlowDiagram";
+import TimeSeriesChart from "@/components/TimeSeriesChart";
 import { Button } from "@/components/ui/button";
-import { GROUP_BLURB, parentsOf } from "@/data/catalog";
 
-// Which feedback a molecule contains, spelled out so no legend is needed.
-function loopChip(key: string) {
-  const loops = MODELS[key].cld.loops;
-  if (!loops.length) return { label: "No loop", cls: "border border-border text-muted-foreground" };
-  const hasR = loops.some((l) => l.type === "R");
-  const hasB = loops.some((l) => l.type === "B");
-  if (hasR && hasB) return { label: "Both loops", cls: "bg-secondary text-foreground" };
-  if (hasR) return { label: "Reinforcing", cls: "bg-[#fde8dc] text-[#9a3412]" };
-  return { label: "Balancing", cls: "bg-accent text-accent-foreground" };
+const DEMO = "stockmgmt";
+const DEMO_LENGTH = 60; // weeks: long enough to see the overshoot ring down
+
+// The hero is the product: a real molecule, running. Stock management with the supply line ignored
+// overshoots and oscillates, which is the most recognisable behaviour in the whole catalogue.
+function LiveDemo({ onOpen }: { onOpen: () => void }) {
+  const model = MODELS[DEMO];
+  const sim = useSimulation(model);
+  const { applyParams, play, reset, setSpeed, setStopTime, subscribe } = sim;
+  useEffect(() => {
+    applyParams(PRESETS[DEMO][1].params);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // no looping animation: draw the whole run at once and hold it
+      setSpeed(20);
+      setStopTime(DEMO_LENGTH);
+      play();
+      return;
+    }
+    setSpeed(1);
+    play();
+    const off = subscribe(({ t }) => {
+      if (t < DEMO_LENGTH) return;
+      reset();
+      play();
+    });
+    return () => void off();
+  }, [applyParams, play, reset, setSpeed, setStopTime, subscribe]);
+
+  return (
+    <figure className="min-w-0">
+      <StockFlowDiagram model={model} modelKey={DEMO} subscribe={subscribe} running={sim.running} showInfluences={false} />
+      <div className="mt-3">
+        <TimeSeriesChart model={model} subscribe={subscribe} height={150} />
+      </div>
+      <figcaption className="mt-3 text-[13px] leading-[1.5] text-muted-foreground">
+        Running now:{" "}
+        <button onClick={onOpen} className="tlink text-foreground">
+          Stock Management
+        </button>{" "}
+        with the supply line ignored. Orders already on the way get ordered again, so inventory overshoots.
+      </figcaption>
+    </figure>
+  );
+}
+
+// Which feedback a molecule contains, in the same letters and colours the diagrams use.
+function LoopTag({ k }: { k: string }) {
+  const types = new Set(MODELS[k].cld.loops.map((l) => l.type));
+  if (!types.size) return null;
+  return (
+    <span className="font-mono text-xs font-medium shrink-0" title={[types.has("B") && "balancing", types.has("R") && "reinforcing"].filter(Boolean).join(" and ") + " feedback"}>
+      {types.has("B") && <span style={{ color: "var(--viz-acc)" }}>B</span>}
+      {types.has("R") && <span style={{ color: "var(--viz-acc2)" }}>R</span>}
+    </span>
+  );
 }
 
 export default function MoleculeMap({ onSelect, onStartTour }: { onSelect: (k: string) => void; onStartTour: () => void }) {
   const total = Object.keys(MODELS).length;
   return (
-    <div className="max-w-[1200px]">
-      <section className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-10 lg:gap-14 items-center mb-16 md:mb-20">
-        <div>
-          <h1 className="display text-[44px] md:text-[64px]">
-            Big models are made of <em>small molecules</em>.
-          </h1>
-          <p className="mt-6 text-[17px] leading-[1.6] text-foreground/80 max-w-[56ch]">
-            {total} reusable building blocks for system-dynamics models, from Jim Hines’ <i>Molecules of Structure</i>. Each one is
-            assembled from simpler ones, and nearly all of them trace back to a single stock with an inflow and an outflow. Open any
-            molecule to run it, or take the tour and predict what happens before you press play.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" onClick={onStartTour}>
-              Start the guided tour
-            </Button>
-            <Button size="lg" variant="secondary" onClick={() => onSelect("bathtub")}>
-              Open the Bathtub
-            </Button>
-          </div>
-        </div>
-
-        <div className="hero-deco">
-          <button
-            onClick={() => onSelect("bathtub")}
-            className="block w-full text-left rounded-card border border-border bg-card shadow-lift p-6 md:p-8 transition-transform hover:-translate-y-0.5"
-          >
-            <div className="viz-stage aspect-[820/300]">
-              <MiniDiagram model={MODELS.bathtub} />
+    <div className="max-w-[1320px] mx-auto">
+      <section className="pb-14 md:pb-20">
+        <h1 className="display text-[48px] sm:text-[64px] xl:text-[88px] max-w-[21ch]">Big models are made of small molecules.</h1>
+        <div className="mt-8 md:mt-10 grid lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] gap-10 lg:gap-14 items-start">
+          <div className="min-w-0">
+            <p className="text-[18px] leading-[1.55] text-foreground/80 max-w-[40ch]">
+              {total} runnable building blocks for system-dynamics models, from Jim Hines’ <i>Molecules of Structure</i>. Predict what each
+              one does, then press play.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button size="lg" onClick={onStartTour}>
+                Start the tour
+              </Button>
+              <Button size="lg" variant="secondary" onClick={() => onSelect("bathtub")}>
+                Open the Bathtub
+              </Button>
             </div>
-            <p className="mt-5 heading text-[20px]">The Bathtub</p>
-            <p className="mt-1 text-sm leading-[1.6] text-muted-foreground">{MODELS.bathtub.lede}</p>
-          </button>
+          </div>
+          <LiveDemo onOpen={() => onSelect(DEMO)} />
         </div>
       </section>
 
-      <nav aria-label="Families" className="flex flex-wrap gap-2 mb-12">
-        {GROUPS.map((group, i) => (
-          <button
-            key={group.title}
-            onClick={() => document.getElementById(`family-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="rounded-full border border-input bg-card px-3.5 py-1.5 text-[13px] transition-colors hover:border-foreground"
-          >
-            {group.title} <span className="text-muted-foreground tabular-nums">{group.keys.length}</span>
-          </button>
-        ))}
-      </nav>
-
-      {GROUPS.map((group, i) => (
-        <section key={group.title} id={`family-${i}`} className="mb-14 scroll-mt-6">
-          <h2 className="heading text-[26px]">{group.title}</h2>
-          <p className="text-[15px] leading-[1.6] text-muted-foreground mt-1 mb-5 max-w-[68ch]">{GROUP_BLURB[group.title]}</p>
-          <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
+      {GROUPS.map((group) => (
+        <section key={group.title} className="grid lg:grid-cols-[220px_minmax(0,1fr)] gap-x-10 gap-y-4 border-t border-foreground pt-5 pb-14">
+          <div className="lg:sticky lg:top-5 self-start">
+            <h2 className="heading text-[26px]">{group.title}</h2>
+            <p className="mt-2 text-sm leading-[1.55] text-muted-foreground max-w-[52ch]">{GROUP_BLURB[group.title]}</p>
+          </div>
+          {/* a parts tray: cells share their rules instead of each being a card */}
+          <ul className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 border-l border-t border-border">
             {group.keys.map((k) => {
               const m = MODELS[k];
-              const chip = loopChip(k);
-              const parents = parentsOf(k);
               return (
-                <article
-                  key={k}
-                  className="rounded-card border border-border bg-card p-4 flex flex-col transition-colors hover:border-ink/50 focus-within:border-ink/50"
-                >
-                  <button onClick={() => onSelect(k)} className="text-left rounded-lg">
-                    <div className="h-[92px] mb-3 rounded-[calc(var(--radius)*0.6)] bg-muted overflow-hidden">
+                <li key={k} className="border-r border-b border-border">
+                  <button onClick={() => onSelect(k)} className="group block h-full w-full text-left p-4 transition-colors hover:bg-card focus-visible:bg-card">
+                    <div className="h-[76px] mb-3">
                       <MiniDiagram model={m} />
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="heading text-[16px]">{m.name}</span>
-                      <span className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${chip.cls}`}>{chip.label}</span>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-semibold text-[15px] group-hover:underline underline-offset-4">{m.name}</span>
+                      <LoopTag k={k} />
                     </div>
-                    <p className="text-[13px] text-muted-foreground leading-[1.5] mt-1.5 line-clamp-2">{m.lede}</p>
+                    <p className="text-[13px] text-muted-foreground leading-[1.5] mt-1 line-clamp-2">{m.lede}</p>
                   </button>
-                  {parents.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-auto pt-3">
-                      Builds on{" "}
-                      {parents.map((p, i) => (
-                        <span key={p}>
-                          <button onClick={() => onSelect(p)} className="text-link font-medium hover:underline rounded">
-                            {MODELS[p]?.name ?? p}
-                          </button>
-                          {i < parents.length - 1 ? ", " : ""}
-                        </span>
-                      ))}
-                    </p>
-                  )}
-                </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
       ))}
 
-      <footer className="border-t border-border pt-6 pb-10 text-[13px] leading-[1.6] text-muted-foreground max-w-[68ch]">
-        Main reference: Jim Hines, <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03 (2015).
-        The molecules and their equations are his; the lessons and causal loop diagrams were added for this app. Created by Wael
-        Rashwan.
+      <footer className="border-t border-foreground pt-5 pb-10 text-[13px] leading-[1.6] text-muted-foreground max-w-[70ch]">
+        <span className="font-mono font-medium" style={{ color: "var(--viz-acc)" }}>B</span> marks a balancing loop,{" "}
+        <span className="font-mono font-medium" style={{ color: "var(--viz-acc2)" }}>R</span> a reinforcing one. Main reference: Jim Hines,{" "}
+        <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03 (2015). The molecules and their equations are
+        his; the lessons and causal loop diagrams were added for this app. Created by Wael Rashwan.
       </footer>
     </div>
   );

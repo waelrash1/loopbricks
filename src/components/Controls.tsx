@@ -37,15 +37,15 @@ function Readout({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) 
     });
   }, [model, subscribe]);
   return (
-    <dl ref={root} className="mt-6 rounded-card bg-ink text-white shadow-card px-4 py-3.5 text-sm tabular-nums">
+    <dl ref={root} className="mt-6 rounded-card bg-foreground text-background px-4 py-3 text-sm font-mono">
       <div className="flex justify-between py-0.5">
-        <dt className="text-white/70">Time</dt>
+        <dt className="font-sans text-background/70">Time</dt>
         <dd className="font-medium" data-t>0.0 {model.timeUnit}</dd>
       </div>
       {model.stocks.filter((st) => !st.hidden).map((st) => (
         <div key={st.id} className="flex justify-between gap-3 py-0.5">
-          <dt className="flex items-center gap-2 text-white/70">
-            <i className="inline-block w-2 h-2 rounded-full ring-1 ring-white/60" style={{ background: st.color }} />
+          <dt className="flex items-center gap-2 font-sans text-background/70">
+            <i className="inline-block w-2.5 h-2.5 border border-background/70" style={{ background: st.color }} />
             {st.label}
           </dt>
           <dd className="font-medium" data-s={st.id}>
@@ -59,14 +59,14 @@ function Readout({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) 
 
 export default function Controls({ model, sim, presets }: { model: Model; sim: Sim; presets: Preset[] }) {
   const row = "flex justify-between items-baseline text-sm mb-2";
-  const val = "font-medium text-ink tabular-nums";
-  const key = "px-1.5 py-0.5 rounded-md border border-border bg-muted font-sans text-[11px]";
+  const val = "font-mono text-[13px] font-medium";
+  const key = "px-1.5 py-0.5 rounded-btn border border-input bg-card font-mono text-[11px] text-foreground";
   return (
     <div>
-      <h2 className="heading text-[17px] mb-4">Controls</h2>
+      <h2 className="heading text-[20px] mb-4">Controls</h2>
 
       {presets.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-5">
+        <div className="flex flex-wrap gap-1.5 mb-5" role="group" aria-label="Scenarios">
           {presets.map((p) => (
             <button
               key={p.label}
@@ -74,7 +74,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
                 sim.applyParams(p.params);
                 sim.reset();
               }}
-              className="text-xs px-3 py-1.5 rounded-full bg-muted hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="text-xs px-2.5 py-1.5 rounded-btn border border-input bg-card hover:border-foreground hover:bg-accent transition-colors"
             >
               {p.label}
             </button>

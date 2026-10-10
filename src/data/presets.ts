@@ -3,7 +3,7 @@ import { PRESETS_B } from "@/data/extra/batchB";
 import { PRESETS_C } from "@/data/extra/batchC";
 import { PRESETS_E } from "@/data/extra/batchE";
 import { PRESETS_D } from "@/data/extra/batchD";
-// Scenario presets per molecule — one-click interesting parameter sets.
+// Scenario presets per molecule: one-click interesting parameter sets.
 export type Preset = { label: string; params: Record<string, number> };
 
 export const PRESETS: Record<string, Preset[]> = {

@@ -47,4 +47,4 @@ HTML. Add it to a group in `GROUPS`, then run `npm run check`.
 - `src/data/`: molecule definitions, lessons, presets, family tree.
 - `src/components/`: diagrams, chart, controls, sidebar, overview map.
 - `src/lib/cldGeometry.ts`: causal loop layout and the clarity lint.
-- `src/themes.css`: the seven switchable themes.
+- `src/index.css`: design tokens (colour, type, the one corner radius) and prose styles.

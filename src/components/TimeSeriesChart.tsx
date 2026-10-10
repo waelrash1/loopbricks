@@ -22,7 +22,9 @@ const hexA = (hex: string, a: number) => {
 export default function TimeSeriesChart({
   model,
   subscribe,
+  height = 240,
 }: {
+  height?: number;
   model: Model;
   subscribe: (fn: FrameCb) => () => void;
 }) {
@@ -158,12 +160,9 @@ export default function TimeSeriesChart({
       if (last) draw(last);
     });
     ro.observe(c);
-    const themeWatch = new MutationObserver(() => last && draw(last));
-    themeWatch.observe(document.documentElement, { attributeFilter: ["data-theme"] });
     const unsubscribe = subscribe(draw);
     return () => {
       ro.disconnect();
-      themeWatch.disconnect();
       unsubscribe();
     };
   }, [model, subscribe]);
@@ -173,12 +172,12 @@ export default function TimeSeriesChart({
       <div className="flex gap-4 flex-wrap text-[13px] text-muted-foreground mb-3">
         {model.stocks.filter((st) => !st.hidden && !st.chartHidden).map((st) => (
           <span key={st.id} className="inline-flex items-center gap-1.5">
-            <i className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: st.color }} />
+            <i className="inline-block w-3 h-[3px]" style={{ background: st.color }} />
             {st.label}
           </span>
         ))}
       </div>
-      <canvas ref={canvas} role="img" aria-label={`Stock levels over time for ${model.name}`} className="w-full h-[240px] block" />
+      <canvas ref={canvas} role="img" aria-label={`Stock levels over time for ${model.name}`} className="w-full block" style={{ height }} />
     </>
   );
 }

@@ -33,14 +33,14 @@ export default function LessonPanel({
   const last = idx === total - 1;
 
   return (
-    <section className="rounded-card border-[1.5px] border-link bg-card p-6 md:p-8 mb-6">
-      <div className="flex items-center gap-4 mb-5">
+    <section className="mb-10">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-8">
         <label className="text-sm text-muted-foreground tabular-nums shrink-0">
           Lesson{" "}
           <select
             value={idx}
             onChange={(e) => onJump(Number(e.target.value))}
-            className="rounded-btn border border-input bg-card text-foreground px-2 py-1 max-w-[12rem]"
+            className="rounded-btn border border-input bg-card text-foreground px-2 py-1 max-w-[9rem] sm:max-w-[12rem]"
           >
             {lessons.map((name, i) => (
               <option key={i} value={i}>
@@ -56,28 +56,28 @@ export default function LessonPanel({
           aria-valuemin={1}
           aria-valuemax={total}
           aria-valuenow={idx + 1}
-          className="h-1 flex-1 rounded-full bg-secondary overflow-hidden"
+          className="h-0.5 flex-1 min-w-[48px] bg-border"
         >
-          <div className="h-full bg-link transition-[width]" style={{ width: `${((idx + 1) / total) * 100}%` }} />
+          <div className="h-full bg-foreground transition-[width]" style={{ width: `${((idx + 1) / total) * 100}%` }} />
         </div>
-        <button onClick={onExit} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 rounded shrink-0">
+        <button onClick={onExit} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-btn shrink-0">
           <X size={14} aria-hidden /> Exit tour
         </button>
       </div>
 
-      <h1 className="display text-[32px] md:text-[40px]">{title}</h1>
-      <p className="mt-3 mb-5 text-[17px] leading-[1.6] max-w-[68ch]">{lesson.q}</p>
+      <p className="text-sm text-muted-foreground mb-2">{title}</p>
+      <h1 className="heading text-[22px] md:text-[28px] max-w-[46ch] mb-6">{lesson.q}</h1>
 
       <div className="grid sm:grid-cols-2 gap-3 mb-5">
         {lesson.options.map((opt, i) => {
           const isAnswer = i === lesson.answer;
           const isPicked = i === picked;
-          let cls = "border-input hover:border-foreground";
+          let cls = "border-input bg-card hover:border-foreground";
           if (revealed) {
             if (isAnswer) cls = "is-right";
             else if (isPicked) cls = "is-wrong";
             else cls = "border-border text-muted-foreground";
-          } else if (isPicked) cls = "border-link bg-accent text-accent-foreground";
+          } else if (isPicked) cls = "border-foreground bg-accent text-accent-foreground";
           return (
             <button
               key={i}
@@ -86,7 +86,7 @@ export default function LessonPanel({
               onClick={() => setPicked(i)}
               className={cn("text-left text-[15px] rounded-card border px-4 py-3 transition-colors flex items-center gap-3", cls)}
             >
-              <span className="font-medium text-sm w-4 opacity-60">{String.fromCharCode(65 + i)}</span>
+              <span className="font-mono text-[13px] w-4 opacity-70">{String.fromCharCode(65 + i)}</span>
               <span className="flex-1">{opt}</span>
               {revealed && isAnswer && <Check size={16} aria-label="Correct answer" />}
               {revealed && isPicked && !isAnswer && <X size={16} aria-label="Your answer" />}
@@ -96,7 +96,7 @@ export default function LessonPanel({
       </div>
 
       {revealed && (
-        <p role="status" className="rounded-card bg-accent text-accent-foreground px-5 py-4 mb-5 text-[15px] leading-[1.6] max-w-[80ch]">
+        <p role="status" className="border-l-[3px] border-foreground pl-4 py-1 mb-6 text-[16px] leading-[1.6] max-w-[70ch]">
           <b>{correct ? "Correct. " : "Not quite. "}</b>
           {lesson.explain} Watch it play out in the diagram below.
         </p>

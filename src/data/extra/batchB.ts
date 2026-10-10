@@ -1,6 +1,6 @@
 // Batch B of Hines' "Molecules of Structure": sea-anchor pricing, proportional / nonlinear
 // splits, and the "action from resource" family. Same shape as molecules.ts, diagramMeta.ts,
-// lessons.ts and presets.ts — merged into the app's records elsewhere.
+// lessons.ts and presets.ts: merged into the app's records elsewhere.
 import type { Model } from "@/data/molecules";
 import type { FlowMeta } from "@/data/diagramMeta";
 import type { Lesson } from "@/data/lessons";
@@ -29,7 +29,7 @@ export const MODELS_B: Record<string, Model> = {
     title: "Sea Anchor Pricing (price form)",
     timeUnit: "yr",
     unitY: "$/widget",
-    lede: "Price setters bump price above or below an underlying 'fair' price when inventory or market share press on them — and the underlying price then drifts toward whatever price they set.",
+    lede: "Price setters bump price above or below an underlying 'fair' price when inventory or market share press on them, and the underlying price then drifts toward whatever price they set.",
     stocks: [
       { id: "underlyingPrice", label: "Underlying price", init: 10, scale: 90, color: C.acc2 },
       { id: "priceDisp", label: "Price", init: 11.43, scale: 90, color: C.good, chartHidden: false },
@@ -65,26 +65,26 @@ export const MODELS_B: Record<string, Model> = {
       ],
       loops: [{ type: "R", label: "R1", x: 295, y: 165 }],
       caption:
-        '<span class="chip chipR">R1</span> Price is the underlying price times the <b>pressure to change price</b>; the underlying price then drifts toward the price just set. Hold the pressure above 1 and each bump is absorbed into the "fair" price and bumped again — <b>exponential growth</b>. Hold it below 1 and the same loop grinds the price toward zero.',
+        '<span class="chip chipR">R1</span> Price is the underlying price times the <b>pressure to change price</b>; the underlying price then drifts toward the price just set. Hold the pressure above 1 and each bump is absorbed into the "fair" price and bumped again: <b>exponential growth</b>. Hold it below 1 and the same loop grinds the price toward zero.',
     },
-    desc: `<p>Hines' formulation of price setting. Price setters carry a sense of a fair or <b>underlying price</b>. Pressures — usually relative inventory, here also relative market share — make them <b>bump</b> the price above or below it. Then they wait: if the pressure persists, the bumped price is gradually absorbed into their idea of the underlying price, and they bump again. It is the Sea Anchor &amp; Adjustment molecule with the adjustment written as a product of effect functions. Here low inventory raises price through <code>2/(1 + relative inventory)</code> and market share above target raises it through <code>2·rel/(1 + rel)</code>; both equal 1 at target.</p>
+    desc: `<p>Hines' formulation of price setting. Price setters carry a sense of a fair or <b>underlying price</b>. Pressures, usually relative inventory, here also relative market share, make them <b>bump</b> the price above or below it. Then they wait, if the pressure persists, the bumped price is gradually absorbed into their idea of the underlying price, and they bump again. It is the Sea Anchor &amp; Adjustment molecule with the adjustment written as a product of effect functions. Here low inventory raises price through <code>2/(1 + relative inventory)</code> and market share above target raises it through <code>2·rel/(1 + rel)</code>; both equal 1 at target.</p>
     <div class="eq">Price = UnderlyingPrice × pressureToChangePrice<br/>d(UnderlyingPrice)/dt = (Price − UnderlyingPrice) / Time to change underlying price<br/>pressureToChangePrice = EffectOfInventoryOnPrice × EffectOfMarketShareOnPrice</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it when a price has <b>no fixed reference</b> and is set by repeatedly nudging the last price: the modeller does not need to know the equilibrium price, the structure finds it. Because the loop is reinforcing, the price only stops moving when the pressure returns to exactly 1 — so in a full model inventory or market share must respond to price and close the loop. The book also gives a <i>margin form</i> (price = cost × margin, with an underlying margin anchored the same way).</div>
+    Use it when a price has <b>no fixed reference</b> and is set by repeatedly nudging the last price: the modeller does not need to know the equilibrium price, the structure finds it. Because the loop is reinforcing, the price only stops moving when the pressure returns to exactly 1, so in a full model inventory or market share must respond to price and close the loop. The book also gives a <i>margin form</i> (price = cost × margin, with an underlying margin anchored the same way).</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Finance</b> — interest rates, the price of money: Hines cites the System Dynamics National Model as the classic use.</li>
-      <li><b>Commodities</b> — traders marking prices up while stocks are short and down while they are long.</li>
-      <li><b>Healthcare</b> — agency staffing rates ratcheting up for as long as shifts stay unfilled.</li>
+      <li><b>Finance</b>: interest rates, the price of money: Hines cites the System Dynamics National Model as the classic use.</li>
+      <li><b>Commodities</b>: traders marking prices up while stocks are short and down while they are long.</li>
+      <li><b>Healthcare</b>: agency staffing rates ratcheting up for as long as shifts stay unfilled.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Inventory 75 against a target of 100 gives relative inventory 0.75 and an inventory effect of <code>2 / 1.75 ≈ 1.14</code>; market share is at target (effect 1), so pressure ≈ 1.14. Price jumps at once from $10 to about $11.43, and the underlying price then grows at <code>(1.14 − 1) / 4 ≈ 3.6%</code> per year — doubling roughly every 19–20 years, to about $29 after 30 years with the price about 14% above it throughout. Set inventory back to 100 and the price drops to the underlying price and both freeze at the new, higher level.</div>
+    Inventory 75 against a target of 100 gives relative inventory 0.75 and an inventory effect of <code>2 / 1.75 ≈ 1.14</code>; market share is at target (effect 1), so pressure ≈ 1.14. Price jumps at once from $10 to about $11.43, and the underlying price then grows at <code>(1.14 − 1) / 4 ≈ 3.6%</code> per year: doubling roughly every 19-20 years, to about $29 after 30 years with the price about 14% above it throughout. Set inventory back to 100 and the price drops to the underlying price and both freeze at the new, higher level.</div>
     <h4>Caveats</h4>
-    <p>Aggressive policies (a short time constant, a steep effect) can produce price explosions. And if the underlying price ever reaches zero it is stuck there, because every bump is a multiple of zero — the reason for Protected Sea Anchor Pricing.</p>
+    <p>Aggressive policies (a short time constant, a steep effect) can produce price explosions. And if the underlying price ever reaches zero it is stuck there, because every bump is a multiple of zero: the reason for Protected Sea Anchor Pricing.</p>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Sea Anchor Pricing.</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i> — price setting by anchoring and adjustment (hill-climbing).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Sea Anchor Pricing.</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, price setting by anchoring and adjustment (hill-climbing).</li>
     </ul>`,
   },
 
@@ -136,21 +136,21 @@ export const MODELS_B: Record<string, Model> = {
       caption:
         '<span class="chip chipR">R1</span> is the sea-anchor loop: price re-anchors the underlying price that produced it. <span class="chip chipB">B1</span> takes over when the price falls below the <b>minimum underlying price</b>: the indicated value becomes the minimum, a constant, so the underlying price simply closes the gap to it and stops falling.',
     },
-    desc: `<p>Sea Anchor Pricing has one bad corner: under sustained downward pressure the underlying price decays toward zero, and at zero it is stuck for good. The protected version adds a <b>minimum underlying price</b> — what price setters regard as the lowest fair or sustainable price, perhaps the cost of the product. The underlying price chases the larger of the current price and that minimum. Note what is protected: the <i>underlying</i> price. The price itself can still be bumped below the floor while pressure stays low.</p>
+    desc: `<p>Sea Anchor Pricing has one bad corner: under sustained downward pressure the underlying price decays toward zero, and at zero it is stuck for good. The protected version adds a <b>minimum underlying price</b>: what price setters regard as the lowest fair or sustainable price, perhaps the cost of the product. The underlying price chases the larger of the current price and that minimum. Note what is protected: the <i>underlying</i> price. The price itself can still be bumped below the floor while pressure stays low.</p>
     <div class="eq">Price = UnderlyingPrice × pressureToChangePrice<br/>IndicatedUnderlyingPrice = MAX(Price, MinimumUnderlyingPrice)<br/>d(UnderlyingPrice)/dt = (IndicatedUnderlyingPrice − UnderlyingPrice) / Time to change underlying price</div>
     <div class="whenbox"><h4>When to use it</h4>
     Use it whenever a sea-anchored price <b>can approach zero</b> during a glut or a price war and must be able to recover afterwards. The floor does nothing while the price is above it, so behaviour is identical to Sea Anchor Pricing in normal conditions; set the minimum to 0 to see the unprotected collapse.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Finance</b> — interest rates in the System Dynamics National Model, Hines' classic example.</li>
-      <li><b>Business</b> — a cost floor under list prices during a prolonged inventory glut.</li>
-      <li><b>Sustainability</b> — a carbon price floor that stops an oversupplied permit market from collapsing to nothing.</li>
+      <li><b>Finance</b>: interest rates in the System Dynamics National Model, Hines' classic example.</li>
+      <li><b>Business</b>: a cost floor under list prices during a prolonged inventory glut.</li>
+      <li><b>Sustainability</b>: a carbon price floor that stops an oversupplied permit market from collapsing to nothing.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Inventory 150 against a target of 100 gives an inventory effect of <code>2 / 2.5 = 0.8</code>, so the price is 80% of the underlying price: $8 at the start. For about 7 years the price is still above the $6 minimum and the underlying price decays at <code>(0.8 − 1) / 5 = −4%</code> per year. Once it passes $7.50 the price (80% of it) drops below $6, the MAX switches to the minimum, and the underlying price levels off at <b>$6</b> with the price at <code>6 × 0.8 = $4.80</code>. With the minimum at 0 the underlying price would be about $0.90 after 60 years and still falling.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Protected Sea Anchor Pricing (and Protected Sea Anchoring and Adjustment).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Protected Sea Anchor Pricing (and Protected Sea Anchoring and Adjustment).</li>
     </ul>`,
   },
 
@@ -220,25 +220,25 @@ export const MODELS_B: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 250, y: 172 }],
       caption:
-        '<span class="chip chipB">B1</span> A bigger backlog is a stronger claim, wins a bigger share of the people, and is worked down faster — one balancing loop per claim. Because every share is <code>claim / total claim</code>, the shares always sum to one and <b>all</b> of the resource is always handed out, needed or not.',
+        '<span class="chip chipB">B1</span> A bigger backlog is a stronger claim, wins a bigger share of the people, and is worked down faster: one balancing loop per claim. Because every share is <code>claim / total claim</code>, the shares always sum to one and <b>all</b> of the resource is always handed out, needed or not.',
     },
     desc: `<p>The root allocation molecule. Each claim on a resource is represented by its <b>strength</b>, and the resource is split according to each claim's strength relative to the total. Hines' classic example is used here: a flexible workforce divided among kinds of task, where each backlog of tasks <i>is</i> the claim, so the total claim is the total work waiting. Each group then completes tasks at <code>people × productivity</code>.</p>
     <div class="eq">ResourcesForA = Resources × RelativeStrengthOfA'sClaim<br/>RelativeStrengthOfA'sClaim = StrengthOfA'sClaim / TotalClaimStrength<br/>TotalClaimStrength = StrengthOfA'sClaim + StrengthOfB'sClaim + StrengthOfC'sClaim</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it to share <b>one scarce, flexible resource among two or more claimants</b> when no claimant is favoured — people across task types, budget across requests, capacity across product lines. The claims must be in the same units. It is the parent of Weighted Split (add managerial bias), Multidimensional Split and Nonlinear Split.</div>
+    Use it to share <b>one scarce, flexible resource among two or more claimants</b> when no claimant is favoured: people across task types, budget across requests, capacity across product lines. The claims must be in the same units. It is the parent of Weighted Split (add managerial bias), Multidimensional Split and Nonlinear Split.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>R&amp;D</b> — one pool of engineers split across research, development and commercialization in proportion to the work waiting in each.</li>
-      <li><b>Healthcare</b> — float nurses assigned across wards in proportion to each ward's waiting patients.</li>
-      <li><b>Sustainability</b> — a fixed water allocation shared among farms in proportion to their requests.</li>
+      <li><b>R&amp;D</b>: one pool of engineers split across research, development and commercialization in proportion to the work waiting in each.</li>
+      <li><b>Healthcare</b>: float nurses assigned across wards in proportion to each ward's waiting patients.</li>
+      <li><b>Sustainability</b>: a fixed water allocation shared among farms in proportion to their requests.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Ten people, 100 tasks waiting: 20 in A, 60 in B, 20 in C. B's claim is 60% of the total, so B gets <code>10 × 60/100 = 6</code> people and A and C get 2 each. New tasks arrive at 5, 3 and 2 a week — exactly the team's capacity of 10 a week — so the total stays at 100 while the mix shifts: A is completing only 2 a week against 5 arriving, so it grows; B is completing 6 against 3, so it shrinks. Each backlog approaches <code>100 × arrivals / capacity</code>, i.e. <b>50, 30 and 20</b>, with a time constant of <code>100 / 10 = 10</code> weeks, and the people end up split 5 : 3 : 2.</div>
+    Ten people, 100 tasks waiting: 20 in A, 60 in B, 20 in C. B's claim is 60% of the total, so B gets <code>10 × 60/100 = 6</code> people and A and C get 2 each. New tasks arrive at 5, 3 and 2 a week, exactly the team's capacity of 10 a week, so the total stays at 100 while the mix shifts: A is completing only 2 a week against 5 arriving, so it grows; B is completing 6 against 3, so it shrinks. Each backlog approaches <code>100 × arrivals / capacity</code>, i.e. <b>50, 30 and 20</b>, with a time constant of <code>100 / 10 = 10</code> weeks, and the people end up split 5 : 3 : 2.</div>
     <h4>Caveats</h4>
-    <p>The formulation allocates <b>all</b> of the resource even when that is more than a claim needs; re-allocating the excess takes extra structure. To keep stocks non-negative this app caps each completion rate at <code>Tasks / 0.5 wk</code>, so with surplus capacity the backlogs settle at half a week of arrivals rather than exactly zero — that cap is an addition, not part of the molecule.</p>
+    <p>The formulation allocates <b>all</b> of the resource even when that is more than a claim needs; re-allocating the excess takes extra structure. To keep stocks non-negative this app caps each completion rate at <code>Tasks / 0.5 wk</code>, so with surplus capacity the backlogs settle at half a week of arrivals rather than exactly zero, that cap is an addition, not part of the molecule.</p>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Proportional Split.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Proportional Split.</li>
     </ul>`,
   },
 
@@ -247,7 +247,7 @@ export const MODELS_B: Record<string, Model> = {
     title: "Nonlinear Split (with a minimum share)",
     timeUnit: "wk",
     unitY: "units",
-    lede: "Split a quantity between two claimants by relative claim strength, but pass that indicated fraction through a lookup first — for example so that neither side ever gets less than a minimum share.",
+    lede: "Split a quantity between two claimants by relative claim strength, but pass that indicated fraction through a lookup first: for example so that neither side ever gets less than a minimum share.",
     stocks: [
       { id: "a", label: "Held by A", init: 0, scale: 120, color: C.acc },
       { id: "b", label: "Held by B", init: 0, scale: 120, color: C.pink },
@@ -296,23 +296,23 @@ export const MODELS_B: Record<string, Model> = {
       caption:
         'No stocks in the molecule itself, so no loops: it is a decision rule. Relative claim strength gives an <b>indicated</b> fraction; a lookup <code>f</code> bends it into the actual fraction (here flat at the minimum share and at one minus the minimum). B gets whatever A does not, so the two parts always sum to the total. The two holding stocks are only there to make the split visible.',
     },
-    desc: `<p>Start from a Proportional Split between two claimants, then run the indicated fraction through a <b>lookup function</b> to capture what a straight proportion cannot — most often that each claim must receive a certain minimum fraction. B's quantity is the remainder, so everything is allocated. The book leaves <code>FractionToA f</code> as a user-defined function; the one used here follows the 45° line between a floor at the minimum fraction and a ceiling at one minus it.</p>
+    desc: `<p>Start from a Proportional Split between two claimants, then run the indicated fraction through a <b>lookup function</b> to capture what a straight proportion cannot: most often that each claim must receive a certain minimum fraction. B's quantity is the remainder, so everything is allocated. The book leaves <code>FractionToA f</code> as a user-defined function; the one used here follows the 45° line between a floor at the minimum fraction and a ceiling at one minus it.</p>
     <div class="eq">QuantityToA = TotalQuantity × FractionToA;&nbsp; QuantityToB = TotalQuantity − QuantityToA<br/>FractionToA = f(IndicatedFractionToA);&nbsp; IndicatedFractionToA = StrengthOfA'sClaim / totalClaim<br/>here f(x) = MIN(1 − minimum, MAX(minimum, x))</div>
     <div class="whenbox"><h4>When to use it</h4>
     Use it for a <b>two-way allocation where the response to claim strength is not proportional</b>: protected minimum shares, saturation, thresholds, or a bias toward one side. Hines lists it as the parent of Ceiling, Floor and Weighted Average, which are the same split with one half hidden.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Business</b> — engineering time split between new features and maintenance, with maintenance never allowed below 20%.</li>
-      <li><b>Healthcare</b> — theatre time split between emergency and elective surgery with a guaranteed elective minimum.</li>
-      <li><b>Sustainability</b> — river flow split between abstraction and a protected environmental minimum flow.</li>
+      <li><b>Business</b>: engineering time split between new features and maintenance, with maintenance never allowed below 20%.</li>
+      <li><b>Healthcare</b>: theatre time split between emergency and elective surgery with a guaranteed elective minimum.</li>
+      <li><b>Sustainability</b>: river flow split between abstraction and a protected environmental minimum flow.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Claims of 9 and 1 give an indicated fraction to A of <code>9 / 10 = 0.9</code>. With a minimum fraction of 0.2 the lookup caps A at 0.8, so of 20 units a week A receives <code>20 × 0.8 = 16</code> and B receives <code>20 − 16 = 4</code> — twice the 2 a plain proportional split would give it. With a holding time of 5 weeks the stocks settle at <code>16 × 5 = 80</code> and <code>4 × 5 = 20</code>. Set the minimum to 0 and it reverts to a proportional split (18 and 2).</div>
+    Claims of 9 and 1 give an indicated fraction to A of <code>9 / 10 = 0.9</code>. With a minimum fraction of 0.2 the lookup caps A at 0.8, so of 20 units a week A receives <code>20 × 0.8 = 16</code> and B receives <code>20 − 16 = 4</code>: twice the 2 a plain proportional split would give it. With a holding time of 5 weeks the stocks settle at <code>16 × 5 = 80</code> and <code>4 × 5 = 20</code>. Set the minimum to 0 and it reverts to a proportional split (18 and 2).</div>
     <h4>Caveats</h4>
     <p>All of the quantity is allocated, so if each claim is a request it is possible to hand a claimant more than it asked for. Avoiding that takes careful thought and extra structure.</p>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Nonlinear Split.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Nonlinear Split.</li>
     </ul>`,
   },
 
@@ -322,7 +322,7 @@ export const MODELS_B: Record<string, Model> = {
     title: "Action from Resource (flow = resources × ability)",
     timeUnit: "mo",
     unitY: "gallons",
-    lede: "An action — a flow — is a resource multiplied by its ability to create that flow, i.e. its productivity. One of the three basic ways to create a flow.",
+    lede: "An action, a flow, is a resource multiplied by its ability to create that flow, i.e. its productivity. One of the three basic ways to create a flow.",
     stocks: [{ id: "tank", label: "Tank", init: 0, scale: 150, color: C.acc }],
     params: [
       { id: "resources", label: "Resources", min: 0, max: 30, step: 1, value: 10, unit: "resources" },
@@ -355,21 +355,21 @@ export const MODELS_B: Record<string, Model> = {
       caption:
         'The molecule is the two arrows into <b>Flow</b>: resources times their ability to create the flow. It has no stocks and no loops of its own. The tank and its drain (<span class="chip chipB">B1</span>) are added here only so the flow has somewhere to go.',
     },
-    desc: `<p>The simplest way to make something happen in a model: multiply a <b>resource</b> (people, machines, pumps) by its <b>ability to create the action</b> — its productivity — to get a flow. Hines names it as one of three general ways to create an action, the other two being Close Gap and Go to Zero. The molecule has no stock; here the flow fills a tank that drains with a first-order delay so you can watch it.</p>
+    desc: `<p>The simplest way to make something happen in a model: multiply a <b>resource</b> (people, machines, pumps) by its <b>ability to create the action</b>: its productivity, to get a flow. Hines names it as one of three general ways to create an action, the other two being Close Gap and Go to Zero. The molecule has no stock; here the flow fills a tank that drains with a first-order delay so you can watch it.</p>
     <div class="eq">flow = resources × resourceAbilityToCreateFlow</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it whenever a rate is <b>driven by capacity</b> rather than by a goal: production from a workforce, service from staff, spending from headcount. Check the units — ability must be flow units per resource (gallons/month/resource) so that the product is a flow. It is the parent of Producing, Financial Flow from Resource, Resources from Action and Ability from Action, which are this one equation renamed or rearranged.</div>
+    Use it whenever a rate is <b>driven by capacity</b> rather than by a goal: production from a workforce, service from staff, spending from headcount. Check the units: ability must be flow units per resource (gallons/month/resource) so that the product is a flow. It is the parent of Producing, Financial Flow from Resource, Resources from Action and Ability from Action, which are this one equation renamed or rearranged.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Operations</b> — production = workers × productivity.</li>
-      <li><b>Healthcare</b> — patients treated per day = clinicians × patients per clinician per day.</li>
-      <li><b>Sustainability</b> — generation = installed turbines × output per turbine.</li>
+      <li><b>Operations</b>: production = workers × productivity.</li>
+      <li><b>Healthcare</b>: patients treated per day = clinicians × patients per clinician per day.</li>
+      <li><b>Sustainability</b>: generation = installed turbines × output per turbine.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Ten pumps, each able to move 3 gallons a month, create a flow of <code>10 × 3 = 30</code> gallons a month. With a drain time of 4 months the tank settles where outflow equals inflow: <code>30 × 4 = 120</code> gallons, about 63% of the way there after 4 months. Double either the pumps or their ability and the flow doubles to 60 and the tank heads for 240.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Action from Resource.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Action from Resource.</li>
     </ul>`,
   },
 
@@ -378,7 +378,7 @@ export const MODELS_B: Record<string, Model> = {
     title: "Financial Flow from Resource (spending = workers × wage)",
     timeUnit: "mo",
     unitY: "$k",
-    lede: "The continuing rent of a resource — wages, lease payments, interest — is the resource multiplied by its rent per unit per period.",
+    lede: "The continuing rent of a resource, wages, lease payments, interest, is the resource multiplied by its rent per unit per period.",
     stocks: [{ id: "cash", label: "Cash", init: 500, scale: 1000, color: C.good }],
     params: [
       { id: "workers", label: "Workers", min: 0, max: 50, step: 1, value: 20, unit: "people" },
@@ -418,17 +418,17 @@ export const MODELS_B: Record<string, Model> = {
     Use it for any <b>recurring cost or income that scales with a stock of resources</b>: payroll from headcount, lease cost from floor space, interest from debt, subscription revenue from customers. Combined with Resources from Action it gives Workforce from Budget.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Business</b> — payroll = headcount × average salary.</li>
-      <li><b>Healthcare</b> — agency staffing cost = agency shifts filled × rate per shift.</li>
-      <li><b>Finance</b> — interest paid = debt × interest rate.</li>
+      <li><b>Business</b>: payroll = headcount × average salary.</li>
+      <li><b>Healthcare</b>: agency staffing cost = agency shifts filled × rate per shift.</li>
+      <li><b>Finance</b>: interest paid = debt × interest rate.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Twenty workers at $5k a month each cost <code>20 × 5 = $100k</code> a month. Revenue is $80k a month, so cash falls by $20k a month and the $500k in the bank lasts <code>500 / 20 = 25</code> months. Cut the team to 16 and spending equals revenue (<code>16 × 5 = 80</code>): cash holds steady.</div>
     <h4>Caveats</h4>
-    <p>Hines lists none for the molecule. In this app the cash stock simply stops at zero — payroll keeps being "paid" out of nothing — because the molecule itself contains no rule for what happens when the money runs out.</p>
+    <p>Hines lists none for the molecule. In this app the cash stock simply stops at zero: payroll keeps being "paid" out of nothing, because the molecule itself contains no rule for what happens when the money runs out.</p>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Financial Flow from Resource.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Financial Flow from Resource.</li>
     </ul>`,
   },
 
@@ -479,15 +479,15 @@ export const MODELS_B: Record<string, Model> = {
     Use it to convert a <b>target rate into a target capacity</b>: desired production into desired workforce, required throughput into required beds or machines, a budget into affordable headcount. It usually feeds a hiring or capacity-acquisition structure as its goal. If ability can approach zero, protect the division.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Operations</b> — desired workforce = desired production / productivity.</li>
-      <li><b>Healthcare</b> — clinicians needed = expected appointments per week / appointments per clinician per week.</li>
-      <li><b>Sustainability</b> — turbines needed = target generation / output per turbine.</li>
+      <li><b>Operations</b>: desired workforce = desired production / productivity.</li>
+      <li><b>Healthcare</b>: clinicians needed = expected appointments per week / appointments per clinician per week.</li>
+      <li><b>Sustainability</b>: turbines needed = target generation / output per turbine.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     We want 60 gallons a month and each pump moves 3, so we need <code>60 / 3 = 20</code> pumps. Starting with 5 and taking 4 months to close the gap, the first month's acquisition rate is <code>(20 − 5) / 4 = 3.75</code> pumps a month and the stock approaches 20, where the actual flow <code>20 × 3</code> equals the 60 desired. Raise ability to 6 and the requirement halves to 10.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Resources from Action.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Resources from Action.</li>
     </ul>`,
   },
 
@@ -496,7 +496,7 @@ export const MODELS_B: Record<string, Model> = {
     title: "Workforce from Budget (people = budget ÷ average wage)",
     timeUnit: "yr",
     unitY: "people",
-    lede: "Divide the workforce budget by the average wage to get the number of people you can afford — the goal that hiring then chases.",
+    lede: "Divide the workforce budget by the average wage to get the number of people you can afford: the goal that hiring then chases.",
     stocks: [
       { id: "workforce", label: "Workforce", init: 20, scale: 100, color: C.acc },
       { id: "desiredDisp", label: "Desired people", init: 50, scale: 100, color: C.acc2, chartHidden: false },
@@ -541,18 +541,18 @@ export const MODELS_B: Record<string, Model> = {
     Use it when <b>headcount is set by money rather than by workload</b>: sales forces funded as a share of revenue, grant-funded teams, public services with a fixed pay bill. Hines' classic example is Forrester's <i>Market Growth as Influenced by Capital Investment</i>, where the sales budget sets the size of the sales force.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Business</b> — a sales force sized by the share of revenue allocated to selling.</li>
-      <li><b>Healthcare</b> — nursing establishment set by a ward's pay budget and the average cost per nurse.</li>
-      <li><b>Research</b> — the number of postdocs a grant can support.</li>
+      <li><b>Business</b>: a sales force sized by the share of revenue allocated to selling.</li>
+      <li><b>Healthcare</b>: nursing establishment set by a ward's pay budget and the average cost per nurse.</li>
+      <li><b>Research</b>: the number of postdocs a grant can support.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    A budget of $3,000k a year and an average wage of $60k give <code>3000 / 60 = 50</code> desired people. Starting from 20 with a 2-year adjustment time, hiring begins at <code>(50 − 20) / 2 = 15</code> people a year and the workforce approaches 50, at which point spending is <code>50 × 60 = $3,000k</code> — the whole budget. Let the average wage rise to $75k with the budget unchanged and the affordable workforce falls to <code>3000 / 75 = 40</code>.</div>
+    A budget of $3,000k a year and an average wage of $60k give <code>3000 / 60 = 50</code> desired people. Starting from 20 with a 2-year adjustment time, hiring begins at <code>(50 − 20) / 2 = 15</code> people a year and the workforce approaches 50, at which point spending is <code>50 × 60 = $3,000k</code>: the whole budget. Let the average wage rise to $75k with the budget unchanged and the affordable workforce falls to <code>3000 / 75 = 40</code>.</div>
     <h4>Caveats</h4>
     <p>If the average wage can go to zero, protect against dividing by zero (the slider here stops at $30k).</p>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Workforce from Budget.</li>
-      <li>Forrester, J. W. (1968). "Market growth as influenced by capital investment." <i>Industrial Management Review</i> 9(2): 83–105.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Workforce from Budget.</li>
+      <li>Forrester, J. W. (1968). "Market growth as influenced by capital investment." <i>Industrial Management Review</i> 9(2): 83-105.</li>
     </ul>`,
   },
 };
@@ -735,7 +735,7 @@ export const LESSONS_B: Record<string, Lesson> = {
     q: "The workforce budget is $3,000k/yr and the average wage is $75k. Starting from 20 people, the workforce heads toward…",
     options: ["20", "40", "50", "75"],
     answer: 1,
-    explain: "Desired people = budget / average wage = 3000 / 75 = 40. At $60k the same budget bought 50 — a pay rise with a flat budget means fewer people.",
+    explain: "Desired people = budget / average wage = 3000 / 75 = 40. At $60k the same budget bought 50: a pay rise with a flat budget means fewer people.",
     preset: { budget: 3000, avgWage: 75, tHire: 2 },
   },
 };

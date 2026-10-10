@@ -25,7 +25,7 @@ export default function MiniDiagram({ model }: { model: Model }) {
       {model.stocks.map((st) => {
         const g = model.diagram.stocks[st.id];
         if (!g) return null;
-        return <rect key={st.id} x={g.x} y={g.y} width={g.w} height={g.h} rx={8} fill={st.color} fillOpacity={0.28} stroke={st.color} strokeOpacity={0.8} strokeWidth={3} />;
+        return <rect key={st.id} x={g.x} y={g.y} width={g.w} height={g.h} rx={3} fill={st.color} fillOpacity={0.28} stroke={st.color} strokeOpacity={0.8} strokeWidth={3} />;
       })}
     </svg>
   );

@@ -6,7 +6,7 @@ import { LINEAGE_C } from "@/data/extra/batchC";
 import { LINEAGE_E } from "@/data/extra/batchE";
 import { LINEAGE_D } from "@/data/extra/batchD";
 
-// "builds on" lineage — mirrors Hines' Immediate Parents, used to show the taxonomy.
+// "builds on" lineage: mirrors Hines' Immediate Parents, used to show the taxonomy.
 export const LINEAGE: Record<string, string[]> = {
   bathtub: [],
   cascade: ["bathtub"],
@@ -65,17 +65,17 @@ export const LINEAGE: Record<string, string[]> = {
 
 export const GROUP_BLURB: Record<string, string> = {
   "Accumulation primitives": "The atoms: how things pile up. Everything descends from the Bathtub.",
-  "Delays & decays": "First-order feedback — stock-proportional outflows give lags and exponential decline.",
+  "Delays & decays": "First-order feedback: stock-proportional outflows give lags and exponential decline.",
   "Goal-seeking & control": "Balancing loops that drive a stock toward a target (with delays that can oscillate).",
   "Expectations & valuation": "Perceiving rates of change, blending signals, and discounting the future.",
-  "Coflows": "An attribute — skill, cost, age — riding along with the material it flows with.",
+  "Coflows": "An attribute, skill, cost, age, riding along with the material it flows with.",
   "Growth & limits": "Reinforcing loops, and what happens when they meet a balancing limit (S-curves).",
   "Constraints & nonlinearity": "Caps, floors and the dimensionless effect-function behind every multiplier.",
   "Protected levels & fulfillment": "Keeping physical stocks non-negative; shipping limited by stock or capacity.",
-  "Anchoring & pricing": "Self-referential expectations, their runaway drift, and the fix — plus sticky prices.",
+  "Anchoring & pricing": "Self-referential expectations, their runaway drift, and the fix, plus sticky prices.",
   "Allocation & competition": "Dividing a flow among destinations; attractiveness that compounds into lock-in.",
   "Resources & actions": "The one-line conversions between what you have and what you do: people into output, output into money, money into people.",
-  "Productivity & projects": "Turning resources into work — fatigue, rework, schedule pressure, completion.",
+  "Productivity & projects": "Turning resources into work: fatigue, rework, schedule pressure, completion.",
 };
 
 // Book molecules that live inside a combined page, so a search for the book's name still lands somewhere.

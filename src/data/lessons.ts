@@ -3,7 +3,7 @@ import { LESSONS_B } from "@/data/extra/batchB";
 import { LESSONS_C } from "@/data/extra/batchC";
 import { LESSONS_E } from "@/data/extra/batchE";
 import { LESSONS_D } from "@/data/extra/batchD";
-// Predict-then-run checkpoints — one per molecule. The tour walks them in GROUPS order.
+// Predict-then-run checkpoints: one per molecule. The tour walks them in GROUPS order.
 // preset is applied (and the sim reset) on "Reveal & run" so the answer is visible.
 export type Lesson = { q: string; options: string[]; answer: number; explain: string; preset?: Record<string, number> };
 
@@ -12,14 +12,14 @@ export const LESSONS: Record<string, Lesson> = {
     q: "Inflow 12/yr, outflow 8/yr, starting level 50. After 10 years the level is about…",
     options: ["50 (unchanged)", "90", "130", "0"],
     answer: 1,
-    explain: "A stock integrates net flow: 50 + (12 − 8)×10 = 90. It rises even though both flows are constant — the classic stock-flow trap.",
+    explain: "A stock integrates net flow: 50 + (12 − 8)×10 = 90. It rises even though both flows are constant: the classic stock-flow trap.",
     preset: { inflow: 12, outflow: 8 },
   },
   cascade: {
     q: "Stage 1 starts full (60), inflow 0. The bulge reaching Stage 3 will be…",
     options: ["instant and sharp", "delayed and flattened", "it never arrives", "oscillating"],
     answer: 1,
-    explain: "Each stage adds a first-order delay, so the pulse is smeared in time — arriving later and flatter at every stage.",
+    explain: "Each stage adds a first-order delay, so the pulse is smeared in time: arriving later and flatter at every stage.",
     preset: { inflow: 0, tau: 4 },
   },
   conversion: {
@@ -96,14 +96,14 @@ export const LESSONS: Record<string, Lesson> = {
     q: "Workforce 40, desired 60, time to hire 4 yr. First-year hiring is about…",
     options: ["20", "5", "60", "0"],
     answer: 1,
-    explain: "(60 − 40)/4 = 5/yr; the workforce trails its target — the lag behind hiring cycles.",
+    explain: "(60 − 40)/4 = 5/yr; the workforce trails its target: the lag behind hiring cycles.",
     preset: { desired: 60, tHire: 4 },
   },
   trend: {
     q: "The actual grows steadily at 6%/mo. The perceived value will…",
     options: ["lead the actual", "track it exactly", "lag the actual", "fall"],
     answer: 2,
-    explain: "Perception is a smooth — it always trails a rising signal. The gap is what reveals the growth rate.",
+    explain: "Perception is a smooth: it always trails a rising signal. The gap is what reveals the growth rate.",
     preset: { g: 6, tp: 4 },
   },
   weightedAvg: {
@@ -124,11 +124,11 @@ export const LESSONS: Record<string, Lesson> = {
     q: "You hire rookies (0 experience) much faster. The average experience will…",
     options: ["rise", "fall", "stay the same", "go negative"],
     answer: 1,
-    explain: "More rookies dilute the average even as total experience keeps rising — the staffing-up dip.",
+    explain: "More rookies dilute the average even as total experience keeps rising: the staffing-up dip.",
     preset: { hire: 18, tenure: 6, hireExp: 0 },
   },
   agingPDY: {
-    q: "Spike hiring. Headcount rises — and output per person…",
+    q: "Spike hiring. Headcount rises, and output per person…",
     options: ["rises", "dips then recovers", "is unchanged", "collapses"],
     answer: 1,
     explain: "Rookies produce at half rate, so output per person dips until they mature into the experienced cohort.",
@@ -173,7 +173,7 @@ export const LESSONS: Record<string, Lesson> = {
     q: "A stock drains toward a floor of 30. It settles at…",
     options: ["0", "30", "100", "−30"],
     answer: 1,
-    explain: "MAX/MIN throttles the outflow near the floor — the stock approaches 30 and stops, never crossing it.",
+    explain: "MAX/MIN throttles the outflow near the floor: the stock approaches 30 and stops, never crossing it.",
     preset: { base: 14, floor: 30, at: 2 },
   },
   capacityUtil: {
@@ -194,7 +194,7 @@ export const LESSONS: Record<string, Lesson> = {
     q: "Demand (12) exceeds supply (4). The protected level goes…",
     options: ["negative", "to zero and stops draining", "low but positive", "unbounded"],
     answer: 2,
-    explain: "The effect-of-level fades near empty, so draining can't pull the stock negative — it settles low but positive (~8).",
+    explain: "The effect-of-level fades near empty, so draining can't pull the stock negative: it settles low but positive (~8).",
     preset: { inflow: 4, desiredOut: 12, protectBelow: 25 },
   },
   protFlow: {
@@ -215,14 +215,14 @@ export const LESSONS: Record<string, Lesson> = {
     q: "You starve production below demand. Delivery becomes gated by…",
     options: ["shipping policy", "inventory / production", "the order rate", "nothing"],
     answer: 1,
-    explain: "Low inventory throttles shipping — so production, not shipping policy, now limits delivery while the backlog swells.",
+    explain: "Low inventory throttles shipping, so production, not shipping policy, now limits delivery while the backlog swells.",
     preset: { orders: 12, shipTime: 2, producing: 5, protectInv: 60 },
   },
   seaAnchor: {
     q: "Pressure held at 1.2 with no fundamental anchor. The value…",
     options: ["returns to the start", "settles a bit higher", "drifts up without bound", "falls"],
     answer: 2,
-    explain: "The anchor chases the value it produces, which lifts the value again — self-fulfilling runaway drift.",
+    explain: "The anchor chases the value it produces, which lifts the value again: self-fulfilling runaway drift.",
     preset: { pressure: 1.2, timeToChange: 6 },
   },
   protectedSeaAnchor: {
@@ -236,7 +236,7 @@ export const LESSONS: Record<string, Lesson> = {
     q: "Market pressure jumps to 1.4 (reference 10). The price moves…",
     options: ["instantly to 14", "gradually toward 14", "stays at 10", "down to 4"],
     answer: 1,
-    explain: "Price is sticky — a smooth toward indicated = reference × pressure, easing up over the adjustment time.",
+    explain: "Price is sticky: a smooth toward indicated = reference × pressure, easing up over the adjustment time.",
     preset: { refPrice: 10, pressure: 1.4, tau: 4 },
   },
   multiSplit: {
@@ -257,21 +257,21 @@ export const LESSONS: Record<string, Lesson> = {
     q: "Push overtime to 1.4× and hold it. Output per worker eventually becomes…",
     options: ["1.4× normal", "above normal", "below normal", "unchanged"],
     answer: 2,
-    explain: "Fatigue builds and erodes productivity: 1.4 × 0.6 ≈ 0.84 — below normal. The crunch backfires.",
+    explain: "Fatigue builds and erodes productivity: 1.4 × 0.6 ≈ 0.84, below normal. The crunch backfires.",
     preset: { overtime: 1.4, timeToFatigue: 4, workforce: 20, normalPDY: 5 },
   },
   reworkCycle: {
     q: "Lower quality to 0.6. The total time to finish the project…",
     options: ["gets shorter", "is unchanged", "gets much longer", "never finishes"],
     answer: 2,
-    explain: "More undiscovered rework recirculates — the '90% done' tail. All work still completes, but far later.",
+    explain: "More undiscovered rework recirculates: the '90% done' tail. All work still completes, but far later.",
     preset: { capacity: 90, quality: 0.6, discoverTime: 5 },
   },
   estCompletion: {
     q: "Scope creep arrives as fast as you work. The completion date…",
     options: ["arrives sooner", "arrives on time", "never arrives", "is unaffected"],
     answer: 2,
-    explain: "Work remaining holds flat, so the estimated duration is stuck — the deadline recedes as fast as you advance.",
+    explain: "Work remaining holds flat, so the estimated duration is stuck: the deadline recedes as fast as you advance.",
     preset: { workRate: 30, scopeCreep: 30 },
   },
   doingWork: {

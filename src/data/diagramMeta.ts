@@ -8,9 +8,9 @@ import { FLOW_META_D, DIAGRAM_EXTRA_D } from "@/data/extra/batchD";
 //   FLOW_META[modelId][flowId] = { name, eq, in, loop? }
 //     name : flow variable name shown at the valve
 //     eq   : human-readable rate equation (matches molecules.ts rates())
-//     in   : determinant ids — params (→ constant nodes) and stocks (→ feedback arrows)
-//     loop : if this flow closes a feedback loop with a stock, its polarity (B/R)
-//   DIAGRAM_EXTRA[modelId] = { stocks:[name,eq][], aux?:[name,eq][] }  — for the equation panel
+//     in   : determinant ids, params (→ constant nodes) and stocks (→ feedback arrows)
+//     loop , if this flow closes a feedback loop with a stock, its polarity (B/R)
+//   DIAGRAM_EXTRA[modelId] = { stocks:[name,eq][], aux?:[name,eq][] }, for the equation panel
 
 //     loop may also be keyed by stock id when one flow closes loops of different polarity
 export type FlowMeta = { name: string; eq: string; in: string[]; loop?: "B" | "R" | Record<string, "B" | "R"> };
@@ -250,7 +250,7 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   smooth: {
     stocks: [
       ["Perceived₁", "INTEG(adjust(1st), 30) = SMOOTH(Input, τ)"],
-      ["Perceived₃", "SMOOTH3(Input, τ) — three τ/3 stages"],
+      ["Perceived₃", "SMOOTH3(Input, τ): three τ/3 stages"],
     ],
     aux: [["Input", "step to 'Input level' (the signal being tracked)"]],
   },
@@ -264,7 +264,7 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   },
   trend: {
     stocks: [
-      ["Actual", "INTEG(growth, 100) — grows at g %/mo"],
+      ["Actual", "INTEG(growth, 100): grows at g %/mo"],
       ["Perceived", "INTEG(perception, 100) = SMOOTH(Actual, τ_p)"],
     ],
     aux: [

@@ -1,4 +1,4 @@
-// Batch A — additional molecules from Hines, "Molecules of Structure".
+// Batch A: additional molecules from Hines, "Molecules of Structure".
 // Same shapes as molecules.ts / diagramMeta.ts / lessons.ts / presets.ts; merged by the catalog.
 import type { Model } from "@/data/molecules";
 import type { FlowMeta } from "@/data/diagramMeta";
@@ -7,7 +7,7 @@ import type { Preset } from "@/data/presets";
 
 const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" }; // same series palette as molecules.ts
 
-const DT = 0.1; // engine step — used only to stop a flow emptying a stock past zero
+const DT = 0.1; // engine step: used only to stop a flow emptying a stock past zero
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // ---- illustrative "user defined functions" (all pass through the neutral point) ----
@@ -68,24 +68,24 @@ export const MODELS_A: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 242, y: 160 }],
       caption:
-        '<span class="chip chipB">B1</span> The action is the current value divided by the time allowed. On its own the formula has no stock and no behavior; wire the action back as the <b>outflow</b> of the value it reads and you get a balancing loop — the action shrinks as the value shrinks, so the value approaches zero but never arrives on schedule.',
+        '<span class="chip chipB">B1</span> The action is the current value divided by the time allowed. On its own the formula has no stock and no behavior; wire the action back as the <b>outflow</b> of the value it reads and you get a balancing loop: the action shrinks as the value shrinks, so the value approaches zero but never arrives on schedule.',
     },
-    desc: `<p>Go To Zero is the smallest molecule in Hines' collection and has no parents: to drive a quantity to zero over a given time, act at a rate equal to the <b>quantity divided by that time</b>. If the action stayed constant the quantity would hit zero exactly on schedule (the orange stock). Usually it does not stay constant — the action itself lowers the current value, so the action keeps shrinking and the quantity only approaches zero (the blue stock).</p>
+    desc: `<p>Go To Zero is the smallest molecule in Hines' collection and has no parents: to drive a quantity to zero over a given time, act at a rate equal to the <b>quantity divided by that time</b>. If the action stayed constant the quantity would hit zero exactly on schedule (the orange stock). Usually it does not stay constant: the action itself lowers the current value, so the action keeps shrinking and the quantity only approaches zero (the blue stock).</p>
     <div class="eq">ActionToGoToZero = CurrentValue / timeToGoToZero</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it whenever you need a <b>flow that empties something</b>: the outflow of a decay or a material delay, or the desired shipping rate that would clear a backlog. Keep the time strictly positive — if <code>timeToGoToZero</code> is a variable, make sure it can never reach zero. Add <b>Replenishment</b> here and the same action holds the value at <code>inflow × time</code> — which is the Residence Time molecule.</div>
+    Use it whenever you need a <b>flow that empties something</b>: the outflow of a decay or a material delay, or the desired shipping rate that would clear a backlog. Keep the time strictly positive, if <code>timeToGoToZero</code> is a variable, make sure it can never reach zero. Add <b>Replenishment</b> here and the same action holds the value at <code>inflow × time</code>, which is the Residence Time molecule.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — the treatment rate needed to clear a waiting list within a target time.</li>
-      <li><b>Sustainability</b> — the write-off rate that retires a stock of obsolete equipment over its remaining life.</li>
-      <li><b>Operations</b> — desired shipping = backlog ÷ target delivery delay.</li>
+      <li><b>Healthcare</b>: the treatment rate needed to clear a waiting list within a target time.</li>
+      <li><b>Sustainability</b>: the write-off rate that retires a stock of obsolete equipment over its remaining life.</li>
+      <li><b>Operations</b>: desired shipping = backlog ÷ target delivery delay.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Current value 100 widgets, time to go to zero 5 months ⇒ action = <code>100 / 5 = 20 widgets/mo</code>. Held constant at 20, the orange stock is empty at exactly month 5. Recomputed as the value falls, the blue stock still holds about <b>37</b> at month 5 and about 5 at month 15 (three time constants). Set Replenishment to 8/mo and the blue stock settles where the action equals the inflow: <code>8 × 5 = 40</code>.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Go To Zero.</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i> — first-order linear negative feedback and exponential decay.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Go To Zero.</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, first-order linear negative feedback and exponential decay.</li>
     </ul>`,
   },
 
@@ -138,24 +138,24 @@ export const MODELS_A: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 285, y: 95 }],
       caption:
-        '<span class="chip chipB">B1</span> A gap between desired and actual level raises stocking, which raises the level and closes the gap. The <b>replacement</b> link is not part of the loop — it simply cancels the outflow, so the loop only has to deal with the gap. Remove it and the stock settles permanently short of its goal.',
+        '<span class="chip chipB">B1</span> A gap between desired and actual level raises stocking, which raises the level and closes the gap. The <b>replacement</b> link is not part of the loop: it simply cancels the outflow, so the loop only has to deal with the gap. Remove it and the stock settles permanently short of its goal.',
     },
-    desc: `<p>The heart of this molecule is the <b>stocking decision</b>, which has two parts. First, order whatever is being used up (<i>StockingForReplacement</i>) — that alone keeps the level where it is. Second, order a bit more or a bit less to move the level to its desired value (<i>StockingToAdjustLevelToDesired</i>), in the usual goal-gap way. Structurally it is a smooth with one piece added to take care of the outflow, and it behaves like a smooth whatever the outflow is.</p>
+    desc: `<p>The heart of this molecule is the <b>stocking decision</b>, which has two parts. First, order whatever is being used up (<i>StockingForReplacement</i>), that alone keeps the level where it is. Second, order a bit more or a bit less to move the level to its desired value (<i>StockingToAdjustLevelToDesired</i>), in the usual goal-gap way. Structurally it is a smooth with one piece added to take care of the outflow, and it behaves like a smooth whatever the outflow is.</p>
     <div class="eq">Stocking = (DesiredLevel − Level) / AdjustmentTime + outFlow</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it when a decision maker tops up a stock that is continuously drained and <b>supply is immediate</b> (off-the-shelf purchasing, cash transfers, staffing from a ready pool). If what you order arrives only after a delay you must also account for the supply pipeline — see the pipeline-correction molecules. Slide <b>Replacement fraction</b> below 1 to see why the replacement term matters: the level then rests below its goal by <code>(1 − fraction) × outFlow × AdjustmentTime</code>.</div>
+    Use it when a decision maker tops up a stock that is continuously drained and <b>supply is immediate</b> (off-the-shelf purchasing, cash transfers, staffing from a ready pool). If what you order arrives only after a delay you must also account for the supply pipeline: see the pipeline-correction molecules. Slide <b>Replacement fraction</b> below 1 to see why the replacement term matters: the level then rests below its goal by <code>(1 − fraction) × outFlow × AdjustmentTime</code>.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — a ward restocking consumables from the hospital store: replace what was used, plus a correction toward par level.</li>
-      <li><b>Sustainability</b> — topping up a reservoir or strategic reserve against a steady draw.</li>
-      <li><b>Business</b> — purchasing to hold a finished-goods inventory against shipments.</li>
+      <li><b>Healthcare</b>: a ward restocking consumables from the hospital store: replace what was used, plus a correction toward par level.</li>
+      <li><b>Sustainability</b>: topping up a reservoir or strategic reserve against a steady draw.</li>
+      <li><b>Business</b>: purchasing to hold a finished-goods inventory against shipments.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Level 40, desired 100, adjustment time 4 months, outflow 10/mo. Gap = 60, so stocking = <code>60/4 + 10 = 25/mo</code> and the level rises at a net 15/mo. The gap decays like a smooth: about 22 left after 4 months (level ≈ 78) and about 3 after 12 months (level ≈ 97). Now set Replacement fraction to 0: stocking is only <code>gap/4</code>, which balances the 10/mo outflow at a gap of 40 — the level stalls at <b>60</b>.</div>
+    Level 40, desired 100, adjustment time 4 months, outflow 10/mo. Gap = 60, so stocking = <code>60/4 + 10 = 25/mo</code> and the level rises at a net 15/mo. The gap decays like a smooth: about 22 left after 4 months (level ≈ 78) and about 3 after 12 months (level ≈ 97). Now set Replacement fraction to 0: stocking is only <code>gap/4</code>, which balances the 10/mo outflow at a gap of 40: the level stalls at <b>60</b>.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — First-Order Stock Adjustment.</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 17 — the stock-management structure.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, First-Order Stock Adjustment.</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 17: the stock-management structure.</li>
     </ul>`,
   },
 
@@ -229,20 +229,20 @@ export const MODELS_A: Record<string, Model> = {
     desc: `<p>As in First-Order Stock Adjustment, ordering replaces what is shipped and corrects the inventory gap. This molecule adds the hidden part of inventory: product that has been ordered but has <b>not yet been received</b>. The decision maker has no view of the supplier's process, so the pipeline is tracked as a simple count, and the delivery delay is <i>calculated</i> from that count and the current receiving rate. In steady state the orders not received equal the ordering rate times the time it takes to receive them.</p>
     <div class="eq">Ordering = MAX(0, ReplacementOrdering + inventoryCorrection + correctionForOrdersInPipeline)<br/>correctionForOrdersInPipeline = (ForecastedDemand × CalculatedDeliveryDelay − OrdersNotReceived) × Awareness / TimeToCorrectOrderPipeline<br/>CalculatedDeliveryDelay = OrdersNotReceived / OrdersBeingFulfilled</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it for a buyer who orders from an <b>outside supplier</b> and knows only what is outstanding — each stage of the Beer Game is largely this structure. The usual mistake is not keeping track of orders not received; represent it with a small <b>Awareness of pipeline</b> and the result is oscillation. If the decision maker can see the stages of the supply process, use High-Visibility Pipeline Correction (Stock Management in this app) instead.</div>
+    Use it for a buyer who orders from an <b>outside supplier</b> and knows only what is outstanding: each stage of the Beer Game is largely this structure. The usual mistake is not keeping track of orders not received; represent it with a small <b>Awareness of pipeline</b> and the result is oscillation. If the decision maker can see the stages of the supply process, use High-Visibility Pipeline Correction (Stock Management in this app) instead.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — a pharmacy ordering from a wholesaler: it knows its open purchase orders, not the wholesaler's stock or production.</li>
-      <li><b>Sustainability</b> — a utility ordering transformers or turbines from a manufacturer with an opaque order book.</li>
-      <li><b>Supply chain</b> — a retailer or distributor in the Beer Distribution Game.</li>
+      <li><b>Healthcare</b>: a pharmacy ordering from a wholesaler: it knows its open purchase orders, not the wholesaler's stock or production.</li>
+      <li><b>Sustainability</b>: a utility ordering transformers or turbines from a manufacturer with an opaque order book.</li>
+      <li><b>Supply chain</b>: a retailer or distributor in the Beer Distribution Game.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Shipping 10 cases/wk and a supplier that takes 6 wk ⇒ the pipeline should hold <code>10 × 6 = 60</code> cases, which is where Orders Not Received starts. Inventory starts at 60 against a desired 100 (fixed here), so the first order is <code>10 + (100 − 60)/4 + 0 = 20 cases/wk</code>. With awareness = 1 the pipeline bulges to about 84 cases and the inventory climbs to 100 <b>without overshooting</b>. Set awareness to 0 and the pipeline swells to about 98, the inventory overshoots to about 117, and both keep swinging for the rest of the run. Either way the pipeline heads back to 60.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Low-Visibility Pipeline Correction.</li>
-      <li>Sterman, J. D. (1989). "Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment." <i>Management Science</i> 35(3): 321–339.</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 17 — supply-line adjustment.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Low-Visibility Pipeline Correction.</li>
+      <li>Sterman, J. D. (1989). "Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment." <i>Management Science</i> 35(3): 321-339.</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 17: supply-line adjustment.</li>
     </ul>`,
   },
 
@@ -309,18 +309,18 @@ export const MODELS_A: Record<string, Model> = {
     desc: `<p>This molecule modifies the regular coflow by adding a <b>steady accumulation of experience</b> as time goes by. Hines gives two equivalent versions. The traditional one carries a stock of total experience and divides by the workforce (that is the app's Coflow entry). The <b>Hines version</b> shown here holds the <i>average</i> directly as a stock: it rises by one year per year and is pulled toward the new hires' experience over the dilution time. The average can then feed an effect on productivity or quality.</p>
     <div class="eq">Average experience = INTEG(Change in average experience + rate of experience gain)<br/>Change in average experience = (avg experience of new hire − Average experience) / (Workforce / hiring)</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it when the <b>experience mix</b> of a workforce drives results and the workforce is growing, shrinking or turning over. It answers the question traditional headcount models miss: how green is the team right now? Note what attrition does not do here — leavers are assumed to carry out the average, so only hiring and the passage of time move the average.</div>
+    Use it when the <b>experience mix</b> of a workforce drives results and the workforce is growing, shrinking or turning over. It answers the question traditional headcount models miss: how green is the team right now? Note what attrition does not do here, leavers are assumed to carry out the average, so only hiring and the passage of time move the average.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — average clinical experience on a ward during a rapid recruitment drive.</li>
-      <li><b>Sustainability</b> — skill base of an installer workforce (heat pumps, solar) scaling up quickly.</li>
-      <li><b>Business</b> — a start-up doubling its engineering team; a firm facing a retirement wave.</li>
+      <li><b>Healthcare</b>: average clinical experience on a ward during a rapid recruitment drive.</li>
+      <li><b>Sustainability</b>: skill base of an installer workforce (heat pumps, solar) scaling up quickly.</li>
+      <li><b>Business</b>: a start-up doubling its engineering team; a firm facing a retirement wave.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Start in the equilibrium for hiring 10/yr and an 8-year stay: workforce <code>10 × 8 = 80</code>, average experience <code>0 + 8 = 8</code> years. Now hire 20 rookies a year. Dilution time is <code>80 / 20 = 4</code> years, so the average first falls at <code>1 − 8/4 = −1</code> year per year. It bottoms out near 6.1 years around year 6, then recovers as the workforce grows toward 160 and the dilution time lengthens to 8 years — ending back at <b>8 years</b>. In equilibrium the average is new-hire experience plus the time people stay, whatever the hiring rate.</div>
+    Start in the equilibrium for hiring 10/yr and an 8-year stay: workforce <code>10 × 8 = 80</code>, average experience <code>0 + 8 = 8</code> years. Now hire 20 rookies a year. Dilution time is <code>80 / 20 = 4</code> years, so the average first falls at <code>1 − 8/4 = −1</code> year per year. It bottoms out near 6.1 years around year 6, then recovers as the workforce grows toward 160 and the dilution time lengthens to 8 years: ending back at <b>8 years</b>. In equilibrium the average is new-hire experience plus the time people stay, whatever the hiring rate.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Coflow with Experience (Traditional and Hines versions).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Coflow with Experience (Traditional and Hines versions).</li>
       <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 12 "Coflows and Aging Chains".</li>
     </ul>`,
   },
@@ -373,22 +373,22 @@ export const MODELS_A: Record<string, Model> = {
       caption:
         'No loops and no stocks in the molecule itself: a <b>pressure</b> (current ÷ normal) is passed through a user-defined function that contains the point (1, 1), and the result multiplies the <b>anchor</b>. The link from pressure to adjustment is drawn positive; a negative <b>adjustment strength</b> reverses it.',
     },
-    desc: `<p>Anchoring and adjustment is a common judgmental strategy. Rather than solving a problem from scratch, people take a known quantity — the <b>anchor</b> — and adjust it for new information. Hines' example: I do not know the distance from London to Hamburg, but I know London to Berlin, and Hamburg is closer, so I adjust that figure down "a bit". In the structure, the anchor is multiplied by the effect of one piece of information, and that effect has a neutral value of 1. The function used here is <code>pressure<sup>strength</sup></code>, which passes through (1, 1) for any strength.</p>
+    desc: `<p>Anchoring and adjustment is a common judgmental strategy. Rather than solving a problem from scratch, people take a known quantity: the <b>anchor</b>, and adjust it for new information. Hines' example: I do not know the distance from London to Hamburg, but I know London to Berlin, and Hamburg is closer, so I adjust that figure down "a bit". In the structure, the anchor is multiplied by the effect of one piece of information, and that effect has a neutral value of 1. The function used here is <code>pressure<sup>strength</sup></code>, which passes through (1, 1) for any strength.</p>
     <div class="eq">value = Adjustment × anchor;&nbsp; Adjustment = f(PressureToAdjustAwayFromTheAnchor)&nbsp; [f(1) = 1]<br/>Pressure = currentValueOfSomeVariable / normalValueOfSomeVariable</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it to model how someone judges an "appropriate" value, and as a practical way to write a function whose <b>equilibrium is easy to change</b>: at normal conditions the value simply equals the anchor. People using this heuristic in the real world often <b>fail to adjust enough</b> — an adjustment strength below 1 reproduces that.</div>
+    Use it to model how someone judges an "appropriate" value, and as a practical way to write a function whose <b>equilibrium is easy to change</b>: at normal conditions the value simply equals the anchor. People using this heuristic in the real world often <b>fail to adjust enough</b>: an adjustment strength below 1 reproduces that.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — planned staffing = normal staffing adjusted for today's occupancy relative to normal.</li>
-      <li><b>Sustainability</b> — household energy use = usual use adjusted for price relative to the customary price.</li>
-      <li><b>Business</b> — this year's budget = last year's, nudged for sales relative to plan.</li>
+      <li><b>Healthcare</b>: planned staffing = normal staffing adjusted for today's occupancy relative to normal.</li>
+      <li><b>Sustainability</b>: household energy use = usual use adjusted for price relative to the customary price.</li>
+      <li><b>Business</b>: this year's budget = last year's, nudged for sales relative to plan.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Anchor 100, current value 150, normal value 100 ⇒ pressure = 1.5. With strength 0.5 the adjustment is <code>1.5<sup>0.5</sup> ≈ 1.22</code>, so value ≈ <b>122</b> — well short of the 150 a fully proportional adjustment (strength 1) would give. The molecule has no stocks and no dynamics; in this demo the blue "Value in use" starts at 100 and follows the orange algebraic value with a 2-week lag purely so you can watch the adjustment happen.</div>
+    Anchor 100, current value 150, normal value 100 ⇒ pressure = 1.5. With strength 0.5 the adjustment is <code>1.5<sup>0.5</sup> ≈ 1.22</code>, so value ≈ <b>122</b>: well short of the 150 a fully proportional adjustment (strength 1) would give. The molecule has no stocks and no dynamics; in this demo the blue "Value in use" starts at 100 and follows the orange algebraic value with a 2-week lag purely so you can watch the adjustment happen.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Univariate Anchoring and Adjustment.</li>
-      <li>Tversky, A. &amp; Kahneman, D. (1974). "Judgment under uncertainty: heuristics and biases." <i>Science</i> 185: 1124–1131 — anchoring &amp; adjustment.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Univariate Anchoring and Adjustment.</li>
+      <li>Tversky, A. &amp; Kahneman, D. (1974). "Judgment under uncertainty: heuristics and biases." <i>Science</i> 185: 1124-1131, anchoring &amp; adjustment.</li>
       <li>Hogarth, R. M. (1987). <i>Judgement and Choice</i> (2nd ed.). Wiley.</li>
     </ul>`,
   },
@@ -447,19 +447,19 @@ export const MODELS_A: Record<string, Model> = {
     desc: `<p>The multivariate version adjusts one anchor for <b>several factors at once</b>. Hines' example is judging how long a paper will take: start from the usual one week, lengthen it 10% for being tired, shorten it 15% because the subject is familiar, and so on. A normal (or maximum, or minimum) value is multiplied by a series of effects, each with a neutral value of 1. The formulation exists because early simulation languages offered single-input table functions only; a product of one-input functions is easy to picture and easy to explain. The three functions here are <code>√p₁</code>, <code>1/√p₂</code> and <code>p₃</code>.</p>
     <div class="eq">value = Anchor × Adjustment #1 × Adjustment #2 × Adjustment #3<br/>Adjustment #i = f<sub>i</sub>(currentValue #i / normalValue #i)&nbsp; [f<sub>i</sub>(1) = 1]</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it for any rate or judgment that is a <b>function of many things</b> — productivity, quality, birth and death rates, desired price. It is the parent of the Productivity, Quality and Sea Anchor molecules. One caution from Hines: modelers tend to <b>over-estimate the strength of the effects</b> when first setting them, and because effects multiply, several modest ones compound into a large swing.</div>
+    Use it for any rate or judgment that is a <b>function of many things</b>: productivity, quality, birth and death rates, desired price. It is the parent of the Productivity, Quality and Sea Anchor molecules. One caution from Hines: modelers tend to <b>over-estimate the strength of the effects</b> when first setting them, and because effects multiply, several modest ones compound into a large swing.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — length of stay = normal stay × effect of occupancy × effect of staffing × effect of case mix.</li>
-      <li><b>Sustainability</b> — the birth and death rates in Forrester's World Dynamics, each a normal rate times effects of food, crowding, pollution and material standard of living.</li>
-      <li><b>Projects</b> — productivity = normal productivity × effects of fatigue, schedule pressure and skill.</li>
+      <li><b>Healthcare</b>: length of stay = normal stay × effect of occupancy × effect of staffing × effect of case mix.</li>
+      <li><b>Sustainability</b>: the birth and death rates in Forrester's World Dynamics, each a normal rate times effects of food, crowding, pollution and material standard of living.</li>
+      <li><b>Projects</b>: productivity = normal productivity × effects of fatigue, schedule pressure and skill.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Anchor 100; pressure #1 = 2.25 gives adjustment <code>√2.25 = 1.5</code>; pressure #2 = 1 gives 1; pressure #3 = 1.2 gives 1.2. Value = <code>100 × 1.5 × 1 × 1.2 = 180</code>. Raise pressure #2 to 4 and its adjustment halves (<code>1/√4 = 0.5</code>), bringing the value to 90. As in the univariate demo, the blue "Value in use" lags the orange algebraic value by 2 weeks only to make the change visible.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Multivariate Anchoring and Adjustment.</li>
-      <li>Forrester, J. W. (1971). <i>World Dynamics</i>. Wright-Allen Press — multiplicative effects on birth and death rates.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Multivariate Anchoring and Adjustment.</li>
+      <li>Forrester, J. W. (1971). <i>World Dynamics</i>. Wright-Allen Press: multiplicative effects on birth and death rates.</li>
       <li>Hogarth, R. M. (1987). <i>Judgement and Choice</i> (2nd ed.). Wiley.</li>
     </ul>`,
   },
@@ -528,23 +528,23 @@ export const MODELS_A: Record<string, Model> = {
       caption:
         'Quality is <b>normal quality × four effects</b>, each equal to 1 under normal conditions, limited to at most 1. Fatigue and schedule pressure lower it; adequate work and skill raise it. It splits the work being done into the part done correctly and the part done with flaws. There are no levels in the molecule, so no endogenous dynamics.',
     },
-    desc: `<p>In project models, <b>quality</b> is defined as the fraction of work that is being done correctly; productivity — the speed at which work gets done, correct or not — is defined separately. Quality is a multivariate anchoring-and-adjustment: a normal value multiplied by illustrative but common effects of fatigue, schedule pressure, work adequacy and average skill. The same things usually affect productivity too, through different functions: schedule pressure makes people work <i>faster</i> (positive slope for productivity) and make <i>more mistakes</i> (negative slope for quality).</p>
+    desc: `<p>In project models, <b>quality</b> is defined as the fraction of work that is being done correctly; productivity, the speed at which work gets done, correct or not, is defined separately. Quality is a multivariate anchoring-and-adjustment: a normal value multiplied by illustrative but common effects of fatigue, schedule pressure, work adequacy and average skill. The same things usually affect productivity too, through different functions: schedule pressure makes people work <i>faster</i> (positive slope for productivity) and make <i>more mistakes</i> (negative slope for quality).</p>
     <div class="eq">Quality = MIN(1, NormalQuality × EffectOfFatigue × EffectOfSchedulePressure × EffectOfWorkAdequacy × EffectAverageSkill)</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it wherever a share of output is defective and that share responds to working conditions — it is the input that drives the Rework Cycle. Quality must stay between 0 and 1. Table functions seldom go below zero but may go above one, so the product can exceed 1; the <b>MIN</b> in the equation is the standard guard.</div>
+    Use it wherever a share of output is defective and that share responds to working conditions: it is the input that drives the Rework Cycle. Quality must stay between 0 and 1. Table functions seldom go below zero but may go above one, so the product can exceed 1; the <b>MIN</b> in the equation is the standard guard.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — the fraction of procedures completed without error, falling with long shifts and a rushed list.</li>
-      <li><b>Sustainability</b> — the share of building retrofits installed to specification by a hurried, newly trained workforce.</li>
-      <li><b>Projects</b> — error-free design or code as a share of work done during a deadline crunch.</li>
+      <li><b>Healthcare</b>: the fraction of procedures completed without error, falling with long shifts and a rushed list.</li>
+      <li><b>Sustainability</b>: the share of building retrofits installed to specification by a hurried, newly trained workforce.</li>
+      <li><b>Projects</b>: error-free design or code as a share of work done during a deadline crunch.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     A 400-task job is worked at 10 tasks/wk, so it takes 40 weeks. Normal quality 0.9; fatigue 1.25 gives an effect of <code>1 − 0.4 × 0.25 = 0.90</code>; schedule pressure 1.5 gives <code>1 − 0.3 × 0.5 = 0.85</code>; adequacy and skill are normal (1). Quality = <code>0.9 × 0.90 × 0.85 ≈ 0.69</code>, so about <b>275</b> tasks end up done correctly and about <b>125</b> carry flaws. Return fatigue and pressure to 1 and only 40 are flawed.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Quality.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Quality.</li>
       <li>Abdel-Hamid, T. &amp; Madnick, S. E. (1991). <i>Software Project Dynamics: An Integrated Approach</i>. Prentice Hall.</li>
-      <li>Lyneis, J. M. &amp; Ford, D. N. (2007). "System dynamics applied to project management: a survey, assessment, and directions for future research." <i>System Dynamics Review</i> 23(2–3): 157–189.</li>
+      <li>Lyneis, J. M. &amp; Ford, D. N. (2007). "System dynamics applied to project management: a survey, assessment, and directions for future research." <i>System Dynamics Review</i> 23(2-3): 157-189.</li>
     </ul>`,
   },
 };
@@ -694,7 +694,7 @@ export const LESSONS_A: Record<string, Lesson> = {
     preset: { tau: 5, inflow: 0 },
   },
   stockAdjust: {
-    q: "Outflow 10/mo, desired level 100, adjustment time 4 mo — but nobody orders replacement (replacement fraction 0). The level settles at…",
+    q: "Outflow 10/mo, desired level 100, adjustment time 4 mo, but nobody orders replacement (replacement fraction 0). The level settles at…",
     options: ["100", "60", "40", "0"],
     answer: 1,
     explain: "Without the replacement term, stocking = gap/4 must cover the whole 10/mo outflow, which takes a standing gap of 10 × 4 = 40. The level rests at 100 − 40 = 60. Ordering what is used up removes that steady-state error.",
@@ -704,7 +704,7 @@ export const LESSONS_A: Record<string, Lesson> = {
     q: "Shipping is 10 cases/wk and the supplier takes 6 wk to deliver. Once things settle, Orders Not Received holds…",
     options: ["0 cases", "10 cases", "60 cases", "100 cases"],
     answer: 2,
-    explain: "In steady state the pipeline equals the ordering rate times the time it takes to receive orders: 10 × 6 = 60 cases. This inventory-on-the-way is never zero — the piece most Beer Game players forget to track.",
+    explain: "In steady state the pipeline equals the ordering rate times the time it takes to receive orders: 10 × 6 = 60 cases. This inventory-on-the-way is never zero: the piece most Beer Game players forget to track.",
     preset: { ship: 10, tInv: 4, tPipe: 4, delay: 6, aware: 1 },
   },
   coflowExperience: {
@@ -718,7 +718,7 @@ export const LESSONS_A: Record<string, Lesson> = {
     q: "Anchor 100. The variable is at 4× its normal value (200 vs 50) and the adjustment function is the square root of the pressure. The value is…",
     options: ["100", "200", "400", "50"],
     answer: 1,
-    explain: "Pressure = 200/50 = 4, adjustment = √4 = 2, value = 2 × 100 = 200. A fully proportional adjustment would have given 400 — a strength below 1 is the classic under-adjustment from the anchor.",
+    explain: "Pressure = 200/50 = 4, adjustment = √4 = 2, value = 2 × 100 = 200. A fully proportional adjustment would have given 400: a strength below 1 is the classic under-adjustment from the anchor.",
     preset: { anchor: 100, current: 200, normal: 50, strength: 0.5 },
   },
   multivariateAnchor: {
@@ -732,7 +732,7 @@ export const LESSONS_A: Record<string, Lesson> = {
     q: "Normal quality is 0.95. A rested, unhurried team earns effects of 1.1 (fatigue) and 1.1 (schedule pressure); the other effects are 1. Quality is…",
     options: ["1.15", "1.00", "0.95", "0.86"],
     answer: 1,
-    explain: "The product is 0.95 × 1.1 × 1.1 ≈ 1.15, but quality is a fraction of work done correctly and cannot exceed 1 — the MIN function caps it at 1.00, so no flawed work accumulates.",
+    explain: "The product is 0.95 × 1.1 × 1.1 ≈ 1.15, but quality is a fraction of work done correctly and cannot exceed 1: the MIN function caps it at 1.00, so no flawed work accumulates.",
     preset: { normalQ: 0.95, fatigue: 0.5, sched: 0.5, adequacy: 1, skill: 1 },
   },
 };

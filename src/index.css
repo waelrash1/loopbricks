@@ -1,27 +1,42 @@
-@import "./themes.css";
+/* latin subsets only: the copy is English */
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-400-italic.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans-condensed/latin-500.css";
+@import "@fontsource/ibm-plex-sans-condensed/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground font-sans antialiased; }
-  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) {
-    * { transition-duration: 0.01ms !important; }
-  }
-}
-
-/* type roles — family, weight and tracking all come from the active theme */
-@layer components {
-  .display { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); line-height: 1.05; color: hsl(var(--heading)); }
-  .display em { font-style: var(--em-style); }
-  .heading { font-family: var(--font-heading); font-weight: var(--heading-weight); letter-spacing: -0.015em; }
-  .hero-deco { background: var(--hero-deco); padding: var(--hero-pad); border-radius: calc(var(--radius) + 12px); }
-}
-
-/* data colours stay the same in every theme: they carry meaning, not brand */
+/* One identity: drafting paper, ink, and a single brick yellow for "this is selected".
+   Chrome stays neutral because blue, orange, green and pink already mean something in the diagrams.
+   Colours are H S L triples so Tailwind opacity modifiers work. */
 :root {
+  --background: 180 4% 96%; /* #f4f5f5 paper */
+  --foreground: 216 11% 9%; /* #15171a ink */
+  --card: 60 9% 99%; /* #fcfcfb sheet, the lighter surface diagrams sit on */
+  --muted: 180 4% 92%; /* #eaecec */
+  --muted-foreground: 210 5% 36%; /* #575c60 */
+  --primary: 216 11% 9%;
+  --primary-foreground: 0 0% 100%;
+  --link: 216 11% 9%;
+  --secondary: 180 4% 92%;
+  --accent: 45 88% 57%; /* #f2c230 brick yellow */
+  --accent-foreground: 216 11% 9%;
+  --border: 180 4% 84%; /* #d4d8d8 rule */
+  --input: 200 4% 62%; /* #999fa2 control outline */
+  --ink: 216 11% 9%;
+  --heading: 216 11% 9%;
+  --ring: 216 11% 9%;
+  --radius: 2px; /* one corner for everything: bricks are nearly square */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* data colours: they carry meaning, not brand */
   --viz-acc: #2545ff; /* balancing loops, default series */
   --viz-acc2: #d9480f; /* reinforcing loops, feedback links */
   --viz-good: #0f8a5f; /* positive polarity, correct answer */
@@ -29,34 +44,56 @@
   --viz-info: #6b74a6;
 }
 
-/* diagram backdrop: drafting sheet with a dot grid */
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; font-size: 15px; }
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+  ::selection { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+@layer components {
+  .display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.015em; line-height: 1; }
+  .heading { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.005em; line-height: 1.15; }
+  /* text links are ink, so they need the underline to read as links */
+  .tlink { text-decoration: underline; text-decoration-color: hsl(var(--input)); text-underline-offset: 3px; }
+  .tlink:hover { text-decoration-color: currentColor; background: hsl(var(--accent)); }
+  /* a workbench section: a rule, a heading, then the thing itself. No boxes. */
+  .bench { border-top: 1px solid hsl(var(--foreground)); padding-top: 14px; }
+  .bench-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 14px; }
+}
+
+/* diagram backdrop: a sheet with a dot grid */
 .viz-stage {
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  background: hsl(var(--muted)) radial-gradient(circle, hsl(var(--input) / 0.7) 1px, transparent 1.2px) 0 0 / 24px 24px;
+  background: hsl(var(--card)) radial-gradient(circle, hsl(var(--input) / 0.55) 0.8px, transparent 1px) 0 0 / 20px 20px;
   padding: 8px;
 }
 
 /* authored explanation HTML */
-.prose-sd { line-height: 1.65; max-width: 74ch; }
+.prose-sd { line-height: 1.65; max-width: 70ch; font-size: 16px; }
 .prose-sd p { margin: 12px 0; }
-.prose-sd h4 { margin: 28px 0 6px; font-family: var(--font-heading); font-weight: var(--heading-weight); font-size: 18px; letter-spacing: -0.015em; color: hsl(var(--heading)); }
+.prose-sd h4 { margin: 32px 0 6px; font-family: var(--font-display); font-weight: 600; font-size: 20px; }
 .prose-sd h4:first-child { margin-top: 0; }
-.prose-sd ul { margin: 8px 0; padding-left: 22px; list-style: disc; }
+.prose-sd ul { margin: 8px 0; padding-left: 20px; list-style: square; }
 .prose-sd li { margin: 6px 0; }
-.prose-sd code, .cld-cap code { background: hsl(var(--accent)); padding: 1px 6px; border-radius: 6px; font-size: 0.875em; color: hsl(var(--accent-foreground)); }
-.prose-sd .eq { font-family: "SF Mono", ui-monospace, Menlo, monospace; background: hsl(var(--muted)); border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) * 0.75); padding: 12px 16px; font-size: 13.5px; color: hsl(var(--ink)); overflow-x: auto; margin: 12px 0; }
-.prose-sd .whenbox { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; }
-.prose-sd .worked { border: 1.5px solid hsl(var(--link)); border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; }
-.prose-sd .whenbox h4, .prose-sd .worked h4 { margin: 0 0 4px; }
-.prose-sd .whenbox h4 { color: inherit; }
+.prose-sd code, .cld-cap code { font-family: var(--font-mono); background: hsl(var(--muted)); padding: 1px 5px; border-radius: var(--radius); font-size: 0.875em; }
+.prose-sd .eq { font-family: var(--font-mono); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-left: 3px solid hsl(var(--foreground)); border-radius: var(--radius); padding: 12px 16px; font-size: 13.5px; overflow-x: auto; margin: 14px 0; }
+.prose-sd .whenbox { background: hsl(var(--accent) / 0.28); border-left: 3px solid hsl(var(--accent)); padding: 14px 18px; margin: 18px 0; }
+.prose-sd .worked { border: 1px solid hsl(var(--foreground)); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
+.prose-sd .whenbox h4, .prose-sd .worked h4 { margin: 0 0 4px; font-size: 17px; }
 .prose-sd .small { font-size: 13px; color: hsl(var(--muted-foreground)); }
-.prose-sd .refs { font-size: 13px; color: hsl(var(--muted-foreground)); padding-left: 20px; }
+.prose-sd .refs { font-size: 13.5px; color: hsl(var(--muted-foreground)); padding-left: 18px; }
 .prose-sd .refs li { margin: 4px 0; }
 
-.chip { display: inline-block; padding: 1px 8px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-right: 5px; }
-.chipB { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
-.chipR { background: #fde8dc; color: #9a3412; }
+/* B / R tags inside captions and prose: the same letters the diagrams use */
+.chip { display: inline-block; padding: 0 5px; border: 1px solid currentColor; border-radius: var(--radius); font-family: var(--font-mono); font-size: 11px; font-weight: 500; line-height: 16px; margin-right: 5px; }
+.chipB { color: var(--viz-acc); }
+.chipR { color: var(--viz-acc2); }
 
 /* quiz answer states (lesson panel) */
-.is-right { border-color: var(--viz-good); background: color-mix(in srgb, var(--viz-good) 9%, white); color: #0a5c40; }
+.is-right { border-color: var(--viz-good); background: color-mix(in srgb, var(--viz-good) 10%, white); color: #0a5c40; }
 .is-wrong { border-color: var(--viz-pink); background: color-mix(in srgb, var(--viz-pink) 8%, white); color: #8f1a43; }

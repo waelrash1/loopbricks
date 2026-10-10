@@ -5,9 +5,9 @@ import type { Vars } from "@/sim/engine";
 function Row({ lhs, rhs }: { lhs: string; rhs: string }) {
   return (
     <div className="flex gap-2 py-1 font-mono text-[13px] leading-snug">
-      <span className="text-ink font-medium shrink-0">{lhs}</span>
+      <span className="font-medium shrink-0">{lhs}</span>
       <span className="text-muted-foreground">=</span>
-      <span className="text-foreground">{rhs}</span>
+      <span className="text-foreground/80">{rhs}</span>
     </div>
   );
 }
@@ -18,7 +18,7 @@ export default function EquationsPanel({ model, modelKey, params }: { model: Mod
   const flows = model.diagram.flows.map((f) => meta[f.id]).filter(Boolean);
 
   return (
-    <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1">
+    <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
       <div>
         <div className="text-xs font-medium text-muted-foreground mb-1.5">Stocks, which accumulate</div>
         {extra.stocks.map(([l, r]) => (

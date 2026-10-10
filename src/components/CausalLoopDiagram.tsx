@@ -54,7 +54,7 @@ export default function CausalLoopDiagram({ model }: { model: Model }) {
           const b = boxes[v.id];
           return (
             <g key={v.id}>
-              <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={15} fill="hsl(var(--card))" stroke="hsl(var(--ink))" strokeWidth={1.2} />
+              <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={2} fill="hsl(var(--card))" stroke="hsl(var(--ink))" strokeWidth={1.2} />
               <text x={b.cx} y={b.cy + 4} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={13}>
                 {v.label}
               </text>

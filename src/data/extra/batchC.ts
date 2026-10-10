@@ -1,4 +1,4 @@
-// Batch C — Hines, "Molecules of Structure": the producing / project family.
+// Batch C: Hines, "Molecules of Structure": the producing / project family.
 // Ability from Action, Estimated Productivity, Desired Workforce from Workflow,
 // Level Protected by PDY, Building Inventory by Doing Work, Doing Work Cascade,
 // Cascade Protected by PDY.
@@ -55,23 +55,23 @@ export const MODELS_C: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 372, y: 87 }],
       caption:
-        'The molecule itself is one algebraic line with no stock and no loop: <b>Ability = Flow ÷ Resource</b>. More flow from the same resources means more ability; the same flow from more resources means less. <span class="chip chipB">B1</span> is only the measuring wrapper added here so there is something to watch — the measured figure closes its gap to the implied ability over the measuring time.',
+        'The molecule itself is one algebraic line with no stock and no loop: <b>Ability = Flow ÷ Resource</b>. More flow from the same resources means more ability; the same flow from more resources means less. <span class="chip chipB">B1</span> is only the measuring wrapper added here so there is something to watch: the measured figure closes its gap to the implied ability over the measuring time.',
     },
-    desc: `<p>Action from Resource says <code>flow = resource × ability</code>. Often you know the other two terms: you can count the resources and you can observe what they turn out. Rearranging gives the <b>ability</b> — the productivity each unit of resource must have. Hines lists this as a molecule in its own right because modellers reach for it constantly, usually to back out a productivity figure. The book version has <b>no stock</b>; here the result is fed through a short measuring delay so the tank has something to show.</p>
+    desc: `<p>Action from Resource says <code>flow = resource × ability</code>. Often you know the other two terms: you can count the resources and you can observe what they turn out. Rearranging gives the <b>ability</b>: the productivity each unit of resource must have. Hines lists this as a molecule in its own right because modellers reach for it constantly, usually to back out a productivity figure. The book version has <b>no stock</b>; here the result is fed through a short measuring delay so the tank has something to show.</p>
     <div class="eq">Ability = Flow / Resource</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it whenever a <b>productivity, yield or throughput-per-unit figure has to be inferred</b> from an observed flow rather than assumed: output per worker, litres per pump, cases per clinician. It is the first half of Estimated Productivity. Hines' one caveat: if the resource can fall to zero, protect the division.</div>
+    Use it whenever a <b>productivity, yield or throughput-per-unit figure has to be inferred</b> from an observed flow rather than assumed: output per worker, litres per pump, cases per clinician. It is the first half of Estimated Productivity. Hines' one caveat, if the resource can fall to zero, protect the division.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — discharges per month ÷ beds gives throughput per bed; consultations ÷ clinicians gives caseload per clinician.</li>
-      <li><b>Sustainability</b> — water delivered ÷ pumps in service; energy generated ÷ installed turbines.</li>
-      <li><b>Operations</b> — units shipped ÷ machines running; tasks closed ÷ engineers on the project.</li>
+      <li><b>Healthcare</b>: discharges per month ÷ beds gives throughput per bed; consultations ÷ clinicians gives caseload per clinician.</li>
+      <li><b>Sustainability</b>: water delivered ÷ pumps in service; energy generated ÷ installed turbines.</li>
+      <li><b>Operations</b>: units shipped ÷ machines running; tasks closed ÷ engineers on the project.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    A pumping station delivers 60 units/mo with 10 pumps, so ability = <code>60 ÷ 10 = 6</code> units per pump per month. The measured figure starts at 2 and closes the gap with a 2-month measuring time: about 4.6 after 2 months and 5.9 by month 8. Put 20 pumps on the same 60 units/mo and the implied ability halves to <b>3</b> — more resources for the same flow means each one is doing less.</div>
+    A pumping station delivers 60 units/mo with 10 pumps, so ability = <code>60 ÷ 10 = 6</code> units per pump per month. The measured figure starts at 2 and closes the gap with a 2-month measuring time: about 4.6 after 2 months and 5.9 by month 8. Put 20 pumps on the same 60 units/mo and the implied ability halves to <b>3</b>: more resources for the same flow means each one is doing less.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Ability from Action (a rearrangement of Action from Resource).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Ability from Action (a rearrangement of Action from Resource).</li>
     </ul>`,
   },
 
@@ -128,21 +128,21 @@ export const MODELS_C: Record<string, Model> = {
       caption:
         'Workforce appears twice: it <b>raises</b> the work accomplished and it is the <b>divisor</b> of the estimate, so the two paths cancel and headcount alone does not move estimated productivity. <span class="chip chipB">B1</span> Perceived productivity then closes its gap to the estimate over the perception time, as Hines suggests in his technical note.',
     },
-    desc: `<p>Combine Producing with Ability from Action and you get the estimate every project manager carries around: <b>estimated productivity = work being accomplished ÷ workforce</b>. Hines adds a warning in his technical note: real managers cannot know an instantaneous flow, so either the work flow or the resulting estimate should pass through a <b>smooth</b> before anyone acts on it. This version does the second — a perceived productivity that trails the raw estimate. The work comes from a finite stock of work to do, which exposes the estimate's blind spot: when the work runs out, output per head collapses even though nobody became less capable.</p>
+    desc: `<p>Combine Producing with Ability from Action and you get the estimate every project manager carries around: <b>estimated productivity = work being accomplished ÷ workforce</b>. Hines adds a warning in his technical note: real managers cannot know an instantaneous flow, so either the work flow or the resulting estimate should pass through a <b>smooth</b> before anyone acts on it. This version does the second: a perceived productivity that trails the raw estimate. The work comes from a finite stock of work to do, which exposes the estimate's blind spot, when the work runs out, output per head collapses even though nobody became less capable.</p>
     <div class="eq">EstimatedPDY = WorkBeingAccomplished / Workforce</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it wherever <b>a decision depends on believed productivity rather than true productivity</b> — staffing plans, completion forecasts, overtime decisions. Feed the perceived value into Desired Workforce from Workflow or Estimated Remaining Duration and the lag and bias of the estimate become part of the model's behaviour.</div>
+    Use it wherever <b>a decision depends on believed productivity rather than true productivity</b>: staffing plans, completion forecasts, overtime decisions. Feed the perceived value into Desired Workforce from Workflow or Estimated Remaining Duration and the lag and bias of the estimate become part of the model's behaviour.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — cases closed per clinician per month, used to set rosters; it dips when referrals dry up, not when skill falls.</li>
-      <li><b>Sustainability</b> — retrofits completed per installer crew, used to plan a programme's staffing.</li>
-      <li><b>Projects</b> — drawings or story points per engineer, read off the last few reporting periods.</li>
+      <li><b>Healthcare</b>: cases closed per clinician per month, used to set rosters; it dips when referrals dry up, not when skill falls.</li>
+      <li><b>Sustainability</b>: retrofits completed per installer crew, used to plan a programme's staffing.</li>
+      <li><b>Projects</b>: drawings or story points per engineer, read off the last few reporting periods.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    10 people at an actual productivity of 5 accomplish <code>10 × 5 = 50</code> widgets/mo, so the estimate is <code>50 ÷ 10 = 5</code>. Perceived productivity starts at 2 and, with a 3-month perception time, reaches about 3.9 after 3 months and 4.9 by month 12. The 1,500 widgets of work last <code>1500 ÷ 50 = 30</code> months; after that the accomplishing rate drops to zero, the estimate follows it, and perceived productivity decays back toward zero — idle people look unproductive.</div>
+    10 people at an actual productivity of 5 accomplish <code>10 × 5 = 50</code> widgets/mo, so the estimate is <code>50 ÷ 10 = 5</code>. Perceived productivity starts at 2 and, with a 3-month perception time, reaches about 3.9 after 3 months and 4.9 by month 12. The 1,500 widgets of work last <code>1500 ÷ 50 = 30</code> months; after that the accomplishing rate drops to zero, the estimate follows it, and perceived productivity decays back toward zero: idle people look unproductive.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Estimated Productivity (parents: Ability from Action, Producing).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Estimated Productivity (parents: Ability from Action, Producing).</li>
     </ul>`,
   },
 
@@ -188,7 +188,7 @@ export const MODELS_C: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 400, y: 132 }],
       caption:
-        'The molecule is the left half: <b>desired people = desired accomplishing rate ÷ productivity</b> — a higher required rate needs more people, higher productivity needs fewer. <span class="chip chipB">B1</span> is the Workforce molecule it normally feeds: hiring closes the gap between desired and actual headcount, so the workforce trails the target.',
+        'The molecule is the left half: <b>desired people = desired accomplishing rate ÷ productivity</b>: a higher required rate needs more people, higher productivity needs fewer. <span class="chip chipB">B1</span> is the Workforce molecule it normally feeds: hiring closes the gap between desired and actual headcount, so the workforce trails the target.',
     },
     desc: `<p>Producing answers "how much will these people accomplish?" This molecule asks the planner's question instead: <b>"how many people does this work flow need?"</b> The key input, Hines stresses, is the rate at which work must be accomplished to finish on time. Divide that by productivity (possibly a <i>perceived</i> productivity) and the required headcount drops out. On its own it has no stock; here the result drives a simple workforce adjustment so you can watch the consequences of the target moving.</p>
     <div class="eq">DesiredPeople = DesiredAccomplishingRate / productivity</div>
@@ -196,15 +196,15 @@ export const MODELS_C: Record<string, Model> = {
     Use it in almost any project or service model, wherever <b>staffing responds to workload</b>. Feed the desired accomplishing rate from work remaining ÷ time remaining, and use the result as the target of a Workforce molecule or, divided by the people you actually have, as the indicated overtime.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — nurses required = patient contacts needed per week ÷ contacts one nurse can deliver.</li>
-      <li><b>Sustainability</b> — installer crews required to hit an annual heat-pump target at the going installs-per-crew.</li>
-      <li><b>Projects</b> — engineers needed to clear the remaining drawings by the deadline.</li>
+      <li><b>Healthcare</b>: nurses required = patient contacts needed per week ÷ contacts one nurse can deliver.</li>
+      <li><b>Sustainability</b>: installer crews required to hit an annual heat-pump target at the going installs-per-crew.</li>
+      <li><b>Projects</b>: engineers needed to clear the remaining drawings by the deadline.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    The schedule calls for 120 tasks/wk and each person does 4 tasks/wk, so desired people = <code>120 ÷ 4 = 30</code>. Starting from 10 people with a 4-week adjustment time, the workforce reaches about 22.7 after 4 weeks and 29 by week 12. Raise productivity to 6 and the same work flow needs only <code>120 ÷ 6 = 20</code> people — which is why a wrong productivity belief translates directly into over- or under-staffing.</div>
+    The schedule calls for 120 tasks/wk and each person does 4 tasks/wk, so desired people = <code>120 ÷ 4 = 30</code>. Starting from 10 people with a 4-week adjustment time, the workforce reaches about 22.7 after 4 weeks and 29 by week 12. Raise productivity to 6 and the same work flow needs only <code>120 ÷ 6 = 20</code> people, which is why a wrong productivity belief translates directly into over- or under-staffing.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Desired Workforce from Workflow (used by the Overtime molecule).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Desired Workforce from Workflow (used by the Overtime molecule).</li>
     </ul>`,
   },
 
@@ -251,22 +251,22 @@ export const MODELS_C: Record<string, Model> = {
       caption:
         '<span class="chip chipB">B1</span> Less remaining work → lower productivity → less producing → remaining work falls more slowly. The loop is dormant while work is plentiful (the effect sits at 1 and the stock falls in a straight line) and takes over once remaining work drops below the amount needed for full productivity.',
     },
-    desc: `<p>Reducing Backlog by Doing Work has a flaw: constant workers at constant productivity keep "producing" after the backlog reaches zero and drive it negative. Hines' cure is to recognise that <b>productivity must reach zero when there is nothing left to do</b>. Below a certain amount of remaining work, people cannot stay fully occupied — some tasks are waiting on a slow step, or the only tasks left are outside a worker's specialty — so productivity is normal PDY times an effect of relative remaining work. The effect here is the simplest table: 1 when work is plentiful, falling in a straight line to 0 at empty.</p>
+    desc: `<p>Reducing Backlog by Doing Work has a flaw: constant workers at constant productivity keep "producing" after the backlog reaches zero and drive it negative. Hines' cure is to recognise that <b>productivity must reach zero when there is nothing left to do</b>. Below a certain amount of remaining work, people cannot stay fully occupied, some tasks are waiting on a slow step, or the only tasks left are outside a worker's specialty, so productivity is normal PDY times an effect of relative remaining work. The effect here is the simplest table: 1 when work is plentiful, falling in a straight line to 0 at empty.</p>
     <div class="eq">producing = workers × normalPDY × f( RemainingWork / RequiredWorkForFullProductivity )</div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it whenever <b>people drain a stock of work</b> and that stock could run out: project backlogs, queues of cases, stages of a development pipeline. It is the people-driven twin of Level Protected by Level. Hines' second version sets the threshold from the workforce itself — <code>required work = workers × work needed to keep one worker occupied</code>.</div>
+    Use it whenever <b>people drain a stock of work</b> and that stock could run out: project backlogs, queues of cases, stages of a development pipeline. It is the people-driven twin of Level Protected by Level. Hines' second version sets the threshold from the workforce itself: <code>required work = workers × work needed to keep one worker occupied</code>.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — a lab team clearing a test backlog: once few samples remain, staff wait on analyser runs and throughput per person drops.</li>
-      <li><b>Sustainability</b> — a retrofit crew finishing a district: the last scattered homes take longer per job.</li>
-      <li><b>Projects</b> — the tail end of a design phase, where the remaining drawings do not fit the remaining specialists.</li>
+      <li><b>Healthcare</b>: a lab team clearing a test backlog, once few samples remain, staff wait on analyser runs and throughput per person drops.</li>
+      <li><b>Sustainability</b>: a retrofit crew finishing a district: the last scattered homes take longer per job.</li>
+      <li><b>Projects</b>: the tail end of a design phase, where the remaining drawings do not fit the remaining specialists.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    300 tasks, 10 workers, normal PDY 5: work falls at <code>10 × 5 = 50</code> tasks/mo. An unprotected stock would hit zero at month 6 and go negative. Here, once 60 tasks remain (month 4.8) productivity scales down as <code>5 × remaining/60</code>, giving a time constant of <code>60 ÷ 50 = 1.2</code> months: about 21 tasks are left at month 6 and about 3 at month 8.4 — always positive. Add 20 tasks/mo of new work and the backlog settles where producing equals inflow: <code>60 × 20/50 = 24</code> tasks.</div>
+    300 tasks, 10 workers, normal PDY 5: work falls at <code>10 × 5 = 50</code> tasks/mo. An unprotected stock would hit zero at month 6 and go negative. Here, once 60 tasks remain (month 4.8) productivity scales down as <code>5 × remaining/60</code>, giving a time constant of <code>60 ÷ 50 = 1.2</code> months: about 21 tasks are left at month 6 and about 3 at month 8.4, always positive. Add 20 tasks/mo of new work and the backlog settles where producing equals inflow: <code>60 × 20/50 = 24</code> tasks.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Level Protected by PDY (parents: Reducing Backlog by Doing Work, Univariate Anchoring and Adjustment).</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 14 — formulating table functions normalized to a reference.</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Level Protected by PDY (parents: Reducing Backlog by Doing Work, Univariate Anchoring and Adjustment).</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 14: formulating table functions normalized to a reference.</li>
     </ul>`,
   },
 
@@ -316,15 +316,15 @@ export const MODELS_C: Record<string, Model> = {
     Use it whenever <b>a stock is filled by people (or machines) working</b>: finished goods from a production line, completed designs from engineers, trained staff from instructors. It is the supply half of any production model and the first stage of a Doing Work Cascade.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — vaccine doses filled by a production team, accumulating in a stockpile ahead of a campaign.</li>
-      <li><b>Sustainability</b> — hectares replanted = planting crews × hectares per crew, accumulating as restored forest.</li>
-      <li><b>Operations</b> — finished-goods inventory built by the factory workforce.</li>
+      <li><b>Healthcare</b>: vaccine doses filled by a production team, accumulating in a stockpile ahead of a campaign.</li>
+      <li><b>Sustainability</b>: hectares replanted = planting crews × hectares per crew, accumulating as restored forest.</li>
+      <li><b>Operations</b>: finished-goods inventory built by the factory workforce.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    10 workers each make 2 widgets/mo, so producing = <code>10 × 2 = 20</code> widgets/mo. Starting from 100 with no shipments, inventory is <code>100 + 20 × 20 = 500</code> after 20 months and 1,300 after 60 — a straight line. Set shipments to 20/mo and the line goes flat at whatever level it had; set them above 20 and the stock is run down instead.</div>
+    10 workers each make 2 widgets/mo, so producing = <code>10 × 2 = 20</code> widgets/mo. Starting from 100 with no shipments, inventory is <code>100 + 20 × 20 = 500</code> after 20 months and 1,300 after 60: a straight line. Set shipments to 20/mo and the line goes flat at whatever level it had; set them above 20 and the stock is run down instead.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Building Inventory by Doing Work (used by Population Growth and Doing Work Cascade).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Building Inventory by Doing Work (used by Population Growth and Doing Work Cascade).</li>
     </ul>`,
   },
 
@@ -387,23 +387,23 @@ export const MODELS_C: Record<string, Model> = {
       ],
       loops: [],
       caption:
-        '<span class="chip chipB">open</span> Every arrow runs from a producing rate to a stock and none runs back. Each rate is simply <b>workers × productivity</b>, so a stock rises or falls linearly according to the difference between the crew filling it and the crew draining it. Because no crew looks at the stock it draws from, nothing stops a stock being overdrawn — the gap that Cascade Protected by PDY closes.',
+        '<span class="chip chipB">open</span> Every arrow runs from a producing rate to a stock and none runs back. Each rate is simply <b>workers × productivity</b>, so a stock rises or falls linearly according to the difference between the crew filling it and the crew draining it. Because no crew looks at the stock it draws from, nothing stops a stock being overdrawn: the gap that Cascade Protected by PDY closes.',
     },
-    desc: `<p>Take Cascaded Levels and make every flow a Producing molecule: stage A's workers build inventory A, stage B's workers move it on to B, and so on down the chain. With constant crews the stocks move in <b>straight lines</b> — up where the upstream crew is stronger, down where the downstream crew is. Hines gives each stage its own productivity; a single shared productivity is used here to keep the sliders manageable.</p>
+    desc: `<p>Take Cascaded Levels and make every flow a Producing molecule: stage A's workers build inventory A, stage B's workers move it on to B, and so on down the chain. With constant crews the stocks move in <b>straight lines</b>: up where the upstream crew is stronger, down where the downstream crew is. Hines gives each stage its own productivity; a single shared productivity is used here to keep the sliders manageable.</p>
     <div class="eq">Inventory<sub>i</sub> = INTEG( producing<sub>i</sub> − producing<sub>i+1</sub> );&nbsp; producing<sub>i</sub> = workers<sub>i</sub> × productivity<sub>i</sub></div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it as the skeleton of any <b>multi-stage process staffed stage by stage</b> — an R&amp;D pipeline, a production line, a claims process. But heed Hines' caveat: nothing prevents these levels going negative. In Vensim an overdrawn stock simply drops below zero; this simulator pins stocks at zero instead, so an emptied stage keeps "passing on" items that were never there. In real models, protect each flow (see Cascade Protected by PDY).</div>
+    Use it as the skeleton of any <b>multi-stage process staffed stage by stage</b>: an R&amp;D pipeline, a production line, a claims process. But heed Hines' caveat: nothing prevents these levels going negative. In Vensim an overdrawn stock simply drops below zero; this simulator pins stocks at zero instead, so an emptied stage keeps "passing on" items that were never there. In real models, protect each flow (see Cascade Protected by PDY).</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — referral → assessment → treatment, each step worked by its own team.</li>
-      <li><b>Sustainability</b> — collected → sorted → reprocessed material in a recycling chain.</li>
-      <li><b>R&amp;D</b> — research → development → launch, Hines' classic "R&amp;D chain".</li>
+      <li><b>Healthcare</b>: referral → assessment → treatment, each step worked by its own team.</li>
+      <li><b>Sustainability</b>: collected → sorted → reprocessed material in a recycling chain.</li>
+      <li><b>R&amp;D</b>: research → development → launch, Hines' classic "R&amp;D chain".</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Crews of 5, 6, 4 and 4 at productivity 2 give rates of 10, 12, 8 and 8 widgets/mo. Inventory A changes by <code>10 − 12 = −2</code>/mo, B by <code>12 − 8 = +4</code>/mo and C by <code>8 − 8 = 0</code>. So A falls from 100 to 60 in 20 months and is empty at month 50; B climbs from 20 to 100 over the same 20 months; C holds at 60. After month 50 the flaw shows: B's crew still books 12/mo out of an empty stock.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Doing Work Cascade (parents: Cascaded Levels, Building Inventory by Doing Work, Reducing Backlog by Doing Work).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Doing Work Cascade (parents: Cascaded Levels, Building Inventory by Doing Work, Reducing Backlog by Doing Work).</li>
     </ul>`,
   },
 
@@ -474,15 +474,15 @@ export const MODELS_C: Record<string, Model> = {
     Use it for any <b>staffed pipeline that must stay physically sensible</b> when stages are unbalanced or the feed stops: R&amp;D chains, multi-step service processes, production lines with stage-specific crews. A stage with too few workers piles work up in front of it; a stage with too many runs its stock down to the level where its crew is only as productive as its feed allows.</div>
     <h4>Real-world examples</h4>
     <ul>
-      <li><b>Healthcare</b> — triage → diagnostics → treatment: an over-staffed downstream step idles rather than treating patients who have not arrived.</li>
-      <li><b>Sustainability</b> — collection → sorting → reprocessing of recyclables with separate crews.</li>
-      <li><b>R&amp;D</b> — Hines' "R&amp;D balance chain": research, development and launch teams competing for balance.</li>
+      <li><b>Healthcare</b>: triage → diagnostics → treatment: an over-staffed downstream step idles rather than treating patients who have not arrived.</li>
+      <li><b>Sustainability</b>: collection → sorting → reprocessing of recyclables with separate crews.</li>
+      <li><b>R&amp;D</b>: Hines' "R&amp;D balance chain": research, development and launch teams competing for balance.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
     Crew A (10 people × 2) feeds 20 widgets/mo. Crews B, C and D could do 28, 24 and 32 at full productivity, all more than the feed, so each stock settles where its crew is throttled to 20/mo: <code>B = 60 × 20/28 ≈ 43</code>, <code>C = 60 × 20/24 = 50</code>, <code>D = 60 × 20/32 = 37.5</code>. On the way, B's initial pile of 150 lets crew B run flat out at 28, which briefly swells C before the chain settles. Set workers A to 0 and all three stocks drain toward zero without ever crossing it.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hines, J. <i>Molecules of Structure</i> — Cascade Protected by PDY (parents: Level Protected by PDY, Doing Work Cascade).</li>
+      <li>Hines, J. <i>Molecules of Structure</i>, Cascade Protected by PDY (parents: Level Protected by PDY, Doing Work Cascade).</li>
     </ul>`,
   },
 };
@@ -558,7 +558,7 @@ export const DIAGRAM_EXTRA_C: Record<string, { stocks: [string, string][]; aux?:
       ["InventoryB", "INTEG(producingB − producingC, 20)"],
       ["InventoryC", "INTEG(producingC − producingD, 60)"],
     ],
-    aux: [["producing (each stage)", "workers × productivity  — no link back from any stock"]],
+    aux: [["producing (each stage)", "workers × productivity : no link back from any stock"]],
   },
   cascadeProtByPDY: {
     stocks: [
@@ -586,7 +586,7 @@ export const LESSONS_C: Record<string, Lesson> = {
     q: "10 people accomplish 50 widgets/mo. The workforce is doubled to 20 at the same actual productivity. While work lasts, estimated productivity…",
     options: ["doubles to 10", "halves to 2.5", "stays at 5", "falls to 0"],
     answer: 2,
-    explain: "Work accomplished doubles to 100/mo, and 100 ÷ 20 = 5: headcount cancels out of the estimate. Perceived PDY climbs to 5 just as before — the only difference is that the 1,500 widgets run out in 15 months instead of 30, after which the estimate collapses.",
+    explain: "Work accomplished doubles to 100/mo, and 100 ÷ 20 = 5: headcount cancels out of the estimate. Perceived PDY climbs to 5 just as before: the only difference is that the 1,500 widgets run out in 15 months instead of 30, after which the estimate collapses.",
     preset: { workforce: 20, actualPDY: 5, perceptionTime: 3 },
   },
   desiredWorkforce: {
@@ -597,7 +597,7 @@ export const LESSONS_C: Record<string, Lesson> = {
     preset: { desiredRate: 120, productivity: 6, adjTime: 4 },
   },
   protByPDY: {
-    q: "300 tasks, 10 workers, normal PDY 5 (50 tasks/mo), full productivity needs 60 tasks on hand. At month 6 — when an unprotected backlog would hit zero — remaining work is about…",
+    q: "300 tasks, 10 workers, normal PDY 5 (50 tasks/mo), full productivity needs 60 tasks on hand. At month 6, when an unprotected backlog would hit zero, remaining work is about…",
     options: ["0, exactly finished", "about 21, and still shrinking", "60, stuck there", "−10, overdrawn"],
     answer: 1,
     explain: "Work falls at 50/mo until 60 remain (month 4.8). From there productivity scales with remaining/60, so the stock decays with a 60 ÷ 50 = 1.2-month time constant: 60 × e⁻¹ ≈ 22 at month 6 in exact terms, about 21 in this step-by-step simulation. It keeps approaching zero but never crosses it.",
@@ -612,7 +612,7 @@ export const LESSONS_C: Record<string, Lesson> = {
   },
   doingWorkCascade: {
     q: "Stage A has 2 workers, stage B has 8 (productivity 2). Inventory A empties around month 8. After that, crew B's producing rate is…",
-    options: ["0 — nothing left to work on", "4/mo — only what crew A supplies", "16/mo — unchanged", "falling gradually"],
+    options: ["0: nothing left to work on", "4/mo, only what crew A supplies", "16/mo: unchanged", "falling gradually"],
     answer: 2,
     explain: "producingB = workersB × productivity = 8 × 2 = 16/mo, and nothing in this molecule connects it to Inventory A. The empty stock is ignored (in Vensim it would go negative; here it is pinned at zero), so Inventory B keeps filling with widgets that were never made. That is the flaw Cascade Protected by PDY fixes.",
     preset: { workersA: 2, workersB: 8, workersC: 4, workersD: 4, productivity: 2 },
