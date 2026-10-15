@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { GROUP_BLURB } from "@/data/catalog";
 import { PRESETS } from "@/data/presets";
@@ -10,6 +11,15 @@ import { Button } from "@/components/ui/button";
 
 const DEMO = "stockmgmt";
 const DEMO_LENGTH = 60; // weeks: long enough to see the overshoot ring down
+// Other apps by the same author, shown under the catalogue.
+// ponytail: swap the url for the Vercel address once FAIRE is published
+const DEMOS = [
+  {
+    name: "FAIRE: Ireland supply chain watch",
+    blurb: "Maps what Ireland imports and exports, from whom, and how concentrated and exposed each supply chain is.",
+    url: "http://localhost:5199/",
+  },
+].filter((d) => !d.url.includes("localhost") || location.hostname === "localhost"); // a localhost link would be dead on the live site
 const slug = (title: string) => "fam-" + title.toLowerCase().replace(/[^a-z]+/g, "-");
 
 // The hero is the product: a real molecule, running. Stock management with the supply line ignored
@@ -124,6 +134,24 @@ export default function MoleculeMap({ onSelect, onStartTour }: { onSelect: (k: s
           </ul>
         </section>
       ))}
+
+      {DEMOS.length > 0 && (
+        <section className="pt-16 md:pt-20">
+          <h2 className="heading text-[26px] md:text-[30px]">Other demos</h2>
+          <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {DEMOS.map((d) => (
+              <li key={d.url}>
+                <a href={d.url} target="_blank" rel="noreferrer" className="brick brick-w block h-full p-5">
+                  <span className="heading flex items-center justify-between gap-3 text-[18px]">
+                    {d.name} <ExternalLink size={16} aria-hidden className="shrink-0 text-muted-foreground" />
+                  </span>
+                  <span className="block mt-2 text-[14px] leading-[1.5] text-muted-foreground">{d.blurb}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <footer className="mt-20 border-t border-border py-8 text-[13px] leading-[1.6] text-muted-foreground grid md:grid-cols-[minmax(0,1fr)_auto] gap-6">
         <p className="max-w-[70ch]">
