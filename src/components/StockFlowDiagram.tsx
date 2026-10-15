@@ -207,10 +207,10 @@ export default function StockFlowDiagram({
           if (!g) return null;
           return (
             <g key={st.id}>
-              <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={2} fill="hsl(var(--card))" stroke="hsl(var(--ink))" strokeWidth={1.5} />
+              <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} fill="hsl(var(--card))" stroke="hsl(var(--ink))" strokeWidth={1.5} />
               <path ref={(el) => (liquid.current[st.id] = el)} d="" fill={st.color} fillOpacity={0.42} stroke={st.color} strokeOpacity={0.85} strokeWidth={1.5} />
               <text x={g.x + g.w / 2} y={g.y - 10} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={13} fontWeight={600}>{st.label}</text>
-              <text ref={(el) => (vals.current[st.id] = el)} x={g.x + g.w / 2} y={g.y + g.h / 2 + 6} textAnchor="middle" fill="hsl(var(--ink))" fontSize={16} fontWeight={500} fontFamily="var(--font-mono)">{st.init.toFixed(1)}</text>
+              <text ref={(el) => (vals.current[st.id] = el)} x={g.x + g.w / 2} y={g.y + g.h / 2 + 6} textAnchor="middle" fill="hsl(var(--ink))" fontSize={16} fontWeight={700}>{st.init.toFixed(1)}</text>
             </g>
           );
         })}
@@ -237,7 +237,7 @@ export default function StockFlowDiagram({
             const w = Math.max(40, label.length * 5.6 + 12);
             return (
               <g key={id}>
-                <rect x={x - w / 2} y={y - 10} width={w} height={20} rx={2} fill="hsl(var(--card))" stroke="hsl(var(--input))" strokeWidth={1} strokeDasharray="2 2" />
+                <rect x={x - w / 2} y={y - 10} width={w} height={20} rx={6} fill="hsl(var(--card))" stroke="hsl(var(--input))" strokeWidth={1} strokeDasharray="2 2" />
                 <text x={x} y={y + 3.5} textAnchor="middle" fontSize={9.5} fill="hsl(var(--muted-foreground))">{label}</text>
               </g>
             );

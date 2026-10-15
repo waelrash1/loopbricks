@@ -1,40 +1,36 @@
-/* latin subsets only: the copy is English */
-@import "@fontsource/ibm-plex-sans/latin-400.css";
-@import "@fontsource/ibm-plex-sans/latin-400-italic.css";
-@import "@fontsource/ibm-plex-sans/latin-500.css";
-@import "@fontsource/ibm-plex-sans/latin-600.css";
-@import "@fontsource/ibm-plex-sans-condensed/latin-500.css";
-@import "@fontsource/ibm-plex-sans-condensed/latin-600.css";
-@import "@fontsource/ibm-plex-mono/latin-400.css";
-@import "@fontsource/ibm-plex-mono/latin-500.css";
+/* one variable family; unicode-range keeps the download to latin */
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/archivo/wdth-italic.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* One identity: drafting paper, ink, and a single brick yellow for "this is selected".
-   Chrome stays neutral because blue, orange, green and pink already mean something in the diagrams.
+/* Assembly instructions: pale instruction-sheet blue, navy ink, brick yellow.
+   Light only, on purpose: it reads as a printed booklet, and the series colours in the data are fixed hexes.
    Colours are H S L triples so Tailwind opacity modifiers work. */
 :root {
-  --background: 180 4% 96%; /* #f4f5f5 paper */
-  --foreground: 216 11% 9%; /* #15171a ink */
-  --card: 60 9% 99%; /* #fcfcfb sheet, the lighter surface diagrams sit on */
-  --muted: 180 4% 92%; /* #eaecec */
-  --muted-foreground: 210 5% 36%; /* #575c60 */
-  --primary: 216 11% 9%;
-  --primary-foreground: 0 0% 100%;
-  --link: 216 11% 9%;
-  --secondary: 180 4% 92%;
-  --accent: 45 88% 57%; /* #f2c230 brick yellow */
-  --accent-foreground: 216 11% 9%;
-  --border: 180 4% 84%; /* #d4d8d8 rule */
-  --input: 200 4% 62%; /* #999fa2 control outline */
-  --ink: 216 11% 9%;
-  --heading: 216 11% 9%;
-  --ring: 216 11% 9%;
-  --radius: 2px; /* one corner for everything: bricks are nearly square */
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --background: 208 33% 93%; /* #e6edf3 instruction sheet */
+  --foreground: 216 52% 15%; /* #13233b navy ink */
+  --card: 220 50% 99%; /* #fbfcfe the sheet diagrams sit on */
+  --muted: 210 30% 88%; /* #d6e0ea */
+  --muted-foreground: 214 21% 37%; /* #4b5d74 */
+  --primary: 47 92% 53%;
+  --primary-foreground: 216 52% 15%;
+  --link: 216 52% 15%;
+  --secondary: 210 30% 88%;
+  --accent: 47 92% 53%; /* #f6c518 brick yellow */
+  --accent-edge: 46 100% 39%; /* #c99a00 the brick's shaded side */
+  --accent-foreground: 216 52% 15%;
+  --border: 210 26% 81%; /* #c2cfdc */
+  --edge: 211 24% 70%; /* shaded side of a white brick */
+  --input: 213 18% 61%;
+  --ink: 216 52% 15%;
+  --heading: 216 52% 15%;
+  --ring: 216 52% 15%;
+  --panel: 216 52% 15%; /* the control box */
+  --radius: 10px; /* bricks are moulded, not cut */
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   /* data colours: they carry meaning, not brand */
   --viz-acc: #2545ff; /* balancing loops, default series */
@@ -46,8 +42,9 @@
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground font-sans antialiased; font-size: 15px; }
-  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+  html { scroll-padding-top: 88px; }
+  body { @apply bg-background text-foreground font-sans antialiased; font-size: 15px; font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 2px; }
   ::selection { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
@@ -55,45 +52,47 @@
 }
 
 @layer components {
-  .display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.015em; line-height: 1; }
-  .heading { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.005em; line-height: 1.15; }
-  /* text links are ink, so they need the underline to read as links */
-  .tlink { text-decoration: underline; text-decoration-color: hsl(var(--input)); text-underline-offset: 3px; }
-  .tlink:hover { text-decoration-color: currentColor; background: hsl(var(--accent)); }
-  /* a workbench section: a rule, a heading, then the thing itself. No boxes. */
-  .bench { border-top: 1px solid hsl(var(--foreground)); padding-top: 14px; }
-  .bench-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 14px; }
-}
+  /* wide and heavy, like the type on a parts box */
+  .display { font-stretch: 118%; font-weight: 800; letter-spacing: -0.025em; line-height: 0.98; }
+  .heading { font-stretch: 112%; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
+  .tlink { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: hsl(var(--accent)); text-underline-offset: 3px; }
+  .tlink:hover { text-decoration-color: currentColor; }
 
-/* diagram backdrop: a sheet with a dot grid */
-.viz-stage {
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  background: hsl(var(--card)) radial-gradient(circle, hsl(var(--input) / 0.55) 0.8px, transparent 1px) 0 0 / 20px 20px;
-  padding: 8px;
+  /* Everything clickable is a brick: a shaded bottom edge that compresses when pressed. */
+  .brick { --edge-c: hsl(var(--edge)); border-radius: var(--radius); box-shadow: 0 3px 0 var(--edge-c); transition: transform 70ms, box-shadow 70ms, border-color 120ms, background-color 120ms; }
+  .brick:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge-c); }
+  .brick-y { --edge-c: hsl(var(--accent-edge)); background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+  .brick-w { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
+  .brick-w:hover { border-color: hsl(var(--foreground) / 0.45); }
+
+  /* a printed panel: what a diagram or chart sits on */
+  .sheet { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 16px; }
+  @media (min-width: 768px) { .sheet { padding: 20px 22px; } }
+  .sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 12px; }
 }
 
 /* authored explanation HTML */
-.prose-sd { line-height: 1.65; max-width: 70ch; font-size: 16px; }
+.prose-sd { line-height: 1.65; max-width: 68ch; font-size: 16px; }
 .prose-sd p { margin: 12px 0; }
-.prose-sd h4 { margin: 32px 0 6px; font-family: var(--font-display); font-weight: 600; font-size: 20px; }
+.prose-sd h4 { margin: 32px 0 6px; font-stretch: 112%; font-weight: 700; font-size: 20px; }
 .prose-sd h4:first-child { margin-top: 0; }
-.prose-sd ul { margin: 8px 0; padding-left: 20px; list-style: square; }
+.prose-sd ul { margin: 8px 0; padding-left: 20px; list-style: disc; }
 .prose-sd li { margin: 6px 0; }
-.prose-sd code, .cld-cap code { font-family: var(--font-mono); background: hsl(var(--muted)); padding: 1px 5px; border-radius: var(--radius); font-size: 0.875em; }
-.prose-sd .eq { font-family: var(--font-mono); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-left: 3px solid hsl(var(--foreground)); border-radius: var(--radius); padding: 12px 16px; font-size: 13.5px; overflow-x: auto; margin: 14px 0; }
-.prose-sd .whenbox { background: hsl(var(--accent) / 0.28); border-left: 3px solid hsl(var(--accent)); padding: 14px 18px; margin: 18px 0; }
-.prose-sd .worked { border: 1px solid hsl(var(--foreground)); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
+.prose-sd li::marker { color: hsl(var(--accent-edge)); }
+.prose-sd code, .cld-cap code { font-family: var(--font-mono); background: hsl(var(--muted)); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+.prose-sd .eq { font-family: var(--font-mono); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; overflow-x: auto; margin: 14px 0; }
+.prose-sd .whenbox { background: hsl(var(--accent) / 0.22); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
+.prose-sd .worked { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
 .prose-sd .whenbox h4, .prose-sd .worked h4 { margin: 0 0 4px; font-size: 17px; }
 .prose-sd .small { font-size: 13px; color: hsl(var(--muted-foreground)); }
 .prose-sd .refs { font-size: 13.5px; color: hsl(var(--muted-foreground)); padding-left: 18px; }
 .prose-sd .refs li { margin: 4px 0; }
 
-/* B / R tags inside captions and prose: the same letters the diagrams use */
-.chip { display: inline-block; padding: 0 5px; border: 1px solid currentColor; border-radius: var(--radius); font-family: var(--font-mono); font-size: 11px; font-weight: 500; line-height: 16px; margin-right: 5px; }
-.chipB { color: var(--viz-acc); }
-.chipR { color: var(--viz-acc2); }
+/* B / R tags: the same letters and colours the diagrams use */
+.chip { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; color: #fff; font-size: 11px; font-weight: 800; font-stretch: 112%; margin-right: 4px; }
+.chipB { background: var(--viz-acc); }
+.chipR { background: var(--viz-acc2); }
 
 /* quiz answer states (lesson panel) */
-.is-right { border-color: var(--viz-good); background: color-mix(in srgb, var(--viz-good) 10%, white); color: #0a5c40; }
-.is-wrong { border-color: var(--viz-pink); background: color-mix(in srgb, var(--viz-pink) 8%, white); color: #8f1a43; }
+.is-right { border-color: var(--viz-good) !important; background: color-mix(in srgb, var(--viz-good) 12%, white) !important; color: #0a5c40; --edge-c: var(--viz-good); }
+.is-wrong { border-color: var(--viz-pink) !important; background: color-mix(in srgb, var(--viz-pink) 9%, white) !important; color: #8f1a43; --edge-c: var(--viz-pink); }

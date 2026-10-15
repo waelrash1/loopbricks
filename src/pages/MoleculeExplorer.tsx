@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MODELS } from "@/data/molecules";
+import { GROUPS, MODELS } from "@/data/molecules";
 import { TOUR, childrenOf, groupOf, parentsOf } from "@/data/catalog";
 import { PRESETS } from "@/data/presets";
 import { LESSONS } from "@/data/lessons";
 import { useSimulation } from "@/hooks/useSimulation";
-import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
@@ -73,40 +73,35 @@ export default function MoleculeExplorer() {
   }, [sim, view]);
 
   const hint = "text-[13px] text-muted-foreground";
-  const h2 = "heading text-[20px]";
-  // sits beside the workbench on wide screens, with a rule instead of a box
+  const h2 = "heading text-[19px]";
   const controls = (
-    <aside className="lg:sticky lg:top-6 lg:border-l lg:border-border lg:pl-8 border-t border-foreground pt-4 lg:border-t-0 lg:pt-0">
+    <aside className="lg:sticky lg:top-[88px]">
       <Controls model={model} sim={sim} presets={PRESETS[key] ?? []} />
     </aside>
   );
   const behavior = (
-    <section className="bench">
-      <div className="bench-head">
+    <section className="sheet">
+      <div className="sheet-head">
         <h2 className={h2}>Behaviour over time</h2>
         <span className={hint}>Press play, or Space</span>
       </div>
       <TimeSeriesChart model={model} subscribe={sim.subscribe} />
     </section>
   );
-  const bench = "grid lg:grid-cols-[minmax(0,1fr)_300px] gap-x-8 gap-y-10 items-start";
+  const bench = "grid lg:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start";
+  const wrap = "max-w-[1320px] mx-auto px-4 md:px-8";
+  const siblings = GROUPS.find((g) => g.keys.includes(key))?.keys ?? [];
+  const smallBrick = "brick brick-w h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap";
 
   return (
-    <div className="min-h-[100dvh] grid md:grid-cols-[256px_minmax(0,1fr)]">
-      <Sidebar
-        current={view === "molecule" ? key : ""}
-        onSelect={open}
-        showMap={showMap}
-        mapActive={view === "map"}
-        startTour={startTour}
-        tourActive={view === "learn"}
-      />
+    <div className="min-h-[100dvh]">
+      <TopBar onSelect={open} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} />
 
-      <main className="min-w-0 px-4 py-8 md:px-10 md:py-10">
+      <main className="pb-16">
         {view === "map" ? (
           <MoleculeMap onSelect={open} onStartTour={startTour} />
         ) : view === "learn" ? (
-          <div className="max-w-[1240px] mx-auto">
+          <div className={`${wrap} pt-8 md:pt-10`}>
             <LessonPanel
               key={lessonIdx}
               lesson={LESSONS[key]}
@@ -125,11 +120,11 @@ export default function MoleculeExplorer() {
               }}
             />
             <div className={bench}>
-              <div className="flex flex-col gap-10 min-w-0">
-                <section className="bench">
-                  <div className="bench-head">
+              <div className="flex flex-col gap-5 min-w-0">
+                <section className="sheet">
+                  <div className="sheet-head">
                     <h2 className={h2}>Stock and flow diagram</h2>
-                    <button onClick={() => open(key)} className="tlink text-[13px]">
+                    <button onClick={() => open(key)} className="tlink text-[13px] font-semibold">
                       Open the full molecule
                     </button>
                   </div>
@@ -141,48 +136,46 @@ export default function MoleculeExplorer() {
             </div>
           </div>
         ) : (
-          <div className="max-w-[1240px] mx-auto">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 text-sm text-muted-foreground mb-4">
+          <div className={`${wrap} pt-6 md:pt-8`}>
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted-foreground mb-6">
               <p>
-                <button onClick={showMap} className="tlink">
-                  {groupOf(key)}
+                <button onClick={showMap} className="hover:text-foreground">
+                  Molecules
                 </button>
-                <span className="font-mono text-[12px] ml-3">
-                  {pos + 1}/{TOUR.length}
-                </span>
+                <span aria-hidden className="mx-2">/</span>
+                <span className="text-foreground font-semibold">{groupOf(key)}</span>
               </p>
-              <nav aria-label="Neighbouring molecules" className="flex gap-5">
-                {prevKey && (
-                  <button onClick={() => open(prevKey)} className="inline-flex items-center gap-1 hover:text-foreground rounded-btn">
-                    <ChevronLeft size={15} aria-hidden /> {MODELS[prevKey].name}
-                  </button>
-                )}
-                {nextKey && (
-                  <button onClick={() => open(nextKey)} className="inline-flex items-center gap-1 hover:text-foreground rounded-btn">
-                    {MODELS[nextKey].name} <ChevronRight size={15} aria-hidden />
-                  </button>
-                )}
+              <nav aria-label="Neighbouring molecules" className="flex items-center gap-2">
+                <span className="mr-2">
+                  {pos + 1} of {TOUR.length}
+                </span>
+                <button disabled={!prevKey} onClick={() => open(prevKey)} className="brick brick-w w-9 h-9 grid place-items-center text-foreground disabled:opacity-40" aria-label={prevKey ? `Previous: ${MODELS[prevKey].name}` : "No previous molecule"} title={prevKey && MODELS[prevKey].name}>
+                  <ChevronLeft size={17} aria-hidden />
+                </button>
+                <button disabled={!nextKey} onClick={() => open(nextKey)} className="brick brick-w w-9 h-9 grid place-items-center text-foreground disabled:opacity-40" aria-label={nextKey ? `Next: ${MODELS[nextKey].name}` : "No next molecule"} title={nextKey && MODELS[nextKey].name}>
+                  <ChevronRight size={17} aria-hidden />
+                </button>
               </nav>
             </div>
 
-            <h1 className="display text-[44px] md:text-[60px]">{model.title}</h1>
+            <h1 className="display text-[40px] md:text-[60px] max-w-[22ch]">{model.title}</h1>
             <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{model.lede}</p>
 
             {(parents.length > 0 || children.length > 0) && (
-              <dl className="mt-5 grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-[auto_minmax(0,1fr)] items-baseline">
+              <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
                 {(
                   [
-                    ["Builds on", parents],
-                    ["Used by", children],
+                    ["Built from", parents],
+                    ["Used in", children],
                   ] as const
                 ).map(
                   ([label, keys]) =>
                     keys.length > 0 && (
-                      <div key={label} className="contents">
-                        <dt className="text-muted-foreground">{label}</dt>
-                        <dd className="flex flex-wrap gap-x-4 gap-y-1">
+                      <div key={label}>
+                        <dt className="text-[13px] text-muted-foreground mb-2">{label}</dt>
+                        <dd className="flex flex-wrap gap-2">
                           {keys.map((k) => (
-                            <button key={k} onClick={() => open(k)} className="tlink">
+                            <button key={k} onClick={() => open(k)} className={smallBrick}>
                               {MODELS[k].name}
                             </button>
                           ))}
@@ -194,37 +187,37 @@ export default function MoleculeExplorer() {
             )}
 
             <div className={`${bench} mt-10`}>
-              <div className="flex flex-col gap-10 min-w-0">
-                <section className="bench">
-                  <div className="bench-head">
+              <div className="flex flex-col gap-5 min-w-0">
+                <section className="sheet">
+                  <div className="sheet-head">
                     <h2 className={h2}>Stock and flow diagram</h2>
                     <label className={`flex items-center gap-2 cursor-pointer select-none ${hint}`}>
-                      <input type="checkbox" checked={showInfluences} onChange={(e) => setShowInfluences(e.target.checked)} className="accent-[hsl(var(--foreground))]" />
+                      <input type="checkbox" checked={showInfluences} onChange={(e) => setShowInfluences(e.target.checked)} className="w-4 h-4 accent-[hsl(var(--foreground))]" />
                       Show influences and feedback
                     </label>
                   </div>
                   <StockFlowDiagram model={model} modelKey={key} subscribe={sim.subscribe} running={sim.running} showInfluences={showInfluences} />
-                  <div className={`flex flex-wrap gap-x-5 gap-y-1 mt-3 ${hint}`}>
+                  <div className={`flex flex-wrap gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-border ${hint}`}>
                     <span><span className="text-foreground">⧓</span> valve on a flow</span>
                     <span><span style={{ color: "var(--viz-info)" }}>→</span> constant or information link</span>
                     <span><span style={{ color: "var(--viz-acc2)" }}>→</span> feedback from a stock to a flow</span>
-                    <span><b className="font-mono font-medium" style={{ color: "var(--viz-acc)" }}>B</b> balancing loop</span>
-                    <span><b className="font-mono font-medium" style={{ color: "var(--viz-acc2)" }}>R</b> reinforcing loop</span>
+                    <span><span className="chip chipB">B</span>balancing loop</span>
+                    <span><span className="chip chipR">R</span>reinforcing loop</span>
                   </div>
                 </section>
 
                 {behavior}
 
-                <section className="bench">
-                  <div className="bench-head">
+                <section className="sheet">
+                  <div className="sheet-head">
                     <h2 className={h2}>Causal loop diagram</h2>
                     <span className={hint}>The sign on each link is its polarity</span>
                   </div>
                   <CausalLoopDiagram model={model} />
                 </section>
 
-                <section className="bench">
-                  <div className="bench-head">
+                <section className="sheet">
+                  <div className="sheet-head">
                     <h2 className={h2}>Equations</h2>
                     <span className={hint}>Constants update as you move the sliders</span>
                   </div>
@@ -235,26 +228,43 @@ export default function MoleculeExplorer() {
               {controls}
             </div>
 
-            <section className="bench mt-14">
-              <div className="grid lg:grid-cols-[220px_minmax(0,1fr)] gap-x-10 gap-y-4">
-                <h2 className="heading text-[26px]">What it is and when to use it</h2>
-                <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />
-              </div>
+            <section className="mt-16 grid lg:grid-cols-[260px_minmax(0,1fr)] gap-x-10 gap-y-4">
+              <h2 className="heading text-[26px]">What it is and when to use it</h2>
+              <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />
             </section>
 
-            <nav aria-label="Next and previous molecule" className="mt-14 grid sm:grid-cols-2 border-t border-foreground">
+            {siblings.length > 1 && (
+              <section className="mt-16">
+                <h2 className="heading text-[20px] mb-4">More in {groupOf(key)}</h2>
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+                  {siblings.map((k) =>
+                    k === key ? (
+                      <span key={k} aria-current="page" className="brick brick-y h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap inline-flex items-center shrink-0">
+                        {MODELS[k].name}
+                      </span>
+                    ) : (
+                      <button key={k} onClick={() => open(k)} className={`${smallBrick} shrink-0`}>
+                        {MODELS[k].name}
+                      </button>
+                    )
+                  )}
+                </div>
+              </section>
+            )}
+
+            <nav aria-label="Next and previous molecule" className="mt-10 grid sm:grid-cols-2 gap-4">
               {prevKey ? (
-                <button onClick={() => open(prevKey)} className="group text-left py-5 pr-6 hover:bg-card">
-                  <span className="text-[13px] text-muted-foreground">Previous</span>
-                  <span className="heading block text-[22px] mt-1 group-hover:underline underline-offset-4">{MODELS[prevKey].name}</span>
+                <button onClick={() => open(prevKey)} className="brick brick-w text-left px-5 py-4">
+                  <span className="flex items-center gap-1 text-[13px] text-muted-foreground"><ChevronLeft size={14} aria-hidden /> Previous</span>
+                  <span className="heading block text-[20px] mt-1">{MODELS[prevKey].name}</span>
                 </button>
               ) : (
                 <span />
               )}
               {nextKey && (
-                <button onClick={() => open(nextKey)} className="group text-left sm:text-right py-5 sm:pl-6 sm:border-l border-border hover:bg-card">
-                  <span className="text-[13px] text-muted-foreground">Next</span>
-                  <span className="heading block text-[22px] mt-1 group-hover:underline underline-offset-4">{MODELS[nextKey].name}</span>
+                <button onClick={() => open(nextKey)} className="brick brick-y text-left sm:text-right px-5 py-4">
+                  <span className="flex sm:justify-end items-center gap-1 text-[13px]">Next <ChevronRight size={14} aria-hidden /></span>
+                  <span className="heading block text-[20px] mt-1">{MODELS[nextKey].name}</span>
                 </button>
               )}
             </nav>

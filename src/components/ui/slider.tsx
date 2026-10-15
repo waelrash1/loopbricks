@@ -11,11 +11,11 @@ const Slider = React.forwardRef<
     className={cn("relative flex h-5 w-full touch-none select-none items-center", className)}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-0.5 w-full grow bg-input">
-      <SliderPrimitive.Range className="absolute h-full bg-foreground" />
+    <SliderPrimitive.Track className="relative h-1.5 w-full grow rounded-full bg-muted">
+      <SliderPrimitive.Range className="absolute h-full rounded-full bg-accent" />
     </SliderPrimitive.Track>
-    {/* a fader cap, not a dot */}
-    <SliderPrimitive.Thumb className="block h-[18px] w-2.5 rounded-btn border border-foreground bg-accent" />
+    {/* a 1x1 brick you slide along */}
+    <SliderPrimitive.Thumb className="block h-5 w-5 rounded-[6px] border-2 border-foreground bg-accent shadow-[0_2px_0_hsl(var(--accent-edge))]" />
   </SliderPrimitive.Root>
 ));
 Slider.displayName = SliderPrimitive.Root.displayName;
