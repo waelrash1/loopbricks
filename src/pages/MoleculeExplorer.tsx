@@ -18,12 +18,13 @@ import LessonPanel from "@/components/LessonPanel";
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
-type Route = { view: "map" } | { view: "molecule"; key: string } | { view: "learn"; idx: number };
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number };
 function parseRoute(): Route {
   const [, a, b] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
-  return { view: "map" };
+  // a link to a molecule that doesn't exist lands on the catalogue with a note, not silently
+  return { view: "map", missing: a === "m" && b ? b : undefined };
 }
 const go = (hash: string) => {
   window.location.hash = hash;
@@ -95,11 +96,23 @@ export default function MoleculeExplorer() {
 
   return (
     <div className="min-h-[100dvh]">
+      <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
+        Skip to content
+      </a>
       <TopBar onSelect={open} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} />
 
-      <main className="pb-16">
+      <main id="main" tabIndex={-1} className="pb-16 focus:outline-none">
         {view === "map" ? (
-          <MoleculeMap onSelect={open} onStartTour={startTour} />
+          <>
+            {route.view === "map" && route.missing && (
+              <p role="alert" className="max-w-[1320px] mx-auto px-4 md:px-8 pt-6">
+                <span className="sheet block text-[15px]">
+                  There is no molecule called “{route.missing}”. Pick one from the catalogue below, or search for it at the top.
+                </span>
+              </p>
+            )}
+            <MoleculeMap onSelect={open} onStartTour={startTour} />
+          </>
         ) : view === "learn" ? (
           <div className={`${wrap} pt-8 md:pt-10`}>
             <LessonPanel
