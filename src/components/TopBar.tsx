@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { PanelLeft, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { groupOf, search } from "@/data/catalog";
 import { cn } from "@/lib/utils";
@@ -25,12 +25,16 @@ export default function TopBar({
   mapActive,
   startTour,
   tourActive,
+  paneOpen,
+  togglePane,
 }: {
   onSelect: (k: string) => void;
   showMap: () => void;
   mapActive: boolean;
   startTour: () => void;
   tourActive: boolean;
+  paneOpen: boolean;
+  togglePane: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
@@ -57,7 +61,16 @@ export default function TopBar({
 
   return (
     <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1320px] mx-auto px-4 md:px-8 flex flex-wrap items-center gap-x-7">
+      <div className="px-4 md:px-6 flex flex-wrap items-center gap-x-7">
+        <button
+          onClick={togglePane}
+          aria-expanded={paneOpen}
+          aria-label={paneOpen ? "Hide the molecule list" : "Show the molecule list"}
+          title={paneOpen ? "Hide the molecule list" : "Show the molecule list"}
+          className={cn("-mr-3 grid place-items-center w-9 h-9 rounded-[8px] hover:bg-muted", paneOpen ? "text-foreground" : "text-muted-foreground")}
+        >
+          <PanelLeft size={19} aria-hidden />
+        </button>
         <button onClick={showMap} className="h-16 flex items-center gap-2.5 rounded-btn" aria-label="LoopBricks, all molecules">
           <BrickMark />
           <span className="heading text-[20px]">LoopBricks</span>

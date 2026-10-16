@@ -6,6 +6,7 @@ import { PRESETS } from "@/data/presets";
 import { LESSONS } from "@/data/lessons";
 import { useSimulation } from "@/hooks/useSimulation";
 import TopBar from "@/components/TopBar";
+import SidePane from "@/components/SidePane";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
@@ -33,6 +34,23 @@ const go = (hash: string) => {
 export default function MoleculeExplorer() {
   const [route, setRoute] = useState(parseRoute);
   const [showInfluences, setShowInfluences] = useState(true);
+  // open by default on wide screens, where the choice is remembered
+  const [paneOpen, setPaneOpen] = useState(() => {
+    if (!matchMedia("(min-width: 1024px)").matches) return false;
+    try {
+      return localStorage.getItem("pane") !== "closed";
+    } catch {
+      return true;
+    }
+  });
+  const togglePane = (open = !paneOpen) => {
+    setPaneOpen(open);
+    try {
+      if (matchMedia("(min-width: 1024px)").matches) localStorage.setItem("pane", open ? "open" : "closed");
+    } catch {
+      // storage blocked: the pane just won't remember
+    }
+  };
   useEffect(() => {
     const onHash = () => {
       setRoute(parseRoute());
@@ -99,9 +117,11 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} />
+      <TopBar onSelect={open} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
-      <main id="main" tabIndex={-1} className="pb-16 focus:outline-none">
+      <div className="flex">
+        {paneOpen && <SidePane current={view === "map" ? undefined : key} onSelect={open} onClose={() => togglePane(false)} />}
+        <main id="main" tabIndex={-1} className="flex-1 min-w-0 pb-16 focus:outline-none">
         {view === "map" ? (
           <>
             {route.view === "map" && route.missing && (
@@ -283,7 +303,8 @@ export default function MoleculeExplorer() {
             </nav>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
