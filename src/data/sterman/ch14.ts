@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Chapter 14 of Sterman (2000): formulating nonlinear relationships. Paraphrased, with page references to the printed book.
+// Topic notes on formulating nonlinear relationships, drawing on Sterman (2000). Paraphrased, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch14",
   number: "14",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV Tools for modeling dynamic systems",
   pages: "551-595",
   summary:
-    "Robust decision rules need nonlinear relationships, and in system dynamics these are usually table (lookup) functions. The chapter gives a disciplined procedure for building them: normalise input and output, fix the points that hold by definition, draw reference policies and extreme conditions that fence in the feasible region, choose a shape you can justify, then test the function inside the running model and check how much the results depend on it. Worked examples cover capacity utilisation in a capacitated delay, overtime versus corner cutting in a service centre (with Oliva's estimates from a UK bank), fatigue and the burnout loop, and common errors such as the wrong input, the wrong normalising reference and hump-shaped curves. It ends with a workshop method for eliciting relationships from experts.",
+    "Robust decision rules need nonlinear relationships, and in system dynamics these are usually table (lookup) functions. A disciplined procedure for building them runs as follows: normalise input and output, fix the points that hold by definition, draw reference policies and extreme conditions that fence in the feasible region, choose a shape you can justify, then test the function inside the running model and check how much the results depend on it. Worked examples cover capacity utilisation in a capacitated delay, overtime versus corner cutting in a service centre (with Oliva's estimates from a UK bank), fatigue and the burnout loop, and common errors such as the wrong input, the wrong normalising reference and hump-shaped curves. A workshop method helps elicit such relationships from experts.",
   bigIdeas: [
     {
       title: "Nonlinearity is required, not optional",
@@ -62,7 +62,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Avoid hump-shaped functions: split the causal paths",
-      text: "A curve that rises then falls means the link's polarity depends on its input, which signals two or more causal pathways lumped together. The inverted-U of the Yerkes-Dodson law (stress raises then lowers performance) should be built as a quick, positive overtime effect plus a delayed, negative fatigue effect driven by the recent workweek. Done that way, the equilibrium output curve is still hump shaped: with the chapter's values, output peaks at about 60 hours a week and falls below the 40-hour level above about 72 hours, but each piece has its own delay, cost and policy lever.",
+      text: "A curve that rises then falls means the link's polarity depends on its input, which signals two or more causal pathways lumped together. The inverted-U of the Yerkes-Dodson law (stress raises then lowers performance) should be built as a quick, positive overtime effect plus a delayed, negative fatigue effect driven by the recent workweek. Done that way, the equilibrium output curve is still hump shaped: with the values reported by Sterman (2000), output peaks at about 60 hours a week and falls below the 40-hour level above about 72 hours, but each piece has its own delay, cost and policy lever.",
       pages: "577-583",
     },
     {
@@ -86,7 +86,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Sensitivity", detail: "Vary the curve widely; refine only what matters" },
       ],
       loopBack: { from: 7, to: 4, label: "gather data where results are sensitive" },
-      note: "Our compression of the chapter's nine guidelines into eight steps.",
+      note: "Our compression of nine formulation guidelines (Sterman 2000) into eight steps.",
       pages: "553",
     },
     {
@@ -264,26 +264,26 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Still in Effect Function, set Input 200 and Reference 200. The equilibrium matches the 'At reference' run. Now explain, with the chapter's fatigue example, when normalising by a reference that moves with policy (such as the standard workweek) gives the wrong answer.",
+        "Still in Effect Function, set Input 200 and Reference 200. The equilibrium matches the 'At reference' run. Now explain, using the fatigue example, when normalising by a reference that moves with policy (such as the standard workweek) gives the wrong answer.",
       hint: "Only the ratio matters to the effect. If the reference is a management target, raising the target cancels the effect even though the physical cause (hours worked) has risen.",
       link: { label: "Effect Function", hash: "/m/effectFunction" },
     },
     {
       prompt:
-        "Open Capacity Utilization and run 'Demand > capacity' (capacity 15, demand 25), then set capacity to 40 with demand 25. This molecule uses utilisation = 1 − exp(−1.3 × desired/capacity), so capacity is defined as maximum output. Where does the curve pass when desired output equals capacity, and where does inventory settle in the second run? Relate this to the chapter's point that the reference point depends on how you define capacity.",
+        "Open Capacity Utilization and run 'Demand > capacity' (capacity 15, demand 25), then set capacity to 40 with demand 25. This molecule uses utilisation = 1 − exp(−1.3 × desired/capacity), so capacity is defined as maximum output. Where does the curve pass when desired output equals capacity, and where does inventory settle in the second run? Relate this to the point that the reference point depends on how you define capacity.",
       hint: "At desired = capacity, utilisation is 1 − e^−1.3 ≈ 0.73, not 1: the reference point is (1, normal utilisation). With capacity 15 production creeps toward 15 and inventory keeps falling. With capacity 40, production equals 25 only when desired output is about 30, so inventory settles near 84, below its target of 100.",
       link: { label: "Capacity Utilization", hash: "/m/capacityUtil" },
     },
     {
       prompt:
-        "Open Productivity & Fatigue. Run 'Normal hours', then 'Crunch (backfires)' (overtime 1.4, time to fatigue 4 weeks), then overtime 1.2 and 1.6. Note how output first jumps by the overtime and then sinks as fatigue builds. Compare the long-run output with the chapter's fatigue table, where sustained overtime still pays up to about 72 hours a week (1.8 × 40).",
+        "Open Productivity & Fatigue. Run 'Normal hours', then 'Crunch (backfires)' (overtime 1.4, time to fatigue 4 weeks), then overtime 1.2 and 1.6. Note how output first jumps by the overtime and then sinks as fatigue builds. Compare the long-run output with the fatigue relationship reported by Sterman (2000), where sustained overtime still pays up to about 72 hours a week (1.8 × 40).",
       hint: "In the molecule fatigue tracks overtime, and the fatigue effect is about 2 − fatigue, so equilibrium output is roughly overtime × (2 − overtime): 0.96 at 1.2 and 0.84 at 1.4. Any sustained overtime loses in this simpler curve. The shape of the fatigue table decides where crunch stops paying, which is why it deserves a sensitivity test.",
       link: { label: "Productivity & Fatigue", hash: "/m/prodFatigue" },
     },
     {
       prompt:
         "Open Overtime and compare 'Capped by the limit' with 'Enough people'. Which reference policy does the overtime limit represent, and why must any workweek function saturate?",
-      hint: "There is a maximum sustainable workweek (the chapter uses about 50 hours, 1.25 × 40). Beyond that the only remaining short-run response is corner cutting.",
+      hint: "There is a maximum sustainable workweek (about 50 hours, 1.25 × 40, in the example values). Beyond that the only remaining short-run response is corner cutting.",
       link: { label: "Overtime", hash: "/m/overtime" },
     },
     {

@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Appendices",
   pages: "903-911",
   summary:
-    "System dynamics models are sets of nonlinear differential equations that almost never have analytic solutions, so they are solved step by step on a computer. This appendix explains how. Euler's method assumes each flow stays constant over a short interval dt and adds flow × dt to each stock; it is the default in DYNAMO, ithink, Powersim and Vensim and is the only difference between a simulation and the exact continuous solution. The appendix shows how integration error depends on dt and on the stability of the system, how to choose dt (a quarter to a tenth of the shortest time constant, a power of 2, dividing evenly into the data interval), how round-off limits accuracy, and when Runge-Kutta or variable step methods are worth using. The practical test is simple: halve dt, or switch method, and see whether anything that matters changes.",
+    "System dynamics models are sets of nonlinear differential equations that almost never have analytic solutions, so they are solved step by step on a computer. Euler's method assumes each flow stays constant over a short interval dt and adds flow × dt to each stock; it is the default in DYNAMO, ithink, Powersim and Vensim and is the only difference between a simulation and the exact continuous solution. Integration error depends on dt and on the stability of the system. Choosing dt well (a quarter to a tenth of the shortest time constant, a power of 2, dividing evenly into the data interval) matters, as do the limits round-off places on accuracy and knowing when Runge-Kutta or variable step methods are worth using. The practical test is simple: halve dt, or switch method, and see whether anything that matters changes.",
   bigIdeas: [
     {
       title: "Simulation is numerical integration",
@@ -21,7 +21,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Integration error grows with dt and with the speed of the dynamics",
-      text: "Because the flows actually change during each step, every step adds a small error. In Sterman's population example (4% births, 80-year lifetime, net 2.75% a year), the exact population after 100 years is 15.643 million; Euler with dt = 0.25 years is about 1% low, dt = 1 year about 3.7% low and dt = 5 years about 16% low. For pure growth Euler always undershoots, just as less frequent compounding earns less interest.",
+      text: "Because the flows actually change during each step, every step adds a small error. In a population example (Sterman 2000) (4% births, 80-year lifetime, net 2.75% a year), the exact population after 100 years is 15.643 million; Euler with dt = 0.25 years is about 1% low, dt = 1 year about 3.7% low and dt = 5 years about 16% low. For pure growth Euler always undershoots, just as less frequent compounding earns less interest.",
       pages: "905-906",
     },
     {
@@ -135,7 +135,7 @@ export const CHAPTER: StudyChapter = {
         "dt = 2·AT: constant oscillation; dt > 2·AT: explodes",
       ],
       explain:
-        "This is our worked answer to the appendix's own exercise (S* = 100, S(0) = 0, AT = 1). The factor (1 − dt/AT) must be small and positive for the numerical path to resemble the true exponential approach; that is the reasoning behind keeping dt well below the shortest time constant. A first-order system cannot oscillate, so any oscillation here is created by the time step alone.",
+        "This is our worked answer to a standard exercise (S* = 100, S(0) = 0, AT = 1). The factor (1 − dt/AT) must be small and positive for the numerical path to resemble the true exponential approach; that is the reasoning behind keeping dt well below the shortest time constant. A first-order system cannot oscillate, so any oscillation here is created by the time step alone.",
       molecule: "closegap",
       pages: "910",
     },
@@ -147,7 +147,7 @@ export const CHAPTER: StudyChapter = {
         "S(t + dt) = S + dt·(k₁ + 2k₂ + 2k₃ + k₄)/6",
       ],
       explain:
-        "Both replace Euler's start-of-step flow with a weighted average of flows sampled across the step. RK2 is the version Sterman describes in words; RK4 is the standard formula offered by most simulation packages. More evaluations per step buy much smaller error for the same dt.",
+        "Both replace Euler's start-of-step flow with a weighted average of flows sampled across the step. RK2 is the version Sterman (2000) describes in words; RK4 is the standard formula offered by most simulation packages. More evaluations per step buy much smaller error for the same dt.",
       pages: "908",
     },
     {
@@ -158,7 +158,7 @@ export const CHAPTER: StudyChapter = {
         "Data interval ÷ dt = whole number",
       ],
       explain:
-        "A practical summary of the appendix. In the Decay molecule with τ = 1 year, the app's dt = 0.1 is exactly one-tenth of the time constant, the edge of the recommended range.",
+        "A practical summary of choosing dt. In the Decay molecule with τ = 1 year, the app's dt = 0.1 is exactly one-tenth of the time constant, the edge of the recommended range.",
       molecule: "decay",
       pages: "907, 910-911",
     },
@@ -166,7 +166,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "A population simulated by hand",
-      text: "Sterman steps through a population of 1 million with a 4% birth fraction and an 80-year average lifetime, using dt = 0.25 years. At t = 0 births are 40,000 a year and deaths 12,500, so 27,500 × 0.25 = 6875 people are added and the population becomes 1,006,875. The new flows are 40,275 and about 12,586, adding about 6922 more, and so on. Comparing the value at 100 years for different steps shows the error rising from about half a percent at dt = 0.125 to about 16% at dt = 5.",
+      text: "Sterman (2000) steps through a population of 1 million with a 4% birth fraction and an 80-year average lifetime, using dt = 0.25 years. At t = 0 births are 40,000 a year and deaths 12,500, so 27,500 × 0.25 = 6875 people are added and the population becomes 1,006,875. The new flows are 40,275 and about 12,586, adding about 6922 more, and so on. Comparing the value at 100 years for different steps shows the error rising from about half a percent at dt = 0.125 to about 16% at dt = 5.",
       pages: "904-906",
     },
     {

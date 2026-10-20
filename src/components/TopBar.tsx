@@ -110,7 +110,7 @@ export default function TopBar({
             Applications
           </button>
           <button onClick={showMethods} aria-current={methodsActive ? "page" : undefined} className={navLink(methodsActive)}>
-            Methods
+            Learn
           </button>
         </nav>
 

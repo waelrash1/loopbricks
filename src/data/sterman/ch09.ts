@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Study guide to Sterman (2000), chapter 9. Our own words and our own diagram layouts; page numbers are printed book pages.
+// Topic notes drawing on Sterman (2000). Our own words and our own diagram layouts; page numbers refer to the printed source.
 export const CHAPTER: StudyChapter = {
   id: "ch09",
   number: "9",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part III: The dynamics of growth",
   pages: "295-348",
   summary:
-    "Growth driven by a reinforcing loop always meets a limit. When the balancing loops that impose the limit act without significant delay, the result is S-shaped growth: accelerating at first, then levelling off as dominance shifts from the reinforcing loop to the balancing ones. The chapter builds a family of models on this idea. It starts with the logistic curve, turns it into the SI and SIR models of infectious disease, derives the tipping point that separates an epidemic from a fizzle, and then reuses the same structure for rumours, new ideas and new products, ending with the Bass diffusion model, fads and repeat purchases. Running through it is a methodological warning: these models fit historical data well, but a good fit says little about whether the structure is right or whether the model will respond correctly to policy.",
+    "Growth driven by a reinforcing loop always meets a limit. When the balancing loops that impose the limit act without significant delay, the result is S-shaped growth: accelerating at first, then levelling off as dominance shifts from the reinforcing loop to the balancing ones. A family of models grows from this idea: the logistic curve becomes the SI and SIR models of infectious disease, the tipping point separates an epidemic from a fizzle, and the same structure then serves for rumours, new ideas and new products, up to the Bass diffusion model, fads and repeat purchases. Running through all of them is a methodological warning: these models fit historical data well, but a good fit says little about whether the structure is right or whether the model will respond correctly to policy.",
   bigIdeas: [
     {
       title: "S-shaped growth is a nonlinear shift in loop dominance",
@@ -27,12 +27,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "SIR: recovery adds a third loop, and the disease can now die out",
-      text: "Most diseases are acute: people are infectious for a while and then recover with immunity. Kermack and McKendrick's SIR model adds a recovered stock fed by a first-order recovery rate I/d, where d is the average duration of infectivity. The recovery rate creates a second balancing loop that drains the infectious stock. Unlike the SI model, an introduced infection can now fade away before it spreads, if people recover faster than they pass it on. Sterman warns against the common habit of lumping deaths into a 'removed' stock: the dead leave the population and stop interacting, while the recovered keep mixing, so aggregating them is poor practice.",
+      text: "Most diseases are acute: people are infectious for a while and then recover with immunity. Kermack and McKendrick's SIR model adds a recovered stock fed by a first-order recovery rate I/d, where d is the average duration of infectivity. The recovery rate creates a second balancing loop that drains the infectious stock. Unlike the SI model, an introduced infection can now fade away before it spreads, if people recover faster than they pass it on. Sterman (2000) warns against the common habit of lumping deaths into a 'removed' stock: the dead leave the population and stop interacting, while the recovered keep mixing, so aggregating them is poor practice.",
       pages: "303-305",
     },
     {
       title: "The tipping point: will each case make more than one new case?",
-      text: "An epidemic needs the infection rate to exceed the recovery rate. Rearranging c·i·S·I/N > I/d gives the threshold c·i·d·(S/N) > 1. The product c·i·d, the contact number, counts the infectious contacts one person makes while infectious; multiplied by the susceptible share it becomes the reproduction rate. Below 1 the balancing loops dominate and an arriving case produces at most a few secondary ones. Above 1 the contagion loop dominates and the disease spreads until depletion pulls the reproduction rate back below 1. Sterman's example has c = 6 per day, i = 0.25 and d = 2 days: a contact number of 3, an epidemic that infects nearly all of 10,000 people within three weeks, peaking at over 2,000 new cases a day around day 9. Cutting contacts to 2 per day puts the system exactly at the threshold.",
+      text: "An epidemic needs the infection rate to exceed the recovery rate. Rearranging c·i·S·I/N > I/d gives the threshold c·i·d·(S/N) > 1. The product c·i·d, the contact number, counts the infectious contacts one person makes while infectious; multiplied by the susceptible share it becomes the reproduction rate. Below 1 the balancing loops dominate and an arriving case produces at most a few secondary ones. Above 1 the contagion loop dominates and the disease spreads until depletion pulls the reproduction rate back below 1. An example in Sterman (2000) has c = 6 per day, i = 0.25 and d = 2 days: a contact number of 3, an epidemic that infects nearly all of 10,000 people within three weeks, peaking at over 2,000 new cases a day around day 9. Cutting contacts to 2 per day puts the system exactly at the threshold.",
       pages: "305-309",
     },
     {
@@ -42,7 +42,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Herd immunity and eradication do not need everyone to be immune",
-      text: "Because the threshold is a ratio, eradication only requires holding the reproduction rate below 1 so that cases resolve faster than they arise. Vaccinating a fraction of the population lowers S/N and can push the whole community below the tipping point, protecting the unvaccinated too: this is herd immunity. The condition can be lost if contact rates rise, or if new susceptibles accumulate through births, migration or waning immunity. Sterman shows a population challenged by one infected arrival every 50 days while its contact rate creeps up: no epidemic for 500 days, then successive and smaller waves as the system crosses the threshold, depletes susceptibles, and crosses again. Measles cycled roughly every two years before mass vaccination for the same reason, with births refilling the susceptible pool.",
+      text: "Because the threshold is a ratio, eradication only requires holding the reproduction rate below 1 so that cases resolve faster than they arise. Vaccinating a fraction of the population lowers S/N and can push the whole community below the tipping point, protecting the unvaccinated too: this is herd immunity. The condition can be lost if contact rates rise, or if new susceptibles accumulate through births, migration or waning immunity. Sterman (2000) simulates a population challenged by one infected arrival every 50 days while its contact rate creeps up: no epidemic for 500 days, then successive and smaller waves as the system crosses the threshold, depletes susceptibles, and crosses again. Measles cycled roughly every two years before mass vaccination for the same reason, with births refilling the susceptible pool.",
       pages: "309-314",
     },
     {
@@ -62,7 +62,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "A good historical fit does not validate a model",
-      text: "Logistic and Bass curves fit an enormous range of data. But different growth models can fit the same history equally well and still forecast very different futures, and by the time enough data exist to tell them apart the forecast is no longer useful. Worse, fit says nothing about whether the model will respond correctly to policies. If the real growth is driven partly by loops the model omits (such as third-party software for a computer platform), the estimated word-of-mouth strength silently absorbs them, and the model recommends the wrong lever. As Sterman puts it, \"A model may fit the data perfectly for the wrong reasons\" (p. 331). Use data to find flaws, not to defend a model.",
+      text: "Logistic and Bass curves fit an enormous range of data. But different growth models can fit the same history equally well and still forecast very different futures, and by the time enough data exist to tell them apart the forecast is no longer useful. Worse, fit says nothing about whether the model will respond correctly to policies. If the real growth is driven partly by loops the model omits (such as third-party software for a computer platform), the estimated word-of-mouth strength silently absorbs them, and the model recommends the wrong lever. A model can fit the data perfectly for the wrong reasons (Sterman 2000, p. 331). Use data to find flaws, not to defend a model.",
       pages: "328-331",
     },
     {
@@ -106,7 +106,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           '<span class="chip chipR">R1</span> Contagion: more infectious people generate more infections. <span class="chip chipB">B1</span> Depletion: each infection removes a susceptible, so contagion runs out of people to reach. <span class="chip chipB">B2</span> Recovery: infectious people recover after an average <b>infectious period</b> d. The epidemic takes off only if R1 outweighs B1 and B2 when the disease arrives, that is if <code>c·i·d·(S/N) &gt; 1</code>. Drop the recovery loop and you have the SI model, which is the logistic curve.',
       },
-      note: "Our own layout of the structure in Sterman's SI and SIR figures. The two loops on the left are the generic S-shaped growth pair; the recovery loop on the right is what creates a threshold.",
+      note: "Our own layout of the SI and SIR structures (Sterman 2000). The two loops on the left are the generic S-shaped growth pair; the recovery loop on the right is what creates a threshold.",
     },
     {
       kind: "cld",
@@ -180,7 +180,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       kind: "sequence",
-      title: "One structure, many models: how the chapter builds up",
+      title: "One structure, many models: how the family builds up",
       pages: "296-346",
       steps: [
         { label: "Logistic", detail: "Fractional growth falls linearly to zero at capacity" },
@@ -191,7 +191,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Bass", detail: "An external channel starts adoption from zero" },
         { label: "Fads and repurchase", detail: "Adopters stop using, discard and buy again" },
       ],
-      note: "Each step relaxes one restrictive assumption of the step before. That habit, finding the hidden assumption and reformulating, is the chapter's real lesson in modelling.",
+      note: "Each step relaxes one restrictive assumption of the step before. That habit, finding the hidden assumption and reformulating, is the real lesson in modelling.",
     },
   ],
   formulations: [
@@ -243,7 +243,7 @@ export const CHAPTER: StudyChapter = {
         "IR = (cE·iE·Exposed + cS·iS·Symptomatic) · S / N",
       ],
       explain:
-        "The extension Sterman sets as a challenge splits the infectious population into an asymptomatic stage and a symptomatic stage, each a first-order delay. The two stages can have different contact rates (the sick often stay in bed) and infectivities. When the asymptomatic stage is infectious and long, most transmission happens before anyone looks ill, which weakens quarantine and any vaccination programme triggered by visible cases. Replacing first-order stages with higher-order delays (chapter 11) gives more realistic incubation distributions.",
+        "A natural extension splits the infectious population into an asymptomatic stage and a symptomatic stage, each a first-order delay. The two stages can have different contact rates (the sick often stay in bed) and infectivities. When the asymptomatic stage is infectious and long, most transmission happens before anyone looks ill, which weakens quarantine and any vaccination programme triggered by visible cases. Replacing first-order stages with higher-order delays (see the module Delays and perception) gives more realistic incubation distributions.",
       molecule: "cascade",
       pages: "316-318",
     },
@@ -256,7 +256,7 @@ export const CHAPTER: StudyChapter = {
         "Peak adoption (with A0 = 0) at t* = ln(q/p) / (p + q)",
       ],
       explain:
-        "a (or p) is the fraction of potential adopters converted each period by external sources such as advertising; c·i (or q) is the strength of word of mouth. Only the product c·i can be estimated from sales data. For the DEC VAX 11/750 in Europe Sterman reports a ≈ 0.011 per year and c·i ≈ 1.33 per year with N = 7600 units. When q is much larger than p the curve looks like a logistic; when p dominates, adoption is highest at launch and simply decays.",
+        "a (or p) is the fraction of potential adopters converted each period by external sources such as advertising; c·i (or q) is the strength of word of mouth. Only the product c·i can be estimated from sales data. For the DEC VAX 11/750 in Europe Sterman (2000) reports a ≈ 0.011 per year and c·i ≈ 1.33 per year with N = 7600 units. When q is much larger than p the curve looks like a logistic; when p dominates, adoption is highest at launch and simply decays.",
       molecule: "diffusion",
       pages: "332-334",
     },
@@ -276,7 +276,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "Smallpox: eradication without universal vaccination",
-      text: "Smallpox was highly infectious but had a short infectious period, survivors gained lasting immunity, and the virus had no animal reservoir. That combination meant a broad enough vaccination campaign could hold the reproduction rate below 1 everywhere. Jenner's vaccine dates from 1796, yet smallpox remained a major killer into the 20th century. A WHO campaign of surveillance, vaccination and isolation from the mid-1960s led to the last natural case in Somalia in 1977, a laboratory escape in England caused two cases in 1978, and eradication was declared in 1980. Sterman notes the twist: with vaccination stopped and old immunity fading, much of the world is susceptible again, so stored virus is a serious risk.",
+      text: "Smallpox was highly infectious but had a short infectious period, survivors gained lasting immunity, and the virus had no animal reservoir. That combination meant a broad enough vaccination campaign could hold the reproduction rate below 1 everywhere. Jenner's vaccine dates from 1796, yet smallpox remained a major killer into the 20th century. A WHO campaign of surveillance, vaccination and isolation from the mid-1960s led to the last natural case in Somalia in 1977, a laboratory escape in England caused two cases in 1978, and eradication was declared in 1980. Sterman (2000) notes the twist: with vaccination stopped and old immunity fading, much of the world is susceptible again, so stored virus is a serious risk.",
       pages: "309-310",
     },
     {
@@ -286,7 +286,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "HIV/AIDS: why constant parameters fail for slow epidemics",
-      text: "With a median incubation of about 10 years and, before modern therapy, survival of around 10 to 12 months after diagnosis, HIV unfolds slowly enough for behaviour, research and treatment to change during the epidemic. US AIDS incidence grew until about 1995 and then fell, with mortality falling further once combination therapy (HAART) arrived. Even before that, growth was slower than a pure exponential, because contact rates and infectivity were falling as people learned about the risks. Globally the picture was far worse: WHO estimated that about a quarter of Zimbabwe's population was infected in 1997. Sterman uses the case to argue that long-lived epidemics need endogenous behaviour and treatment feedbacks, not fixed SIR parameters.",
+      text: "With a median incubation of about 10 years and, before modern therapy, survival of around 10 to 12 months after diagnosis, HIV unfolds slowly enough for behaviour, research and treatment to change during the epidemic. US AIDS incidence grew until about 1995 and then fell, with mortality falling further once combination therapy (HAART) arrived. Even before that, growth was slower than a pure exponential, because contact rates and infectivity were falling as people learned about the risks. Globally the picture was far worse: WHO estimated that about a quarter of Zimbabwe's population was infected in 1997. Sterman (2000) uses the case to argue that long-lived epidemics need endogenous behaviour and treatment feedbacks, not fixed SIR parameters.",
       pages: "319-323",
     },
     {
@@ -304,8 +304,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Reproduce Sterman's base-case epidemic in the outbreak case: set R₀ to 3, the infectious period to 2 days, and contact reduction and vaccination to 0. Record the day of the peak and the number never infected. Then lower R₀ step by step to 1.2, 1.0 and 0.9. At what value does the outbreak stop taking off?",
-      hint: "R₀ here is c·i·d. Sterman's example (6 contacts a day, infectivity 0.25, 2 days) gives 3. Around 6% of people should escape infection at R₀ = 3.",
+        "Reproduce the base-case epidemic of Sterman (2000) in the outbreak case: set R₀ to 3, the infectious period to 2 days, and contact reduction and vaccination to 0. Record the day of the peak and the number never infected. Then lower R₀ step by step to 1.2, 1.0 and 0.9. At what value does the outbreak stop taking off?",
+      hint: "R₀ here is c·i·d. The base-case example (6 contacts a day, infectivity 0.25, 2 days) gives 3. Around 6% of people should escape infection at R₀ = 3.",
       link: { label: "Epidemic case", hash: "/apps/health/epidemic" },
     },
     {
@@ -335,7 +335,7 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Open the Bass case and run the Typical durable preset (p 3%, q 38%), then Strong word of mouth (p 1%, q 40%). Which reaches half the market first? A product manager proposes doubling the advertising budget to triple p. Use the model to say when that would matter most, and what it cannot tell you about whether word of mouth is really the driver.",
-      hint: "Think about the chapter's warning on fit: if growth is partly driven by loops the model omits, the fitted q absorbs them.",
+      hint: "Think about the warning on fit: if growth is partly driven by loops the model omits, the fitted q absorbs them.",
       link: { label: "Bass diffusion case", hash: "/apps/business/new-product-diffusion" },
     },
     {

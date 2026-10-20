@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Chapter 15 of Sterman (2000): bounded rationality versus rational expectations. Paraphrased, with page references to the printed book.
+// Topic notes on bounded rationality versus rational expectations, drawing on Sterman (2000). Paraphrased, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch15",
   number: "15",
@@ -8,11 +8,11 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV Tools for modeling dynamic systems",
   pages: "597-629",
   summary:
-    "Simulation models must describe decisions as people actually make them. The evidence says human rationality is bounded: limited attention, memory and inference force people to rely on habits, rules of thumb, goals and the decomposition of problems into local subgoals. Such rules are usually intendedly rational: they would work well if the world were as simple as the decision maker assumes. The chapter shows how to test that with partial model tests, isolating each decision function and challenging it with exogenous inputs, and then uses Forrester's market growth model to show how order fulfilment, capacity acquisition and sales functions that are each sensible on their own interact to produce slow growth and repeated boom and bust that managers then blame on people.",
+    "Simulation models must describe decisions as people actually make them. The evidence says human rationality is bounded: limited attention, memory and inference force people to rely on habits, rules of thumb, goals and the decomposition of problems into local subgoals. Such rules are usually intendedly rational: they would work well if the world were as simple as the decision maker assumes. That can be tested with partial model tests, isolating each decision function and challenging it with exogenous inputs, and Forrester's market growth model then shows how order fulfilment, capacity acquisition and sales functions that are each sensible on their own interact to produce slow growth and repeated boom and bust that managers then blame on people.",
   bigIdeas: [
     {
       title: "Descriptive, not normative",
-      text: "A simulation model is meant to mimic how real decisions are made, mistakes included, so that policies can then be designed to improve them. Building in optimal behaviour or perfect foresight would describe a world that does not exist and would hide exactly the errors that cause the dynamics of interest. Simon's verdict, quoted at the start of the chapter, is that the rational-choice assumptions of economics do not describe how people decide in complex situations at all.",
+      text: "A simulation model is meant to mimic how real decisions are made, mistakes included, so that policies can then be designed to improve them. Building in optimal behaviour or perfect foresight would describe a world that does not exist and would hide exactly the errors that cause the dynamics of interest. Simon's verdict is that the rational-choice assumptions of economics do not describe how people decide in complex situations at all.",
       pages: "597-599",
     },
     {
@@ -57,7 +57,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Hill climbing finds the right capacity without knowing it",
-      text: "Anchoring desired capacity on current capacity and adjusting by delivery pressure is the hill-climbing structure of chapter 13. Held in a world where delivery delay is fixed (the loop cut), capacity keeps rising as long as pressure persists; with the loop closed, a 20% rise in orders produces a smooth climb to exactly the new required capacity over a few years, with no forecast and no optimisation. The cautious slope slows expansion near the summit, reducing overshoot. Likewise the sales rules grow the firm whenever a dollar of revenue buys more than a dollar of new bookings and shrink it otherwise.",
+      text: "Anchoring desired capacity on current capacity and adjusting by delivery pressure is the hill-climbing structure (see the module Formulating decision rules and nonlinear effects). Held in a world where delivery delay is fixed (the loop cut), capacity keeps rising as long as pressure persists; with the loop closed, a 20% rise in orders produces a smooth climb to exactly the new required capacity over a few years, with no forecast and no optimisation. The cautious slope slows expansion near the summit, reducing overshoot. Likewise the sales rules grow the firm whenever a dollar of revenue buys more than a dollar of new bookings and shrink it otherwise.",
       pages: "612-619",
     },
     {
@@ -252,7 +252,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Simple rules versus experts",
-      text: "Studies reviewed in the chapter found that simple decision rules using a few inputs often beat expert judgment at predicting outcomes as varied as student performance, cancer patients' survival, business failures and stock returns. The point is not that rules are clever but that holistic expert judgment combines many cues poorly, which supports modelling decisions as simple, cue-limited rules.",
+      text: "Studies reviewed by Sterman (2000) found that simple decision rules using a few inputs often beat expert judgment at predicting outcomes as varied as student performance, cancer patients' survival, business failures and stock returns. The point is not that rules are clever but that holistic expert judgment combines many cues poorly, which supports modelling decisions as simple, cue-limited rules.",
       pages: "599",
     },
   ],
@@ -271,7 +271,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Cautious versus proportional expansion. In Univariate Anchoring and Adjustment, treat the anchor as current capacity and the current/normal ratio as delivery pressure. Compare 'Under-adjust (√)' with 'Proportional'. Which corresponds to the book's base-case capacity policy, and what would you expect from the more aggressive one in the full model?",
+        "Cautious versus proportional expansion. In Univariate Anchoring and Adjustment, treat the anchor as current capacity and the current/normal ratio as delivery pressure. Compare 'Under-adjust (√)' with 'Proportional'. Which corresponds to the base-case capacity policy of the market growth model, and what would you expect from the more aggressive one in the full model?",
       hint: "Strength 0.5 sets desired capacity to 100 × 1.5^0.5 ≈ 122 when pressure is 1.5; strength 1 sets it to 150. The aggressive policy expands faster but invites overshoot through the 18-month delay.",
       link: { label: "Univariate Anchoring", hash: "/m/univariateAnchor" },
     },

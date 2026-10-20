@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part II Tools for systems thinking",
   pages: "191-230",
   summary:
-    "Causal loop diagrams show feedback but hide accumulation. This chapter supplies the missing half of system dynamics: stocks, which hold the state of a system, and flows, which are the only things that can change them. It sets out the notation (boxes, pipes, valves and clouds), shows that a stock and flow map is exactly an integral equation, and gives practical tests for telling stocks from flows: the snapshot test and units of measure. It then turns to mapping practice: why auxiliaries keep one idea per equation, why information links can never point straight into a stock, how far to aggregate serial and parallel processes, and why every cloud on a map is a boundary assumption that must be challenged. Two consulting cases, a pulp and paper mill construction project and US automobile recycling, show these choices made for real.",
+    "Causal loop diagrams show feedback but hide accumulation. Stocks and flows supply the missing half of system dynamics: stocks, which hold the state of a system, and flows, which are the only things that can change them. This topic covers the notation (boxes, pipes, valves and clouds), shows that a stock and flow map is exactly an integral equation, and gives practical tests for telling stocks from flows: the snapshot test and units of measure. It then turns to mapping practice: why auxiliaries keep one idea per equation, why information links can never point straight into a stock, how far to aggregate serial and parallel processes, and why every cloud on a map is a boundary assumption that must be challenged. Two consulting cases, a pulp and paper mill construction project and US automobile recycling, show these choices made for real.",
   bigIdeas: [
     {
       title: "Stocks and flows are the second pillar of dynamics, beside feedback",
@@ -16,7 +16,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "A stock and flow map is an integral equation in pictures",
-      text: "The bathtub, the box-and-pipe diagram, the integral Stock(t) = Stock(t₀) + ∫(Inflow − Outflow) ds and the differential equation d(Stock)/dt = Inflow − Outflow carry exactly the same information. Sterman writes the accumulation as INTEGRAL(Inflow − Outflow, Stock₀), which reads as: keep a running total of the net flow, starting from a given initial value. Because the four forms are interchangeable, a manager who understands bathtubs already understands the mathematics; the modeller must still understand it rigorously.",
+      text: "The bathtub, the box-and-pipe diagram, the integral Stock(t) = Stock(t₀) + ∫(Inflow − Outflow) ds and the differential equation d(Stock)/dt = Inflow − Outflow carry exactly the same information. The accumulation is written as INTEGRAL(Inflow − Outflow, Stock₀), which reads as: keep a running total of the net flow, starting from a given initial value. Because the four forms are interchangeable, a manager who understands bathtubs already understands the mathematics; the modeller must still understand it rigorously.",
       pages: "193-195",
     },
     {
@@ -135,7 +135,7 @@ export const CHAPTER: StudyChapter = {
       kind: "cld",
       title: "A sketch answer to the 1979 gasoline shortage",
       pages: "212-213",
-      note: "Our own sketch of one plausible answer to the chapter's challenge; Sterman leaves the answer to the reader.",
+      note: "Our own sketch of one plausible structure; other answers are possible.",
       cld: {
         size: [620, 300],
         vars: [
@@ -186,7 +186,7 @@ export const CHAPTER: StudyChapter = {
         "Stock = INTEGRAL(Inflow − Outflow, Stock₀)",
       ],
       explain:
-        "The stock at any time is its initial value plus everything that has flowed in less everything that has flowed out. The derivative form says the same thing at an instant: the net flow is the slope of the stock. The INTEGRAL() notation is the one used in simulation software and throughout the book. The initial value is a separate piece of information; it cannot be recovered from the flows.",
+        "The stock at any time is its initial value plus everything that has flowed in less everything that has flowed out. The derivative form says the same thing at an instant: the net flow is the slope of the stock. The INTEGRAL() notation is the one used in simulation software and throughout these notes. The initial value is a separate piece of information; it cannot be recovered from the flows.",
       molecule: "bathtub",
       pages: "193-195",
     },
@@ -240,7 +240,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "The 1979 US gasoline shortage",
-      text: "After the Iranian revolution, long queues and empty stations suggested that supply had collapsed. Yet imports from the Persian Gulf fell by about 500,000 barrels per day while imports from elsewhere rose by about 640,000, so total imports rose by about 140,000; domestic output fell by about 150,000 barrels per day, leaving supply essentially flat, while consumption fell by about 330,000 barrels per day (around 2%). Sterman poses the puzzle of where the gas went as a mapping challenge: the answer lies in a stock that the news coverage ignored, the fuel in the tanks of cars, filled by anxious drivers topping off.",
+      text: "After the Iranian revolution, long queues and empty stations suggested that supply had collapsed. Yet imports from the Persian Gulf fell by about 500,000 barrels per day while imports from elsewhere rose by about 640,000, so total imports rose by about 140,000; domestic output fell by about 150,000 barrels per day, leaving supply essentially flat, while consumption fell by about 330,000 barrels per day (around 2%). The puzzle of where the gas went is a mapping exercise (Sterman 2000): the answer lies in a stock that the news coverage ignored, the fuel in the tanks of cars, filled by anxious drivers topping off.",
       pages: "212-213",
     },
     {
@@ -250,7 +250,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Automobile recycling (Zamudio-Ramirez 1996)",
-      text: "Starting from a car-industry map with clouds at both ends, Sterman extends the boundary to suppliers, dealers (who aim for about 40 to 60 days of stock) and cars on the road, then to scrapping. North America scraps some 10 to 12 million vehicles a year; about 94% are shredded by roughly 200 shredders. The recycling model showed that design for disassembly would do nothing for years, because new cars take about a decade to reach the scrapyard, and could then create a glut of used parts that depressed prices and pushed recovery back down. Lighter cars with more plastic could cut shredder revenue per hulk and even raise abandonment and landfilled fluff. Collecting recyclable material is not the same as recycling it.",
+      text: "Starting from a car-industry map with clouds at both ends, the analysis extends the boundary to suppliers, dealers (who aim for about 40 to 60 days of stock) and cars on the road, then to scrapping. North America scraps some 10 to 12 million vehicles a year; about 94% are shredded by roughly 200 shredders. The recycling model showed that design for disassembly would do nothing for years, because new cars take about a decade to reach the scrapyard, and could then create a glut of used parts that depressed prices and pushed recovery back down. Lighter cars with more plastic could cut shredder revenue per hulk and even raise abandonment and landfilled fluff. Collecting recyclable material is not the same as recycling it.",
       pages: "222-229",
     },
   ],

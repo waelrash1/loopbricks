@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part II Tools for systems thinking",
   pages: "231-262",
   summary:
-    "Given the flows, what must the stock do? Given the stock, what must the flows have been? These are integration and differentiation, and this chapter teaches both without formulas. The amount added to a stock over any interval is the area under its net flow; the net flow at any moment is the slope of the stock. With these two rules a modeller can sketch the behaviour of any stock from a graph of its flows, and see how accumulation smooths, delays and remembers. Two policy cases show the payoff before any feedback is considered: the climate keeps warming after emissions stop, and survey data claiming the number of people who had ever used cocaine was falling were physically impossible.",
+    "Given the flows, what must the stock do? Given the stock, what must the flows have been? These are integration and differentiation, and both can be learned without formulas. The amount added to a stock over any interval is the area under its net flow; the net flow at any moment is the slope of the stock. With these two rules a modeller can sketch the behaviour of any stock from a graph of its flows, and see how accumulation smooths, delays and remembers. Two policy cases show the payoff before any feedback is considered: the climate keeps warming after emissions stop, and survey data claiming the number of people who had ever used cocaine was falling were physically impossible.",
   bigIdeas: [
     {
       title: "Static and dynamic equilibrium",
@@ -36,7 +36,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Accumulation creates delay: a quarter-cycle lag",
-      text: "If the net flow oscillates, the stock oscillates with the same period but peaks a quarter cycle later, because the stock keeps rising until the net flow falls to zero. For a net flow of amplitude A and period T, the stock swings with amplitude A·T/2π. Sterman's example, a 12-month cycle of ±50 units/month, gives stock swings of about ±96 units, peaking three months after the flow. Integration alone, with no feedback at all, is enough to create lags.",
+      text: "If the net flow oscillates, the stock oscillates with the same period but peaks a quarter cycle later, because the stock keeps rising until the net flow falls to zero. For a net flow of amplitude A and period T, the stock swings with amplitude A·T/2π. In an example from Sterman (2000), a 12-month cycle of ±50 units/month, gives stock swings of about ±96 units, peaking three months after the flow. Integration alone, with no feedback at all, is enough to create lags.",
       pages: "237-238",
     },
     {
@@ -194,7 +194,7 @@ export const CHAPTER: StudyChapter = {
         "As dt → 0 the sum becomes ∫ NetFlow dt",
       ],
       explain:
-        "Each slice adds a rectangle of height equal to the net flow and width dt. If the flow is rising during the slice, the rectangle undershoots the true area; smaller slices reduce the error. Every simulation package integrates this way by default (see Appendix A). In the Bathtub molecule both flows are constant, so the rectangles are exact and the level changes in straight lines.",
+        "Each slice adds a rectangle of height equal to the net flow and width dt. If the flow is rising during the slice, the rectangle undershoots the true area; smaller slices reduce the error. Every simulation package integrates this way by default (see the module Simulation mechanics: integration and noise). In the Bathtub molecule both flows are constant, so the rectangles are exact and the level changes in straight lines.",
       molecule: "bathtub",
       pages: "233-234",
     },
@@ -259,7 +259,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Why the epidemic ended, and an earlier one",
-      text: "Interdiction did not end the 1980s epidemic: cocaine stayed available, pure and cheap. Homer's model, using data only to 1989, anticipated the turning point of the 1990s; net cocaine on the streets in 1995 was estimated at about three-quarters of the 1989 level. Use was checked by people learning of the drug's health and legal harms, loops that act with long lags. A similar wave ran from the 1880s, when cocaine was praised as a remedy, to the 1920s, when importation of coca was banned after communities struggled with compulsive users. Sterman warns that fitting history should not be bought with ad hoc exogenous inputs.",
+      text: "Interdiction did not end the 1980s epidemic: cocaine stayed available, pure and cheap. Homer's model, using data only to 1989, anticipated the turning point of the 1990s; net cocaine on the streets in 1995 was estimated at about three-quarters of the 1989 level. Use was checked by people learning of the drug's health and legal harms, loops that act with long lags. A similar wave ran from the 1880s, when cocaine was praised as a remedy, to the 1920s, when importation of coca was banned after communities struggled with compulsive users. Sterman (2000) warns that fitting history should not be bought with ad hoc exogenous inputs.",
       pages: "258-262",
     },
   ],

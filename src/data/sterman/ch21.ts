@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part VI Model testing",
   pages: "845-891",
   summary:
-    "No model can be validated or verified, because every model is a simplification and therefore wrong in some respect. The useful questions are whether a model is fit for a stated purpose and whether its flaws matter to that purpose. Sterman sets out the questions model users should ask, the practical and political conditions of trustworthy modelling (all kinds of data, full documentation, replicability, and a reflective rather than protective stance), and twelve tests that together build confidence: boundary adequacy, structure assessment, dimensional consistency, parameter assessment, extreme conditions, integration error, behaviour reproduction, behaviour anomaly, family member, surprise behaviour, sensitivity analysis and system improvement. Each test is meant to uncover errors, not to prove the model right, and testing runs through the whole project rather than coming at the end.",
+    "No model can be validated or verified, because every model is a simplification and therefore wrong in some respect. The useful questions are whether a model is fit for a stated purpose and whether its flaws matter to that purpose. Building confidence involves the questions model users should ask, the practical and political conditions of trustworthy modelling (all kinds of data, full documentation, replicability, and a reflective rather than protective stance), and twelve tests that together build confidence: boundary adequacy, structure assessment, dimensional consistency, parameter assessment, extreme conditions, integration error, behaviour reproduction, behaviour anomaly, family member, surprise behaviour, sensitivity analysis and system improvement. Each test is meant to uncover errors, not to prove the model right, and testing runs through the whole project rather than coming at the end.",
   bigIdeas: [
     {
       title: "Validation and verification are impossible",
@@ -26,7 +26,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Questions model users should ask",
-      text: "Sterman lists questions that users should put to any model, grouped in four areas. Purpose, suitability and boundary: what is the purpose, what is endogenous, exogenous or left out (and is anything omitted only for lack of numbers), is the time horizon and aggregation right? Physical and decision-making structure: are conservation laws respected and units consistent, are stocks and flows explicit, are delays and constraints included, do simulated decisions use information real decision makers have? Robustness: does the model behave plausibly under extreme inputs, and do recommendations survive plausible changes in parameters, aggregation and boundary? Pragmatics and politics: is it documented, can you run it yourself, what data were used, who reviewed it, are results reproducible or add-factored, what does a run cost, and what are the modellers' and clients' biases?",
+      text: "Users should put questions to any model in four areas (Sterman 2000). Purpose, suitability and boundary: what is the purpose, what is endogenous, exogenous or left out (and is anything omitted only for lack of numbers), is the time horizon and aggregation right? Physical and decision-making structure: are conservation laws respected and units consistent, are stocks and flows explicit, are delays and constraints included, do simulated decisions use information real decision makers have? Robustness: does the model behave plausibly under extreme inputs, and do recommendations survive plausible changes in parameters, aggregation and boundary? Pragmatics and politics: is it documented, can you run it yourself, what data were used, who reviewed it, are results reproducible or add-factored, what does a run cost, and what are the modellers' and clients' biases?",
       pages: "851-852",
     },
     {
@@ -91,7 +91,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "A perfect model can fit the data badly",
-      text: "Systems such as supply chains amplify certain frequencies in the random shocks that perturb them, and no model can reproduce every shock. Sterman ran the same inventory and workforce model twice with productivity noise (standard deviation 5%, correlation time 4 weeks), identical in every respect until week 200, when the random sequences diverged. Within a few weeks the two runs bore no point-by-point resemblance, although one is a perfect replica of the other. In noise-driven or path-dependent systems, the right test is whether the model produces the same modes, frequencies, amplitudes and phase relationships as the data, not whether it matches each point. The more a model is forced by exogenous historical inputs, the closer its point-by-point fit should be.",
+      text: "Systems such as supply chains amplify certain frequencies in the random shocks that perturb them, and no model can reproduce every shock. Sterman (2000) reports running the same inventory and workforce model twice with productivity noise (standard deviation 5%, correlation time 4 weeks), identical in every respect until week 200, when the random sequences diverged. Within a few weeks the two runs bore no point-by-point resemblance, although one is a perfect replica of the other. In noise-driven or path-dependent systems, the right test is whether the model produces the same modes, frequencies, amplitudes and phase relationships as the data, not whether it matches each point. The more a model is forced by exogenous historical inputs, the closer its point-by-point fit should be.",
       pages: "877-879",
     },
     {
@@ -201,7 +201,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           "<span class=\"chip chipR\">R</span> <b>Reflective modelling</b>: exposing assumptions brings flaws to light early, fixing them raises quality, and clients who see this trust the process and open up further. A model that is slow or costly to revise breeds <b>defensiveness</b>, which weakens the loop at two points and can run it in reverse.",
       },
-      note: "Our sketch of Sterman's argument about protective and reflective uses of models, and of his warning that slow, costly models make modellers resist change.",
+      note: "Our sketch of the contrast between protective and reflective uses of models (Sterman 2000), and of the warning that slow, costly models make modellers resist change.",
       pages: "852-853, 858",
     },
     {
@@ -298,7 +298,7 @@ export const CHAPTER: StudyChapter = {
         "Rule of thumb: dt well below the shortest time constant in the model",
       ],
       explain:
-        "Continuous-time models are solved by stepping forward in time. If dt is too long relative to a time constant, Euler integration overshoots, and with a step twice the time constant a goal-seeking stock oscillates for ever. Results that change when dt is halved are artefacts. Change the integration method as well, and make sure no decision rule secretly depends on dt (appendix A covers methods).",
+        "Continuous-time models are solved by stepping forward in time. If dt is too long relative to a time constant, Euler integration overshoots, and with a step twice the time constant a goal-seeking stock oscillates for ever. Results that change when dt is halved are artefacts. Change the integration method as well, and make sure no decision rule secretly depends on dt (see the module Simulation mechanics: integration and noise).",
       molecule: "closegap",
       pages: "872-874",
     },
@@ -358,14 +358,14 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "NAFTA models and the investment boundary",
-      text: "During the early-1990s debate over NAFTA, most of the many econometric models used predicted gains for all three countries. The Congressional Budget Office reviewed 19 of them: 14 ignored investment flows altogether, and 4 of the other 5 assumed no effect on US investment. The single model that treated investment endogenously estimated a transfer of about $2.5 billion a year from the US to Mexico and roughly 375,000 lost US jobs over 5 years. Sterman's point is not that NAFTA was wrong but that the results hinged on unstated boundary assumptions such as immobile capital, and that both sides picked models that suited them rather than testing them.",
+      text: "During the early-1990s debate over NAFTA, most of the many econometric models used predicted gains for all three countries. The Congressional Budget Office reviewed 19 of them: 14 ignored investment flows altogether, and 4 of the other 5 assumed no effect on US investment. The single model that treated investment endogenously estimated a transfer of about $2.5 billion a year from the US to Mexico and roughly 375,000 lost US jobs over 5 years. The point (Sterman 2000) is not that NAFTA was wrong but that the results hinged on unstated boundary assumptions such as immobile capital, and that both sides picked models that suited them rather than testing them.",
       pages: "862-863",
     },
   ],
   exercises: [
     {
       prompt:
-        "Questions users should ask. Open the bullwhip case and answer, in writing, the boundary questions from this chapter: what is the purpose, which variables are endogenous, which are exogenous, what is left out, and is anything left out only because it has no numerical data? Then name one excluded feedback that could change the policy conclusion.",
+        "Questions users should ask. Open the bullwhip case and answer, in writing, the boundary questions for model users: what is the purpose, which variables are endogenous, which are exogenous, what is left out, and is anything left out only because it has no numerical data? Then name one excluded feedback that could change the policy conclusion.",
       hint: "Customer demand is usually exogenous in supply-chain models. Ask what would happen if long delivery delays drove customers away.",
       link: { label: "Open the bullwhip case", hash: "/apps/business/bullwhip" },
     },

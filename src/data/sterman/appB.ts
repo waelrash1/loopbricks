@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Appendices",
   pages: "913-924",
   summary:
-    "Real variables wobble, and the part of a flow that a model's decision rules do not explain is called noise. This appendix shows how to add random variation to a model properly. Independent random draws each time step (white noise) change far too fast and spread their power over every frequency, while real disturbances have inertia because they come from stocks. Pink noise, made by smoothing white noise with a correlation time, captures that persistence. The difference matters because feedback systems filter noise: they ignore fast wobbles but resonate with disturbances near their natural period. Correlated noise therefore excites a model's latent modes, such as the business cycle in an inventory and workforce model, while white noise of the same size barely moves it.",
+    "Real variables wobble, and the part of a flow that a model's decision rules do not explain is called noise. Random variation has to be added to a model with care. Independent random draws each time step (white noise) change far too fast and spread their power over every frequency, while real disturbances have inertia because they come from stocks. Pink noise, made by smoothing white noise with a correlation time, captures that persistence. The difference matters because feedback systems filter noise: they ignore fast wobbles but resonate with disturbances near their natural period. Correlated noise therefore excites a model's latent modes, such as the business cycle in an inventory and workforce model, while white noise of the same size barely moves it.",
   bigIdeas: [
     {
       title: "One person's noise is another's signal",
@@ -41,7 +41,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Scale the white noise so the pink noise has the right spread",
-      text: "Smoothing is a low-pass filter: it lets slow variation through and suppresses cycles near or shorter than the correlation time. So the longer the correlation time, the larger the white noise must be to leave the specified standard deviation after smoothing. Conversely, a longer time step needs smaller white noise, because sampling less often concentrates its power at lower frequencies that the smooth does not remove. Sterman's formulation multiplies a uniform draw by the square root of 24 × correlation time / dt; an alternative uses a normal draw with its own factor. Both assume Euler integration, since higher-order methods distort the noise's spectrum.",
+      text: "Smoothing is a low-pass filter: it lets slow variation through and suppresses cycles near or shorter than the correlation time. So the longer the correlation time, the larger the white noise must be to leave the specified standard deviation after smoothing. Conversely, a longer time step needs smaller white noise, because sampling less often concentrates its power at lower frequencies that the smooth does not remove. The formulation in Sterman (2000) multiplies a uniform draw by the square root of 24 × correlation time / dt; an alternative uses a normal draw with its own factor. Both assume Euler integration, since higher-order methods distort the noise's spectrum.",
       pages: "918-919",
     },
     {
@@ -51,7 +51,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Models need correlated noise to excite their modes",
-      text: "Driven by white noise in productivity with a 5% standard deviation, Sterman's inventory and workforce model hardly moves: inventory absorbs the day-to-day ups and downs and there is no reason to hire or fire. Driven by pink noise of the same size with a 4-week correlation time, low output persists for weeks, inventory falls, the firm hires, and the system's roughly one-year oscillation appears. Production starts then vary by 7.6% of their mean, more than the 5% input, and hiring varies about six times as much as under white noise, around 13 times the variation in productivity. Without realistic noise, a model with a latent oscillatory mode may never show it.",
+      text: "Driven by white noise in productivity with a 5% standard deviation, the inventory and workforce model reported by Sterman (2000) hardly moves: inventory absorbs the day-to-day ups and downs and there is no reason to hire or fire. Driven by pink noise of the same size with a 4-week correlation time, low output persists for weeks, inventory falls, the firm hires, and the system's roughly one-year oscillation appears. Production starts then vary by 7.6% of their mean, more than the 5% input, and hiring varies about six times as much as under white noise, around 13 times the variation in productivity. Without realistic noise, a model with a latent oscillatory mode may never show it.",
       pages: "919-921",
     },
     {
@@ -117,9 +117,9 @@ export const CHAPTER: StudyChapter = {
         ],
         loops: [{ type: "B", label: "B1", x: 300, y: 160 }],
         caption:
-          "<span class=\"chip chipB\">B</span>1 is a balancing loop with two stocks (Inventory and Labour) and hiring delays, so it has a natural period of oscillation, about a year in Sterman's model. Fast <b>Productivity noise</b> is soaked up by inventory before the loop reacts. Noise that persists for weeks gets through, pushes the loop near its natural period and sets off cycles larger than the noise itself.",
+          "<span class=\"chip chipB\">B</span>1 is a balancing loop with two stocks (Inventory and Labour) and hiring delays, so it has a natural period of oscillation, about a year in the model reported by Sterman (2000). Fast <b>Productivity noise</b> is soaked up by inventory before the loop reacts. Noise that persists for weeks gets through, pushes the loop near its natural period and sets off cycles larger than the noise itself.",
       },
-      note: "A simplified causal view of the inventory and workforce model used in this appendix; shipments and expected productivity are left out.",
+      note: "A simplified causal view of the inventory and workforce model used here; shipments and expected productivity are left out.",
       pages: "919-921",
     },
     {
@@ -153,7 +153,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           "Small random shortfalls raise <b>Work pressure</b>, and staff cut <b>Time per customer</b>. <span class=\"chip chipR\">R</span>1: the norm drifts down to match what people actually do, and in Oliva's data it never drifted back up. <span class=\"chip chipR\">R</span>2: lower service quality cuts loan revenue, which leads to fewer staff and still more pressure. Noise reveals these latent reinforcing loops.",
       },
-      note: "Our sketch of Oliva's retail bank findings as reported in this appendix and in chapter 21.",
+      note: "Our sketch of Oliva's retail bank findings as reported by Sterman (2000); see also the module Testing and building confidence in models.",
       pages: "921-922",
     },
     {
@@ -169,7 +169,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Fix the seed for comparisons", detail: "Same random sequence in every policy run." },
         { label: "Report distributions", detail: "Long runs or many seeds; then sensitivity to the noise assumptions." },
       ],
-      note: "Our ordering of the appendix's guidelines into a working procedure.",
+      note: "Our ordering of these guidelines into a working procedure.",
       pages: "914, 923-924",
     },
   ],
@@ -220,7 +220,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "White versus pink noise in the inventory and workforce model",
-      text: "Sterman drove the chapter 19 inventory and workforce model (with expected productivity smoothed over 13 weeks) with productivity noise of the same 5% standard deviation and the same distribution, once as white noise and once as pink noise with a 4-week correlation time, time step 0.125 weeks. Under white noise the system damped nearly everything: inventory varied by less than 2% of its mean, and production, inventory and labour all varied far less than productivity; only the hiring rate amplified the input. Under pink noise, inventory, labour and other key variables all varied by more than productivity did, production starts by 7.6%, and the standard deviation of hiring was about six times that under white noise and 13 times that of productivity. The noise had power near the system's natural period of about a year, so the system resonated.",
+      text: "Sterman (2000) drove the inventory and workforce model (see the module Cycles in business, labour and commodity markets) (with expected productivity smoothed over 13 weeks) with productivity noise of the same 5% standard deviation and the same distribution, once as white noise and once as pink noise with a 4-week correlation time, time step 0.125 weeks. Under white noise the system damped nearly everything: inventory varied by less than 2% of its mean, and production, inventory and labour all varied far less than productivity; only the hiring rate amplified the input. Under pink noise, inventory, labour and other key variables all varied by more than productivity did, production starts by 7.6%, and the standard deviation of hiring was about six times that under white noise and 13 times that of productivity. The noise had power near the system's natural period of about a year, so the system resonated.",
       pages: "919-921",
     },
     {
@@ -264,7 +264,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Noise in fit statistics. In the calibration lab, fit the data by hand until the error is close to the measurement noise. Note how much of the remaining error is in the timing share UC. Explain, using this appendix, why a model should not be blamed for missing the random component of data, and why point-by-point error can be large even for a perfect model of a noise-driven system.",
+        "Noise in fit statistics. In the calibration lab, fit the data by hand until the error is close to the measurement noise. Note how much of the remaining error is in the timing share UC. Explain, using these ideas about noise, why a model should not be blamed for missing the random component of data, and why point-by-point error can be large even for a perfect model of a noise-driven system.",
       link: { label: "Open the calibration lab", hash: "/methods/calibration" },
     },
     {

@@ -7,11 +7,11 @@ export const CHAPTER: StudyChapter = {
   part: "Part III: The dynamics of growth",
   pages: "349-406",
   summary:
-    "Why do whole markets, technologies and conventions end up locked in to one option, even when every option looked equally good at the start? This chapter shows that path dependence is a signature of systems dominated by reinforcing feedback. Small, often unobservable events early on are amplified until one outcome dominates, and the accumulated installed base, skills and complementary assets then make switching prohibitively costly. Sterman builds the idea from the Polya urn (linear and nonlinear), applies it to the VHS versus Betamax battle, surveys more than three dozen reinforcing loops that drive corporate growth, discusses whether economies lock in to inferior technologies and what breaks lock-in, and closes with a continuous-time model of standards formation in which the network effect grows stronger as the market grows.",
+    "Why do whole markets, technologies and conventions end up locked in to one option, even when every option looked equally good at the start? Path dependence is a signature of systems dominated by reinforcing feedback. Small, often unobservable events early on are amplified until one outcome dominates, and the accumulated installed base, skills and complementary assets then make switching prohibitively costly. The idea builds from the Polya urn (linear and nonlinear) to the VHS versus Betamax battle, a survey of more than three dozen reinforcing loops that drive corporate growth (Sterman 2000), the question of whether economies lock in to inferior technologies and what breaks lock-in, and finally a continuous-time model of standards formation in which the network effect grows stronger as the market grows.",
   bigIdeas: [
     {
       title: "Path dependence: history, not just structure, picks the outcome",
-      text: "A system is path dependent when its final equilibrium depends on its starting point and on random shocks along the way, so that small, early, unpredictable events decide where it ends up. Even when all end states are equally attractive at the outset, noise breaks the symmetry and reinforcing loops magnify the difference until it is large and lasting. Railway gauges, the side of the road people drive on, QWERTY and the handedness of the amino acids in living things are all examples. The chapter's claim is that this is not exotic: it appears wherever reinforcing feedback dominates.",
+      text: "A system is path dependent when its final equilibrium depends on its starting point and on random shocks along the way, so that small, early, unpredictable events decide where it ends up. Even when all end states are equally attractive at the outset, noise breaks the symmetry and reinforcing loops magnify the difference until it is large and lasting. Railway gauges, the side of the road people drive on, QWERTY and the handedness of the amino acids in living things are all examples. The claim here is that this is not exotic: it appears wherever reinforcing feedback dominates.",
       pages: "349-353",
     },
     {
@@ -46,7 +46,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Positive feedback is the engine of corporate growth",
-      text: "Sterman catalogues more than three dozen reinforcing loops that can make a firm grow: awareness through advertising, sales effort, word of mouth and media; spreading fixed development costs over expected volume; scale and scope economies; learning curves and process improvement; network and complementary-goods effects; differentiation and new products; market power; acquisitions; workforce quality; cost of capital; influence over the rules; and stretch goals. Most of them act twice, once by enlarging the total market and once by raising the firm's share of it. Their delays differ greatly: advertising responds quickly, while sales forces, experience and reputation take years to build and can be lost fast.",
+      text: "Sterman (2000) catalogues more than three dozen reinforcing loops that can make a firm grow: awareness through advertising, sales effort, word of mouth and media; spreading fixed development costs over expected volume; scale and scope economies; learning curves and process improvement; network and complementary-goods effects; differentiation and new products; market power; acquisitions; workforce quality; cost of capital; influence over the rules; and stretch goals. Most of them act twice, once by enlarging the total market and once by raising the firm's share of it. Their delays differ greatly: advertising responds quickly, while sales forces, experience and reputation take years to build and can be lost fast.",
       pages: "364-382",
     },
     {
@@ -319,8 +319,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "In the Market Share molecule, attractiveness depends only on the ratio of the two bases. Change new customers from 5 to 40 (network effect 0.7). Does the outcome change? Then explain, in a few sentences, why Sterman's standards model would behave differently when the whole market is small, and what that implies for a late entrant.",
-      hint: "In the molecule A still wins; only the speed changes, because the starting bases are large or small relative to the market's eventual size. In Sterman's model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
+        "In the Market Share molecule, attractiveness depends only on the ratio of the two bases. Change new customers from 5 to 40 (network effect 0.7). Does the outcome change? Then explain, in a few sentences, why the standards model of Sterman (2000) would behave differently when the whole market is small, and what that implies for a late entrant.",
+      hint: "In the molecule A still wins; only the speed changes, because the starting bases are large or small relative to the market's eventual size. In the standards model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
     },
     {
@@ -341,7 +341,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Pen and paper: pick a platform market you know (an app store, a payment network, a messaging service). Draw a causal loop diagram with at least three of the growth loops from this chapter and one balancing limit. Identify one pair of loops whose strategies conflict, as differentiation and low-price volume did for Sony.",
+        "Pen and paper: pick a platform market you know (an app store, a payment network, a messaging service). Draw a causal loop diagram with at least three of the growth loops described here and one balancing limit. Identify one pair of loops whose strategies conflict, as differentiation and low-price volume did for Sony.",
     },
   ],
   pitfalls: [

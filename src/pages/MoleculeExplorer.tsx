@@ -20,8 +20,9 @@ import FamilyTree from "@/components/FamilyTree";
 import RunsPanel from "@/components/RunsPanel";
 import { MethodsIndex, MethodsPage } from "@/components/Methods";
 // the study guide is large and only some visitors open it, so it loads on demand
-const BookIndex = lazy(() => import("@/components/StudyGuide").then((m) => ({ default: m.BookIndex })));
-const ChapterPage = lazy(() => import("@/components/StudyGuide").then((m) => ({ default: m.ChapterPage })));
+const CurriculumIndex = lazy(() => import("@/components/Learn").then((m) => ({ default: m.CurriculumIndex })));
+const ModulePage = lazy(() => import("@/components/Learn").then((m) => ({ default: m.ModulePage })));
+const LearnPanel = lazy(() => import("@/components/Learn").then((m) => ({ default: m.LearnPanel })));
 import { METHOD_PAGES } from "@/data/methods";
 import { useShelf } from "@/lib/runs";
 import { markSeen } from "@/lib/progress";
@@ -31,15 +32,17 @@ import { caseIn, casesUsing, domainById } from "@/data/apps";
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
-//   #/methods     methods guide; #/methods/<page> one page; #/methods/book[/<chapter>] the Business Dynamics study guide
+//   #/methods     methods guide; #/methods/<page> one page; #/learn[/<module>] the curriculum
 //   #/tree        family tree; #/tree/<key> with that molecule selected
 //   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "book"; chapter?: string };
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "curriculum"; module?: string };
 function parseRoute(): Route {
   const [, a, b, c] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
-  if (a === "methods" && b === "book") return { view: "book", chapter: /^(ch\d\d|app[AB])$/.test(c ?? "") ? c : undefined };
+  if (a === "learn") return { view: "curriculum", module: b || undefined };
+  // the old chapter-by-chapter study guide now lives in the curriculum
+  if (a === "methods" && b === "book") return { view: "curriculum" };
   if (a === "methods") return { view: "methods", page: METHOD_PAGES.some((p) => p.id === b) ? b : undefined };
   if (a === "tree") return { view: "tree", key: MODELS[b] ? b : undefined };
   if (a === "apps") {
@@ -111,7 +114,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree" || view === "methods" || view === "book") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree" || view === "methods" || view === "curriculum") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -149,7 +152,7 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} showMethods={() => showMethods()} methodsActive={view === "methods" || view === "book"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} showMethods={() => go("/learn")} methodsActive={view === "methods" || view === "curriculum"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
       <div className="flex">
         {paneOpen && (
@@ -173,19 +176,19 @@ export default function MoleculeExplorer() {
             )}
             <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} onTree={() => showTree()} />
           </>
-        ) : route.view === "book" ? (
-          <Suspense fallback={<p className="max-w-[1100px] mx-auto px-4 md:px-8 pt-10 text-muted-foreground">Loading the study guide…</p>}>
-            {route.chapter ? (
-              <ChapterPage key={route.chapter} id={route.chapter} onChapter={(id) => go(`/methods/book/${id}`)} onBook={() => go("/methods/book")} onOpen={(h) => go(h)} />
+        ) : route.view === "curriculum" ? (
+          <Suspense fallback={<p className="max-w-[1100px] mx-auto px-4 md:px-8 pt-10 text-muted-foreground">Loading…</p>}>
+            {route.module ? (
+              <ModulePage key={route.module} id={route.module} onModule={(id) => go(`/learn/${id}`)} onIndex={() => go("/learn")} onOpen={(h) => go(h)} />
             ) : (
-              <BookIndex onChapter={(id) => go(`/methods/book/${id}`)} />
+              <CurriculumIndex onModule={(id) => go(`/learn/${id}`)} onOpen={(h) => go(h)} />
             )}
           </Suspense>
         ) : route.view === "methods" ? (
           route.page ? (
             <MethodsPage key={route.page} id={route.page} onPage={(p) => showMethods(p || undefined)} onOpen={(h) => go(h)} />
           ) : (
-            <MethodsIndex onPage={showMethods} onBook={() => go("/methods/book")} />
+            <MethodsIndex onPage={showMethods} onBook={() => go("/learn")} />
           )
         ) : route.view === "tree" ? (
           // on a large screen the tree view is exactly one window tall, so the whole map is visible at once
@@ -342,6 +345,16 @@ export default function MoleculeExplorer() {
               <h2 className="heading text-[26px]">What it is and when to use it</h2>
               <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />
             </section>
+
+            <Suspense fallback={null}>
+              <LearnPanel
+                molecule={key}
+                onModule={(id, anchor) => {
+                  go(`/learn/${id}`);
+                  if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
+                }}
+              />
+            </Suspense>
 
             {casesUsing(key).length > 0 && (
               <section className="mt-16">

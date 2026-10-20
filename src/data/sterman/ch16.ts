@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Chapter 16 of Sterman (2000): forecasts and fudge factors. Paraphrased, with page references to the printed book.
+// Topic notes on forecasts and fudge factors, drawing on Sterman (2000). Paraphrased, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch16",
   number: "16",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV Tools for modeling dynamic systems",
   pages: "631-660",
   summary:
-    "Decisions run on expectations, so models must represent how people actually form them. The chapter argues, and shows with data, that most forecasts, however elaborate their methods, behave like adaptive expectations: smooth the recent past and extrapolate its trend. It develops the TREND function, a boundedly rational model of growth expectations built from three first-order smooths, proves it is unbiased in steady state, and fits it to forecasts of US energy use, cattle prices and inflation, where it explains nearly all the variation in professional forecasts. Anchoring on a slowly moving belief improves the fit further. Because sophisticated models have exogenous inputs that forecasters tune until the answer looks reasonable, those inputs work as fudge factors. The lessons for forecast users: expect missed turning points and overconfidence, and design policies that are robust to forecast error.",
+    "Decisions run on expectations, so models must represent how people actually form them. The evidence shows that most forecasts, however elaborate their methods, behave like adaptive expectations: smooth the recent past and extrapolate its trend. The TREND function is a boundedly rational model of growth expectations built from three first-order smooths. It is unbiased in steady state, and Sterman (2000) fits it to forecasts of US energy use, cattle prices and inflation, where it explains nearly all the variation in professional forecasts. Anchoring on a slowly moving belief improves the fit further. Because sophisticated models have exogenous inputs that forecasters tune until the answer looks reasonable, those inputs work as fudge factors. The lessons for forecast users: expect missed turning points and overconfidence, and design policies that are robust to forecast error.",
   bigIdeas: [
     {
       title: "Expectations must be modelled, not assumed",
@@ -62,7 +62,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Lessons for forecast consumers",
-      text: "Forecasts are most accurate when the dynamics are stable and least accurate at turning points and trend breaks, exactly when they are wanted. Most miss turning points, are dominated by smoothing and extrapolation of the variable itself, and understate uncertainty. Users should challenge assumptions, demand documented data, methods and assumptions, refuse add factoring, and consider smoothing and extrapolating the data themselves at far lower cost. Above all they should build decision rules that are robust to forecast error: in the chapter's phrase, modellers should be \"designers, not diviners\" (p. 656).",
+      text: "Forecasts are most accurate when the dynamics are stable and least accurate at turning points and trend breaks, exactly when they are wanted. Most miss turning points, are dominated by smoothing and extrapolation of the variable itself, and understate uncertainty. Users should challenge assumptions, demand documented data, methods and assumptions, refuse add factoring, and consider smoothing and extrapolating the data themselves at far lower cost. Above all they should build decision rules that are robust to forecast error: as Sterman (2000, p. 656) puts it, modellers should be \"designers, not diviners\".",
       pages: "655-656",
     },
     {
@@ -145,7 +145,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Correct for lag", detail: "PPC · (1 + TREND · TPPC) estimates today" },
         { label: "Extrapolate", detail: "Compound at TREND to the forecast horizon" },
       ],
-      note: "The structure Sterman fitted to energy, cattle-price and inflation forecasts.",
+      note: "The structure fitted to energy, cattle-price and inflation forecasts (Sterman 2000).",
       pages: "634-640",
     },
     {
@@ -245,7 +245,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Forecasting capacity over a product life cycle",
-      text: "Adding forecast-driven capacity to the Bass-type product life cycle model of chapter 9 shows the trade-off. Smoothed sales leave capacity chronically short while demand grows; extrapolating recent growth over the capacity lead time tracks the boom better but keeps building after the market saturates. In experimental product life cycle markets, participants, many with business experience, did not forecast aggressively enough during growth, failed to anticipate saturation and ended with large excess capacity.",
+      text: "Adding forecast-driven capacity to the Bass-type product life cycle model (see the module S-shaped growth: epidemics and diffusion) shows the trade-off. Smoothed sales leave capacity chronically short while demand grows; extrapolating recent growth over the capacity lead time tracks the boom better but keeps building after the market saturates. In experimental product life cycle markets, participants, many with business experience, did not forecast aggressively enough during growth, failed to anticipate saturation and ended with large excess capacity.",
       pages: "656-658",
     },
   ],

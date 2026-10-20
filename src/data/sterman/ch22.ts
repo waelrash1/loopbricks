@@ -9,7 +9,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part VII: Commencement",
   pages: "895-902",
   summary:
-    "The closing chapter is a short research agenda rather than a new method. Sterman names five areas where system dynamics must develop: theory (nonlinear dynamics, agent-based models, how people decide and learn, organisational evolution), technology (software that automates sensitivity analysis, testing, calibration and loop dominance, and links behaviour back to structure), implementation (communicating insight, group modelling, speed, integration with other methods, practice fields and honest assessment), education (systems thinking from school onwards and sustained learning inside organisations) and applications (the many fields still dominated by event-oriented, static theories). Its recurring warning is that more computer power is only useful if it produces more understanding.",
+    "This topic is a short research agenda rather than a new method. Sterman (2000) names five areas where system dynamics must develop: theory (nonlinear dynamics, agent-based models, how people decide and learn, organisational evolution), technology (software that automates sensitivity analysis, testing, calibration and loop dominance, and links behaviour back to structure), implementation (communicating insight, group modelling, speed, integration with other methods, practice fields and honest assessment), education (systems thinking from school onwards and sustained learning inside organisations) and applications (the many fields still dominated by event-oriented, static theories). Its recurring warning is that more computer power is only useful if it produces more understanding.",
   bigIdeas: [
     {
       title: "Open questions in the theory of nonlinear dynamics",
@@ -23,7 +23,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Mental models, decision making and learning remain poorly understood",
-      text: "Experiments and fieldwork have documented the misperceptions of feedback described in chapter 1, but we still do not know which mental models people use in dynamically complex settings, how sensitive their decision rules are to the environment, or whether the misperceptions are innate or learned. The practical questions are which experiences, education, incentives, information systems and organisational structures would help people learn, and how to represent such learning inside models.",
+      text: "Experiments and fieldwork have documented the misperceptions of feedback (see the module Why complex systems surprise us), but we still do not know which mental models people use in dynamically complex settings, how sensitive their decision rules are to the environment, or whether the misperceptions are innate or learned. The practical questions are which experiences, education, incentives, information systems and organisational structures would help people learn, and how to represent such learning inside models.",
       pages: "896",
     },
     {
@@ -33,12 +33,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Software that explores the model for you",
-      text: "Learning about a model used to proceed one simulation at a time, guided by intuition. Sterman foresaw tools that would map behaviour across parameter space at the press of a button, rank parameters and policies by influence, run user-defined extreme-condition 'reality checks' automatically, calibrate and optimise interactively, and identify which loops dominate behaviour as a run unfolds. Several of these now exist (including in this app's calibration and sensitivity labs), which makes the question of how to use them well more pressing.",
+      text: "Learning about a model used to proceed one simulation at a time, guided by intuition. Sterman (2000) foresaw tools that would map behaviour across parameter space at the press of a button, rank parameters and policies by influence, run user-defined extreme-condition 'reality checks' automatically, calibrate and optimise interactively, and identify which loops dominate behaviour as a run unfolds. Several of these now exist (including in this app's calibration and sensitivity labs), which makes the question of how to use them well more pressing.",
       pages: "896-897",
     },
     {
       title: "Automated help and linking behaviour to structure",
-      text: "A modelling tutor could check each equation as it is typed for dimensional consistency and robustness, suggest standard formulations and plausible parameters, and propose tests. Sterman's example is a customer-defection outflow that does not depend on the customer stock and so lets customers go negative. Displays should also connect behaviour to structure, for example by colouring loops and stocks by their dominance or sensitivity as a simulation runs, and data should flow into models from live sources with inconsistencies flagged.",
+      text: "A modelling tutor could check each equation as it is typed for dimensional consistency and robustness, suggest standard formulations and plausible parameters, and propose tests. One example (Sterman 2000) is a customer-defection outflow that does not depend on the customer stock and so lets customers go negative. Displays should also connect behaviour to structure, for example by colouring loops and stocks by their dominance or sensitivity as a simulation runs, and data should flow into models from live sources with inconsistencies flagged.",
       pages: "897-898",
     },
     {
@@ -122,7 +122,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           '<span class="chip chipR">R</span> Programmes judged after a few months are dropped before they can pay off; each abandoned initiative deepens <b>cynicism</b>, weakens commitment to the next one, and leaves capability unbuilt, which keeps the pressure for quick results high. <b>Protected study time</b> is an outside lever that can turn the loop the other way.',
       },
-      note: "Our sketch of the dynamic the chapter describes, which Sterman notes has been modelled formally elsewhere (Sterman and Wittenberg 1999; Keating et al. 1999).",
+      note: "Our sketch of this dynamic, which Sterman (2000) notes has been modelled formally elsewhere (Sterman and Wittenberg 1999; Keating et al. 1999).",
     },
     {
       kind: "cld",
@@ -148,9 +148,9 @@ export const CHAPTER: StudyChapter = {
         ],
         loops: [{ type: "R", label: "R1", x: 340, y: 120 }],
         caption:
-          '<span class="chip chipR">R</span> Sceptical clients ask for more detail; bigger models are harder to inspect, so understanding falls and scepticism rises again. Cheap <b>computing power</b> removes the natural brake on model size. The way out is the one chapter 2 recommends: a broad boundary, little detail and clients who build and test the model themselves.',
+          '<span class="chip chipR">R</span> Sceptical clients ask for more detail; bigger models are harder to inspect, so understanding falls and scepticism rises again. Cheap <b>computing power</b> removes the natural brake on model size. The way out is the one recommended in the module The modelling process and problem framing: a broad boundary, little detail and clients who build and test the model themselves.',
       },
-      note: "Our own illustration of the chapter's warning that bigger models may bring less understanding and less implementation.",
+      note: "Our own illustration of the warning that bigger models may bring less understanding and less implementation.",
     },
   ],
   formulations: [],
@@ -167,7 +167,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "The model tutor that catches a negative stock",
-      text: "Sterman's illustration of automated help: while you build a marketing model, the software notices that your outflow of customers defecting to rivals does not depend on the current customer stock, so the stock can go below zero. It proposes a first-order formulation instead and helps you choose parameters and nonlinear relationships, then suggests tests to run. The same check is exactly what the 'protected level' molecules teach.",
+      text: "An illustration of automated help (Sterman 2000): while you build a marketing model, the software notices that your outflow of customers defecting to rivals does not depend on the current customer stock, so the stock can go below zero. It proposes a first-order formulation instead and helps you choose parameters and nonlinear relationships, then suggests tests to run. The same check is exactly what the 'protected level' molecules teach.",
       pages: "897-898",
     },
   ],
@@ -195,12 +195,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Generic structures across domains. In the family tree pick one molecule (for example Stock Management or Rework Cycle) and find two application cases from different fields that use it. Write a paragraph on what the shared structure predicts about both, which is the theory question the chapter raises about similar dynamics in different domains.",
+        "Generic structures across domains. In the family tree pick one molecule (for example Stock Management or Rework Cycle) and find two application cases from different fields that use it. Write a paragraph on what the shared structure predicts about both, which is the open theory question about similar dynamics in different domains.",
       link: { label: "Family tree", hash: "/tree" },
     },
     {
       prompt:
-        "Read the machine learning and AI methods page and sort Sterman's predicted tools (parameter maps, automated sensitivity, reality checks, calibration, loop dominance, automated tutoring, live data links) into those that exist routinely today, those that exist in research, and those still missing.",
+        "Read the machine learning and AI methods page and sort the tools Sterman (2000) predicted (parameter maps, automated sensitivity, reality checks, calibration, loop dominance, automated tutoring, live data links) into those that exist routinely today, those that exist in research, and those still missing.",
       link: { label: "Machine learning and AI with system dynamics", hash: "/methods/ml-ai" },
     },
     {

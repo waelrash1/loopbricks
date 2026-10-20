@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Study guide to Sterman (2000), chapter 18. Written in our own words; page numbers are the printed book pages.
+// Topic notes on supply chains, drawing on Sterman (2000). Written in our own words, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch18",
   number: "18",
@@ -8,11 +8,11 @@ export const CHAPTER: StudyChapter = {
   part: "Part V Instability and oscillation",
   pages: "709-756",
   summary:
-    "This chapter turns the generic stock management structure into a model of a manufacturing firm and then of a two-firm supply chain. The model is built in stages (order fulfilment, production and work in process, production starts, forecasting, backlogs, raw materials, a linked supplier, and finally lead-time gaming) and each stage is tested before the next is added. The results separate what is inevitable from what is self-inflicted: a drop in inventory, amplification and phase lag follow from the stock and flow structure however smart the managers are, but the large upstream swings and the breakdown of trust between partners come from locally rational policies interacting. The chapter ends with a consulting case in which a fast-growing electronics firm used a system dynamics model to redesign its supply chain.",
+    "The generic stock management structure can be turned into a model of a manufacturing firm and then of a two-firm supply chain. The model is built in stages (order fulfilment, production and work in process, production starts, forecasting, backlogs, raw materials, a linked supplier, and finally lead-time gaming) and each stage is tested before the next is added. The results separate what is inevitable from what is self-inflicted: a drop in inventory, amplification and phase lag follow from the stock and flow structure however smart the managers are, but the large upstream swings and the breakdown of trust between partners come from locally rational policies interacting. A consulting case shows how a fast-growing electronics firm used a system dynamics model to redesign its supply chain.",
   bigIdeas: [
     {
       title: "Build the model in stages and test each one",
-      text: "Sterman relaxes one simplifying assumption at a time (no backlog, no materials, no supplier) and studies the behaviour fully before adding the next piece. This makes it possible to say which structure causes which part of the behaviour, for example how much extra amplification the materials stock adds. Building a large model in one go loses that ability to attribute behaviour to structure and usually slows the work down.",
+      text: "Sterman (2000) relaxes one simplifying assumption at a time (no backlog, no materials, no supplier) and studies the behaviour fully before adding the next piece. This makes it possible to say which structure causes which part of the behaviour, for example how much extra amplification the materials stock adds. Building a large model in one go loses that ability to attribute behaviour to structure and usually slows the work down.",
       pages: "709",
     },
     {
@@ -218,7 +218,7 @@ export const CHAPTER: StudyChapter = {
         "Desired inventory = Desired coverage × Expected orders;  Desired coverage = Minimum processing time + Safety stock coverage",
       ],
       explain:
-        "This is the chapter 17 rule with inventory as the stock and WIP as the supply line. Base case values: minimum processing 2 weeks, safety stock 2 weeks, cycle time 8 weeks, inventory adjustment 8 weeks.",
+        "This is the stock management rule (see the module Oscillation: stock management and supply chains) with inventory as the stock and WIP as the supply line. Base case values: minimum processing 2 weeks, safety stock 2 weeks, cycle time 8 weeks, inventory adjustment 8 weeks.",
       molecule: "stockmgmt",
       pages: "714-716",
     },

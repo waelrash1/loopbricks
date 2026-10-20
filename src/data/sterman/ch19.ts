@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Study guide to Sterman (2000), chapter 19. Written in our own words; page numbers are the printed book pages.
+// Topic notes drawing on Sterman (2000). Written in our own words; page numbers refer to the printed edition.
 export const CHAPTER: StudyChapter = {
   id: "ch19",
   number: "19",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part V Instability and oscillation",
   pages: "757-790",
   summary:
-    "The manufacturing models of chapter 18 assumed labour was always available. This chapter applies the stock management structure to people: vacancies are the supply line, hiring fills them after a delay, and the firm also needs ways to cancel vacancies and lay people off. Coupling the labour chain to the inventory model makes the firm oscillate with a period of about a year, because the hiring delay sits inside the inventory control loop and the decision rule cannot easily count capacity that is still being recruited. A flexible workweek adds a fast balancing loop that nearly removes the cycle. With parameters typical of the whole economy the same structure produces a cycle of about three years with the leads and lags of the real business cycle, which suggests the business cycle is generated inside the private economy and kept alive by random shocks.",
+    "The manufacturing supply chain models (see the module Oscillation: stock management and supply chains) assumed labour was always available. Here the stock management structure is applied to people: vacancies are the supply line, hiring fills them after a delay, and the firm also needs ways to cancel vacancies and lay people off. Coupling the labour chain to the inventory model makes the firm oscillate with a period of about a year, because the hiring delay sits inside the inventory control loop and the decision rule cannot easily count capacity that is still being recruited. A flexible workweek adds a fast balancing loop that nearly removes the cycle. With parameters typical of the whole economy the same structure produces a cycle of about three years with the leads and lags of the real business cycle, which suggests the business cycle is generated inside the private economy and kept alive by random shocks.",
   bigIdeas: [
     {
       title: "Labour is a stock managed through a supply line of vacancies",
@@ -17,7 +17,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Small changes in staffing targets put large loads on recruiting",
-      text: "With a 100-week average tenure, 8 weeks to fill a post and 1,000 staff, the firm loses 10 people a week and keeps 80 vacancies open in equilibrium. A 50% step in desired labour sends vacancy creation from 10 to a peak of 125 a week, then the workforce settles smoothly within about a year. The response is identical in form to the capital investment example of chapter 17; only the time constants differ. If the recruiting function cannot handle that peak, time to fill rises and hire quality may fall.",
+      text: "With a 100-week average tenure, 8 weeks to fill a post and 1,000 staff, the firm loses 10 people a week and keeps 80 vacancies open in equilibrium. A 50% step in desired labour sends vacancy creation from 10 to a peak of 125 a week, then the workforce settles smoothly within about a year. The response is identical in form to the capital investment example of the stock management structure (see the module Oscillation: stock management and supply chains); only the time constants differ. If the recruiting function cannot handle that peak, time to fill rises and hire quality may fall.",
       pages: "760-762",
     },
     {
@@ -42,7 +42,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Explain behaviour step by step, not by archetype",
-      text: "Saying the model oscillates because it has a delayed negative loop is true but shallow, and confident stories about model behaviour are often wrong or caused by a formulation error. Sterman asks for a week-by-week account consistent with every stock and flow (if production exceeds shipments, inventory must be rising), backed by plots of every variable and by sensitivity and extreme-condition tests. A phase plot of actual against desired starts shows the lag directly: instead of moving along the 45° line, the trajectory spirals around the equilibrium.",
+      text: "Saying the model oscillates because it has a delayed negative loop is true but shallow, and confident stories about model behaviour are often wrong or caused by a formulation error. A better explanation is a week-by-week account consistent with every stock and flow (if production exceeds shipments, inventory must be rising), backed by plots of every variable and by sensitivity and extreme-condition tests. A phase plot of actual against desired starts shows the lag directly: instead of moving along the 45° line, the trajectory spirals around the equilibrium.",
       pages: "767-773",
     },
     {
@@ -184,7 +184,7 @@ export const CHAPTER: StudyChapter = {
         "Desired hiring = Expected attrition + (Desired labour − Labour) / Time to adjust labour",
       ],
       explain:
-        "The chapter 17 rule with labour as the stock and vacancies as the supply line. Base values: 4 weeks to adjust vacancies, 13 weeks to adjust labour (reflecting the cost of changing permanent staff).",
+        "The stock management rule (see the module Oscillation: stock management and supply chains) with labour as the stock and vacancies as the supply line. Base values: 4 weeks to adjust vacancies, 13 weeks to adjust labour (reflecting the cost of changing permanent staff).",
       molecule: "desiredWorkforce",
       pages: "759-760",
     },
@@ -231,7 +231,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Inventory-workforce cycles in one firm",
-      text: "Using the chapter 18 inventory parameters (with inventory and WIP adjustment times of 12 and 6 weeks) and the labour parameters above, a 20% step in orders produces a lightly damped cycle with a period of about one year, an amplification of starts of 2.07 and a minimum fill rate of 88%. Layoffs begin around week 28 even though demand never fell. The natural period of about a year means such a firm could easily mistake its own cycle for seasonal demand, as Forrester showed a firm can learn spurious seasonality.",
+      text: "Using the manufacturing supply chain inventory parameters (see the module Oscillation: stock management and supply chains) (with inventory and WIP adjustment times of 12 and 6 weeks) and the labour parameters above, a 20% step in orders produces a lightly damped cycle with a period of about one year, an amplification of starts of 2.07 and a minimum fill rate of 88%. Layoffs begin around week 28 even though demand never fell. The natural period of about a year means such a firm could easily mistake its own cycle for seasonal demand, as Forrester showed a firm can learn spurious seasonality.",
       pages: "766-773, 782",
     },
     {
@@ -248,13 +248,13 @@ export const CHAPTER: StudyChapter = {
   exercises: [
     {
       prompt:
-        "Open the Workforce molecule and choose <b>Ramp up</b> (desired 80, 4 years to hire). Note the initial hiring rate and how long the workforce takes to get most of the way. Repeat with time to hire 1 year. Which time constant in Sterman's model corresponds to this slider?",
+        "Open the Workforce molecule and choose <b>Ramp up</b> (desired 80, 4 years to hire). Note the initial hiring rate and how long the workforce takes to get most of the way. Repeat with time to hire 1 year. Which time constant in the labour model described here (Sterman 2000) corresponds to this slider?",
       hint: "Hiring starts at (80 − 40) / 4 = 10 a year, or 40 a year with a 1-year adjustment. It plays the role of the labour adjustment time.",
       link: { label: "Open workforce", hash: "/m/workforce" },
     },
     {
       prompt:
-        "In Desired Workforce from Workflow, run <b>Staff up</b> and then <b>Workload falls</b>. The molecule hires and releases symmetrically. Write the two extra equations you would add to make releases depend on a willingness to lay off, as in the chapter.",
+        "In Desired Workforce from Workflow, run <b>Staff up</b> and then <b>Workload falls</b>. The molecule hires and releases symmetrically. Write the two extra equations you would add to make releases depend on a willingness to lay off, as in the labour model described here.",
       link: { label: "Open desired workforce", hash: "/m/desiredWorkforce" },
     },
     {
@@ -269,7 +269,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "In the same case, run <b>Gentle inventory correction</b> (8 months). Does slowing the inventory correction stabilise the cycle? Compare with Sterman's challenge, where you must predict whether shorter or longer inventory and WIP adjustment times help before simulating.",
+        "In the same case, run <b>Gentle inventory correction</b> (8 months). Does slowing the inventory correction stabilise the cycle? Before simulating, predict whether shorter or longer inventory and WIP adjustment times help, then compare your prediction with the result.",
       hint: "In this molecule a slower correction gives a single gentle overshoot instead of a ring. Write your prediction down first.",
       link: { label: "Inventory cycle case", hash: "/apps/economics/inventory-cycle" },
     },

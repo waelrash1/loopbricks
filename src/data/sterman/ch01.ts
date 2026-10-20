@@ -9,7 +9,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part I: Perspective and process",
   pages: "3-39",
   summary:
-    "Sterman opens the book with a puzzle: well-meant policies are routinely delayed, diluted or defeated by the system they act on. He traces this policy resistance to the way people learn. Learning is itself a feedback loop between decisions, the real world and information, and every link in that loop can fail: the world is dynamically complex, information is filtered and late, our causal maps leave out feedback, we cannot mentally simulate even simple loops, we reason unscientifically and we protect ourselves in groups. The chapter ends by arguing that formal models used as virtual worlds, built with the people who must act, are the practical way to speed up both single-loop and double-loop learning, and that simulation is essential because intuition cannot work out what our own maps imply.",
+    "A puzzle comes first: well-meant policies are routinely delayed, diluted or defeated by the system they act on. Sterman (2000) traces this policy resistance to the way people learn. Learning is itself a feedback loop between decisions, the real world and information, and every link in that loop can fail: the world is dynamically complex, information is filtered and late, our causal maps leave out feedback, we cannot mentally simulate even simple loops, we reason unscientifically and we protect ourselves in groups. The case is then made that formal models used as virtual worlds, built with the people who must act, are the practical way to speed up both single-loop and double-loop learning, and that simulation is essential because intuition cannot work out what our own maps imply.",
   bigIdeas: [
     {
       title: "Policy resistance: interventions are undone by the system's response",
@@ -106,7 +106,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           '<span class="chip chipB">B</span> The basic learning loop is goal-seeking. Information about the world is perceived, compared with <b>goals</b>, and the gap drives <b>decisions</b> that move the world toward the goal. Every link takes time and can distort, which is why the loop can converge slowly, overshoot or fail altogether.',
       },
-      note: "Our layout of the idea that learning is negative feedback; the chapter's barriers are failures of particular links in this loop.",
+      note: "Our layout of the idea that learning is negative feedback; the barriers to learning are failures of particular links in this loop.",
     },
     {
       kind: "cycle",
@@ -137,7 +137,7 @@ export const CHAPTER: StudyChapter = {
         "Action: implementation failure, gaming",
       ],
       center: "Barriers to learning",
-      note: "A summary in our own wording of the impediments discussed in section 1.3. Any one broken link is enough to stall learning; most real settings have several.",
+      note: "A summary in our own wording of the main impediments to learning. Any one broken link is enough to stall learning; most real settings have several.",
     },
     {
       kind: "cld",
@@ -204,7 +204,7 @@ export const CHAPTER: StudyChapter = {
       name: "First-order positive loop (the loop people cannot simulate in their heads)",
       equations: ["dx/dt = g · x", "x(t) = x(0) · exp(g · t)", "Doubling time ≈ 70 / (g in %/period)"],
       explain:
-        "Growth proportional to the stock gives pure exponential growth. The doubling time is ln 2 / g, about 0.7 / g, which gives the rule of 70 when g is in percent. Experiments cited in the chapter show people extrapolate such series linearly and badly underestimate them, even with graphs and mathematical training.",
+        "Growth proportional to the stock gives pure exponential growth. The doubling time is ln 2 / g, about 0.7 / g, which gives the rule of 70 when g is in percent. Experiments cited by Sterman (2000) show people extrapolate such series linearly and badly underestimate them, even with graphs and mathematical training.",
       molecule: "growth",
       pages: "29",
     },
@@ -262,7 +262,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "See how a delay inside a balancing loop creates oscillation. In Stock Management run the Stable preset (supply-line weight 1), then the Oscillation preset (weight 0). Finally keep weight 0 and raise the acquisition delay from 6 to 12 weeks. Record the peak inventory in each run and relate the result to the chapter's point about drivers, drinkers and hog farmers who keep correcting after enough correction is already on the way.",
+        "See how a delay inside a balancing loop creates oscillation. In Stock Management run the Stable preset (supply-line weight 1), then the Oscillation preset (weight 0). Finally keep weight 0 and raise the acquisition delay from 6 to 12 weeks. Record the peak inventory in each run and relate the result to the point about drivers, drinkers and hog farmers who keep correcting after enough correction is already on the way.",
       link: { label: "Stock Management", hash: "/m/stockmgmt" },
     },
     {
@@ -288,7 +288,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Add a balancing loop to a reinforcing one. Open Constrained Growth with the S-curve preset (growth 18%/yr, capacity 200). Note the year when growth is fastest and the population at that moment. Then raise capacity to 350 and see whether the timing of the peak growth changes. Relate this to the chapter's claim that dynamics arise from the interaction of loops, not from either loop alone.",
+        "Add a balancing loop to a reinforcing one. Open Constrained Growth with the S-curve preset (growth 18%/yr, capacity 200). Note the year when growth is fastest and the population at that moment. Then raise capacity to 350 and see whether the timing of the peak growth changes. Relate this to the claim that dynamics arise from the interaction of loops, not from either loop alone.",
       hint: "In the logistic model the fastest growth happens at half the carrying capacity.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
     },

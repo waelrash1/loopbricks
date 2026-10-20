@@ -9,7 +9,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part I: Perspective and process",
   pages: "41-81",
   summary:
-    "Three field cases show the method solving high-stakes problems in very different ways. At General Motors a small model, built overnight and refined in 20 days into a management flight simulator, showed that short-term leasing was creating the glut of nearly new cars that fed the used-car superstores, and led GM to move to longer leases before the 1997 collapse in used prices. At Ingalls Shipbuilding a large project model quantified how Navy design changes rippled through overtime, hiring and rework, and became the basis of a $447 million settlement. At Du Pont a maintenance model explained why the company spent more and got less, and was turned into a role-play game that let thousands of people experience the worse-before-better path out of reactive maintenance. The chapter closes with principles for successful modelling practice.",
+    "Three field cases show the method solving high-stakes problems in very different ways. At General Motors a small model, built overnight and refined in 20 days into a management flight simulator, showed that short-term leasing was creating the glut of nearly new cars that fed the used-car superstores, and led GM to move to longer leases before the 1997 collapse in used prices. At Ingalls Shipbuilding a large project model quantified how Navy design changes rippled through overtime, hiring and rework, and became the basis of a $447 million settlement. At Du Pont a maintenance model explained why the company spent more and got less, and was turned into a role-play game that let thousands of people experience the worse-before-better path out of reactive maintenance. The cases point to a set of principles for successful modelling practice.",
   bigIdeas: [
     {
       title: "Change comes from clients discovering the insight themselves",
@@ -123,7 +123,7 @@ export const CHAPTER: StudyChapter = {
         caption:
           'The industry saw only the top: <span class="chip chipB">B1</span> production control, <span class="chip chipB">B2</span> price cuts and <span class="chip chipB">B3</span> lease subvention, all draining excess inventory. Leases return cars after about one <b>lease term</b>, so sales also feed <b>off-lease used supply</b>. More supply lowers used prices, which draws buyers away from new cars (<span class="chip chipB">B4</span>) and makes fewer lessees buy their car at lease end, adding still more supply (<span class="chip chipR">R1</span>).',
       },
-      note: "Our simplified redrawing. Sterman's figure also has separate loops for lease term and used car quality, which act like B4 here.",
+      note: "Our simplified redrawing. The original diagram (Sterman 2000) also has separate loops for lease term and used car quality, which act like B4 here.",
     },
     {
       kind: "cycle",
@@ -265,7 +265,7 @@ export const CHAPTER: StudyChapter = {
       name: "Off-lease returns as a delayed inflow",
       equations: ["Lease returns(t) = Leases written(t − Lease term) × (1 − Buyout fraction)", "Late-model supply(t) = ∫(Production + Lease returns − Sales) dt"],
       explain:
-        "The bathtub view of section 2.2.3. Returns are a delayed echo of past sales and cannot be cut when demand falls. When used prices drop below contract residuals the buyout fraction falls, so returns rise just when the market can least absorb them.",
+        "A bathtub view of the late-model used-car market. Returns are a delayed echo of past sales and cannot be cut when demand falls. When used prices drop below contract residuals the buyout fraction falls, so returns rise just when the market can least absorb them.",
       molecule: "material",
       pages: "52-53",
     },

@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Study guide to Sterman (2000), chapter 17. Written in our own words; page numbers are the printed book pages.
+// Topic notes on stock management, drawing on Sterman (2000). Written in our own words, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch17",
   number: "17",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part V Instability and oscillation",
   pages: "663-708",
   summary:
-    "Part V opens with the structure that sits under every supply chain: a stock that managers try to hold at a target by ordering through a delay. The chapter builds the <b>stock management structure</b> step by step, first without an acquisition delay and then with a <b>supply line</b> of orders placed but not yet received. It shows that amplification and phase lag follow from the physics of stocks and flows, while oscillation needs one more ingredient: decision makers who give too little weight to the supply line. The Beer Distribution Game supplies the evidence (44 players, an average supply-line weight of only 0.34), and a case study of commercial real estate shows the same error driving decade-long boom and bust.",
+    "One structure sits under every supply chain: a stock that managers try to hold at a target by ordering through a delay. The <b>stock management structure</b> is built step by step, first without an acquisition delay and then with a <b>supply line</b> of orders placed but not yet received. Amplification and phase lag follow from the physics of stocks and flows, while oscillation needs one more ingredient: decision makers who give too little weight to the supply line. The Beer Distribution Game supplies the evidence (44 players, an average supply-line weight of only 0.34), and a case study of commercial real estate shows the same error driving decade-long boom and bust.",
   bigIdeas: [
     {
       title: "Supply chains show oscillation, amplification and phase lag",
@@ -27,7 +27,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Stock adjustment amplifies, even with no delay",
-      text: "When the desired stock steps up, the acquisition rate must rise above the loss rate long enough to fill the gap, then fall back. In Sterman's capital example (8-year life, 3-year adjustment time) a 20% rise in desired capital lifts acquisitions by about 53% at the peak, an amplification ratio of 2.65. A longer adjustment time lowers the peak but slows the response. The surge is temporary: in the long run a 1% rise in the goal gives a 1% rise in throughput, but suppliers see a much larger, transient swing first.",
+      text: "When the desired stock steps up, the acquisition rate must rise above the loss rate long enough to fill the gap, then fall back. In a capital example from Sterman (2000) (8-year life, 3-year adjustment time) a 20% rise in desired capital lifts acquisitions by about 53% at the peak, an amplification ratio of 2.65. A longer adjustment time lowers the peak but slows the response. The surge is temporary: in the long run a 1% rise in the goal gives a 1% rise in throughput, but suppliers see a much larger, transient swing first.",
       pages: "672-673",
     },
     {
@@ -42,7 +42,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Oscillation needs a delay and a decision maker who ignores it",
-      text: "Negative loops without delays cannot oscillate, but not every delayed negative loop does either. A cycle appears only when managers keep correcting a perceived gap after enough corrections are already in the pipeline to close it. In Sterman's worked example (desired inventory 400, delivery delay 3 weeks), a manager who ignores the supply line keeps ordering 200 a week for a 100-unit shortfall, swells the pipeline to 600, overshoots to 700 units, cuts orders to zero, empties the pipeline and then overshoots again with a growing amplitude. The same shock with the supply line fully counted is absorbed in four weeks with no cycle.",
+      text: "Negative loops without delays cannot oscillate, but not every delayed negative loop does either. A cycle appears only when managers keep correcting a perceived gap after enough corrections are already in the pipeline to close it. In a worked example from Sterman (2000) (desired inventory 400, delivery delay 3 weeks), a manager who ignores the supply line keeps ordering 200 a week for a 100-unit shortfall, swells the pipeline to 600, overshoots to 700 units, cuts orders to zero, empties the pipeline and then overshoots again with a growing amplitude. The same shock with the supply line fully counted is absorbed in four weeks with no cycle.",
       pages: "684-692",
     },
     {

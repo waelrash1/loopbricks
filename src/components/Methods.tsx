@@ -36,12 +36,12 @@ export function MethodsIndex({ onPage, onBook }: { onPage: (id: string) => void;
       </p>
       <button onClick={onBook} className="brick brick-y mt-8 w-full text-left p-6 grid md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
         <span>
-          <span className="heading block text-[22px]">Business Dynamics, chapter by chapter</span>
+          <span className="heading block text-[22px]">Learn system dynamics: the full curriculum</span>
           <span className="block mt-1.5 text-[15px] leading-[1.55] max-w-[70ch]">
-            A study guide to Sterman's textbook: the big ideas, the classic feedback structures redrawn, the formulations, the cases and exercises you can run here.
+            Eighteen modules from foundations to modelling practice, with diagrams, equations, archetypes, exercises you run here, and self-checks.
           </span>
         </span>
-        <span className="text-[15px] font-semibold whitespace-nowrap">Open the study guide</span>
+        <span className="text-[15px] font-semibold whitespace-nowrap">Open the curriculum</span>
       </button>
       <h2 className="heading text-[22px] mt-12">The learning path</h2>
       <ol className="mt-5 grid md:grid-cols-2 gap-4">

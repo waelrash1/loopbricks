@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part I Perspective and process",
   pages: "107-133",
   summary:
-    "Behaviour comes from structure. Most of the dynamics we observe are variations on a handful of modes, and each mode has a recognisable feedback structure behind it: reinforcing loops produce exponential growth, balancing loops produce goal seeking, and balancing loops with delays produce oscillation. S-shaped growth, growth with overshoot and overshoot and collapse arise when these basic structures interact nonlinearly. The chapter also separates stasis, random variation and the family of oscillations (damped, limit cycle, chaos), and turns the link between structure and behaviour into a practical heuristic: the shape of a reference mode tells you which kind of loop must have been dominant, and which latent loops you still need to look for.",
+    "Behaviour comes from structure. Most of the dynamics we observe are variations on a handful of modes, and each mode has a recognisable feedback structure behind it: reinforcing loops produce exponential growth, balancing loops produce goal seeking, and balancing loops with delays produce oscillation. S-shaped growth, growth with overshoot and overshoot and collapse arise when these basic structures interact nonlinearly. It is also useful to separate stasis, random variation and the family of oscillations (damped, limit cycle, chaos), and turns the link between structure and behaviour into a practical heuristic: the shape of a reference mode tells you which kind of loop must have been dominant, and which latent loops you still need to look for.",
   bigIdeas: [
     {
       title: "A small set of modes covers most dynamics",
@@ -274,7 +274,7 @@ export const CHAPTER: StudyChapter = {
       name: "Inventory control with a delay (oscillation)",
       equations: ["Orders = Demand + (Desired inventory − Inventory) / AT", "Inventory gains orders only after an acquisition delay"],
       explain:
-        "A balancing loop corrects the inventory gap, but the correction arrives late. If the rule ignores what is already on order, orders keep coming after the gap has closed and inventory overshoots: the oscillation the chapter attributes to the Beer Distribution Game supply chain.",
+        "A balancing loop corrects the inventory gap, but the correction arrives late. If the rule ignores what is already on order, orders keep coming after the gap has closed and inventory overshoots: the same oscillation seen in the Beer Distribution Game supply chain.",
       molecule: "stockmgmt",
       pages: "114-115, 129-130",
     },

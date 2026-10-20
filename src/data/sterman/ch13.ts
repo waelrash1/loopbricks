@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Chapter 13 of Sterman (2000): modelling decision making. Paraphrased, with page references to the printed book.
+// Topic notes on modelling decision making, drawing on Sterman (2000). Paraphrased, with page references.
 export const CHAPTER: StudyChapter = {
   id: "ch13",
   number: "13",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV Tools for modeling dynamic systems",
   pages: "513-550",
   summary:
-    "Every rate in a stock and flow model is a decision point, and the modeller must write down the policy that sets it. This chapter gives the ground rules for doing so: use only information the real actors have (the Baker criterion), keep every variable meaningful and every equation dimensionally honest, separate what people want from what they get, make every rule survive extreme inputs, and never build equilibrium in. It then supplies a library of standard rate formulations, from fractional rates and goal seeking to fuzzy MIN and MAX, floating goals, hill climbing and US/(US+THEM) allocation, and closes with the pitfalls that most often break models: outflows without first-order control, IF-THEN-ELSE logic and lumped net flows.",
+    "Every rate in a stock and flow model is a decision point, and the modeller must write down the policy that sets it. A few ground rules govern how to do so: use only information the real actors have (the Baker criterion), keep every variable meaningful and every equation dimensionally honest, separate what people want from what they get, make every rule survive extreme inputs, and never build equilibrium in. There is also a library of standard rate formulations, from fractional rates and goal seeking to fuzzy MIN and MAX, floating goals, hill climbing and US/(US+THEM) allocation, and a set of pitfalls that most often break models: outflows without first-order control, IF-THEN-ELSE logic and lumped net flows.",
   bigIdeas: [
     {
       title: "Model the decision rule, not the decision",
@@ -85,7 +85,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Test extreme inputs", detail: "Zero, very large and negative inputs must give possible outcomes" },
       ],
       loopBack: { from: 6, to: 3, label: "revise the form if a test fails" },
-      note: "A checklist distilled from the five formulation fundamentals and the standard formulations of the chapter.",
+      note: "A checklist distilled from the five formulation fundamentals and the standard rate formulations.",
       pages: "516-520, 545-549",
     },
     {
@@ -299,7 +299,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Hill climbing in miniature. Open Sea Anchor & Adjustment and run 'Stable' (pressure 1) and then 'Runaway drift' (pressure 1.2, anchor lag 6 months). Estimate the growth rate of the anchor and compare it with (k − 1)/SAT from the chapter.",
+        "Hill climbing in miniature. Open Sea Anchor & Adjustment and run 'Stable' (pressure 1) and then 'Runaway drift' (pressure 1.2, anchor lag 6 months). Estimate the growth rate of the anchor and compare it with the expected rate (k − 1)/SAT.",
       hint: "The value is anchor × 1.2 and the anchor closes the gap in 6 months, so it grows at 0.2/6 ≈ 3.3% per month: doubling roughly every 21 months. With pressure 1 there is no pressure, so nothing moves.",
       link: { label: "Sea Anchor & Adjustment", hash: "/m/seaAnchor" },
     },

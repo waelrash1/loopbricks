@@ -10,6 +10,9 @@ import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
 import { METHOD_PAGES, METHOD_REFS } from "@/data/methods";
 import { BOOK_TOC } from "@/data/sterman";
+import { MODULES } from "@/data/learn/modules";
+import { ARCHETYPES } from "@/data/learn/archetypes";
+import { OBJECTIVES, QUIZ } from "@/data/learn/quiz";
 import { CAL_DATA, CAL_FIXED, CAL_HOLDOUT, CAL_MODEL, CAL_TRUTH, calFit, calRef, monteCarlo, overshoots } from "@/lib/labs";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
@@ -125,7 +128,7 @@ for (const p of METHOD_PAGES) {
   if (shares < 0.05 || shares > 0.95) errs.push(`sensitivity lab: behaviour-mode experiment should mix modes, got ${shares}`);
 }
 // study guide: every written chapter is substantial, its diagrams readable and its links real
-const ROUTE = /^\/(m\/[A-Za-z]+|apps\/[a-z-]+\/[a-z0-9-]+|apps\/[a-z-]+|tree(\/[A-Za-z]+)?|methods\/[a-z-]+|methods\/book\/[a-zA-Z0-9]+|tour\/\d+)$/;
+const ROUTE = /^\/(m\/[A-Za-z]+|apps\/[a-z-]+\/[a-z0-9-]+|apps\/[a-z-]+|tree(\/[A-Za-z]+)?|methods\/[a-z-]+|learn(\/[a-z-]+)?|tour\/\d+)$/;
 for (const t of BOOK_TOC) {
   const c = t.chapter;
   if (!c) continue;
@@ -148,6 +151,32 @@ for (const t of BOOK_TOC) {
   });
   const text = JSON.stringify(c);
   if (/\u2014/.test(text) || text.includes("\u2014") || text.includes("—")) errs.push(`${id}: no em dashes in study-guide text`);
+}
+// curriculum: modules draw on real notes; archetypes are readable; quizzes are well formed
+{
+  const ids = new Set(MODULES.map((m) => m.id));
+  if (ids.size !== MODULES.length) errs.push("learn: duplicate module id");
+  for (const m of MODULES) {
+    m.from.forEach((f) => !BOOK_TOC.find((t) => t.id === f)?.chapter && errs.push(`learn/${m.id}: draws on missing notes ${f}`));
+    m.prereqs.forEach((p) => !ids.has(p) && errs.push(`learn/${m.id}: unknown prerequisite ${p}`));
+    m.deeper?.forEach((d) => !ROUTE.test(d.hash) && errs.push(`learn/${m.id}: link ${d.hash} is not an app route`));
+    const q = QUIZ[m.id];
+    if (q) q.forEach((x, i) => (x.answer < 0 || x.answer >= x.options.length) && errs.push(`learn/${m.id}: quiz ${i + 1} answer out of range`));
+    if (Object.keys(QUIZ).length && (!q || q.length < 3)) errs.push(`learn/${m.id}: needs at least 3 quiz questions`);
+    if (Object.keys(OBJECTIVES).length && !(OBJECTIVES[m.id]?.length >= 3)) errs.push(`learn/${m.id}: needs at least 3 objectives`);
+  }
+  for (const a of ARCHETYPES) {
+    lintCld(a.cld).forEach((e) => errs.push(`learn/archetype ${a.id}: ${e}`));
+    a.molecules.forEach((k) => !MODELS[k] && errs.push(`learn/archetype ${a.id}: unknown molecule ${k}`));
+    a.cases.forEach((c) => !ROUTE.test(c.hash) && errs.push(`learn/archetype ${a.id}: link ${c.hash} is not an app route`));
+  }
+  const text = JSON.stringify([ARCHETYPES, QUIZ, OBJECTIVES, MODULES]);
+  if (text.includes("—")) errs.push("learn: no em dashes");
+  // the notes must stand alone, not point into a book's chapters
+  for (const t of BOOK_TOC) {
+    const body = JSON.stringify(t.chapter ?? {});
+    if (/\b(this|the) chapter\b|\bchapter \d/i.test(body)) errs.push(`learn notes ${t.id}: refers to a book chapter`);
+  }
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");

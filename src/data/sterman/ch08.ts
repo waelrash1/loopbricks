@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part III The dynamics of growth",
   pages: "263-291",
   summary:
-    "This chapter joins feedback to accumulation in the simplest possible system: one stock whose net flow depends on the stock itself. When the dependence is linear, a reinforcing loop gives pure exponential growth and a balancing loop gives exponential decay toward a goal. Both have exact solutions, and both are characterised by a single time: the doubling time of growth and the half-life (or time constant) of decay, linked by the rule of 70. The chapter introduces the phase plot, a graph of net flow against the stock, which reveals equilibria, their stability and the dominant loop without calculus. It shows why people badly underestimate exponential growth and are overconfident in their estimates, why linear systems can only grow, decay or stay put, and why S-shaped growth requires a nonlinear shift in loop dominance. A first-order system can never oscillate.",
+    "The simplest feedback system joins feedback to accumulation: one stock whose net flow depends on the stock itself. When the dependence is linear, a reinforcing loop gives pure exponential growth and a balancing loop gives exponential decay toward a goal. Both have exact solutions, and both are characterised by a single time: the doubling time of growth and the half-life (or time constant) of decay, linked by the rule of 70. The phase plot, a graph of net flow against the stock, reveals equilibria, their stability and the dominant loop without calculus. People badly underestimate exponential growth and are overconfident in their estimates. Linear systems can only grow, decay or stay put, so S-shaped growth requires a nonlinear shift in loop dominance. A first-order system can never oscillate.",
   bigIdeas: [
     {
       title: "First-order and linear have precise meanings",
@@ -241,7 +241,7 @@ export const CHAPTER: StudyChapter = {
         "Loop dominance: ∂(dP/dt)/∂P > 0 reinforcing, < 0 balancing",
       ],
       explain:
-        "Chapter 8 builds the general case with any downward-sloping fractional net birth rate; the logistic form, treated in section 9.1, makes the fall linear. The first logistic term is the reinforcing loop and the second, quadratic, term is the balancing loop that strengthens as P nears C. The Constrained Growth molecule uses exactly this form: with r = 18%, K = 200 and P(0) = 10, the inflection at 100 comes at t = ln(19)/0.18 ≈ 16 years.",
+        "The general case allows any downward-sloping fractional net birth rate; the logistic form (see the module S-shaped growth: epidemics and diffusion) makes the fall linear. The first logistic term is the reinforcing loop and the second, quadratic, term is the balancing loop that strengthens as P nears C. The Constrained Growth molecule uses exactly this form: with r = 18%, K = 200 and P(0) = 10, the inflection at 100 comes at t = ln(19)/0.18 ≈ 16 years.",
       molecule: "logistic",
       pages: "285-289, 296-298",
     },

@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part II Tools for systems thinking",
   pages: "137-190",
   summary:
-    "Causal loop diagrams (CLDs) map the feedback structure behind a problem: variables joined by signed causal links, with the important loops labelled as reinforcing or balancing. They are quick to draw, good for eliciting a group's mental models, and good for explaining a dynamic hypothesis to people who will never read the equations. The chapter defines link and loop polarity precisely (including why polarity describes structure, not behaviour), then sets out practical guidelines on causation, signs, naming loops, delays, variable names, layout, aggregation, explicit goals and perceived versus actual conditions. Three extended applications show the method at work: a student's workload, Adam Smith's invisible hand and the feedback structure of markets (with market failure through adverse selection), and traffic congestion, where compensating feedback defeats road building and a death spiral drains public transit.",
+    "Causal loop diagrams (CLDs) map the feedback structure behind a problem: variables joined by signed causal links, with the important loops labelled as reinforcing or balancing. They are quick to draw, good for eliciting a group's mental models, and good for explaining a dynamic hypothesis to people who will never read the equations. Link and loop polarity need precise definitions (including why polarity describes structure, not behaviour), and there are practical guidelines on causation, signs, naming loops, delays, variable names, layout, aggregation, explicit goals and perceived versus actual conditions. Three extended applications show the method at work: a student's workload, Adam Smith's invisible hand and the feedback structure of markets (with market failure through adverse selection), and traffic congestion, where compensating feedback defeats road building and a death spiral drains public transit.",
   bigIdeas: [
     {
       title: "Link polarity is a conditional statement about structure",
@@ -375,7 +375,7 @@ export const CHAPTER: StudyChapter = {
   exercises: [
     {
       prompt:
-        "Practise reading polarity. Open Population Growth and run Growing, then lower the birth rate from 5% to 4%. The population is still rising. Explain, using the chapter's definition of link polarity, why Births → (+) Population is still correct.",
+        "Practise reading polarity. Open Population Growth and run Growing, then lower the birth rate from 5% to 4%. The population is still rising. Explain, using the precise definition of link polarity, why Births → (+) Population is still correct.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
@@ -391,7 +391,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Schedule pressure as a balancing loop. In the deadline case compare 'Realistic deadline (15 weeks)' with 'Tight deadline (5 weeks)'. Which of the chapter's loops (Midnight Oil, Corner Cutting) does the model represent, and what would you have to add to show Burnout or Haste Makes Waste?",
+        "Schedule pressure as a balancing loop. In the deadline case compare 'Realistic deadline (15 weeks)' with 'Tight deadline (5 weeks)'. Which of the workload loops (Midnight Oil, Corner Cutting) does the model represent, and what would you have to add to show Burnout or Haste Makes Waste?",
       link: { label: "Deadline pressure case", hash: "/apps/projects/deadline-pressure" },
     },
     {
@@ -401,7 +401,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "A supply loop with long delays. In the hog cycle case run 'Producers ignore the pipeline', then 'Short lag (5 months)'. Relate the result to the chapter's point that markets with weak short-run and strong long-run responses are prone to persistent disequilibrium.",
+        "A supply loop with long delays. In the hog cycle case run 'Producers ignore the pipeline', then 'Short lag (5 months)'. Relate the result to the point that markets with weak short-run and strong long-run responses are prone to persistent disequilibrium.",
       link: { label: "Hog cycle case", hash: "/apps/economics/hog-cycle" },
     },
     {

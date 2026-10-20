@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV: Tools for modeling dynamic systems",
   pages: "409-467",
   summary:
-    "Delays are everywhere: in measuring, in deciding and in acting. This chapter opens the box marked delay and shows that every delay is a stock. It separates material delays, where conserved things travel through a pipe, from information delays, where a belief slowly catches up with the facts. It builds a family of formulations (pipeline, first-order, higher-order material delays, and first- and higher-order exponential smoothing), shows how they respond to pulses and steps, explains Little's law, and treats delays whose length changes, including ratchet effects. It then turns to estimation: statistical lag estimation, judgment by decomposition, and walking the line. A field study at the chipmaker Symbios shows how a simple model of design-win delays beat customers' own demand forecasts. The chapter closes with the mathematics: Koyck (geometric) lags and the Erlang family.",
+    "Delays are everywhere: in measuring, in deciding and in acting. Opening the box marked delay shows that every delay is a stock. Delays divide into material delays, where conserved things travel through a pipe, and information delays, where a belief slowly catches up with the facts. There is a family of formulations (pipeline, first-order, higher-order material delays, and first- and higher-order exponential smoothing), each with its own response to pulses and steps; Little's law relates the amount in transit to the flow and the delay time; and some delays change length, including ratchet effects. Estimating delays uses statistical lag estimation, judgment by decomposition, and walking the line. A field study at the chipmaker Symbios shows how a simple model of design-win delays beat customers' own demand forecasts. The underlying mathematics is that of Koyck (geometric) lags and the Erlang family.",
   bigIdeas: [
     {
       title: "Every delay hides a stock",
@@ -216,7 +216,7 @@ export const CHAPTER: StudyChapter = {
       name: "First-order material delay",
       equations: ["Material in Transit = ∫(Inflow − Outflow) dt", "Outflow = Material in Transit / D", "Pulse response: p(t) = (1/D) · exp(−t/D)"],
       explain:
-        "Perfect mixing: the outflow depends only on how much is in transit, not on when it arrived. This is the linear first-order balancing loop of chapter 8, so a pulse decays exponentially (37% left after D, 14% after 2D, 5% after 3D). The mean residence time is exactly D. In discrete time the same exponential weights become the geometric or Koyck lag, with weights (1 − L)·Lⁱ and mean L/(1 − L).",
+        "Perfect mixing: the outflow depends only on how much is in transit, not on when it arrived. This is the linear first-order balancing loop (see the module First-order feedback: growth, decay and goal seeking), so a pulse decays exponentially (37% left after D, 14% after 2D, 5% after 3D). The mean residence time is exactly D. In discrete time the same exponential weights become the geometric or Koyck lag, with weights (1 − L)·Lⁱ and mean L/(1 − L).",
       molecule: "decay",
       pages: "415-417, 464-465",
     },

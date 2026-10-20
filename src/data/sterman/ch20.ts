@@ -1,6 +1,6 @@
 import type { StudyChapter } from "@/data/sterman/types";
 
-// Study guide to Sterman (2000), chapter 20. Written in our own words; page numbers are the printed book pages.
+// Topic notes drawing on Sterman (2000). Written in our own words; page numbers refer to the printed edition.
 export const CHAPTER: StudyChapter = {
   id: "ch20",
   number: "20",
@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part V Instability and oscillation",
   pages: "791-842",
   summary:
-    "The last chapter of Part V adds prices and profits to the supply chain models. Price sits at the centre of several balancing loops (substitution in demand, capacity utilisation and capacity acquisition on the supply side) that are supposed to clear the market, but each works through long perception, decision and construction delays. The chapter builds a generic commodity model sector by sector, including a robust price-setting formulation in which price is anchored on traders' beliefs about the market-clearing price and that anchor drifts toward actual prices. Applied to pulp and paper with no structural changes, the model generates both a short cycle of about four years from the utilisation loop and a long cycle of 12 to 20 years from the capacity loop, much as the data show.",
+    "Commodity markets add prices and profits to the supply chain models. Price sits at the centre of several balancing loops (substitution in demand, capacity utilisation and capacity acquisition on the supply side) that are supposed to clear the market, but each works through long perception, decision and construction delays. A generic commodity model can be built sector by sector, including a robust price-setting formulation in which price is anchored on traders' beliefs about the market-clearing price and that anchor drifts toward actual prices. Applied to pulp and paper with no structural changes, the model generates both a short cycle of about four years from the utilisation loop and a long cycle of 12 to 20 years from the capacity loop, much as the data show.",
   bigIdeas: [
     {
       title: "Commodity cycles are endogenous",
@@ -42,7 +42,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Price discovery: anchor on traders' expected price, adjust for pressures",
-      text: "Formulating price as a fixed equilibrium price times a demand/supply effect fails as soon as costs shift or inflation runs, and it assumes traders know the market-clearing price. Sterman instead anchors price on <b>traders' expected price</b> and multiplies it by effects of inventory coverage and of costs. The anchor then adjusts to actual price (but never below expected variable cost), so price keeps rising while stocks are short and falling while they are in surplus. Traders thus find the clearing price without knowing the supply and demand curves.",
+      text: "Formulating price as a fixed equilibrium price times a demand/supply effect fails as soon as costs shift or inflation runs, and it assumes traders know the market-clearing price. A more robust formulation (Sterman 2000) anchors price on <b>traders' expected price</b> and multiplies it by effects of inventory coverage and of costs. The anchor then adjusts to actual price (but never below expected variable cost), so price keeps rising while stocks are short and falling while they are in surplus. Traders thus find the clearing price without knowing the supply and demand curves.",
       pages: "813-817",
     },
     {
@@ -160,7 +160,7 @@ export const CHAPTER: StudyChapter = {
         "Sows sold off: brief glut, then shortage",
       ],
       center: "cycle of about 4 years",
-      note: "In Sterman's words, \"it takes hogs to make hogs\" (p. 838): breeding stock comes from the same animals that would be sold, so the first response of supply to a price rise is a fall.",
+      note: "As the saying quoted by Sterman (2000, p. 838) goes, \"it takes hogs to make hogs\": breeding stock comes from the same animals that would be sold, so the first response of supply to a price rise is a fall.",
     },
   ],
   formulations: [
@@ -186,7 +186,7 @@ export const CHAPTER: StudyChapter = {
         "Desired supply line = Expected acquisition delay × Desired acquisition",
       ],
       explain:
-        "The chapter 17 structure applied to mills, mines or ships. Discards are first order with the average life of capacity. Cancellations can be added as a separate outflow, as in chapter 19.",
+        "The stock management structure (see the module Oscillation: stock management and supply chains) applied to mills, mines or ships. Discards are first order with the average life of capacity. Cancellations can be added as a separate outflow, as in the labour model (see the module Cycles in business, labour and commodity markets).",
       molecule: "stockmgmt",
       pages: "805-807",
     },
@@ -253,7 +253,7 @@ export const CHAPTER: StudyChapter = {
   exercises: [
     {
       prompt:
-        "Open Capacity Utilization and compare <b>Demand &lt; capacity</b> with <b>Demand &gt; capacity</b>. In the second, read the production rate the curve allows and what happens to inventory. Why does the chapter warn against using utilisation as the signal for price?",
+        "Open Capacity Utilization and compare <b>Demand &lt; capacity</b> with <b>Demand &gt; capacity</b>. In the second, read the production rate the curve allows and what happens to inventory. Why is utilisation a poor signal for price?",
       hint: "With capacity 15 and demand 25, production saturates just under 15 and inventory runs to zero, whatever the size of the gap.",
       link: { label: "Open capacity utilisation", hash: "/m/capacityUtil" },
     },
@@ -265,7 +265,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Open Protected Sea Anchor Pricing and compare <b>Glut with $6 floor</b> and <b>Glut, no floor</b>. Relate the floor to the minimum price (expected variable cost) in Sterman's formulation.",
+        "Open Protected Sea Anchor Pricing and compare <b>Glut with $6 floor</b> and <b>Glut, no floor</b>. Relate the floor to the minimum price (expected variable cost) in the formulation of Sterman (2000).",
       link: { label: "Open protected sea anchor", hash: "/m/protSeaAnchorPricing" },
     },
     {
