@@ -133,10 +133,10 @@ export default function MoleculeExplorer() {
       <div className="flex">
         {paneOpen && (
           <SidePane
-            apps={view === "apps"}
-            appDomain={route.view === "apps" ? route.domain : undefined}
+            initialMode={view === "apps" ? "apps" : "molecules"}
             current={route.view === "apps" ? `${route.domain}/${route.id}` : view === "map" ? undefined : key}
-            onSelect={view === "apps" ? (k) => go(`/apps/${k}`) : open}
+            onMolecule={open}
+            onCase={(k) => go(`/apps/${k}`)}
             onClose={() => togglePane(false)}
           />
         )}

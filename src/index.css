@@ -49,7 +49,7 @@
   p, li { text-wrap: pretty; }
   ::selection { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
   @media (prefers-reduced-motion: reduce) {
-    * { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
 }
 
@@ -71,6 +71,14 @@
   .sheet { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 16px; }
   @media (min-width: 768px) { .sheet { padding: 20px 22px; } }
   .sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 12px; }
+}
+
+/* the side pane slides in over the page on small screens; beside the page it simply appears */
+@keyframes pane-in { from { transform: translateX(-100%); } }
+@keyframes pane-fade { from { opacity: 0; } }
+@media (max-width: 1023px) {
+  .pane-in { animation: pane-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .pane-fade { animation: pane-fade 220ms ease-out; }
 }
 
 /* authored explanation HTML */
