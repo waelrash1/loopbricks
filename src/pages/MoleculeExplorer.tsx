@@ -162,12 +162,11 @@ export default function MoleculeExplorer() {
             <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} onTree={() => showTree()} />
           </>
         ) : route.view === "tree" ? (
-          <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-8 md:pt-10">
-            <h1 className="display text-[36px] md:text-[48px]">How the molecules connect</h1>
-            <p className="mt-3 mb-6 text-[17px] leading-[1.55] text-foreground/80 max-w-[62ch]">
-              Read it left to right: each column is one building step further from the starting atoms, and each line runs from a molecule to one that is built from it.
-            </p>
-            <FamilyTree initial={route.key} onOpen={open} />
+          // on a large screen the tree view is exactly one window tall, so the whole map is visible at once
+          <div className="px-4 md:px-6 pt-5 pb-4 lg:h-[calc(100dvh-4rem)] flex flex-col">
+            <div className="flex-1 min-h-0">
+              <FamilyTree initial={route.key} onOpen={open} />
+            </div>
           </div>
         ) : route.view === "apps" ? (
           !route.domain ? (

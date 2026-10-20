@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 // Layout: columns are how many building steps a molecule sits above the starting atoms (its longest chain of parents);
 // within a column, each brick sits near the average height of its parents, so lines stay short.
-const NODE_W = 178, NODE_H = 40, COL_W = 250, GAP = 10, PAD = 24, HEAD = 34;
+const NODE_W = 172, NODE_H = 32, COL_W = 222, GAP = 5, PAD = 14, HEAD = 24;
 const STEPS = ["Starting atoms", "One step up", "Two steps up", "Three steps up", "Four steps up", "Five steps up", "Six steps up"];
 
 function layout() {
@@ -46,7 +46,7 @@ const closure = (k: string, next: (k: string) => string[]) => {
 
 // split a long name onto two lines at the space nearest the middle
 const lines = (name: string) => {
-  if (name.length <= 21) return [name];
+  if (name.length <= 22) return [name];
   const mid = name.length / 2;
   let best = -1;
   for (let i = 0; i < name.length; i++) if (name[i] === " " && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
@@ -58,7 +58,8 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
   const [sel, setSel] = useState<string | undefined>(initial);
   const [hover, setHover] = useState<string>();
   const [fam, setFam] = useState<string>();
-  const [fit, setFit] = useState(false);
+  // on a large screen the whole tree fits the window; on a phone that would be unreadably small, so it scrolls
+  const [fit, setFit] = useState(() => matchMedia("(min-width: 1024px)").matches);
   const scroller = useRef<HTMLDivElement>(null);
   const seen = useSeen();
   const focus = hover ?? sel;
@@ -78,52 +79,48 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
     focus ? (k === focus ? "focus" : up.has(k) ? "up" : down.has(k) ? "down" : "dim") : fam && groupOf(k) !== fam ? "dim" : "plain";
 
   return (
-    <div>
-      <div className="sheet !p-4 md:!p-5 mb-4 grid md:grid-cols-[minmax(0,1fr)_auto] gap-4 items-start min-h-[112px]">
+    <div className="flex flex-col lg:h-full min-h-0">
+      {/* one row: the title, then either a one-line guide or the selected brick's links; no card over the map */}
+      <div className="shrink-0 mb-2 flex flex-wrap items-center gap-x-4 gap-y-2 min-h-[40px]">
+        <h1 className="heading text-[24px] md:text-[28px]">How the molecules connect</h1>
         {sel ? (
-          <div className="min-w-0">
-            <p className="text-[12.5px] text-muted-foreground">{groupOf(sel)}</p>
-            <h2 className="heading text-[22px]">{MODELS[sel].name}</h2>
-            <p className="mt-1 text-[14px] leading-[1.5] text-foreground/80 max-w-[70ch]">{MODELS[sel].lede}</p>
-            <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
-              {(
-                [
-                  ["Built from", parentsOf(sel), "bg-foreground text-white"],
-                  ["Used in", childrenOf(sel), "bg-accent/45"],
-                ] as const
-              ).map(([label, keys, tone]) => (
-                <div key={label} className="flex flex-wrap items-center gap-1.5">
-                  <dt className="text-muted-foreground mr-1">{label}</dt>
-                  {keys.length ? (
-                    keys.map((k) => (
-                      <dd key={k}>
-                        <button onClick={() => setSel(k)} className={cn("rounded-[6px] px-2 py-0.5 font-semibold", tone)}>
-                          {MODELS[k].name}
-                        </button>
-                      </dd>
-                    ))
-                  ) : (
-                    <dd className="text-muted-foreground">{label === "Built from" ? "nothing: it is a starting atom" : "nothing yet: a finished brick"}</dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          </div>
+          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] min-w-0">
+            <div className="flex items-center gap-2">
+              <dt className="sr-only">Selected</dt>
+              <dd className="rounded-[7px] bg-accent px-2.5 py-1 font-bold shadow-[0_2px_0_hsl(var(--accent-edge))]" title={MODELS[sel].lede}>
+                {MODELS[sel].name}
+              </dd>
+            </div>
+            {(
+              [
+                ["Built from", parentsOf(sel), "bg-foreground text-white"],
+                ["Used in", childrenOf(sel), "bg-[#fbe7a1]"],
+              ] as const
+            ).map(([label, keys, tone]) => (
+              <div key={label} className="flex flex-wrap items-center gap-1.5">
+                <dt className="text-muted-foreground">{label}</dt>
+                {keys.length ? (
+                  keys.map((k) => (
+                    <dd key={k}>
+                      <button onClick={() => setSel(k)} className={cn("rounded-[6px] px-2 py-0.5 font-semibold", tone)}>
+                        {MODELS[k].name}
+                      </button>
+                    </dd>
+                  ))
+                ) : (
+                  <dd className="text-muted-foreground">{label === "Built from" ? "nothing, a starting atom" : "nothing yet"}</dd>
+                )}
+              </div>
+            ))}
+          </dl>
         ) : (
-          <p className="text-[15px] leading-[1.55] text-foreground/80 max-w-[60ch] self-center">
-            Every molecule is built from simpler ones. Select a brick to light up everything it is built from, in navy, and everything that builds on it, in yellow.
+          <p className="text-[14px] text-foreground/75">
+            Each column is one building step up from the atoms. Select a brick to light up what it is built from (navy) and what builds on it (yellow).
           </p>
         )}
-        <div className="flex gap-2 md:flex-col md:items-stretch">
-          {sel && <Button onClick={() => onOpen(sel)}>Open {MODELS[sel].name.length > 18 ? "molecule" : MODELS[sel].name}</Button>}
-          <Button variant="secondary" onClick={() => setFit((f) => !f)} aria-pressed={fit}>
-            {fit ? <Minimize2 size={15} aria-hidden /> : <Maximize2 size={15} aria-hidden />}
-            {fit ? "Actual size" : "Fit to screen"}
-          </Button>
-        </div>
       </div>
-
-      <div role="group" aria-label="Highlight a family" className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+      <div className="shrink-0 flex items-start gap-3 mb-1">
+      <div role="group" aria-label="Highlight a family" className="flex-1 min-w-0 flex gap-2 overflow-x-auto pb-2 -ml-4 pl-4 md:ml-0 md:pl-0 [scrollbar-width:thin]">
         {[undefined, ...GROUPS.map((g) => g.title)].map((t) => (
           <button
             key={t ?? "all"}
@@ -135,19 +132,33 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
           </button>
         ))}
       </div>
+        <div className="shrink-0 flex gap-2">
+          {sel && (
+            <Button size="sm" onClick={() => onOpen(sel)}>
+              Open
+            </Button>
+          )}
+          <Button size="sm" variant="secondary" onClick={() => setFit((f) => !f)} aria-pressed={fit}>
+            {fit ? <Minimize2 size={15} aria-hidden /> : <Maximize2 size={15} aria-hidden />}
+            {fit ? "Actual size" : "Fit to screen"}
+          </Button>
+        </div>
+      </div>
 
-      <div ref={scroller} className="sheet !p-0 overflow-auto max-h-[78dvh] overscroll-contain">
+      <div className="flex-1 min-h-0">
+      <div ref={scroller} className={cn("sheet !p-0 overscroll-contain lg:h-full", fit ? "overflow-hidden" : "overflow-auto max-h-[75dvh] lg:max-h-none")}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           width={fit ? "100%" : W}
-          height={fit ? undefined : H}
+          height={fit ? "100%" : H}
+          preserveAspectRatio="xMidYMid meet"
           role="group"
           aria-label={`Family tree of ${TOUR.length} molecules in ${columns} levels`}
           className="block"
           onClick={(e) => e.target === e.currentTarget && setSel(undefined)}
         >
           {STEPS.slice(0, columns).map((s, c) => (
-            <text key={s} x={PAD + c * COL_W} y={PAD + 8} fontSize={12.5} fontWeight={700} fill="hsl(var(--muted-foreground))">
+            <text key={s} x={PAD + c * COL_W} y={PAD + 2} fontSize={13} fontWeight={700} fill="hsl(var(--muted-foreground))">
               {s}
             </text>
           ))}
@@ -204,9 +215,9 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
                   <text
                     key={i}
                     x={x + 12}
-                    y={y + NODE_H / 2 + (i - (ls.length - 1) / 2) * 14}
+                    y={y + NODE_H / 2 + (i - (ls.length - 1) / 2) * 12.5}
                     dominantBaseline="central"
-                    fontSize={12.5}
+                    fontSize={13}
                     fontWeight={st === "focus" ? 700 : 600}
                     fill={ink}
                   >
@@ -223,9 +234,8 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
           })}
         </svg>
       </div>
-      <p className="mt-3 text-[13px] text-muted-foreground">
-        Click a brick to select it, double-click or press Enter to open it. A green dot marks molecules you have opened before. Lineage follows Hines' “immediate parents”.
-      </p>
+      </div>
+
     </div>
   );
 }
