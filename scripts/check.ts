@@ -8,6 +8,7 @@ import { lintCld } from "@/lib/cldGeometry";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
+import { METHOD_PAGES, METHOD_REFS } from "@/data/methods";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
 const all = Object.keys(MODELS);
@@ -97,6 +98,10 @@ GUIDE.flatMap((p) => p.refs).forEach((r) => !refText[r] && errs.push(`guide: unk
   truth.points = ts.map((t, i) => [t, made[i]]);
   const cal = calibrate(m, { tau: 5 }, ["tau"], [truth]);
   if (Math.abs(cal.params.tau - 9) > 0.3) errs.push(`calibrate: expected decay time near 9, got ${cal.params.tau}`);
+}
+for (const p of METHOD_PAGES) {
+  [...p.refs, ...p.sections.flatMap((x) => x.cite ?? [])].forEach((k) => !METHOD_REFS[k] && errs.push(`methods/${p.id}: unknown ref ${k}`));
+  if (p.tryIt && !/^\/(m|apps|tree|tour)\//.test(p.tryIt.hash)) errs.push(`methods/${p.id}: try-it link ${p.tryIt.hash} is not an app route`);
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");

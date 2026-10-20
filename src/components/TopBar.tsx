@@ -31,6 +31,8 @@ export default function TopBar({
   appsActive,
   showTree,
   treeActive,
+  showMethods,
+  methodsActive,
   paneOpen,
   togglePane,
 }: {
@@ -44,6 +46,8 @@ export default function TopBar({
   appsActive: boolean;
   showTree: () => void;
   treeActive: boolean;
+  showMethods: () => void;
+  methodsActive: boolean;
   paneOpen: boolean;
   togglePane: () => void;
 }) {
@@ -78,7 +82,7 @@ export default function TopBar({
 
   return (
     <header className="print:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
-      <div className="px-4 md:px-6 flex flex-wrap items-center gap-x-7">
+      <div className="px-4 md:px-6 flex flex-wrap items-center gap-x-5 xl:gap-x-7">
         <button
           onClick={togglePane}
           aria-expanded={paneOpen}
@@ -92,7 +96,7 @@ export default function TopBar({
           <BrickMark />
           <span className="heading text-[20px]">LoopBricks</span>
         </button>
-        <nav aria-label="Main" className="flex gap-5 lg:gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+        <nav aria-label="Main" className="flex gap-5 xl:gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
           <button onClick={showMap} aria-current={mapActive ? "page" : undefined} className={navLink(mapActive)}>
             Molecules
           </button>
@@ -105,9 +109,12 @@ export default function TopBar({
           <button onClick={showApps} aria-current={appsActive ? "page" : undefined} className={navLink(appsActive)}>
             Applications
           </button>
+          <button onClick={showMethods} aria-current={methodsActive ? "page" : undefined} className={navLink(methodsActive)}>
+            Methods
+          </button>
         </nav>
 
-        <div className="relative ml-auto w-full sm:w-[300px] order-4 sm:order-none pb-3 sm:pb-0">
+        <div className="relative ml-auto w-full sm:w-[220px] xl:w-[300px] order-4 sm:order-none pb-3 sm:pb-0">
           <label>
             <span className="sr-only">Find a molecule or healthcare case</span>
             <Search size={16} aria-hidden className="absolute left-3 top-[20px] sm:top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />

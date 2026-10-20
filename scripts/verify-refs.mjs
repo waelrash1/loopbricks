@@ -6,7 +6,7 @@ const norm = (s) => s.toLowerCase().normalize("NFKD").replace(/<[^>]+>/g, "").re
 let bad = 0, n = 0;
 for (const f of files) {
   const src = readFileSync(f, "utf8");
-  for (const m of src.matchAll(/(\w+): \{ text: "((?:[^"\\]|\\.)*)",\s*doi: "([^"]+)"/g)) {
+  for (const m of src.matchAll(/(\w+): \{ (?:short: "[^"]*", )?text: "((?:[^"\\]|\\.)*)",\s*doi: "([^"]+)"/g)) {
     const [, key, text, doi] = m;
     n++;
     const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, { headers: { "User-Agent": "loopbricks-ref-check (mailto:none@example.org)" } });

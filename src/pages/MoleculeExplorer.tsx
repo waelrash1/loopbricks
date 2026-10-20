@@ -18,6 +18,8 @@ import LessonPanel from "@/components/LessonPanel";
 import { AppsIndex, CasePage, DomainLibrary } from "@/components/Apps";
 import FamilyTree from "@/components/FamilyTree";
 import RunsPanel from "@/components/RunsPanel";
+import { MethodsIndex, MethodsPage } from "@/components/Methods";
+import { METHOD_PAGES } from "@/data/methods";
 import { useShelf } from "@/lib/runs";
 import { markSeen } from "@/lib/progress";
 import { caseIn, casesUsing, domainById } from "@/data/apps";
@@ -26,13 +28,15 @@ import { caseIn, casesUsing, domainById } from "@/data/apps";
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
+//   #/methods     methods guide; #/methods/<page> one page
 //   #/tree        family tree; #/tree/<key> with that molecule selected
 //   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string };
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string };
 function parseRoute(): Route {
   const [, a, b, c] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
+  if (a === "methods") return { view: "methods", page: METHOD_PAGES.some((p) => p.id === b) ? b : undefined };
   if (a === "tree") return { view: "tree", key: MODELS[b] ? b : undefined };
   if (a === "apps") {
     const d = domainById(b);
@@ -89,6 +93,7 @@ export default function MoleculeExplorer() {
   const startTour = () => go("/tour/1");
   const showApps = () => go("/apps");
   const showTree = (k?: string) => go(k ? `/tree/${k}` : "/tree");
+  const showMethods = (p?: string) => go(p ? `/methods/${p}` : "/methods");
   const openDomain = (d: string) => go(`/apps/${d}`);
   const openCase = (d: string, c: string) => go(`/apps/${d}/${c}`);
   const gotoLesson = (i: number) => go(`/tour/${Math.max(0, Math.min(TOUR.length - 1, i)) + 1}`);
@@ -102,7 +107,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree" || view === "methods") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -140,13 +145,13 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} showMethods={() => showMethods()} methodsActive={view === "methods"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
       <div className="flex">
         {paneOpen && (
           <SidePane
             initialMode={view === "apps" ? "apps" : "molecules"}
-            current={route.view === "apps" ? `${route.domain}/${route.id}` : route.view === "tree" ? route.key : view === "map" ? undefined : key}
+            current={route.view === "apps" ? `${route.domain}/${route.id}` : route.view === "tree" ? route.key : view === "molecule" || view === "learn" ? key : undefined}
             onMolecule={open}
             onCase={(k) => go(`/apps/${k}`)}
             onClose={() => togglePane(false)}
@@ -164,6 +169,12 @@ export default function MoleculeExplorer() {
             )}
             <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} onTree={() => showTree()} />
           </>
+        ) : route.view === "methods" ? (
+          route.page ? (
+            <MethodsPage key={route.page} id={route.page} onPage={(p) => showMethods(p || undefined)} onOpen={(h) => go(h)} />
+          ) : (
+            <MethodsIndex onPage={showMethods} />
+          )
         ) : route.view === "tree" ? (
           // on a large screen the tree view is exactly one window tall, so the whole map is visible at once
           <div className="px-4 md:px-6 pt-5 pb-4 lg:h-[calc(100dvh-4rem)] flex flex-col">
