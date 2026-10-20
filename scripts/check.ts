@@ -13,6 +13,9 @@ import { BOOK_TOC } from "@/data/sterman";
 import { MODULES } from "@/data/learn/modules";
 import { ARCHETYPES } from "@/data/learn/archetypes";
 import { OBJECTIVES, QUIZ } from "@/data/learn/quiz";
+import { STEPS } from "@/data/learn/steps";
+import { MODULE_CONTENT } from "@/data/learn";
+import { sampleModel } from "@/data/apps/sim";
 import { CAL_DATA, CAL_FIXED, CAL_HOLDOUT, CAL_MODEL, CAL_TRUTH, calFit, calRef, monteCarlo, overshoots } from "@/lib/labs";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
@@ -170,7 +173,35 @@ for (const t of BOOK_TOC) {
     a.molecules.forEach((k) => !MODELS[k] && errs.push(`learn/archetype ${a.id}: unknown molecule ${k}`));
     a.cases.forEach((c) => !ROUTE.test(c.hash) && errs.push(`learn/archetype ${a.id}: link ${c.hash} is not an app route`));
   }
-  const text = JSON.stringify([ARCHETYPES, QUIZ, OBJECTIVES, MODULES]);
+  // steps: every idea once, every diagram and equation once, every reference resolves, runs stay finite
+  for (const c of MODULE_CONTENT) {
+    const steps = STEPS[c.def.id];
+    if (!steps) continue;
+    const tag = `learn/${c.def.id} steps`;
+    const once = (kind: string, all: string[], used: (string | undefined)[]) => {
+      const u = used.filter(Boolean) as string[];
+      u.forEach((x) => !all.includes(x) && errs.push(`${tag}: unknown ${kind} "${x}"`));
+      all.forEach((x) => { const n = u.filter((y) => y === x).length; if (n !== 1) errs.push(`${tag}: ${kind} "${x}" used ${n} times`); });
+    };
+    once("idea", c.bigIdeas.map((b) => b.title), steps.flatMap((s) => s.ideas));
+    once("diagram", c.diagrams.map((d) => d.title), steps.map((s) => s.diagram));
+    once("equation", c.formulations.map((f) => f.name), steps.map((s) => s.formulation));
+    if (c.def.id === "archetypes") once("archetype", ARCHETYPES.map((a) => a.id), steps.map((s) => s.archetype));
+    for (const s of steps) {
+      if (s.example && !c.examples.some((x) => x.title === s.example)) errs.push(`${tag}: unknown example "${s.example}"`);
+      s.exercises?.forEach((k) => !c.exercises[k] && errs.push(`${tag}: no exercise ${k}`));
+      if (s.run) {
+        const m = MODELS[s.run.molecule];
+        if (!m) { errs.push(`${tag}: unknown molecule ${s.run.molecule}`); continue; }
+        Object.entries(s.run.params ?? {}).forEach(([k, v]) => {
+          const d = m.params.find((x) => x.id === k);
+          if (!d || v < d.min || v > d.max) errs.push(`${tag} "${s.title}": param ${k}=${v} outside the slider`);
+        });
+        if (sampleModel(m, s.run.params ?? {}, s.run.T, 20).flat().some((v) => !Number.isFinite(v))) errs.push(`${tag} "${s.title}": run is not finite`);
+      }
+    }
+  }
+  const text = JSON.stringify([ARCHETYPES, QUIZ, OBJECTIVES, MODULES, STEPS]);
   if (text.includes("—")) errs.push("learn: no em dashes");
   // the notes must stand alone, not point into a book's chapters
   for (const t of BOOK_TOC) {

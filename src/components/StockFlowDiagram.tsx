@@ -3,27 +3,11 @@ import type { Model } from "@/data/molecules";
 import { FLOW_META } from "@/data/diagramMeta";
 import type { FrameCb } from "@/hooks/useSimulation";
 import type { Vars } from "@/sim/engine";
+import { flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
 
 const NS = "http://www.w3.org/2000/svg";
 const ACC = "#2545ff";
-const ptsPath = (pts: [number, number][]) => "M" + pts.map((p) => p.join(",")).join(" L");
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-
-// geometric midpoint of a polyline by arc length → where the valve sits
-function midpoint(pts: [number, number][]): [number, number] {
-  let total = 0;
-  for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-  let half = total / 2;
-  for (let i = 1; i < pts.length; i++) {
-    const seg = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-    if (half <= seg) {
-      const t = seg ? half / seg : 0;
-      return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t];
-    }
-    half -= seg;
-  }
-  return pts[pts.length - 1];
-}
 
 // point on a box border in the direction of (tx,ty)
 function edgePoint(b: { x: number; y: number; w: number; h: number }, tx: number, ty: number): [number, number] {
@@ -87,15 +71,17 @@ export default function StockFlowDiagram({
       m.in.forEach((id) => {
         if (paramIds.has(id)) {
           const [px, py] = nodePos[id];
-          const my = (py + vy) / 2 - 26;
-          conns.push({ d: `M ${px} ${py - 11} Q ${(px + vx) / 2} ${my} ${vx} ${vy + 11}`, kind: "info", bx: (px + vx) / 2, by: my });
+          const my = (py + vy) / 2 - 26, cx = (px + vx) / 2;
+          const [ex, ey] = shortenQ(cx, my, vx, vy, 14);
+          conns.push({ d: `M ${px} ${py - 11} Q ${cx} ${my} ${ex} ${ey}`, kind: "info", bx: cx, by: my });
         } else {
           const g = model.diagram.stocks[id];
           if (!g) return; // hidden/internal stock: no geometry
           const [sx, sy] = edgePoint(g, vx, vy);
           const mx = (sx + vx) / 2, my = (sy + vy) / 2;
           const nx = -(vy - sy), ny = vx - sx, len = Math.hypot(nx, ny) || 1, bow = 22;
-          conns.push({ d: `M ${sx} ${sy} Q ${mx + (nx / len) * bow} ${my + (ny / len) * bow} ${vx} ${vy}`, kind: "fb", loop: typeof m.loop === "string" ? m.loop : m.loop?.[id], bx: mx + (nx / len) * bow, by: my + (ny / len) * bow });
+          const [ex, ey] = shortenQ(mx + (nx / len) * bow, my + (ny / len) * bow, vx, vy, 14);
+          conns.push({ d: `M ${sx} ${sy} Q ${mx + (nx / len) * bow} ${my + (ny / len) * bow} ${ex} ${ey}`, kind: "fb", loop: typeof m.loop === "string" ? m.loop : m.loop?.[id], bx: mx + (nx / len) * bow, by: my + (ny / len) * bow });
         }
       });
     });
@@ -169,19 +155,23 @@ export default function StockFlowDiagram({
     <div className="viz-stage overflow-x-auto">
       <svg viewBox="0 0 820 310" role="img" aria-label={`Stock and flow diagram for ${model.name}`} className="w-full min-w-[460px] h-auto block" preserveAspectRatio="xMidYMid meet">
         <defs>
-          <marker id="sf-arrow" markerWidth="6" markerHeight="6" refX="4.2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="hsl(var(--input))" /></marker>
-          <marker id="info-arrow" markerWidth="6" markerHeight="6" refX="4.5" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#6b74a6" /></marker>
-          <marker id="fb-arrow" markerWidth="6.5" markerHeight="6.5" refX="4.8" refY="2.1" orient="auto"><path d="M0,0 L4.2,2.1 L0,4.2 Z" fill="#d9480f" /></marker>
+          {/* information arrows: thin line, small fixed-size head */}
+          <marker id="info-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#6b74a6" /></marker>
+          <marker id="fb-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#d9480f" /></marker>
         </defs>
 
         {/* clouds + pipes */}
         {model.diagram.flows.map((fl) => {
           const a0 = fl.pts[0], aN = fl.pts[fl.pts.length - 1];
+          const col = fl.color ?? ACC, sh = flowShape(fl.pts, 18, 13, fl.to ? 0 : 14);
           return (
             <g key={fl.id}>
               {!fl.from && <Cloud cx={a0[0] - 8} cy={a0[1]} />}
               {!fl.to && <Cloud cx={aN[0] + 8} cy={aN[1]} />}
-              <path ref={(el) => (pipes.current[fl.id] = el)} d={ptsPath(fl.pts)} fill="none" stroke={fl.color ?? ACC} strokeOpacity={0.18} strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" markerEnd="url(#sf-arrow)" />
+              {/* a flow is a hollow pipe (two parallel lines) with a solid head, unlike the thin information arrows */}
+              <path ref={(el) => (pipes.current[fl.id] = el)} d={sh.pipe} fill="none" stroke={col} strokeWidth={11} strokeLinejoin="round" />
+              <path d={sh.pipe} fill="none" stroke="hsl(var(--card))" strokeWidth={6} strokeLinejoin="round" />
+              <path d={sh.head} fill={col} />
               <g ref={(el) => (parts.current[fl.id] = el)} />
             </g>
           );
@@ -222,9 +212,10 @@ export default function StockFlowDiagram({
           const col = fl.color ?? ACC;
           return (
             <g key={fl.id}>
-              <path d={`M ${vx - 9} ${vy - 7} L ${vx - 9} ${vy + 7} L ${vx} ${vy} Z M ${vx + 9} ${vy - 7} L ${vx + 9} ${vy + 7} L ${vx} ${vy} Z`} fill="hsl(var(--card))" stroke={col} strokeWidth={1.3} strokeLinejoin="round" />
-              <circle cx={vx} cy={vy} r={2} fill={col} />
-              <text x={vx} y={vy - 12} textAnchor="middle" fontSize={10.5} fill="hsl(var(--muted-foreground))" fontStyle="italic">{name}</text>
+              <path d={`M ${vx} ${vy} L ${vx} ${vy - 17} M ${vx - 6} ${vy - 17} L ${vx + 6} ${vy - 17}`} stroke={col} strokeWidth={2} strokeLinecap="round" />
+              <path d={valvePath(vx, vy)} fill="hsl(var(--card))" stroke={col} strokeWidth={2} strokeLinejoin="round" />
+              <circle cx={vx} cy={vy} r={2.5} fill={col} />
+              <text x={vx} y={vy - 23} textAnchor="middle" fontSize={10.5} fill="hsl(var(--muted-foreground))" fontStyle="italic">{name}</text>
             </g>
           );
         })}

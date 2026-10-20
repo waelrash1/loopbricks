@@ -1,9 +1,12 @@
-import { useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Clock, GraduationCap, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowDown, Check, ChevronLeft, ChevronRight, Clock, GraduationCap, X } from "lucide-react";
 import { MODELS, type Model } from "@/data/molecules";
 import type { StudyDiagram } from "@/data/sterman/types";
 import { ARCHETYPES, LEARN_BY_MOLECULE, MODULE_CONTENT, archetypesFor, type ModuleContent } from "@/data/learn";
-import type { Archetype, Level, Quiz } from "@/data/learn/types";
+import type { Archetype, Level, Quiz, Step } from "@/data/learn/types";
+import { STEPS } from "@/data/learn/steps";
+import { sampleModel } from "@/data/apps/sim";
+import { initParams } from "@/sim/engine";
 import { markSeen, useSeen } from "@/lib/progress";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import { cn } from "@/lib/utils";
@@ -77,12 +80,18 @@ function Cycle({ d }: { d: Extract<StudyDiagram, { kind: "cycle" }> }) {
 function Sequence({ d }: { d: Extract<StudyDiagram, { kind: "sequence" }> }) {
   return (
     <div>
-      <ol className="grid gap-3" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))` }}>
+      {/* one column with an arrow between steps, so the direction always reads, at any width */}
+      <ol className="grid max-w-[560px]">
         {d.steps.map((s, i) => (
-          <li key={s.label} className="relative rounded-[10px] border border-foreground/70 bg-card px-3.5 py-3">
-            <span className="block text-[12px] font-bold text-accent-edge">Step {i + 1}</span>
-            <span className="block heading text-[15px] mt-0.5">{s.label}</span>
-            {s.detail && <span className="block mt-1.5 text-[13px] leading-[1.5] text-foreground/80">{s.detail}</span>}
+          <li key={s.label}>
+            {i > 0 && <ArrowDown aria-hidden size={18} strokeWidth={2.5} className="mx-auto my-1 text-foreground/70" />}
+            <div className="rounded-[10px] border border-foreground/70 bg-card px-3.5 py-2.5 grid grid-cols-[22px_minmax(0,1fr)] gap-x-2">
+              <span className="text-[13px] font-bold text-accent-edge tabular-nums pt-px">{i + 1}</span>
+              <span>
+                <span className="block heading text-[15px]">{s.label}</span>
+                {s.detail && <span className="block mt-1 text-[13px] leading-[1.5] text-foreground/80">{s.detail}</span>}
+              </span>
+            </div>
           </li>
         ))}
       </ol>
@@ -96,13 +105,9 @@ function Sequence({ d }: { d: Extract<StudyDiagram, { kind: "sequence" }> }) {
   );
 }
 
-function Diagram({ d }: { d: StudyDiagram }) {
+function DiagramBody({ d }: { d: StudyDiagram }) {
   return (
-    <figure className="sheet">
-      <figcaption className="heading text-[17px] mb-3">
-        {d.title}
-        {pg(d.pages)}
-      </figcaption>
+    <>
       {d.kind === "cld" && (
         <div className="max-w-[760px]">
           <CausalLoopDiagram model={{ name: d.title, cld: d.cld } as unknown as Model} />
@@ -111,10 +116,9 @@ function Diagram({ d }: { d: StudyDiagram }) {
       {d.kind === "cycle" && <Cycle d={d} />}
       {d.kind === "sequence" && <Sequence d={d} />}
       {d.note && <p className="mt-3 text-[14px] leading-[1.6] text-foreground/80 max-w-[75ch]">{d.note}</p>}
-    </figure>
+    </>
   );
 }
-
 
 const LEVELS: { level: Level; blurb: string }[] = [
   { level: "Foundations", blurb: "How systems behave and how to describe them: stocks, flows, feedback and patterns." },
@@ -257,49 +261,178 @@ function QuizBlock({ quiz }: { quiz: Quiz[] }) {
   );
 }
 
-function ArchetypeCard({ a, onOpen }: { a: Archetype; onOpen: (hash: string) => void }) {
+// A live run of one molecule beside the text: sliders and a chart that redraws as they move.
+function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash: string) => void }) {
+  const m = MODELS[run.molecule];
+  const base = useMemo(() => ({ ...initParams(m), ...run.params }), [m, run.params]);
+  const [p, setP] = useState(base);
+  useEffect(() => setP(base), [base]);
+  const series = useMemo(() => sampleModel(m, p, run.T, 121), [m, p, run.T]);
+  const lines = m.stocks.map((st, i) => ({ st, ys: series[i] })).filter((l) => !l.st.hidden && !l.st.chartHidden);
+  const all = lines.flatMap((l) => l.ys);
+  const lo = Math.min(0, ...all), hi = Math.max(...all, lo + 1e-9);
+  const W = 520, H = 230, L = 40, B = 22;
+  const x = (j: number, n: number) => L + (j / Math.max(1, n - 1)) * (W - L - 8);
+  const y = (v: number) => 8 + (1 - (v - lo) / (hi - lo)) * (H - B - 8);
+  const fmt = (v: number) => (Math.abs(v) >= 100 ? Math.round(v).toString() : +v.toFixed(1) + "");
+  const changed = m.params.some((d) => p[d.id] !== base[d.id]);
   return (
-    <article id={`arch-${a.id}`} className="sheet scroll-mt-24">
-      <h3 className="heading text-[20px]">{a.name}</h3>
-      <p className="mt-2 text-[15.5px] leading-[1.65] max-w-[80ch]">{a.story}</p>
-      <div className="mt-4 max-w-[760px]">
-        <CausalLoopDiagram model={{ name: a.name, cld: a.cld } as unknown as Model} />
-      </div>
-      <dl className="mt-4 grid md:grid-cols-3 gap-4 text-[14.5px] leading-[1.6]">
-        <div>
-          <dt className="heading text-[14px]">What you see</dt>
-          <dd className="mt-1">{a.behaviour}</dd>
-        </div>
-        <div>
-          <dt className="heading text-[14px]">Why it traps people</dt>
-          <dd className="mt-1">{a.trap}</dd>
-        </div>
-        <div>
-          <dt className="heading text-[14px]">Where to intervene</dt>
-          <dd className="mt-1">{a.leverage}</dd>
-        </div>
-      </dl>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {a.molecules.filter((k) => MODELS[k]).map((k) => (
-          <button key={k} onClick={() => onOpen(`/m/${k}`)} className="brick brick-y h-9 px-3.5 text-[13px] font-semibold">
-            Run it: {MODELS[k].name}
-          </button>
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={`${m.name}: ${lines.map((l) => l.st.label).join(", ")} over ${run.T} ${m.timeUnit}`}>
+        {[lo, (lo + hi) / 2, hi].map((v) => (
+          <g key={v}>
+            <line x1={L} x2={W - 8} y1={y(v)} y2={y(v)} stroke="hsl(var(--border))" />
+            <text x={L - 6} y={y(v) + 4} textAnchor="end" fontSize="11" fill="hsl(var(--muted-foreground))">
+              {fmt(v)}
+            </text>
+          </g>
         ))}
-        {a.cases.map((c) => (
-          <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
-            {c.label}
-          </button>
+        <text x={L} y={H - 4} fontSize="11" fill="hsl(var(--muted-foreground))">0</text>
+        <text x={W - 8} y={H - 4} textAnchor="end" fontSize="11" fill="hsl(var(--muted-foreground))">
+          {run.T} {m.timeUnit}
+        </text>
+        {lines.map(({ st, ys }) => (
+          <polyline key={st.id} fill="none" stroke={st.color} strokeWidth="2.25" strokeLinejoin="round" points={ys.map((v, j) => `${x(j, ys.length)},${y(v)}`).join(" ")} />
+        ))}
+      </svg>
+      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
+        {lines.map(({ st }) => (
+          <span key={st.id} className="flex items-center gap-1.5">
+            <span aria-hidden className="inline-block w-4 h-[3px] rounded" style={{ background: st.color }} />
+            {st.label}
+          </span>
         ))}
       </div>
-      <p className="mt-3 text-[12.5px] text-muted-foreground">Sources: {a.sources.join("; ")}</p>
-    </article>
+      <div className="mt-3 grid sm:grid-cols-2 gap-x-5 gap-y-2">
+        {m.params.map((d) => (
+          <label key={d.id} className="text-[12.5px]">
+            <span className="flex justify-between gap-2">
+              <span className="truncate">{d.label}</span>
+              <b className="tabular-nums">
+                {p[d.id]} {d.unit}
+              </b>
+            </span>
+            <input type="range" min={d.min} max={d.max} step={d.step} value={p[d.id]} onChange={(e) => setP((q) => ({ ...q, [d.id]: +e.target.value }))} className="w-full accent-[hsl(var(--accent-edge))]" />
+          </label>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {changed && (
+          <button onClick={() => setP(base)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+            Reset
+          </button>
+        )}
+        <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+          Open {m.name} in the simulator
+        </button>
+      </div>
+    </div>
   );
+}
+
+type Resolved = { step: Step; diagram?: StudyDiagram; formulation?: ModuleContent["formulations"][number]; archetype?: Archetype };
+type Tab = "all" | "diagram" | "equation" | "run";
+
+// The workbench: the diagram, equation and live run for one step, side by side with its text.
+function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => void; sticky?: boolean }) {
+  const tabs = [
+    (r.diagram || r.archetype) && (["diagram", "Diagram"] as const),
+    r.formulation && (["equation", "Equation"] as const),
+    r.step.run && MODELS[r.step.run.molecule] && (["run", "Run it"] as const),
+  ].filter(Boolean) as (readonly [Tab, string])[];
+  // more than one view: show them all together by default, one under the other
+  if (tabs.length > 1) tabs.unshift(["all", "All together"]);
+  const [tab, setTab] = useState<Tab | undefined>(tabs[0]?.[0]);
+  if (!tabs.length) return null;
+  const t = tabs.find((x) => x[0] === tab) ? tab : tabs[0][0];
+  return (
+    <div className={cn("rounded-card bg-card border border-border flex flex-col", sticky && "h-full")}>
+      <div role="tablist" aria-label="Show" className="flex gap-1 p-2 border-b border-border">
+        {tabs.map(([k, label]) => (
+          <button
+            key={k}
+            role="tab"
+            aria-selected={t === k}
+            onClick={() => setTab(k)}
+            className={cn("h-8 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-muted")}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" className={cn("p-4 md:p-5", sticky && "flex-1 overflow-y-auto")}>
+        {(t === "diagram" || t === "all") && r.archetype && (
+          <>
+            <p className="heading text-[15px] mb-2">{r.archetype.name}</p>
+            <CausalLoopDiagram model={{ name: r.archetype.name, cld: r.archetype.cld } as unknown as Model} />
+          </>
+        )}
+        {(t === "diagram" || t === "all") && r.diagram && !r.archetype && (
+          <>
+            <p className="heading text-[15px] mb-2">
+              {r.diagram.title}
+              {pg(r.diagram.pages)}
+            </p>
+            <DiagramBody d={r.diagram} />
+          </>
+        )}
+        {(t === "equation" || t === "all") && r.formulation && (
+          <div className={cn(t === "all" && (r.diagram || r.archetype) && "mt-6 pt-5 border-t border-border")}>
+            <p className="heading text-[15px]">
+              {r.formulation.name}
+              {pg(r.formulation.pages)}
+            </p>
+            <pre className="mt-3 rounded-[8px] bg-background px-4 py-3 text-[13.5px] font-mono whitespace-pre-wrap [overflow-wrap:anywhere]">{r.formulation.equations.join("\n")}</pre>
+            <p className="mt-3 text-[14.5px] leading-[1.6]">{r.formulation.explain}</p>
+          </div>
+        )}
+        {(t === "run" || t === "all") && r.step.run && MODELS[r.step.run.molecule] && (
+          <div className={cn(t === "all" && tabs.length > 2 && "mt-6 pt-5 border-t border-border")}>
+            {t === "all" && <p className="heading text-[15px] mb-2">Run it: {MODELS[r.step.run.molecule].name}</p>}
+            <MiniRun run={r.step.run} onOpen={onOpen} />
+          </div>
+        )}
+      </div>
+      {r.step.run && (t === "run" || t === "all") && (
+        <p className="mx-2 mb-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
+          <b>Look for: </b>
+          {r.step.run.look}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ponytail: modules without authored steps get one step per idea, with diagrams and equations dealt out in order
+function fallbackSteps(m: ModuleContent): Step[] {
+  return m.bigIdeas.map((b, i) => ({ title: b.title, ideas: [b.title], diagram: m.diagrams[i]?.title, formulation: m.formulations[i]?.name }));
 }
 
 export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onModule: (id: string) => void; onIndex: () => void; onOpen: (hash: string) => void }) {
   const seen = useSeen();
   const m = byId(id);
   const i = MODULE_CONTENT.findIndex((x) => x.def.id === id);
+  const steps = useMemo<Resolved[]>(() => {
+    if (!m) return [];
+    return (STEPS[id]?.length ? STEPS[id] : fallbackSteps(m)).map((step) => ({
+      step,
+      diagram: m.diagrams.find((d) => d.title === step.diagram),
+      formulation: m.formulations.find((f) => f.name === step.formulation),
+      archetype: ARCHETYPES.find((a) => a.id === step.archetype),
+    }));
+  }, [m, id]);
+  const [active, setActive] = useState(0);
+  const refs = useRef<(HTMLElement | null)[]>([]);
+  useEffect(() => {
+    // the step crossing the reading line (40% down the screen) drives the workbench
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && setActive(+(e.target as HTMLElement).dataset.step!)),
+      { rootMargin: "-40% 0px -59% 0px" }
+    );
+    refs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, [steps]);
+
   if (!m)
     return (
       <div className={`${wrap} pt-10`}>
@@ -313,21 +446,44 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
     );
   const [prev, next] = [MODULE_CONTENT[i - 1], MODULE_CONTENT[i + 1]];
   const isDone = seen.has(doneKey(id));
-  const isArch = id === "archetypes";
-  const sections = [
-    ["ideas", "Big ideas", m.bigIdeas.length],
-    ["archetypes", "Archetypes", isArch ? ARCHETYPES.length : 0],
-    ["diagrams", "Diagrams", m.diagrams.length],
-    ["formulations", "Equations", m.formulations.length],
-    ["examples", "Examples", m.examples.length],
-    ["exercises", "Try it", m.exercises.length],
-    ["pitfalls", "Mistakes", m.pitfalls.length],
-    ["quiz", "Self-check", m.quiz.length],
-  ].filter((s) => s[2]) as [string, string, number][];
-  const go = (k: string) => document.getElementById(`lm-${k}`)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  const used = new Set(steps.flatMap((s) => s.step.exercises ?? []));
+  const usedEx = new Set(steps.map((s) => s.step.example));
+  const restEx = m.exercises.map((x, k) => [x, k] as const).filter(([, k]) => !used.has(k));
+  const restExamples = m.examples.filter((x) => !usedEx.has(x.title));
+  // the workbench keeps showing the last step that had something to show
+  let shown = active;
+  while (shown > 0 && !(steps[shown].diagram || steps[shown].formulation || steps[shown].archetype || steps[shown].step.run)) shown--;
+  const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const goStep = (k: number) => refs.current[k]?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  const exNo = new Map<number, number>();
+  let n = 0;
+  steps.forEach((s) => s.step.exercises?.forEach((k) => exNo.set(k, ++n)));
+  restEx.forEach(([, k]) => exNo.set(k, ++n));
+
+  const exercise = (k: number) => {
+    const x = m.exercises[k];
+    if (!x) return null;
+    return (
+      <div key={k} className="rounded-card bg-accent/20 px-4 py-3.5">
+        <p className="text-[12.5px] font-semibold text-muted-foreground">Try it {exNo.get(k)}</p>
+        <p className="mt-1 text-[15px] leading-[1.6]">{x.prompt}</p>
+        {x.hint && (
+          <details className="mt-2 text-[14px]">
+            <summary className="cursor-pointer font-semibold text-foreground/80">Hint</summary>
+            <p className="mt-1 leading-[1.6] text-foreground/85">{x.hint}</p>
+          </details>
+        )}
+        {x.link && (
+          <button onClick={() => onOpen(x.link!.hash)} className="brick brick-w mt-3 h-9 px-3.5 text-[13px] font-semibold">
+            {x.link.label}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <article className={`${wrap} pt-6 md:pt-8`}>
+    <article className="max-w-[1320px] mx-auto px-4 md:px-8 pt-6 md:pt-8">
       <p className="text-sm text-muted-foreground mb-6">
         <button onClick={onIndex} className="hover:text-foreground">
           Learn
@@ -335,246 +491,245 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground font-semibold">{m.def.level}</span>
       </p>
-      <p className="text-[13px] font-semibold text-muted-foreground flex items-center gap-1.5">
-        Module {i + 1} of {MODULE_CONTENT.length}
-        <span aria-hidden>·</span>
-        <Clock size={13} aria-hidden /> about {m.minutes} min
-      </p>
-      <h1 className="display text-[32px] md:text-[46px] max-w-[24ch] mt-2 hyphens-auto">{m.def.title}</h1>
-      <p className="mt-4 text-[18px] leading-[1.6] text-foreground/85 max-w-[66ch]">{m.def.summary}</p>
-
-      <div className="mt-6 grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4">
-        {m.objectives.length > 0 && (
-          <div className="rounded-card bg-accent/25 px-5 py-4">
-            <p className="heading text-[16px]">By the end you will be able to</p>
-            <ul className="mt-2 space-y-1.5 text-[15px] leading-[1.55] list-disc pl-5 marker:text-accent-edge">
-              {m.objectives.map((o) => (
-                <li key={o}>{o}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="rounded-card bg-card border border-border px-5 py-4 text-[14.5px]">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] gap-x-12 gap-y-6">
+        <header>
+          <p className="text-[13px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            Module {i + 1} of {MODULE_CONTENT.length}, about {m.minutes} min
+            <Clock size={13} aria-hidden />
+          </p>
+          <h1 className="display text-[32px] md:text-[46px] max-w-[20ch] mt-2 hyphens-auto">{m.def.title}</h1>
+          <p className="mt-4 text-[18px] leading-[1.6] text-foreground/85 max-w-[60ch]">{m.def.summary}</p>
           {m.def.prereqs.length > 0 && (
-            <>
-              <p className="heading text-[15px]">Best after</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {m.def.prereqs.map((p) => (
-                  <button key={p} onClick={() => onModule(p)} className="brick brick-w px-3 py-1.5 text-[13px] font-semibold text-left">
-                    {seen.has(doneKey(p)) && <Check size={13} strokeWidth={3} aria-label="done" className="inline mr-1 -mt-0.5 text-[var(--viz-good)]" />}
+            <p className="mt-5 text-[14px] text-muted-foreground">
+              Best after{" "}
+              {m.def.prereqs.map((p, k) => (
+                <span key={p}>
+                  {k > 0 && " and "}
+                  <button onClick={() => onModule(p)} className="tlink font-semibold text-foreground">
                     {byId(p)?.def.title}
                   </button>
-                ))}
-              </div>
-            </>
+                  {seen.has(doneKey(p)) && <Check size={13} strokeWidth={3} aria-label="done" className="inline ml-1 -mt-0.5 text-[var(--viz-good)]" />}
+                </span>
+              ))}
+            </p>
           )}
-          {m.molecules.length > 0 && (
-            <>
-              <p className="heading text-[15px] mt-3">Molecules you will run</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {m.molecules.filter((k) => MODELS[k]).map((k) => (
-                  <button key={k} onClick={() => onOpen(`/m/${k}`)} className="rounded-[6px] bg-background px-2 py-1 text-[12.5px] font-semibold hover:bg-muted">
-                    {MODELS[k].name}
+          <nav aria-label="Steps in this module" className="mt-8 border-t border-border pt-5 print:hidden max-w-[60ch]">
+            <p className="heading text-[16px]">The module in {steps.length} steps</p>
+            <ol className="mt-2 grid gap-y-1 text-[14.5px]">
+              {steps.map((s, k) => (
+                <li key={s.step.title}>
+                  <button onClick={() => goStep(k)} className="text-left hover:text-foreground text-foreground/80 flex gap-2">
+                    <span className="tabular-nums text-muted-foreground w-5 shrink-0">{k + 1}</span>
+                    {s.step.title}
                   </button>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </header>
+        <div className="grid gap-4 content-start">
+          {m.objectives.length > 0 && (
+            <div className="rounded-card bg-accent/25 px-5 py-4">
+              <p className="heading text-[16px]">By the end you will be able to</p>
+              <ul className="mt-2 space-y-1.5 text-[15px] leading-[1.55] list-disc pl-5 marker:text-accent-edge">
+                {m.objectives.map((o) => (
+                  <li key={o}>{o}</li>
                 ))}
-              </div>
-            </>
+              </ul>
+            </div>
           )}
         </div>
       </div>
 
-      <nav aria-label="In this module" className="mt-6 flex flex-wrap gap-2 print:hidden">
-        {sections.map(([k, label]) => (
-          <button key={k} onClick={() => go(k)} className="brick brick-w h-8 px-3 text-[13px] font-semibold">
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      {m.bigIdeas.length > 0 && (
-        <section id="lm-ideas" className="mt-12 scroll-mt-24">
-          <h2 className={sub}>Big ideas</h2>
-          <ol className="mt-4 grid md:grid-cols-2 gap-x-8 gap-y-6">
-            {m.bigIdeas.map((b, k) => (
-              <li key={b.title} className="grid grid-cols-[30px_minmax(0,1fr)] gap-2">
-                <span className="display text-[22px] text-accent-edge leading-none">{k + 1}</span>
-                <div>
-                  <h3 className="heading text-[16.5px]">{b.title}</h3>
-                  <p className="mt-1.5 text-[15px] leading-[1.65]">
-                    {b.text}
-                    {pg(b.pages)}
-                  </p>
+      <div className="mt-14 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] gap-x-12">
+        <ol className="relative">
+          {/* the spine: one line through every step, with the current one lit */}
+          <span aria-hidden className="absolute left-[17px] top-2 bottom-2 w-[2px] bg-border" />
+          {steps.map((s, k) => {
+            const a = s.archetype;
+            const ideas = s.step.ideas.map((t) => m.bigIdeas.find((b) => b.title === t)).filter(Boolean) as ModuleContent["bigIdeas"];
+            const example = m.examples.find((x) => x.title === s.step.example);
+            return (
+              <li key={s.step.title} ref={(el) => (refs.current[k] = el)} data-step={k} className="relative pl-14 pb-14 scroll-mt-24 min-h-[40vh] lg:min-h-[62vh]">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute left-0 top-0 grid place-items-center w-9 h-9 rounded-[9px] text-[15px] font-bold tabular-nums border-2 transition-colors",
+                    k === active ? "bg-accent border-accent-edge" : "bg-background border-border text-muted-foreground"
+                  )}
+                >
+                  {k + 1}
+                </span>
+                {a && <span id={`arch-${a.id}`} className="absolute -top-24" />}
+                <h2 className="heading text-[22px] md:text-[25px] leading-tight pt-1">{s.step.title}</h2>
+                {s.step.lead && <p className="mt-2 text-[16.5px] leading-[1.6] text-foreground/75 max-w-[62ch]">{s.step.lead}</p>}
+                {ideas.map((b) => (
+                  <div key={b.title} className="mt-5 max-w-[62ch]">
+                    {b.title !== s.step.title && <h3 className="heading text-[16px]">{b.title}</h3>}
+                    <p className="mt-1.5 text-[15.5px] leading-[1.7]">
+                      {b.text}
+                      {pg(b.pages)}
+                    </p>
+                  </div>
+                ))}
+                {a && (
+                  <div className="mt-4 max-w-[62ch] text-[15.5px] leading-[1.7]">
+                    <p>{a.story}</p>
+                    <dl className="mt-4 grid gap-3 text-[14.5px] leading-[1.6]">
+                      {(
+                        [
+                          ["What you see", a.behaviour],
+                          ["Why it traps people", a.trap],
+                          ["Where to intervene", a.leverage],
+                        ] as const
+                      ).map(([dt, dd]) => (
+                        <div key={dt} className="grid sm:grid-cols-[150px_minmax(0,1fr)] gap-x-4">
+                          <dt className="heading text-[14px]">{dt}</dt>
+                          <dd>{dd}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {a.cases.map((c) => (
+                        <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[12.5px] text-muted-foreground">Sources: {a.sources.join("; ")}</p>
+                  </div>
+                )}
+                {example && (
+                  <aside className="mt-5 max-w-[62ch] border-l-4 border-accent-edge pl-4">
+                    <p className="text-[12.5px] font-semibold text-muted-foreground">From practice</p>
+                    <h3 className="heading text-[15.5px] mt-0.5">
+                      {example.title}
+                      {pg(example.pages)}
+                    </h3>
+                    <p className="mt-1 text-[15px] leading-[1.6]">{example.text}</p>
+                  </aside>
+                )}
+                {/* on narrow screens the workbench sits inside each step */}
+                <div className="lg:hidden mt-5">
+                  <Bench r={s} onOpen={onOpen} />
                 </div>
+                {s.step.exercises?.length ? (
+                  <div className="mt-5 grid gap-3 max-w-[62ch]">
+                    {s.step.exercises.map(exercise)}
+                  </div>
+                ) : null}
               </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {isArch && (
-        <section id="lm-archetypes" className="mt-12 scroll-mt-24">
-          <h2 className={sub}>The archetypes</h2>
-          <p className="mt-2 text-[15.5px] leading-[1.6] max-w-[75ch]">
-            Archetypes are feedback structures that recur across fields. Learning to recognise them lets you see a familiar story in a new situation and know where the leverage usually
-            lies. Each one below is drawn as a causal loop diagram and linked to a molecule that runs it.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {ARCHETYPES.map((a) => (
-              <button key={a.id} onClick={() => document.getElementById(`arch-${a.id}`)?.scrollIntoView({ behavior: "smooth" })} className="rounded-[6px] bg-card border border-border px-2.5 py-1 text-[13px] font-semibold hover:bg-muted">
-                {a.name}
-              </button>
-            ))}
-          </div>
-          <div className="mt-5 grid gap-5">
-            {ARCHETYPES.map((a) => (
-              <ArchetypeCard key={a.id} a={a} onOpen={onOpen} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {m.diagrams.length > 0 && (
-        <section id="lm-diagrams" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Diagrams</h2>
-          <div className="mt-4 grid gap-5">
-            {m.diagrams.map((d) => (
-              <Diagram key={d.title} d={d} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {m.formulations.length > 0 && (
-        <section id="lm-formulations" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Equations</h2>
-          <div className="mt-4 grid gap-4">
-            {m.formulations.map((f) => (
-              <div key={f.name} className="sheet">
-                <h3 className="heading text-[16.5px]">
-                  {f.name}
-                  {pg(f.pages)}
-                </h3>
-                <pre className="mt-3 rounded-[8px] bg-background px-4 py-3 text-[13.5px] font-mono whitespace-pre-wrap [overflow-wrap:anywhere]">{f.equations.join("\n")}</pre>
-                <p className="mt-3 text-[15px] leading-[1.6] max-w-[75ch]">{f.explain}</p>
-                {f.molecule && MODELS[f.molecule] && (
-                  <button onClick={() => onOpen(`/m/${f.molecule}`)} className="brick brick-y mt-3 h-9 px-3.5 text-[13px] font-semibold">
-                    Run it: {MODELS[f.molecule].name}
-                  </button>
-                )}
+            );
+          })}
+        </ol>
+        <aside className="hidden lg:block" aria-label="Workbench for the current step">
+          <div className="sticky top-[84px] h-[calc(100dvh-108px)] flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[13px] text-muted-foreground truncate">
+                Step {shown + 1}: <span className="text-foreground font-semibold">{steps[shown]?.step.title}</span>
+              </p>
+              <div className="flex gap-1 shrink-0">
+                <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-8 h-8 grid place-items-center disabled:opacity-40">
+                  <ChevronLeft size={15} />
+                </button>
+                <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-8 h-8 grid place-items-center disabled:opacity-40">
+                  <ChevronRight size={15} />
+                </button>
               </div>
-            ))}
+            </div>
+            <div className="flex-1 min-h-0">{steps[shown] && <Bench key={shown} r={steps[shown]} onOpen={onOpen} sticky />}</div>
           </div>
-        </section>
-      )}
-
-      {m.examples.length > 0 && (
-        <section id="lm-examples" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Examples from practice</h2>
-          <div className="mt-4 grid md:grid-cols-2 gap-4">
-            {m.examples.map((x) => (
-              <div key={x.title} className="rounded-card bg-card border border-border px-5 py-4">
-                <h3 className="heading text-[16px]">
-                  {x.title}
-                  {pg(x.pages)}
-                </h3>
-                <p className="mt-2 text-[15px] leading-[1.6]">{x.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {m.exercises.length > 0 && (
-        <section id="lm-exercises" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Try it</h2>
-          <ol className="mt-4 grid gap-3 max-w-[85ch]">
-            {m.exercises.map((x, k) => (
-              <li key={x.prompt} className="rounded-card bg-accent/20 px-5 py-4">
-                <p className="text-[15.5px] leading-[1.6]">
-                  <b>{k + 1}. </b>
-                  {x.prompt}
-                </p>
-                {x.hint && (
-                  <details className="mt-2 text-[14px]">
-                    <summary className="cursor-pointer font-semibold text-foreground/80">Hint</summary>
-                    <p className="mt-1 leading-[1.6] text-foreground/85">{x.hint}</p>
-                  </details>
-                )}
-                {x.link && (
-                  <button onClick={() => onOpen(x.link!.hash)} className="brick brick-w mt-3 h-9 px-3.5 text-[13px] font-semibold">
-                    {x.link.label}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {m.pitfalls.length > 0 && (
-        <section id="lm-pitfalls" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Mistakes to avoid</h2>
-          <ul className="mt-3 space-y-2 text-[15.5px] leading-[1.6] list-disc pl-5 marker:text-accent-edge max-w-[80ch]">
-            {m.pitfalls.map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {m.quiz.length > 0 && (
-        <section id="lm-quiz" className="mt-14 scroll-mt-24">
-          <h2 className={sub}>Check your understanding</h2>
-          <QuizBlock key={id} quiz={m.quiz} />
-        </section>
-      )}
-
-      {m.def.deeper && (
-        <section className="mt-10">
-          <h2 className="heading text-[17px]">Go deeper</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {m.def.deeper.map((d) => (
-              <button key={d.hash} onClick={() => onOpen(d.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
-                {d.label}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div className="mt-10 flex flex-wrap items-center gap-3 print:hidden">
-        <button onClick={() => markSeen(doneKey(id))} disabled={isDone} className={cn("brick h-11 px-5 text-[15px] font-semibold", isDone ? "brick-w" : "brick-y")}>
-          {isDone ? (
-            <>
-              <Check size={16} strokeWidth={3} aria-hidden className="inline mr-1.5 -mt-0.5 text-[var(--viz-good)]" />
-              Marked as done
-            </>
-          ) : (
-            "Mark this module as done"
-          )}
-        </button>
+        </aside>
       </div>
 
-      <nav aria-label="Next and previous module" className="mt-8 grid sm:grid-cols-2 gap-4 print:hidden">
-        {prev ? (
-          <button onClick={() => onModule(prev.def.id)} className="brick brick-w text-left px-5 py-4">
-            <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-              <ChevronLeft size={14} aria-hidden /> Previous module
-            </span>
-            <span className="heading block text-[17px] mt-1">{prev.def.title}</span>
-          </button>
-        ) : (
-          <span />
+      <div className="max-w-[1100px]">
+        {(restEx.length > 0 || restExamples.length > 0) && (
+          <section className="mt-6">
+            <h2 className={sub}>More practice</h2>
+            {restExamples.length > 0 && (
+              <div className="mt-4 grid md:grid-cols-2 gap-4">
+                {restExamples.map((x) => (
+                  <aside key={x.title} className="border-l-4 border-accent-edge pl-4">
+                    <h3 className="heading text-[15.5px]">
+                      {x.title}
+                      {pg(x.pages)}
+                    </h3>
+                    <p className="mt-1 text-[15px] leading-[1.6]">{x.text}</p>
+                  </aside>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 grid md:grid-cols-2 gap-3">
+              {restEx.map(([, k]) => exercise(k))}
+            </div>
+          </section>
         )}
-        {next && (
-          <button onClick={() => onModule(next.def.id)} className="brick brick-y text-left sm:text-right px-5 py-4">
-            <span className="flex sm:justify-end items-center gap-1 text-[13px]">
-              Next module <ChevronRight size={14} aria-hidden />
-            </span>
-            <span className="heading block text-[17px] mt-1">{next.def.title}</span>
-          </button>
+
+        {m.pitfalls.length > 0 && (
+          <section className="mt-14">
+            <h2 className={sub}>Mistakes to avoid</h2>
+            <ul className="mt-3 space-y-2 text-[15.5px] leading-[1.6] list-disc pl-5 marker:text-accent-edge max-w-[80ch]">
+              {m.pitfalls.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </section>
         )}
-      </nav>
+
+        {m.quiz.length > 0 && (
+          <section id="lm-quiz" className="mt-14 scroll-mt-24">
+            <h2 className={sub}>Check your understanding</h2>
+            <QuizBlock key={id} quiz={m.quiz} />
+          </section>
+        )}
+
+        {m.def.deeper && (
+          <section className="mt-10">
+            <h2 className="heading text-[17px]">Go deeper</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {m.def.deeper.map((d) => (
+                <button key={d.hash} onClick={() => onOpen(d.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="mt-10 flex flex-wrap items-center gap-3 print:hidden">
+          <button onClick={() => markSeen(doneKey(id))} disabled={isDone} className={cn("brick h-11 px-5 text-[15px] font-semibold", isDone ? "brick-w" : "brick-y")}>
+            {isDone ? (
+              <>
+                <Check size={16} strokeWidth={3} aria-hidden className="inline mr-1.5 -mt-0.5 text-[var(--viz-good)]" />
+                Marked as done
+              </>
+            ) : (
+              "Mark this module as done"
+            )}
+          </button>
+        </div>
+
+        <nav aria-label="Next and previous module" className="mt-8 grid sm:grid-cols-2 gap-4 print:hidden">
+          {prev ? (
+            <button onClick={() => onModule(prev.def.id)} className="brick brick-w text-left px-5 py-4">
+              <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                <ChevronLeft size={14} aria-hidden /> Previous module
+              </span>
+              <span className="heading block text-[17px] mt-1">{prev.def.title}</span>
+            </button>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <button onClick={() => onModule(next.def.id)} className="brick brick-y text-left sm:text-right px-5 py-4">
+              <span className="flex sm:justify-end items-center gap-1 text-[13px]">
+                Next module <ChevronRight size={14} aria-hidden />
+              </span>
+              <span className="heading block text-[17px] mt-1">{next.def.title}</span>
+            </button>
+          )}
+        </nav>
+      </div>
     </article>
   );
 }
