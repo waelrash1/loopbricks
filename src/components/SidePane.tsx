@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronRight, Search, X } from "lucide-react";
+import { Check, ChevronRight, Search, X } from "lucide-react";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { DOMAINS } from "@/data/apps";
 import { cn } from "@/lib/utils";
+import { forgetAll, useSeen } from "@/lib/progress";
 
 type Mode = "molecules" | "apps";
 type Item = { key: string; label: string; hint?: React.ReactNode };
@@ -54,6 +55,7 @@ export default function SidePane({
   const [filter, setFilter] = useState("");
   const [open, setOpen] = useState<Set<string>>(new Set());
   const list = useRef<HTMLDivElement>(null);
+  const seen = useSeen();
   const narrow = () => !matchMedia("(min-width: 1024px)").matches;
   // following the page into the other list starts it unfiltered
   useEffect(() => {
@@ -69,6 +71,7 @@ export default function SidePane({
     [groups, q]
   );
   const total = groups.reduce((n, g) => n + g.items.length, 0);
+  const opened = groups.reduce((n, g) => n + g.items.filter((i) => seen.has(i.key)).length, 0);
 
   // the group holding the current page opens itself, and its item scrolls into view
   useEffect(() => {
@@ -98,10 +101,10 @@ export default function SidePane({
 
   return (
     <>
-      <div aria-hidden onClick={onClose} className="pane-fade lg:hidden fixed inset-0 z-30 bg-foreground/30" />
+      <div aria-hidden onClick={onClose} className="pane-fade print:hidden lg:hidden fixed inset-0 z-30 bg-foreground/30" />
       <nav
         aria-label="Browse"
-        className="pane-in fixed lg:sticky z-40 lg:z-auto left-0 top-0 lg:top-16 h-[100dvh] lg:h-[calc(100dvh-4rem)] w-[300px] lg:w-[272px] shrink-0 flex flex-col border-r border-border bg-background shadow-[8px_0_24px_-16px_hsl(var(--foreground)/0.35)] lg:shadow-none"
+        className="pane-in print:hidden fixed lg:sticky z-40 lg:z-auto left-0 top-0 lg:top-16 h-[100dvh] lg:h-[calc(100dvh-4rem)] w-[300px] lg:w-[272px] shrink-0 flex flex-col border-r border-border bg-background shadow-[8px_0_24px_-16px_hsl(var(--foreground)/0.35)] lg:shadow-none"
       >
         <div className="px-3 pt-3 pb-2.5 border-b border-border">
           <div className="flex items-center gap-2">
@@ -143,10 +146,22 @@ export default function SidePane({
 
         <div ref={list} className="flex-1 overflow-y-auto overscroll-contain px-2 py-2">
           {!q && (
-            <div className="flex justify-end px-1 pb-1">
+            <div className="flex items-center justify-between gap-2 px-1 pb-1 text-[12px]">
+              <span className="text-muted-foreground">
+                {opened ? (
+                  <>
+                    {opened} of {total} opened{" "}
+                    <button onClick={() => confirm("Forget which molecules and cases you have opened?") && forgetAll()} className="tlink font-semibold">
+                      Reset
+                    </button>
+                  </>
+                ) : (
+                  "Ticks mark pages you open"
+                )}
+              </span>
               <button
                 onClick={() => setOpen(allOpen ? new Set() : new Set(groups.map((g) => g.id)))}
-                className="text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-[5px] px-1"
+                className="shrink-0 whitespace-nowrap text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-[5px] px-1"
               >
                 {allOpen ? "Collapse all" : "Expand all"}
               </button>
@@ -171,7 +186,12 @@ export default function SidePane({
                   >
                     <ChevronRight size={14} aria-hidden className={cn("shrink-0 text-muted-foreground transition-transform duration-200", expanded && "rotate-90")} />
                     <span className={cn("flex-1 text-[13px] font-bold leading-snug", hasCurrent ? "text-foreground" : "text-foreground/80")}>{g.title}</span>
-                    <span className="shrink-0 rounded-[5px] bg-muted px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground group-hover:bg-card">{g.items.length}</span>
+                    <span className="shrink-0 rounded-[5px] bg-muted px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground group-hover:bg-card">
+                      {(() => {
+                        const n = g.items.filter((i) => seen.has(i.key)).length;
+                        return n ? `${n}/${g.items.length}` : g.items.length;
+                      })()}
+                    </span>
                   </button>
                 </h2>
                 {/* grid-rows 0fr→1fr animates the height without measuring it */}
@@ -192,6 +212,7 @@ export default function SidePane({
                             )}
                           >
                             <span className="min-w-0">{i.label}</span>
+                            {seen.has(i.key) && !active && <Check size={13} strokeWidth={3} aria-label="opened" className="shrink-0 text-[var(--viz-good)]" />}
                             {i.hint}
                           </button>
                         </li>

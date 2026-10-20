@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Pause, Play, RotateCcw, SkipForward, Zap } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronUp, Pause, Play, RotateCcw, SkipForward, Zap } from "lucide-react";
 import type { Model } from "@/data/molecules";
 import type { Preset } from "@/data/presets";
 import type { FrameCb } from "@/hooks/useSimulation";
@@ -57,13 +57,42 @@ function Readout({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) 
   );
 }
 
+function Clock({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) => () => void }) {
+  const el = useRef<HTMLSpanElement>(null);
+  useEffect(() => subscribe(({ t }) => el.current && (el.current.textContent = `${t.toFixed(1)} ${model.timeUnit}`)), [model, subscribe]);
+  return <span ref={el} className="tabular-nums text-[13px] font-semibold text-white/80" />;
+}
+
 export default function Controls({ model, sim, presets }: { model: Model; sim: Sim; presets: Preset[] }) {
+  // on phones the panel sits below the diagrams: once it scrolls away, a slim play bar takes its place
+  const panel = useRef<HTMLDivElement>(null);
+  const [panelInView, setPanelInView] = useState(true);
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => setPanelInView(e.isIntersecting));
+    if (panel.current) io.observe(panel.current);
+    return () => io.disconnect();
+  }, []);
   const row = "flex justify-between items-baseline text-sm mb-2";
   const val = "text-[13px] font-bold";
   const key = "px-1.5 py-0.5 rounded-[5px] bg-white/10 text-[11px] font-semibold text-white";
   // the control box: the one dark surface, so it reads as the thing you operate
   return (
-    <div className="rounded-card bg-panel text-white p-5 shadow-[0_3px_0_hsl(216_52%_8%)]">
+    <div ref={panel} className="rounded-card bg-panel text-white p-5 shadow-[0_3px_0_hsl(216_52%_8%)] scroll-mt-24">
+      {!panelInView && (
+        <div role="toolbar" aria-label="Quick controls" className="lg:hidden print:hidden fixed bottom-0 inset-x-0 z-30 bg-panel text-white px-4 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] flex items-center gap-3 shadow-[0_-6px_20px_-8px_hsl(216_52%_8%/0.5)]">
+          <Button size="sm" onClick={sim.toggle} className="min-w-[96px]">
+            {sim.running ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}
+            {sim.running ? "Pause" : "Play"}
+          </Button>
+          <button onClick={sim.reset} aria-label="Reset" className="grid place-items-center w-9 h-9 rounded-[8px] bg-white/10">
+            <RotateCcw size={16} aria-hidden />
+          </button>
+          <Clock model={model} subscribe={sim.subscribe} />
+          <button onClick={() => panel.current?.scrollIntoView({ behavior: "smooth", block: "start" })} className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold text-white/85">
+            Controls <ChevronUp size={15} aria-hidden />
+          </button>
+        </div>
+      )}
       <h2 className="heading text-[19px] mb-4">Controls</h2>
 
       {presets.length > 0 && (

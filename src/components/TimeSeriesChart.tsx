@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Model } from "@/data/molecules";
 import type { FrameCb, FrameCtx } from "@/hooks/useSimulation";
 import type { History } from "@/sim/engine";
@@ -7,8 +7,8 @@ const niceMax = (v: number) => {
   if (v <= 0) return 1;
   const p = Math.pow(10, Math.floor(Math.log10(v)));
   const n = v / p;
-  const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
-  return m * p;
+  // finer steps than 1-2-5, so a chart rarely wastes more than a fifth of its height
+  return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((m) => n <= m) ?? 10) * p;
 };
 const cssVar = (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const hexA = (hex: string, a: number) => {
@@ -19,16 +19,98 @@ const hexA = (hex: string, a: number) => {
   return `rgba(${r},${g},${b},${a})`;
 };
 
+// A run described in words, for screen readers and for anyone who wants the numbers:
+// where each stock started, where it is now, and its highest point.
+function describe(model: Model, h: History) {
+  if (h.times.length < 2) return "Nothing has run yet. Press play to start.";
+  const t0 = h.times[0], t1 = h.times[h.times.length - 1];
+  const f = (v: number) => (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1));
+  const parts = model.stocks.flatMap((st, i) => {
+    if (st.hidden || st.chartHidden) return [];
+    const ys = h.series[i];
+    const a = ys[0], b = ys[ys.length - 1];
+    let k = 0;
+    ys.forEach((v, j) => v > ys[k] && (k = j));
+    const peak = ys[k] > Math.max(a, b) * 1.01 ? `, peaking at ${f(ys[k])} at ${h.times[k].toFixed(1)} ${model.timeUnit}` : "";
+    const verb = Math.abs(b - a) < Math.max(1e-6, Math.abs(a) * 0.01) ? "stayed near" : b > a ? "rose from" : "fell from";
+    return [`${st.label} ${verb} ${f(a)}${verb === "stayed near" ? "" : ` to ${f(b)}`}${peak}.`];
+  });
+  return `From ${t0.toFixed(1)} to ${t1.toFixed(1)} ${model.timeUnit}: ${parts.join(" ")}`;
+}
+
+function RunAsText({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) => () => void }) {
+  const [open, setOpen] = useState(false);
+  const [h, setH] = useState<History | null>(null);
+  // refresh at most twice a second while open; closed, it costs nothing
+  useEffect(() => {
+    if (!open) return;
+    let last = 0;
+    return subscribe(({ history }) => {
+      const now = performance.now();
+      if (now - last < 500) return;
+      last = now;
+      setH({ times: [...history.times], series: history.series.map((x) => [...x]) });
+    });
+  }, [open, subscribe]);
+  const rows = h && h.times.length > 1 ? Array.from({ length: 11 }, (_, i) => Math.round((i / 10) * (h.times.length - 1))) : [];
+  const shown = model.stocks.map((st, i) => [st, i] as const).filter(([st]) => !st.hidden && !st.chartHidden);
+  return (
+    <details className="mt-3 text-[13px]" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="cursor-pointer text-muted-foreground hover:text-foreground font-semibold w-fit">Describe this run in words and numbers</summary>
+      {h && (
+        <div className="mt-2">
+          <p aria-live="polite" className="leading-[1.6] max-w-[75ch]">
+            {describe(model, h)}
+          </p>
+          {rows.length > 0 && (
+            <div className="mt-2 overflow-x-auto">
+              <table className="text-[12.5px] tabular-nums border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left font-semibold pr-4 py-1">Time ({model.timeUnit})</th>
+                    {shown.map(([st]) => (
+                      <th key={st.id} className="text-right font-semibold px-3 py-1">
+                        {st.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((j) => (
+                    <tr key={j} className="border-t border-border">
+                      <td className="pr-4 py-1">{h.times[j].toFixed(1)}</td>
+                      {shown.map(([st, i]) => (
+                        <td key={st.id} className="text-right px-3 py-1">
+                          {h.series[i][j].toFixed(1)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </details>
+  );
+}
+
 export default function TimeSeriesChart({
   model,
   subscribe,
   height = 240,
+  onClearPrevious,
+  minimal = false,
 }: {
+  minimal?: boolean; // the looping home-page demo: no comparison, no description
   height?: number;
   model: Model;
   subscribe: (fn: FrameCb) => () => void;
+  onClearPrevious?: () => void; // shown when there is an earlier run to compare against
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   useEffect(() => {
     const c = canvas.current;
@@ -45,6 +127,8 @@ export default function TimeSeriesChart({
       const muted = `hsl(${cssVar("--muted-foreground")})`;
       const paper = `hsl(${cssVar("--card")})`;
       const history: History = frame.history;
+      const prev = minimal ? null : frame.previous;
+      setHasPrevious(!!prev); // React skips the render when the value is unchanged
       const L = 46,
         R = 14,
         T = 12,
@@ -54,9 +138,12 @@ export default function TimeSeriesChart({
       ctx.clearRect(0, 0, W, H);
       let max = 1e-6;
       history.series.forEach((h) => h.forEach((v) => v > max && (max = v)));
+      prev?.series.forEach((h, i) => !model.stocks[i]?.hidden && h.forEach((v) => v > max && (max = v)));
       max = niceMax(max * 1.05);
-      const tmax = history.times.length ? history.times[history.times.length - 1] : 10;
-      const tmin = history.times.length ? history.times[0] : 0;
+      // the axis spans both runs, so the comparison lines up in time
+      const ends = [history.times, prev?.times ?? []].filter((t) => t.length);
+      const tmax = ends.length ? Math.max(...ends.map((t) => t[t.length - 1])) : 10;
+      const tmin = ends.length ? Math.min(...ends.map((t) => t[0])) : 0;
       const span = Math.max(tmax - tmin, 1e-6);
       const X = (t: number) => L + ((t - tmin) / span) * pw;
       const Y = (v: number) => T + ph - (v / max) * ph;
@@ -113,6 +200,17 @@ export default function TimeSeriesChart({
 
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
+      // the previous run, dashed and faint, under the current one
+      prev?.series.forEach((h, i) => {
+        if (h.length < 2 || model.stocks[i]?.hidden || model.stocks[i]?.chartHidden) return;
+        ctx.strokeStyle = hexA(model.stocks[i].color, 0.55);
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        h.forEach((v, j) => (j ? ctx.lineTo(X(prev.times[j]), Y(v)) : ctx.moveTo(X(prev.times[j]), Y(v))));
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
       history.series.forEach((h, i) => {
         if (h.length < 2 || model.stocks[i].hidden || model.stocks[i].chartHidden) return;
         const color = model.stocks[i].color;
@@ -165,7 +263,7 @@ export default function TimeSeriesChart({
       ro.disconnect();
       unsubscribe();
     };
-  }, [model, subscribe]);
+  }, [model, subscribe, minimal]);
 
   return (
     <>
@@ -176,8 +274,20 @@ export default function TimeSeriesChart({
             {st.label}
           </span>
         ))}
+        {hasPrevious && (
+          <span className="inline-flex items-center gap-1.5">
+            <i className="inline-block w-4 border-t-2 border-dashed border-muted-foreground" />
+            Previous run
+            {onClearPrevious && (
+              <button onClick={onClearPrevious} className="tlink font-semibold text-foreground ml-1">
+                Clear
+              </button>
+            )}
+          </span>
+        )}
       </div>
-      <canvas ref={canvas} role="img" aria-label={`Stock levels over time for ${model.name}`} className="w-full block" style={{ height }} />
+      <canvas ref={canvas} role="img" aria-label={`Stock levels over time for ${model.name}. A description in words follows.`} className="w-full block" style={{ height }} />
+      {!minimal && <RunAsText model={model} subscribe={subscribe} />}
     </>
   );
 }

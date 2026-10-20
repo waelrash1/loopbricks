@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, ExternalLink, Search, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ExternalLink, Printer, Search, X } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import type { AppCase, Domain, Level } from "@/data/apps/types";
 import { isBuilt } from "@/data/apps/sim";
-import { ALL_CASES, DOMAINS, GUIDE, REFS, caseIn, runnerFor, searchApps, shortCite, type Hit } from "@/data/apps";
+import { ALL_CASES, DOMAINS, GUIDE, REFS, caseIn, checkResults, fieldSketch, searchApps, shortCite, type Hit } from "@/data/apps";
+import { useSeen } from "@/lib/progress";
 import { useSimulation } from "@/hooks/useSimulation";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
@@ -64,7 +65,28 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
+// what backs a case, in one line: its model checks and how many verified sources it cites
+function Backing({ domain, c }: { domain: Domain; c: AppCase }) {
+  const r = checkResults(domain, c);
+  const ok = r.filter((x) => x.ok).length;
+  return (
+    <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+      {r.length > 0 && (
+        <span className={cn("inline-flex items-center gap-1 font-semibold", ok === r.length ? "text-[#0a6b48]" : "text-[var(--viz-pink)]")}>
+          <Check size={13} strokeWidth={3} aria-hidden />
+          {ok} of {r.length} checks pass
+        </span>
+      )}
+      {r.length > 0 && <span aria-hidden>,</span>}
+      <span>
+        {c.refs.length} verified {c.refs.length === 1 ? "source" : "sources"}
+      </span>
+    </span>
+  );
+}
+
 function CaseGrid({ hits, showDomain, onCase }: { hits: Hit[]; showDomain: boolean; onCase: Nav["onCase"] }) {
+  const seen = useSeen();
   return (
     <ul className="mt-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
       {hits.map(({ domain, c }) => (
@@ -73,8 +95,14 @@ function CaseGrid({ hits, showDomain, onCase }: { hits: Hit[]; showDomain: boole
             <span className="flex items-center justify-between gap-3 text-[12px] font-semibold text-muted-foreground">
               {showDomain ? `${domain.short}: ${c.theme}` : c.theme} <LevelTag l={c.level} />
             </span>
-            <span className="heading text-[19px] mt-2">{c.title}</span>
+            <span className="heading text-[19px] mt-2">
+              {c.title}
+              {seen.has(`${domain.id}/${c.id}`) && <Check size={15} strokeWidth={3} aria-label="opened before" className="inline ml-1.5 -mt-1 text-[var(--viz-good)]" />}
+            </span>
             <span className="mt-2 text-[14px] leading-[1.5] text-muted-foreground">{c.summary}</span>
+            <span className="mt-3">
+              <Backing domain={domain} c={c} />
+            </span>
             <span className="mt-auto pt-4 flex flex-wrap gap-1.5">
               {c.molecules.slice(0, 3).map((k) => (
                 <span key={k} className="rounded-[5px] bg-background px-1.5 py-0.5 text-[11.5px] font-semibold">
@@ -95,6 +123,29 @@ const NoMatch = ({ query, extra }: { query: string; extra?: string }) => (
     No case matches “{query.trim()}”{extra}. Try a broader word, such as the subject (“water”, “debt”, “hospital”) or a behaviour (“oscillation”, “growth”).
   </p>
 );
+
+// a field's signature behaviour, drawn from its own first model: real dynamics instead of decoration
+function Sketch({ d }: { d: Domain }) {
+  const s = useMemo(() => fieldSketch(d), [d]);
+  if (!s) return null;
+  const max = Math.max(1e-9, ...s.lines.flatMap((l) => l.ys));
+  const n = s.lines[0].ys.length;
+  return (
+    <svg viewBox="0 0 200 64" className="w-full h-16 rounded-[7px] bg-background" role="img" aria-label={`Sketch of a run: ${s.title}`} preserveAspectRatio="none">
+      {s.lines.map((l, i) => (
+        <polyline
+          key={i}
+          points={l.ys.map((y, j) => `${(j / (n - 1)) * 196 + 2},${60 - (y / max) * 54}`).join(" ")}
+          fill="none"
+          stroke={l.color}
+          strokeWidth={2}
+          vectorEffect="non-scaling-stroke"
+          strokeLinejoin="round"
+        />
+      ))}
+    </svg>
+  );
+}
 
 export function AppsIndex({ onDomain, onCase }: Nav) {
   const [query, setQuery] = useState("");
@@ -128,8 +179,9 @@ export function AppsIndex({ onDomain, onCase }: Nav) {
         <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {DOMAINS.map((d) => (
             <li key={d.id}>
-              <button onClick={() => onDomain(d.id)} className="brick brick-w flex flex-col h-full w-full text-left p-6">
-                <span className="heading text-[21px]">{d.name}</span>
+              <button onClick={() => onDomain(d.id)} className="brick brick-w flex flex-col h-full w-full text-left p-5">
+                <Sketch d={d} />
+                <span className="heading text-[21px] mt-4">{d.name}</span>
                 <span className="mt-2 text-[14.5px] leading-[1.5] text-muted-foreground">{d.blurb}</span>
                 <span className="mt-auto pt-4 text-[13px] font-semibold">{d.cases.length} cases</span>
               </button>
@@ -275,9 +327,9 @@ function CaseSim({ domain, c }: { domain: Domain; c: AppCase & { sim: string } }
         <section className="sheet">
           <div className="sheet-head">
             <h2 className={sub}>Behaviour over time</h2>
-            <span className={hint}>Pick a scenario, then press play</span>
+            <span className={`${hint} print:hidden`}>Pick a scenario, then press play</span>
           </div>
-          <TimeSeriesChart model={model} subscribe={sim.subscribe} />
+          <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} />
         </section>
         {built && (
           <>
@@ -296,7 +348,7 @@ function CaseSim({ domain, c }: { domain: Domain; c: AppCase & { sim: string } }
           </>
         )}
       </div>
-      <aside className="lg:sticky lg:top-[88px]">
+      <aside className="lg:sticky lg:top-[136px] print:hidden">
         <Controls model={model} sim={sim} presets={c.presets ?? []} />
       </aside>
     </div>
@@ -305,17 +357,7 @@ function CaseSim({ domain, c }: { domain: Domain; c: AppCase & { sim: string } }
 
 // Runs the case's behaviour checks in the page, so the claim and the proof sit side by side.
 function ModelChecks({ domain, c }: { domain: Domain; c: AppCase }) {
-  const results = useMemo(() => {
-    if (!c.sim || !c.checks) return [];
-    const run = runnerFor(domain, c);
-    return c.checks.map((k) => {
-      try {
-        return { claim: k.claim, ok: k.test(run) };
-      } catch {
-        return { claim: k.claim, ok: false };
-      }
-    });
-  }, [domain, c]);
+  const results = useMemo(() => checkResults(domain, c), [domain, c]);
   if (!results.length) return null;
   const passed = results.filter((r) => r.ok).length;
   return (
@@ -337,6 +379,58 @@ function ModelChecks({ domain, c }: { domain: Domain; c: AppCase }) {
   );
 }
 
+// Section links for a long case page; the one in view is marked
+function Contents({ c }: { c: AppCase }) {
+  const items = [
+    ["case-model", c.sim ? "Model" : "Structure"],
+    ["case-map", "Mapping"],
+    ["case-evidence", "Evidence"],
+    ["case-try", "Try this"],
+    ["case-validation", "Validation"],
+    ["case-data", "Data"],
+    ["case-advice", "Advice"],
+    ["case-refs", "References"],
+  ] as const;
+  const [active, setActive] = useState<string>(items[0][0]);
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (es) => {
+        const hit = es.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (hit) setActive(hit.target.id);
+      },
+      { rootMargin: "-140px 0px -60% 0px" }
+    );
+    items.forEach(([id]) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c]);
+  const jump = (id: string) => {
+    const el = document.getElementById(id);
+    if (el instanceof HTMLDetailsElement) el.open = true;
+    el?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
+  return (
+    <nav aria-label="On this page" className="print:hidden mt-8 lg:sticky lg:top-16 z-20 -mx-4 px-4 md:mx-0 md:px-0 py-2 bg-background/90 backdrop-blur border-b border-border">
+      <ul className="flex gap-1 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map(([id, label]) => (
+          <li key={id}>
+            <button
+              onClick={() => jump(id)}
+              aria-current={active === id ? "location" : undefined}
+              className={cn("h-8 px-3 rounded-[7px] text-[13px] font-semibold", active === id ? "bg-foreground text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted")}
+            >
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Domain; id: string; onOpen: (k: string) => void } & Nav) {
   const c = caseIn(domain, id)!;
   const i = domain.cases.indexOf(c);
@@ -353,15 +447,22 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground font-semibold">{c.theme}</span>
       </p>
-      <LevelTag l={c.level} />
-      <h1 className="display text-[36px] md:text-[54px] max-w-[24ch] mt-3">{c.title}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <LevelTag l={c.level} />
+        <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
+          <Printer size={15} aria-hidden /> Print as a worksheet
+        </button>
+      </div>
+      <h1 className="display text-[30px] md:text-[44px] max-w-[30ch] mt-3 hyphens-auto [overflow-wrap:anywhere]">{c.title}</h1>
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{c.summary}</p>
       <p className="mt-6 max-w-[70ch] rounded-card bg-accent/25 px-5 py-4 text-[16px] leading-[1.55]">
         <b>The question: </b>
         {c.question}
       </p>
 
-      <div className="mt-10">
+      <Contents c={c} />
+
+      <div id="case-model" className="mt-6 scroll-mt-[136px]">
         {c.sim ? (
           <CaseSim key={c.id} domain={domain} c={c as AppCase & { sim: string }} />
         ) : (
@@ -372,7 +473,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
       </div>
 
       <div className="mt-14 grid lg:grid-cols-2 gap-x-12 gap-y-12">
-        <section>
+        <section id="case-map" className="scroll-mt-[136px]">
           <h2 className={sub}>How the model maps to the real system</h2>
           <dl className="mt-3 text-[15px] leading-[1.5]">
             {c.map.map(([a, b]) => (
@@ -392,7 +493,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           </div>
         </section>
 
-        <section>
+        <section id="case-evidence" className="scroll-mt-[136px]">
           <h2 className={sub}>What the studies found</h2>
           <ul className={bullets}>
             {c.evidence.map((e) => (
@@ -405,7 +506,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           </p>
         </section>
 
-        <section>
+        <section id="case-try" className="scroll-mt-[136px]">
           <h2 className={sub}>Try this</h2>
           <ol className="mt-3 space-y-2.5 text-[15px] leading-[1.6] list-decimal pl-5 marker:font-bold">
             {c.tryThis.map((t) => (
@@ -414,7 +515,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           </ol>
         </section>
 
-        <section>
+        <section id="case-validation" className="scroll-mt-[136px]">
           <h2 className={sub}>Validation</h2>
           <p className="mt-3 text-[15px] leading-[1.6]">
             <b>The published work. </b>
@@ -423,7 +524,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           <ModelChecks domain={domain} c={c} />
         </section>
 
-        <section>
+        <section id="case-data" className="scroll-mt-[136px]">
           <h2 className={sub}>Data you would need</h2>
           <dl className="mt-3 text-[15px] leading-[1.5]">
             {c.data.map(([a, b]) => (
@@ -435,7 +536,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           </dl>
         </section>
 
-        <section>
+        <section id="case-advice" className="scroll-mt-[136px]">
           <h2 className={sub}>Modelling advice</h2>
           <ul className={bullets}>
             {c.practice.map((t) => (
@@ -445,16 +546,21 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
         </section>
       </div>
 
-      <section className="mt-12">
-        <h2 className={sub}>References</h2>
+      <details id="case-refs" className="mt-12 scroll-mt-[136px] group">
+        <summary className="cursor-pointer w-fit list-none">
+          <h2 className={cn(sub, "inline-flex items-center gap-2")}>
+            References <span className="text-muted-foreground font-normal text-[16px]">({c.refs.length})</span>
+            <ChevronRight size={18} aria-hidden className="transition-transform group-open:rotate-90 print:hidden" />
+          </h2>
+        </summary>
         <ul className="mt-3 text-[13.5px] leading-[1.6] text-muted-foreground space-y-1.5 max-w-[95ch]">
           {c.refs.map((k) => (
             <RefLink key={k} k={k} />
           ))}
         </ul>
-      </section>
+      </details>
 
-      <nav aria-label="Next and previous case" className="mt-12 grid sm:grid-cols-2 gap-4">
+      <nav aria-label="Next and previous case" className="mt-12 grid sm:grid-cols-2 gap-4 print:hidden">
         {prev ? (
           <button onClick={() => onCase(domain.id, prev.id)} className="brick brick-w text-left px-5 py-4">
             <span className="flex items-center gap-1 text-[13px] text-muted-foreground">

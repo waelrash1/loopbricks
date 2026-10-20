@@ -61,3 +61,16 @@ export function runModel(m: Model, params: Record<string, number>, T: number): R
   r.end = s;
   return r;
 }
+
+// n evenly spaced samples of every stock over a run, for small sketches
+export function sampleModel(m: Model, params: Record<string, number>, T: number, n = 48): number[][] {
+  let s = freshState(m);
+  const p = { ...initParams(m), ...params };
+  const steps = Math.round(T / DT), every = Math.max(1, Math.floor(steps / (n - 1)));
+  const out = m.stocks.map((st) => [s[st.id]]);
+  for (let i = 1; i <= steps; i++) {
+    s = stepOnce(m, s, p, DT).state;
+    if (i % every === 0) m.stocks.forEach((st, j) => out[j].push(s[st.id]));
+  }
+  return out;
+}

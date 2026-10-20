@@ -5,7 +5,7 @@ import { BrickMark } from "@/components/TopBar";
 export default function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-border bg-card">
-      <div className="max-w-[1320px] mx-auto px-4 md:px-8 py-10 grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-8 text-[14px] leading-[1.6]">
+      <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-10 pb-24 lg:pb-10 grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-8 text-[14px] leading-[1.6]">
         <div className="flex gap-4">
           <BrickMark size={30} />
           <div>

@@ -29,6 +29,8 @@ export default function TopBar({
   tourActive,
   showApps,
   appsActive,
+  showTree,
+  treeActive,
   paneOpen,
   togglePane,
 }: {
@@ -40,6 +42,8 @@ export default function TopBar({
   tourActive: boolean;
   showApps: () => void;
   appsActive: boolean;
+  showTree: () => void;
+  treeActive: boolean;
   paneOpen: boolean;
   togglePane: () => void;
 }) {
@@ -73,7 +77,7 @@ export default function TopBar({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
+    <header className="print:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
       <div className="px-4 md:px-6 flex flex-wrap items-center gap-x-7">
         <button
           onClick={togglePane}
@@ -88,12 +92,15 @@ export default function TopBar({
           <BrickMark />
           <span className="heading text-[20px]">LoopBricks</span>
         </button>
-        <nav aria-label="Main" className="flex gap-6 order-3 sm:order-none">
+        <nav aria-label="Main" className="flex gap-5 lg:gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
           <button onClick={showMap} aria-current={mapActive ? "page" : undefined} className={navLink(mapActive)}>
             Molecules
           </button>
           <button onClick={startTour} aria-current={tourActive ? "page" : undefined} className={navLink(tourActive)}>
             Guided tour
+          </button>
+          <button onClick={showTree} aria-current={treeActive ? "page" : undefined} className={navLink(treeActive)}>
+            Family tree
           </button>
           <button onClick={showApps} aria-current={appsActive ? "page" : undefined} className={navLink(appsActive)}>
             Applications

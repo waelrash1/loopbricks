@@ -16,18 +16,22 @@ import Controls from "@/components/Controls";
 import MoleculeMap from "@/components/MoleculeMap";
 import LessonPanel from "@/components/LessonPanel";
 import { AppsIndex, CasePage, DomainLibrary } from "@/components/Apps";
+import FamilyTree from "@/components/FamilyTree";
+import { markSeen } from "@/lib/progress";
 import { caseIn, casesUsing, domainById } from "@/data/apps";
 
 // The address bar is the source of truth, so Back/Forward and shared links work:
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
+//   #/tree        family tree; #/tree/<key> with that molecule selected
 //   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string };
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string };
 function parseRoute(): Route {
   const [, a, b, c] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
+  if (a === "tree") return { view: "tree", key: MODELS[b] ? b : undefined };
   if (a === "apps") {
     const d = domainById(b);
     return { view: "apps", domain: d?.id, id: caseIn(d, c) ? c : undefined };
@@ -60,6 +64,10 @@ export default function MoleculeExplorer() {
     }
   };
   useEffect(() => {
+    if (route.view === "molecule") markSeen(route.key);
+    if (route.view === "apps" && route.id) markSeen(`${route.domain}/${route.id}`);
+  }, [route]);
+  useEffect(() => {
     const onHash = () => {
       setRoute(parseRoute());
       window.scrollTo(0, 0);
@@ -77,6 +85,7 @@ export default function MoleculeExplorer() {
   const showMap = () => go("/");
   const startTour = () => go("/tour/1");
   const showApps = () => go("/apps");
+  const showTree = (k?: string) => go(k ? `/tree/${k}` : "/tree");
   const openDomain = (d: string) => go(`/apps/${d}`);
   const openCase = (d: string, c: string) => go(`/apps/${d}/${c}`);
   const gotoLesson = (i: number) => go(`/tour/${Math.max(0, Math.min(TOUR.length - 1, i)) + 1}`);
@@ -90,7 +99,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -105,7 +114,7 @@ export default function MoleculeExplorer() {
   const hint = "text-[13px] text-muted-foreground";
   const h2 = "heading text-[19px]";
   const controls = (
-    <aside className="lg:sticky lg:top-[88px]">
+    <aside className="lg:sticky lg:top-[88px] print:hidden">
       <Controls model={model} sim={sim} presets={PRESETS[key] ?? []} />
     </aside>
   );
@@ -115,7 +124,7 @@ export default function MoleculeExplorer() {
         <h2 className={h2}>Behaviour over time</h2>
         <span className={hint}>Press play, or Space</span>
       </div>
-      <TimeSeriesChart model={model} subscribe={sim.subscribe} />
+      <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} />
     </section>
   );
   const bench = "grid lg:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start";
@@ -128,13 +137,13 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
       <div className="flex">
         {paneOpen && (
           <SidePane
             initialMode={view === "apps" ? "apps" : "molecules"}
-            current={route.view === "apps" ? `${route.domain}/${route.id}` : view === "map" ? undefined : key}
+            current={route.view === "apps" ? `${route.domain}/${route.id}` : route.view === "tree" ? route.key : view === "map" ? undefined : key}
             onMolecule={open}
             onCase={(k) => go(`/apps/${k}`)}
             onClose={() => togglePane(false)}
@@ -150,8 +159,16 @@ export default function MoleculeExplorer() {
                 </span>
               </p>
             )}
-            <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} />
+            <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} onTree={() => showTree()} />
           </>
+        ) : route.view === "tree" ? (
+          <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-8 md:pt-10">
+            <h1 className="display text-[36px] md:text-[48px]">How the molecules connect</h1>
+            <p className="mt-3 mb-6 text-[17px] leading-[1.55] text-foreground/80 max-w-[62ch]">
+              Read it left to right: each column is one building step further from the starting atoms, and each line runs from a molecule to one that is built from it.
+            </p>
+            <FamilyTree initial={route.key} onOpen={open} />
+          </div>
         ) : route.view === "apps" ? (
           !route.domain ? (
             <AppsIndex onDomain={openDomain} onCase={openCase} />
@@ -218,11 +235,11 @@ export default function MoleculeExplorer() {
               </nav>
             </div>
 
-            <h1 className="display text-[40px] md:text-[60px] max-w-[22ch]">{model.title}</h1>
+            <h1 className="display text-[34px] sm:text-[40px] md:text-[60px] max-w-[22ch] hyphens-auto [overflow-wrap:anywhere]">{model.title}</h1>
             <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{model.lede}</p>
 
             {(parents.length > 0 || children.length > 0) && (
-              <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
+              <dl className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4">
                 {(
                   [
                     ["Built from", parents],
@@ -243,6 +260,11 @@ export default function MoleculeExplorer() {
                       </div>
                     )
                 )}
+                <div>
+                  <button onClick={() => showTree(key)} className="tlink text-[13px] font-semibold">
+                    See it in the family tree
+                  </button>
+                </div>
               </dl>
             )}
 

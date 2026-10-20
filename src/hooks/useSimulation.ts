@@ -11,7 +11,8 @@ import {
   stepOnce,
 } from "@/sim/engine";
 
-export type FrameCtx = { model: Model; state: Vars; rates: Vars; history: History; t: number };
+// previous: the last run before a reset, kept so the chart can draw it dashed for comparison
+export type FrameCtx = { model: Model; state: Vars; rates: Vars; history: History; t: number; previous: History | null };
 export type FrameCb = (ctx: FrameCtx) => void;
 
 // Animation runs imperatively through refs + subscribers so we never re-render React at 60fps.
@@ -26,6 +27,7 @@ export function useSimulation(model: Model) {
   const stateRef = useRef<Vars>(freshState(model));
   const paramsRef = useRef<Vars>(params);
   const histRef = useRef<History>(freshHistory(model));
+  const prevRef = useRef<History | null>(null);
   const tRef = useRef(0);
   const runningRef = useRef(false);
   const speedRef = useRef(6);
@@ -52,6 +54,7 @@ export function useSimulation(model: Model) {
       rates: rates ?? modelRef.current.rates(stateRef.current, paramsRef.current),
       history: histRef.current,
       t: tRef.current,
+      previous: prevRef.current,
     }),
     []
   );
@@ -63,16 +66,23 @@ export function useSimulation(model: Model) {
     [frameCtx]
   );
 
-  const subscribe = useCallback((fn: FrameCb) => {
-    subs.current.add(fn);
-    return () => subs.current.delete(fn);
-  }, []);
+  // a new listener gets the current frame straight away, so it can draw a run that has already stopped
+  const subscribe = useCallback(
+    (fn: FrameCb) => {
+      subs.current.add(fn);
+      // children subscribe before the model-change reset below has run; only send a frame that matches the model
+      if (modelRef.current.stocks.every((st) => st.id in stateRef.current)) fn(frameCtx());
+      return () => subs.current.delete(fn);
+    },
+    [frameCtx]
+  );
 
   // reset everything when the model changes (and on mount → first paint)
   useEffect(() => {
     stateRef.current = freshState(model);
     paramsRef.current = initParams(model);
     histRef.current = freshHistory(model);
+    prevRef.current = null; // a different model's run is not comparable
     tRef.current = 0;
     pushHistory(histRef.current, model, stateRef.current, 0);
     setParams(paramsRef.current);
@@ -131,6 +141,7 @@ export function useSimulation(model: Model) {
   }, [emit]);
   const reset = useCallback(() => {
     const m = modelRef.current;
+    if (histRef.current.times.length > 2) prevRef.current = histRef.current;
     stateRef.current = freshState(m);
     histRef.current = freshHistory(m);
     tRef.current = 0;
@@ -139,5 +150,10 @@ export function useSimulation(model: Model) {
     emit();
   }, [emit]);
 
-  return { params, setParam, applyParams, pulse, running, toggle, play, reset, step, speed, setSpeed, stopTime, setStopTime, subscribe };
+  const clearPrevious = useCallback(() => {
+    prevRef.current = null;
+    emit();
+  }, [emit]);
+
+  return { clearPrevious, params, setParam, applyParams, pulse, running, toggle, play, reset, step, speed, setSpeed, stopTime, setStopTime, subscribe };
 }

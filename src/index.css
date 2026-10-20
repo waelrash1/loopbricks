@@ -81,6 +81,14 @@
   .pane-fade { animation: pane-fade 220ms ease-out; }
 }
 
+/* Printing a case gives a worksheet: the question, the diagrams, the exercises and every source, without the app around it */
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  .sheet { break-inside: avoid; box-shadow: none !important; }
+  h1, h2, h3 { break-after: avoid; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; word-break: break-all; }
+}
+
 /* authored explanation HTML */
 .prose-sd { line-height: 1.65; max-width: 68ch; font-size: 16px; }
 .prose-sd p { margin: 12px 0; }

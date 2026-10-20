@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { ExternalLink } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
+import { useSeen } from "@/lib/progress";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { GROUP_BLURB } from "@/data/catalog";
 import { ALL_CASES, DOMAINS } from "@/data/apps";
@@ -52,7 +53,7 @@ function LiveDemo({ onOpen }: { onOpen: () => void }) {
     <figure className="sheet min-w-0 shadow-[0_3px_0_hsl(var(--edge))]">
       <StockFlowDiagram model={model} modelKey={DEMO} subscribe={subscribe} running={sim.running} showInfluences={false} />
       <div className="mt-2 border-t border-border pt-3">
-        <TimeSeriesChart model={model} subscribe={subscribe} height={150} />
+        <TimeSeriesChart model={model} subscribe={subscribe} height={150} minimal />
       </div>
       <figcaption className="mt-3 text-[13px] leading-[1.5] text-muted-foreground">
         Running now:{" "}
@@ -77,8 +78,9 @@ function LoopTag({ k }: { k: string }) {
   );
 }
 
-export default function MoleculeMap({ onSelect, onStartTour, onApps }: { onSelect: (k: string) => void; onStartTour: () => void; onApps: () => void }) {
+export default function MoleculeMap({ onSelect, onStartTour, onApps, onTree }: { onSelect: (k: string) => void; onStartTour: () => void; onApps: () => void; onTree: () => void }) {
   const total = Object.keys(MODELS).length;
+  const seen = useSeen();
   // hash routing owns the URL, so family links scroll instead of using #anchors
   const jump = (title: string) => document.getElementById(slug(title))?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
@@ -102,6 +104,12 @@ export default function MoleculeMap({ onSelect, onStartTour, onApps }: { onSelec
         <LiveDemo onOpen={() => onSelect(DEMO)} />
       </section>
 
+      <p className="mb-3 text-[15px] text-foreground/80">
+        Twelve families, from the simplest stock to whole projects.{" "}
+        <button onClick={onTree} className="tlink font-semibold text-foreground">
+          See how they connect in the family tree
+        </button>
+      </p>
       <nav aria-label="Families" className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
         {GROUPS.map((g) => (
           <button key={g.title} onClick={() => jump(g.title)} className="brick brick-w shrink-0 h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap">
@@ -124,7 +132,10 @@ export default function MoleculeMap({ onSelect, onStartTour, onApps }: { onSelec
                       <MiniDiagram model={m} />
                     </div>
                     <div className="mt-3 px-1 flex items-start justify-between gap-2">
-                      <span className="font-semibold text-[15px] leading-snug">{m.name}</span>
+                      <span className="font-semibold text-[15px] leading-snug">
+                        {m.name}
+                        {seen.has(k) && <Check size={14} strokeWidth={3} aria-label="opened before" className="inline ml-1.5 -mt-0.5 text-[var(--viz-good)]" />}
+                      </span>
                       <LoopTag k={k} />
                     </div>
                     <p className="px-1 pb-1 text-[13px] text-muted-foreground leading-[1.5] mt-1 line-clamp-2">{m.lede}</p>
