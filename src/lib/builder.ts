@@ -1,7 +1,7 @@
 // The learner's own stock-and-flow model: its shape, checks, Euler simulation, templates and storage.
 import { NAME_RE, RESERVED, nameKey, refName, renameRefs, tryCompile, type Compiled, type Scope } from "@/lib/expr";
 
-export type BStock = { id: string; name: string; init: string; x: number; y: number; units?: string };
+export type BStock = { id: string; name: string; init: string; x: number; y: number; units?: string; nonNegative?: boolean }; // nonNegative: a physical stock floored at zero, as in the app's molecules
 export type BFlow = { id: string; name: string; from?: string; to?: string; eq: string; x: number; y: number; units?: string };
 export type BVar = { id: string; name: string; eq: string; x: number; y: number; units?: string }; // an auxiliary, or a constant when eq is a number
 export type BModel = { name: string; timeUnit: string; T: number; dt: number; stocks: BStock[]; flows: BFlow[]; vars: BVar[] };
@@ -279,7 +279,7 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
     const next = stocks.map(({ key, ins, outs }) => s[key] + m.dt * (ins.reduce((a, k) => a + s[k], 0) - outs.reduce((a, k) => a + s[k], 0)));
     for (let j = 0; j < stocks.length; j++) {
       if (!Number.isFinite(next[j])) return bad({ ...stocks[j].st, kind: "stock" }, next[j], t + m.dt);
-      s[stocks[j].key] = next[j];
+      s[stocks[j].key] = stocks[j].st.nonNegative ? Math.max(0, next[j]) : next[j];
     }
   }
   return { ok: true, times, values, issues: [] };

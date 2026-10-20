@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "loopbricks"
+version = "0.1.0"
+description = "System dynamics molecules you can run, combine and study: the Python companion to the LoopBricks app"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "Wael Rashwan", email = "wael.rashwan@mu.ie" }]
+dependencies = ["pandas>=1.3"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.5"]
+test = ["pytest>=7", "matplotlib>=3.5", "nbclient>=0.7", "nbformat>=5", "ipykernel>=6"]
+
+[project.urls]
+App = "https://waelrash1.github.io/loopbricks/"
+Source = "https://github.com/waelrash1/loopbricks"
+
+[tool.hatch.build.targets.wheel]
+packages = ["loopbricks"]

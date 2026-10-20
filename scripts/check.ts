@@ -6,6 +6,9 @@ import { PRESETS } from "@/data/presets";
 import { LINEAGE } from "@/data/catalog";
 import { lintCld } from "@/lib/cldGeometry";
 import { lintSf } from "@/lib/sfLint";
+import { SPECS, runSpec } from "@/lib/spec";
+import { goldenData } from "@/lib/golden";
+import { readFileSync } from "node:fs";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
@@ -277,6 +280,27 @@ import { TEMPLATES, simulate as bSimulate, template as bTemplate, validate as bV
   zero.vars[0].eq = "0";
   const zr = bSimulate(zero);
   if (zr.ok || zr.issues[0]?.id !== "f2") errs.push("builder: a division by zero should stop the run and blame the drain");
+}
+// shared specs: each must reproduce its app molecule step for step, and the Python reference file must be current
+for (const spec of Object.values(SPECS)) {
+  const m = MODELS[spec.key];
+  if (!m) { errs.push(`spec ${spec.key}: no molecule of that name`); continue; }
+  for (const { label, params } of [{ label: "defaults", params: {} as Record<string, number> }, ...spec.presets]) {
+    const run = runSpec(spec, params);
+    const p = { ...initParams(m), ...params };
+    let st = freshState(m), worst = 0;
+    run.times.forEach((_, i) => {
+      for (const id of Object.keys(run.stocks)) worst = Math.max(worst, Math.abs(run.stocks[id][i] - st[id]) / Math.max(1, Math.abs(st[id])));
+      st = stepOnce(m, st, p, DT).state;
+    });
+    if (worst > 1e-9) errs.push(`spec ${spec.key} (${label}): differs from the app molecule by ${worst.toExponential(2)}`);
+  }
+}
+try {
+  const onDisk = readFileSync("python/tests/golden.json", "utf8");
+  if (onDisk !== JSON.stringify(goldenData(), null, 1) + "\n") errs.push("python/tests/golden.json is out of date: run npm run golden");
+} catch {
+  errs.push("python/tests/golden.json is missing: run npm run golden");
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");

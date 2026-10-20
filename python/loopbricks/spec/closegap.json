@@ -1,0 +1,28 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "closegap",
+  "title": "Close Gap (goal seeking)",
+  "description": "A stock moves towards a goal, closing a fixed fraction of the remaining gap per unit of time: the simplest balancing loop.",
+  "model": {
+    "name": "Close Gap",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [{ "id": "actual", "name": "Actual", "init": "20", "x": 420, "y": 200, "units": "level", "nonNegative": true }],
+    "flows": [{ "id": "adj", "name": "Adjusting", "to": "actual", "eq": "(Goal - Actual) / Adjustment_time", "x": 240, "y": 200, "units": "level/week" }],
+    "vars": [
+      { "id": "goal", "name": "Goal", "eq": "60", "x": 160, "y": 90, "units": "level" },
+      { "id": "at", "name": "Adjustment time", "eq": "5", "x": 320, "y": 90, "units": "week" }
+    ]
+  },
+  "params": {
+    "goal": { "min": 0, "max": 100, "step": 1 },
+    "at": { "min": 1, "max": 20, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Reach goal", "params": { "goal": 60, "at": 5 } },
+    { "label": "Aggressive", "params": { "goal": 60, "at": 1.5 } },
+    { "label": "Sluggish", "params": { "goal": 60, "at": 15 } }
+  ]
+}

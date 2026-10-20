@@ -21,6 +21,7 @@ import RunsPanel from "@/components/RunsPanel";
 import { MethodsIndex, MethodsPage } from "@/components/Methods";
 // the study guide is large and only some visitors open it, so it loads on demand
 const LearnRoutes = lazy(() => import("@/components/LearnRoutes"));
+const PythonPanel = lazy(() => import("@/components/PythonPanel"));
 const LearnPanel = lazy(() => import("@/components/Learn").then((m) => ({ default: m.LearnPanel })));
 import { METHOD_PAGES } from "@/data/methods";
 import { useShelf } from "@/lib/runs";
@@ -349,6 +350,10 @@ export default function MoleculeExplorer() {
                   if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
                 }}
               />
+            </Suspense>
+
+            <Suspense fallback={null}>
+              <PythonPanel molecule={key} />
             </Suspense>
 
             {casesUsing(key).length > 0 && (

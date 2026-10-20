@@ -1,0 +1,50 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "stockmgmt",
+  "title": "Stock management (with supply line)",
+  "description": "Ordering to keep a stock at its target through an acquisition delay. The supply line weight says how much of the pipeline the decision maker counts; below 1 the system overshoots and oscillates.",
+  "model": {
+    "name": "Stock management",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "sl", "name": "Supply line", "init": "60", "x": 360, "y": 230, "units": "units", "nonNegative": true },
+      { "id": "inv", "name": "Inventory", "init": "60", "x": 660, "y": 230, "units": "units", "nonNegative": true }
+    ],
+    "flows": [
+      {
+        "id": "orders",
+        "name": "Orders",
+        "to": "sl",
+        "eq": "MAX(0, Demand + (Desired_inventory - Inventory) / Inventory_adjustment_time + Supply_line_weight * (Desired_supply_line - Supply_line) / Inventory_adjustment_time)",
+        "x": 190,
+        "y": 230,
+        "units": "units/week"
+      },
+      { "id": "acquisition", "name": "Acquisition", "from": "sl", "to": "inv", "eq": "Supply_line / Acquisition_delay", "x": 510, "y": 230, "units": "units/week" },
+      { "id": "sales", "name": "Sales", "from": "inv", "eq": "Demand", "x": 820, "y": 230, "units": "units/week" }
+    ],
+    "vars": [
+      { "id": "demand", "name": "Demand", "eq": "10", "x": 820, "y": 370, "units": "units/week" },
+      { "id": "desInv", "name": "Desired inventory", "eq": "100", "x": 560, "y": 80, "units": "units" },
+      { "id": "adj", "name": "Inventory adjustment time", "eq": "4", "x": 300, "y": 80, "units": "week" },
+      { "id": "acq", "name": "Acquisition delay", "eq": "6", "x": 470, "y": 370, "units": "week" },
+      { "id": "slw", "name": "Supply line weight", "eq": "1", "x": 120, "y": 370, "units": "" },
+      { "id": "dsl", "name": "Desired supply line", "eq": "Demand * Acquisition_delay", "x": 300, "y": 370, "units": "units" }
+    ]
+  },
+  "params": {
+    "demand": { "min": 2, "max": 20, "step": 0.5 },
+    "desInv": { "min": 40, "max": 200, "step": 5 },
+    "adj": { "min": 1, "max": 12, "step": 0.5 },
+    "acq": { "min": 1, "max": 12, "step": 0.5 },
+    "slw": { "min": 0, "max": 1, "step": 0.05 }
+  },
+  "presets": [
+    { "label": "Stable (sees pipeline)", "params": { "demand": 10, "desInv": 100, "adj": 4, "acq": 6, "slw": 1 } },
+    { "label": "Oscillation (ignores it)", "params": { "demand": 10, "desInv": 100, "adj": 4, "acq": 6, "slw": 0 } },
+    { "label": "Long lead time", "params": { "demand": 10, "desInv": 100, "adj": 4, "acq": 12, "slw": 0.3 } }
+  ]
+}

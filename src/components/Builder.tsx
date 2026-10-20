@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, AlertTriangle, Box, Circle, ClipboardCopy, Download, FileText, Hammer, Play, Plus, Trash2, Upload, Workflow } from "lucide-react";
+import { AlertCircle, AlertTriangle, Box, Circle, ClipboardCopy, Code2, Download, FileText, Hammer, Play, Plus, Trash2, Upload, Workflow } from "lucide-react";
+import { notebookFor } from "@/lib/notebook";
 import {
   TEMPLATES,
   elements,
@@ -271,6 +272,19 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
       setNote("The download did not start. Copy the equations instead.");
     }
   };
+  const exportNotebook = () => {
+    try {
+      const url = URL.createObjectURL(new Blob([notebookFor(model)], { type: "application/x-ipynb+json" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(model.name || "model").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ipynb`;
+      a.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setNote("Downloaded a Python notebook. Open it in Colab (File, Upload notebook) or Jupyter.");
+    } catch {
+      setNote("The download did not start. Export JSON instead and load it with loopbricks.Model.from_file.");
+    }
+  };
   const importFile = async (f: File | undefined) => {
     if (!f) return;
     try {
@@ -347,6 +361,9 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         <span className="hidden sm:block w-px h-7 bg-border mx-1" aria-hidden />
         <button onClick={download} className={btn}>
           <Download size={15} aria-hidden /> Export JSON
+        </button>
+        <button onClick={exportNotebook} className={btn}>
+          <Code2 size={15} aria-hidden /> Export Python notebook
         </button>
         <button onClick={() => fileRef.current?.click()} className={btn}>
           <Upload size={15} aria-hidden /> Import JSON
