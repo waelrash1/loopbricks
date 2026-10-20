@@ -258,46 +258,62 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open Effect Function and run 'At reference (1×)'. The result settles where inflow equals drain: Result = Normal flow × effect × Drain time. Confirm the reference value (15 × 1 × 8 = 120). Then run 'Input high (2×)' and 'Input low' and back out the table value f(Input/Reference) from each equilibrium.",
       hint: "Divide the equilibrium result by 120. You are reading the table function point by point, which is how you would check a lookup inside a larger model.",
+      answer:
+        "At reference the inflow is 15 × 1 = 15 and the result settles at 15 × 8 = 120. With Input high (2×) the inflow becomes 20 and the result settles at 160, so f(2) = 160 / 120 ≈ 1.33. With Input low (0.4×) the inflow is about 8.57 and the result settles near 68.6, so f(0.4) ≈ 68.6 / 120 ≈ 0.57. Because the stock's equilibrium is proportional to the effect, dividing by the reference equilibrium reads the table point by point: a quick way to check any lookup buried in a larger model.",
       link: { label: "Effect Function", hash: "/m/effectFunction" },
     },
     {
       prompt:
         "Still in Effect Function, set Input 200 and Reference 200. The equilibrium matches the 'At reference' run. Now explain, using the fatigue example, when normalising by a reference that moves with policy (such as the standard workweek) gives the wrong answer.",
       hint: "Only the ratio matters to the effect. If the reference is a management target, raising the target cancels the effect even though the physical cause (hours worked) has risen.",
+      answer:
+        "With Input 200 and Reference 200 the ratio is 1, so the inflow is 15 and the result settles at 120, exactly as in the At reference run: the effect sees only the ratio, never the absolute level. That is a problem when the reference is a policy variable rather than a physical normal. If fatigue is driven by hours worked ÷ standard workweek, and management raises the standard workweek from 40 to 50 hours, the ratio returns to 1 and the model says nobody is tired, even though people now work 50 hours. Normalise by a reference that stands for the physical cause (a 40-hour physiological norm), not by a target that moves with policy.",
       link: { label: "Effect Function", hash: "/m/effectFunction" },
     },
     {
       prompt:
         "Open Capacity Utilization and run 'Demand > capacity' (capacity 15, demand 25), then set capacity to 40 with demand 25. This molecule uses utilisation = 1 − exp(−1.3 × desired/capacity), so capacity is defined as maximum output. Where does the curve pass when desired output equals capacity, and where does inventory settle in the second run? Relate this to the point that the reference point depends on how you define capacity.",
       hint: "At desired = capacity, utilisation is 1 − e^−1.3 ≈ 0.73, not 1: the reference point is (1, normal utilisation). With capacity 15 production creeps toward 15 and inventory keeps falling. With capacity 40, production equals 25 only when desired output is about 30, so inventory settles near 84, below its target of 100.",
+      answer:
+        "At desired = capacity, utilisation is 1 − e^−1.3 ≈ 0.73, so the curve passes through (1, 0.73), not (1, 1): capacity here means maximum output, and normal operation sits well below it. With capacity 15 and demand 25, production creeps up to about 14.9 and inventory runs out by about week 5. With capacity 40, production must equal 25, which needs desired output of about 30 (40 × −ln(1 − 25/40) / 1.3); desired output is 25 + (100 − inventory)/3, so inventory settles near 84, below its target of 100. If capacity were defined as normal output instead, the same curve would have to pass through (1, 1) and the table would need to change; the reference point always depends on how the normalising variable is defined.",
       link: { label: "Capacity Utilization", hash: "/m/capacityUtil" },
     },
     {
       prompt:
         "Open Productivity & Fatigue. Run 'Normal hours', then 'Crunch (backfires)' (overtime 1.4, time to fatigue 4 weeks), then overtime 1.2 and 1.6. Note how output first jumps by the overtime and then sinks as fatigue builds. Compare the long-run output with the fatigue relationship reported by Sterman (2000), where sustained overtime still pays up to about 72 hours a week (1.8 × 40).",
       hint: "In the molecule fatigue tracks overtime, and the fatigue effect is about 2 − fatigue, so equilibrium output is roughly overtime × (2 − overtime): 0.96 at 1.2 and 0.84 at 1.4. Any sustained overtime loses in this simpler curve. The shape of the fatigue table decides where crunch stops paying, which is why it deserves a sensitivity test.",
+      answer:
+        "Normal hours stays at output 1.0. Crunch (overtime 1.4) jumps output to 1.4 at once, but fatigue builds over 4 weeks and output falls to about 1.05 by week 4 and settles at 0.84, below normal. Overtime 1.2 settles at 0.96 and 1.6 at 0.64; in this molecule output in the long run is roughly overtime × (2 − overtime), so any sustained overtime ends up below normal hours. Sterman's estimated relationship lets sustained overtime pay up to about 72 hours a week, so the two disagree about where crunch stops paying. The short-run gain is real, the long-run loss arrives after the delay, and the conclusion depends on the shape of the fatigue table, which therefore needs data and a sensitivity test.",
       link: { label: "Productivity & Fatigue", hash: "/m/prodFatigue" },
     },
     {
       prompt:
         "Open Overtime and compare 'Capped by the limit' with 'Enough people'. Which reference policy does the overtime limit represent, and why must any workweek function saturate?",
-      hint: "There is a maximum sustainable workweek (about 50 hours, 1.25 × 40, in the example values). Beyond that the only remaining short-run response is corner cutting.",
+      hint: "There is a maximum sustainable workweek: in the app the overtime limit is 1.3, about 52 hours on a 40-hour week. Beyond that the only remaining short-run response is corner cutting.",
+      answer:
+        "With Capped by the limit (10 workers × 4 tasks, desired 60) the team needs 1.5 × normal hours but the limit holds overtime at 1.3, so it completes 52 a week and falls behind by 8 a week (160 tasks after 20 weeks). With Enough people (15 workers) normal hours already give 60, so overtime drops to 1 and nothing falls behind. The limit represents a maximum sustainable workweek (1.3 × 40 = 52 hours here). Any workweek function must saturate because people cannot work unbounded hours; once hours hit the ceiling, only hiring, corner cutting or a growing backlog can absorb more work.",
       link: { label: "Overtime", hash: "/m/overtime" },
     },
     {
       prompt:
         "Explore the corner-cutting side in the service-quality application: when the workload rises, which loop absorbs it in that model, and what happens to quality and to management's view of staffing needs?",
+      answer:
+        "In the service-quality case the extra workload is absorbed by cutting corners: staff spend less time per order than the standard, and the standard itself drifts toward what they actually do (the eroding goals loop R). With time spent at 0.8 of the standard and no benchmark, the standard falls from 100 to about 52 minutes in 26 weeks and about 27 by week 52; held half to an external benchmark it settles near 0.5 × 100 / (1 − 0.5 × 0.8) ≈ 83. Quality falls while throughput looks fine, and management, seeing the work getting done at the lower time per order, concludes that fewer staff are needed, which keeps the pressure on. Only an outside anchor for the standard stops the slide.",
       link: { label: "Service quality erosion", hash: "/apps/business/service-quality" },
     },
     {
       prompt:
         "Pen and paper: formulate 'Effect of stock coverage on order fill rate' for a distributor, where coverage = Inventory / (Desired shipments × Minimum fulfilment time). Draw the axes, the no-effect line and the 45 degree line, mark the extreme values at coverage 0 and very large coverage, sketch the curve and list eight table values with their increments.",
       hint: "Fill rate must be 0 at zero coverage, equal 1 for large coverage and never exceed the 45 degree line (you cannot ship more than coverage allows). A fuzzy MIN shape.",
+      answer:
+        "Axes: stock coverage (inventory ÷ desired shipments × minimum fulfilment time) on x from 0 to about 2.5; order fill rate on y from 0 to 1. The 45 degree line (fill = coverage) is an upper bound, because you cannot ship more than the available stock allows, and the line y = 1 is the other bound (no-effect for large coverage). The curve must pass through (0, 0), rise along the 45 degree line at low coverage, bend under the corner at (1, 1) and approach 1 for large coverage: a fuzzy MIN. One acceptable table with increments of 0.25 up to 1 and 0.5 after: coverage 0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5 gives fill 0, 0.25, 0.48, 0.68, 0.82, 0.95, 0.99, 1. Any good answer stays under both bounds, is monotonic, and states why the extremes are where they are.",
     },
     {
       prompt:
         "Pen and paper: a colleague proposes 'Effect of team size on output' as a hump peaking at 12 people. Replace it with two monotonic effects (one rising, one falling), name each causal pathway, give each its own delay, and draw the resulting loops.",
       hint: "For example, more hands (immediate, positive) and coordination overhead or training load on veterans (slower, negative). See also the 'Adding people' application.",
+      answer:
+        "A hump hides two causal pathways with different strengths and timing. Effect 1, more hands: a larger team adds work capacity, positive and almost immediate (Team size → Capacity → Output, +). Effect 2, coordination and training load: each new person adds communication links and takes time from experienced staff (Team size → Coordination overhead → Productivity per person, −), which grows faster than team size and acts with a delay of weeks to months while newcomers are trained. Each gets its own monotonic table, rising for capacity and falling for productivity, and output = team size × productivity per person. Draw a balancing loop if output pressure drives hiring and overhead drags productivity down. With separate delays you can see why adding people late in a project first lowers output (Brooks's law) before any gain arrives.",
       link: { label: "Adding people and Brooks's law", hash: "/apps/projects/adding-people" },
     },
   ],

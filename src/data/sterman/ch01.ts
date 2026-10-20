@@ -253,45 +253,61 @@ export const CHAPTER: StudyChapter = {
         "Test your intuition about exponential growth. Open Population Growth and choose the Growing preset (birth 5%/yr, death 2%/yr, so net growth is 3%/yr from 100). Before pressing run, write down your guess for the population at years 23, 46 and 69. Then run and read the values off the chart.",
       hint: "Rule of 70: doubling time ≈ 70 / 3 ≈ 23 years, so roughly 200, 400 and 800. Most people guess something close to a straight line.",
       link: { label: "Population Growth", hash: "/m/growth" },
+      answer:
+        "The app gives about 199 at year 23, 397 at year 46 and 790 at year 69: the population doubles every 23 years, so each doubling adds twice as many people as the one before. The reinforcing loop (more people, more births, more people) makes the rate of increase proportional to the population, so the curve bends upward. If you guessed a straight line, near 300 at year 69, you extrapolated the first few years at a constant rate, which is the most common error with exponential growth. Use the rule of 70 (70 divided by the growth rate in percent) to check any compound-growth claim.",
     },
     {
       prompt:
         "Treat Close Gap as the learning loop. Run the three presets (Reach goal, Aggressive with adjustment time 1.5, Sluggish with 15) and note how long each takes to get within 5 units of the goal of 60. Then explain in two sentences why a long delay in the learning loop has the same effect as a sluggish adjustment time.",
       hint: "The gap starts at 40, so getting within 5 means closing 87.5% of it, which takes about 2.1 adjustment times (ln 8).",
       link: { label: "Close Gap", hash: "/m/closegap" },
+      answer:
+        "In the app the level first reaches 55 (within 5 of the goal) at about week 3.1 with Aggressive (AT 1.5), week 10.3 with Reach goal (AT 5) and week 31.1 with Sluggish (AT 15), each about 2.1 adjustment times, as ln 8 predicts. The balancing loop closes a fixed fraction of the remaining gap per unit time, so the time to converge scales directly with the adjustment time. A learning loop works the same way: if feedback on the results of our decisions arrives late, we correct our mental models only slowly, so the gap between what we believe and how the world works lingers just as it would with a long adjustment time. Either way, slow feedback means slow learning.",
     },
     {
       prompt:
         "See how a delay inside a balancing loop creates oscillation. In Low-Visibility Pipeline Correction run the Tracks the pipeline preset, then Ignores the pipeline (awareness 0). Finally keep awareness at 0 and raise the supplier delay from 6 to 12 weeks. Record the peak inventory in each run and relate the result to the point about drivers, drinkers and hog farmers who keep correcting after enough correction is already on the way.",
       hint: "Tracking the pipeline, inventory rises to the goal of 100 without overshooting. Ignoring it, inventory peaks near 117; with the 12-week delay it peaks near 150 and keeps swinging.",
       link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
+      answer:
+        "Tracking the pipeline, inventory climbs from 60 to the goal of 100 and never overshoots. Ignoring the pipeline (awareness 0), it peaks at about 117 around week 16, dips to about 92 and then settles. With awareness 0 and a 12-week supplier delay, it falls to about 40, peaks near 150 at week 28, drops to about 61 by week 50 and is still swinging after 120 weeks. The balancing loop keeps ordering while the gap persists, but its corrections take a supplier delay to arrive, and a manager who ignores the orders already on the way keeps adding more; the longer the delay, the more surplus piles up before inventory responds. Like the driver who keeps turning the hot tap or the drinker who has another before the first one hits, the cure is to account for the correction already in the pipeline.",
     },
     {
       prompt:
         "Limited information in action. In Smooth, run the Snappy preset (τ = 2) and then the Slow preset (τ = 15), and compare the 1st-order smooth with the input in each. If a manager acts only when the perceived value has moved 90% of the way to the new level, how much later does the τ = 15 manager act?",
       hint: "A first-order smooth closes 90% of a step in about 2.3 τ: roughly 5 weeks versus 35 weeks.",
       link: { label: "Smooth", hash: "/m/smooth" },
+      answer:
+        "The input steps from 30 to 80 at the start. With τ = 2 the 1st-order smooth reaches 75 (90% of the way) at about week 4.6; with τ = 15 it takes until about week 34.6, so the slower manager acts roughly 30 weeks later. A first-order smooth closes 1 − e^(−t/τ) of a step, so 90% takes ln 10 ≈ 2.3 τ (4.6 versus 34.5 weeks). Perceptions built by averaging noisy information are always late, and the lag is proportional to the averaging time: smoothing more protects you from noise at the price of reacting slowly to real change.",
     },
     {
       prompt:
         "Avoid the video game syndrome. In Low-Visibility Pipeline Correction choose the Boom and bust (slow supplier) preset. Before each run, write a one-line hypothesis and a numerical prediction (for example the peak inventory). Run, record the discrepancy and propose one change to a single slider that would test your explanation. Do at least three cycles and keep the notes as a lab notebook.",
       link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
+      answer:
+        "There is no single right notebook, but each entry needs a hypothesis, a number predicted before the run, the result and the gap between them. The baseline gives a peak inventory of about 184 at week 24, a trough near 55 around week 48 and cycles of roughly 42 weeks. Good single-slider tests: awareness 1 cuts the peak to about 109 with almost no undershoot (testing whether ignoring the supply line drives the boom); a 6-week supplier delay cuts it to about 132 (testing the role of the delay); a 6-week inventory correction time cuts it to about 138 (testing how aggressive the correction is). The lesson is that a simulation teaches you only when you commit to a prediction first and then explain each surprise.",
     },
     {
       prompt:
         "Pen and paper: a warehouse rule says 'if a box is marked fragile, it must be on the bottom shelf'. Four boxes show only one face: 'fragile', 'not fragile', 'bottom shelf', 'top shelf'. Which boxes must you turn over to check the rule? Then explain which choice only confirms and which can falsify.",
       hint: "Check 'fragile' (it must be on the bottom) and 'top shelf' (it must not be fragile). Turning 'bottom shelf' can never refute the rule.",
+      answer:
+        "Turn over 'fragile' and 'top shelf'. A fragile box breaks the rule if its hidden face says top shelf, and a top-shelf box breaks it if its hidden face says fragile. 'Not fragile' can be on any shelf, so it is irrelevant, and 'bottom shelf' can only confirm: whatever is on the other side, the rule survives. Most people pick 'fragile' and 'bottom shelf', looking for confirming cases; good testing means looking for the case that could prove you wrong.",
     },
     {
       prompt:
         "Pick a recent policy you know (in your organisation or in the news) that improved things briefly and then faded. Draw it on the generic policy-resistance structure: name our goal, the action, the state, the others whose goals were disturbed, their compensating action and any side effect. Mark each loop B or R and estimate the delay in each.",
       link: { label: "Policy resistance case", hash: "/apps/social/policy-resistance" },
+      answer:
+        "Answers will differ, but a good one names six elements and links them in a loop. Our goal and the gap between it and the state of the system drive our action (B loop); the action moves the state, which also moves others away from their goals; their compensating action pushes the state back (a second B loop that fights ours); and side effects of our action often feed back on the state or on our goal. For example, building roads to cut congestion (action) improves travel time (state), which draws more people to drive (others' response), which restores congestion over several years. Estimate each delay: the compensating loop is usually slower than our action, which is why the policy works at first and then fades.",
     },
     {
       prompt:
         "Add a balancing loop to a reinforcing one. Open Constrained Growth with the S-curve preset (growth 18%/yr, capacity 200). Note the year when growth is fastest and the population at that moment. Then raise capacity to 350 and see whether the timing of the peak growth changes. Relate this to the claim that dynamics arise from the interaction of loops, not from either loop alone.",
       hint: "In the logistic model the fastest growth happens at half the carrying capacity.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
+      answer:
+        "With growth 18%/yr and capacity 200, net growth is fastest at about year 16.4, when the population is about 100, half the capacity, growing by 9 per year. With capacity 350 the peak moves later, to about year 19.7 at a population of about 175, again half the capacity. The reinforcing birth loop dominates while the population is small; the balancing crowding loop grows with the square of the population and takes over at the halfway point, so the inflection point is set by both loops together (time = ln(K/P0 − 1) / r). Neither loop alone produces an S-curve: the reinforcing loop alone gives explosive growth and the balancing loop alone gives nothing to balance.",
     },
   ],
   pitfalls: [

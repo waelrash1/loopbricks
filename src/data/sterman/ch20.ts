@@ -255,42 +255,58 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open Capacity Utilization and compare <b>Demand &lt; capacity</b> with <b>Demand &gt; capacity</b>. In the second, read the production rate the curve allows and what happens to inventory. Why is utilisation a poor signal for price?",
       hint: "With capacity 15 and demand 25, production saturates just under 15 and inventory runs to zero, whatever the size of the gap.",
+      answer:
+        "With demand 15 and capacity 25, production settles at 15 and inventory near 92, with spare capacity. With demand 25 and capacity 15, production saturates at about 14.9, just under capacity, and inventory runs to zero by about week 5 and stays there, while 10 units a week of demand go unmet. Utilisation tops out near its maximum whether demand is 16 or 40: once the plant is flat out, utilisation stops changing and carries no information about how large the excess demand is. Inventory coverage, backlog or delivery delay keep moving with the size of the gap, so they are the signals that should drive price.",
       link: { label: "Open capacity utilisation", hash: "/m/capacityUtil" },
     },
     {
       prompt:
         "In Sea Anchor Pricing, run <b>Shortage (price climbs)</b>, <b>Neutral</b> and <b>Glut (decays toward 0)</b>. Then repeat the shortage with time to change the underlying price set to 12 years. Which loop from the price-setting diagram is acting alone here, and what is missing that would stop the climb?",
       hint: "Only the reinforcing price adjustment loop is present; there is no cost pressure, so the shortage keeps pushing the anchor up (to about 20 after 20 years at 4 years, about 13 at 12 years).",
+      answer:
+        "Shortage (inventory 75 of 100) lifts price above the anchor, the anchor follows, and the underlying price climbs without limit: about 14.3 after 10 years and 20.4 after 20. Neutral stays at 10. Glut decays toward 0: about 6.1 after 10 years and 3.7 after 20. With a 12-year anchor time the shortage still drives price up, only more slowly, to about 11.3 at year 10 and 12.7 at year 20. Only the reinforcing price adjustment loop (price → anchor → price, the inventory effect acting as integral control) is present. What is missing is the balancing feedback that would stop the climb: higher prices cutting demand and raising supply until inventory returns to target, and the cost effect pulling price back toward expected costs.",
       link: { label: "Open sea anchor pricing", hash: "/m/seaAnchorPricing" },
     },
     {
       prompt:
         "Open Protected Sea Anchor Pricing and compare <b>Glut with $6 floor</b> and <b>Glut, no floor</b>. Relate the floor to the minimum price (expected variable cost) in the formulation of Sterman (2000).",
+      answer:
+        "Glut with $6 floor: the underlying price falls from 10 to about 6.9 by year 10 and settles at the $6 floor, so the posted price (0.8 × the anchor under the glut) settles at 4.80. Glut, no floor: the anchor keeps falling, to about 4.5 by year 20 and 2.0 by year 40. The floor plays the role of the minimum price in Sterman's formulation, where the anchor cannot fall below expected variable cost: no producer will keep selling for long below the cost of making the next unit. It is a protective first-order limit that stops the sea anchor drifting to zero, just as costs, not inventory, set the long-run floor under prices.",
       link: { label: "Open protected sea anchor", hash: "/m/protSeaAnchorPricing" },
     },
     {
       prompt:
         "In Smooth Pricing, run <b>Demand shock</b> (pressure 1.4, adjustment time 4) and then <b>Sticky (slow)</b>. How long does price take to cover about two thirds of the move in each? Compare this goal-seeking adjustment with the open-ended drift of the sea anchor.",
+      answer:
+        "Demand shock (adjustment time 4) moves price from 10 toward 14; it covers two thirds of the move (to about 12.7) after about 4 years and is near 14 by year 12. Sticky (adjustment time 10) covers the same two thirds only after about 10 years. In both cases this is goal seeking: price closes about 63% of the gap in one adjustment time and then settles at a fixed new level, 14, because the indicated price does not move with price. The sea anchor is different: there the target is a multiple of the anchor itself, so a constant pressure keeps the price drifting without limit. Proportional adjustment settles; an anchor that chases its own adjusted value never does.",
       link: { label: "Open smooth pricing", hash: "/m/smoothPricing" },
     },
     {
       prompt:
         "Play the hog cycle case. Compare <b>Producers ignore the pipeline</b> with <b>Producers count hogs on the way</b>, then try <b>Longer biological lag (12 months)</b> and <b>Short lag (5 months)</b>. How does the lag change the period? Why is the real hog cycle (about 4 years) so much longer than twice the 11-month breeding lag?",
+      answer:
+        "Producers ignore the pipeline (10-month breeding and fattening lag): hogs ready for market peak at about 117 at month 24, then near 102 at month 66, a cycle of about 42 months. Counting hogs on the way removes the cycle: supply rises smoothly to 100. With a 12-month lag the peak is about 120 and the period about 45 months; with a 5-month lag the peak is about 109 and the period about 31 months. A longer lag means a longer period and bigger swings. The cycle is much longer than twice the lag because the period depends on all the delays in the loop, not only the biological one: producers also take months to perceive prices and adjust breeding herds (the 4-month response time here), and ignoring the pipeline makes them keep adding for a long time, so a 10 to 11 month lag yields a cycle of roughly three and a half to four years.",
       link: { label: "Hog cycle case", hash: "/apps/economics/hog-cycle" },
     },
     {
       prompt:
         "Open the power plant boom and bust case and run <b>Investors ignore the construction pipeline</b> and <b>Longer construction time</b>. Which loop of the commodity market diagram does this case isolate, and which cycle in pulp and paper (short or long) does it correspond to?",
+      answer:
+        "Investors ignore the construction pipeline: capacity overshoots to about 106.5 GW around year 9 and the cycle has a period of roughly 19 years, with a dip to about 98 near year 19. Longer construction time (8 years): capacity first sags, then overshoots to about 110 near year 15, with an even longer period. This case isolates the capacity acquisition loop of the commodity market diagram, the loop through investment, capacity under construction and capacity coming on line, without the short-run utilisation and inventory loop. It corresponds to the long cycle in pulp and paper, the 12 to 20 year capacity cycle, not the roughly four-year utilisation cycle.",
       link: { label: "Power plant cycles", hash: "/apps/environment/power-plant-cycles" },
     },
     {
       prompt:
         "Explore the price anchoring and the sticky prices cases. For each, decide whether it behaves more like the inventory effect (integral control: keeps moving while the gap lasts) or the cost effect (proportional control: settles at a new level).",
+      answer:
+        "Price anchoring behaves like the inventory effect (integral control): with a shortage of inventory 75 of 100, the anchor keeps rising as long as the gap lasts, from 10 to about 14.3 after 10 years and 20.4 after 20, and a glut keeps pushing it down. Sticky prices behaves like the cost effect (proportional control): a 40% cost shock moves price from 10 to a new level of 14 (about 12.5 after 6 months and 13.9 after 24), and a demand slump moves it to a new level of 7. The test is simple: integral control keeps moving while any gap remains and only stops when the gap is closed; proportional control settles at a new level determined by the size of the pressure.",
       link: { label: "Price anchoring case", hash: "/apps/economics/price-anchoring" },
     },
     {
       prompt:
         "Pen and paper: rank coffee, commercial real estate, copper, hog farming, oil, pulp and paper and shipbuilding by how strongly you think desired capacity responds to expected profit. Justify each with information, finance, entry barriers and the spread of producer costs.",
+      answer:
+        "There is no single correct ranking. A defensible one, from strongest to weakest response of desired capacity to expected profit: commercial real estate and hog farming (many small, easily financed entrants, low entry barriers, fast reaction to profit signals and poor information about others' plans), then shipbuilding and coffee (shipping profits drive orders strongly, coffee planting responds to prices but trees take years and growers are many and dispersed), then pulp and paper and copper (large, lumpy, capital-intensive plants, concentrated producers with more information, but still strong investment waves), then oil (very high costs and long lead times, plus cartel and government control that blunt the response). Justify each with four factors: how good information on industry-wide capacity is, how easy finance is, how high entry barriers are, and how wide the spread of producer costs is (a wide spread means price falls drive out high-cost producers and mute the response).",
     },
   ],
   pitfalls: [

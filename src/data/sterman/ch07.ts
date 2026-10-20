@@ -296,46 +296,54 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Graphical integration in the Bathtub. Choose Steady state (inflow 8, outflow 8, level 50). First sketch, on paper, the level over 40 years if the inflow is raised to 18 from year 10 to year 20 and then returned to 8. Then do it: set Stop at to 10 and run; move the inflow to 18, set Stop at to 20 and run; move it back to 8, set Stop at to 40 and run.",
       hint: "Flat at 50, a straight rise of 10 per year to 150, then flat at 150. The stock does not come back down when the flow does.",
+      answer: "The level stays flat at 50 for ten years, climbs in a straight line by 10 a year to 150 at year 20, then stays flat at 150 to year 40. While the inflow is 18 and the outflow 8, the net flow is a constant +10, so the stock rises at a constant slope; once the inflow returns to 8 the net flow is zero and the stock simply holds what it has accumulated. The common mistake is to draw the level falling back to 50 when the inflow drops: a stock remembers its past flows and only an outflow larger than the inflow can drain it.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {
       prompt:
         "Graphical differentiation. Open Decay with the default τ = 5 and initial stock 100. Before running, estimate the slope of the stock at t = 0, 5 and 10 years, and sketch the outflow. Run and compare your sketch with the outflow shown on the diagram.",
       hint: "Outflow = stock ÷ 5: about 20, 7.4 and 2.7 units per year. The stock's slope is the negative of the outflow.",
+      answer: "The app gives an outflow of 20 at t = 0, 7.3 at t = 5 and 2.7 at t = 10, with the stock at 100, 36.4 and 13.3. Because the outflow is stock ÷ τ and there is no inflow, the slope of the stock is −20, −7.3 and −2.7 per year, and the outflow curve has exactly the same decaying shape as the stock, scaled by 1/5. Graphical differentiation means reading the net flow as the slope of the stock at each moment: steep at first, flattening as the stock empties.",
       link: { label: "Decay", hash: "/m/decay" },
     },
     {
       prompt:
         "Same net flow, different flows. In the Bathtub, run inflow 10 and outflow 8, then Reset and run inflow 25 and outflow 23. Compare the two stock trajectories (the previous run is drawn dashed). What could you infer about the flows from the stock alone?",
       hint: "Identical stocks: only the net flow (+2) is recoverable from the trajectory.",
+      answer: "Both runs give exactly the same stock path, from 50 to 70 after ten years, a straight rise of 2 per year. The stock integrates only the net flow, so inflow 10 with outflow 8 and inflow 25 with outflow 23 are indistinguishable from the level alone. From a stock's history you can recover its net flow but never the separate inflows and outflows; to learn the gross flows (and so the throughput and residence time) you need data on the flows themselves.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {
       prompt:
         "Stop the inflow. In Residence Time, run with inflow 8 and τ = 10 until the stock settles near 80. Before touching anything, predict what happens to the outflow and the stock if the inflow is set to 0 now, and how long it takes for the stock to halve. Then set the inflow to 0 and watch. Relate this to atmospheric CO₂ after emissions stop.",
       hint: "The outflow starts at 8 and falls with the stock; the half-life is about 0.7 × τ ≈ 7 months.",
+      answer: "Starting from empty with inflow 8 and τ = 10, the stock reaches about 79.5 by month 50 and settles at 80 (inflow × τ). When the inflow is set to 0 the outflow does not stop: it starts at 80 ÷ 10 = 8 a month and falls in proportion to the stock, which decays exponentially and halves in about 7 months (0.69 × τ), reaching about 29 after 10 months and 10.8 after 20. Atmospheric CO₂ behaves the same way: if emissions stopped, concentrations would not snap back but drain only as fast as the removal processes allow, so past emissions keep warming us for a long time.",
       link: { label: "Residence Time", hash: "/m/residence" },
     },
     {
       prompt:
         "Carbon dioxide bathtub. Before running, sketch the concentration under each preset: Today: emissions double removal, Emissions cut by 30%, Emissions equal removal, Emissions below removal. Then run them. Which preset first stops the rise, and what does that tell you about policies that merely stabilise emissions?",
       hint: "The stock rises until emissions fall to the removal rate; cutting by 30% only slows the rise.",
+      answer: "In the app the extra carbon starts at 250 GtC. Today (emissions 10, removal 5) adds 5 a year and reaches 500 by year 50; cutting emissions by 30% (7 versus 5) still adds 2 a year, reaching 350; Emissions equal removal is the first preset that stops the rise, holding at 250; only Emissions below removal (3 versus 5) brings it down, to 150 by year 50. The stock rises whenever the inflow exceeds the outflow, however much the inflow has been cut. Stabilising emissions at today's level stabilises the rate of increase, not the concentration: to stop the rise, emissions must fall to the removal rate.",
       link: { label: "CO₂ as a bathtub", hash: "/apps/environment/co2-bathtub" },
     },
     {
       prompt:
         "Pen and paper: a fluctuating inflow. A warehouse ships a constant 100 units per week, and receives deliveries that swing between 70 and 130 units per week on an 8-week cycle, peaking at week 0. Predict when the stock peaks and its peak-to-trough range, without simulating.",
       hint: "Peak a quarter-cycle later, at week 2. Amplitude = 30 × 8 ÷ 2π ≈ 38, so the range is about 76 units.",
+      answer: "Stock = constant + ∫(inflow − outflow), and the net flow is 30·cos(2πt/8). Its integral is (30 × 8 ÷ 2π)·sin(2πt/8) ≈ 38·sin(2πt/8). The stock therefore peaks at week 2, a quarter cycle (90 degrees) after the inflow peak, which is when the net flow turns from positive to negative, and troughs at week 6. The range is 2 × 38 ≈ 76 units. Any good answer has the peak lagging the inflow peak by a quarter cycle and a swing proportional to the cycle length: slower fluctuations accumulate into bigger swings.",
     },
     {
       prompt:
         "Check a data series with a stock bound (hypothetical numbers). A survey says 20 million people have ever used a drug, falling to 19.5 million six years later. Past users die at about 0.3% per year and around 1 million try the drug each year. Is the survey plausible? What is the smallest the stock could be after six years even if no one ever tried the drug again?",
       hint: "With no initiation the stock falls at most to 20 × 0.997⁶ ≈ 19.64 million, so 19.5 million is impossible; with initiation it should be rising by close to a million a year.",
+      answer: "The survey is not plausible. The ever-used stock has only one outflow, deaths at 0.3% a year, so even with zero initiation it can fall at most to 20 × 0.997⁶ ≈ 19.64 million after six years; 19.5 million is below that floor. With around 1 million new users a year it should actually have grown to roughly 25.6 million (about 6 million added, 0.36 million lost). The lesson is that stock and flow structure gives you a consistency test for data: a stock can only change by its flows, so a reported value outside what the flows permit points to a measurement or definition problem.",
     },
     {
       prompt:
         "Cocaine case. Run New use stops: casual users can only fall, so note when compulsive users peak. Then compare Steady new use with More users escalate. Use graphical integration to explain why compulsive use keeps rising after initiation has stopped.",
       hint: "Compulsive users rise as long as escalation (an inflow fed by casual users) exceeds their own exits; with New use stops they peak about one stage time (4 years) in.",
+      answer: "With New use stops (initiation 0, 80 hundred thousand casual users at the start), casual users only fall, yet compulsive users rise from 0 to a peak of about 6.0 hundred thousand at year 4, then decline toward zero. Compulsive users are a stock filled by escalation (casual users ÷ 4 × 0.2) and drained by their own exits (compulsive ÷ 4); it keeps rising as long as that inflow exceeds the outflow, which holds until year 4 even though its source is shrinking. Steady new use (10 a year) peaks at about 9.1 hundred thousand near year 8 and settles at 8, while More users escalate (quit share 0.6) peaks at about 18.2 and settles at 16. Stopping initiation does not stop the downstream problem at once: the stock in the pipeline keeps flowing into compulsive use for years.",
       link: { label: "Cocaine prevalence", hash: "/apps/social/cocaine" },
     },
   ],

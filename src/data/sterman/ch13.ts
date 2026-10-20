@@ -277,47 +277,63 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open First-Order Stock Adjustment and load 'No replacement ordering' (outflow 10, desired 100, adjustment time 4, replacement fraction 0). Where does the level settle? Then set the replacement fraction to 1 and run again.",
       hint: "The gap rule alone stops where (100 − Level)/4 = 10, so Level = 60, a shortfall of outflow × AT. Replacing expected outflow removes the error and the level reaches 100.",
+      answer:
+        "Without replacement the level climbs from 40 and settles at 60, not 100. In equilibrium the inflow must equal the outflow of 10, and the only inflow is the gap correction (100 − Level)/4, so the gap must stay at 10 × 4 = 40. With the replacement fraction at 1 the rule orders the expected outflow on top of the correction, so the gap can close completely and the level reaches 100 (about 95 by month 10). Lesson: a pure gap-closing rule for a stock that is being drained always settles short by outflow × adjustment time; replace expected losses and use the gap only to correct.",
       link: { label: "First-Order Stock Adjustment", hash: "/m/stockAdjust" },
     },
     {
       prompt:
         "Open Level Protected by Flow with the 'Drain to limit' preset (replenishment 3, desired draining 10, fastest draining time 2). Watch the outflow: when does it stop following the desired 10 per week, and at what level does the stock settle? Repeat with fastest draining time 5.",
       hint: "The cap Level/2 binds once the level falls below 20. In equilibrium the outflow equals the replenishment of 3, so Level = 3 × 2 = 6 (and 15 with a time of 5). The stock never goes negative.",
+      answer:
+        "The outflow follows the desired 10 a week until the stock falls below 20 (Level / 2 = 10), which happens at about week 8.6; after that the outflow falls with the stock and the level settles at 6, where draining equals the replenishment of 3 (3 × 2 = 6). With a fastest draining time of 5 the cap binds as soon as the level drops below 50 (around week 4) and the stock settles at 3 × 5 = 15. Because the outflow can never exceed Level / fastest draining time, it shrinks toward zero as the stock does, so the stock cannot go negative. This first-order control is what every outflow from a physical stock needs.",
       link: { label: "Level Protected by Flow", hash: "/m/protFlow" },
     },
     {
       prompt:
         "Compare a hard and a soft cap. In Ceiling, run 'Approach cap' (desired inflow 14, ceiling 100, approach time 2) and then 'Hard clip' (approach time 0.5). At what stock level does the inflow start to fall in each case? Then try the mirror image in Floor.",
       hint: "The inflow is MIN(14, (100 − Stock)/approach time), so it binds above 72 with time 2 and above 93 with time 0.5. Shorter approach times give a sharper corner, closer to an IF-THEN-ELSE switch.",
+      answer:
+        "With approach time 2 the inflow starts to fall once the stock passes 72 (where (100 − 72)/2 = 14), at about week 4.4, and the stock eases in gradually (98 at week 10). With approach time 0.5 the inflow stays at 14 until the stock passes 93, at about week 5.9, and the stock hits 100 almost at once. In Floor the outflow of 14 is cut once the stock falls below 30 + 2 × 14 = 58 (about week 3) with time 2, but only below 37 (about week 4.4) with time 0.5. The approach time sets how sharp the corner is: short times act like an IF-THEN-ELSE switch, long ones round it off.",
       link: { label: "Ceiling", hash: "/m/ceiling" },
     },
     {
       prompt:
         "Open Capacity Utilization and run 'Demand < capacity' and then 'Demand > capacity'. In the second case, compare production with capacity. Why is a smooth utilisation curve a better model of a plant than MIN(desired production, capacity)?",
       hint: "Look at how production bends as desired output approaches and passes capacity: a fuzzy MIN. Aggregating many machines and workers with different limits rounds off the corner.",
+      answer:
+        "With demand 15 and capacity 25, production starts near 20 to refill inventory and then settles at 15 with inventory near 92, so utilisation is moderate. With demand 25 and capacity 15, production only reaches about 14.9, just under capacity, and inventory runs out by about week 5 while sales still exceed production. The curve bends production smoothly as desired output approaches and passes capacity, instead of a sharp corner. A real plant is many machines and workers with different limits and breakdowns, so as a whole it reaches its limit gradually; MIN would claim it can run at exactly 100% the moment demand allows, which no aggregate plant does.",
       link: { label: "Capacity Utilization", hash: "/m/capacityUtil" },
     },
     {
       prompt:
         "Hill climbing in miniature. Open Sea Anchor & Adjustment and run 'Stable' (pressure 1) and then 'Runaway drift' (pressure 1.2, anchor lag 6 months). Estimate the growth rate of the anchor and compare it with the expected rate (k − 1)/SAT.",
       hint: "The value is anchor × 1.2 and the anchor closes the gap in 6 months, so it grows at 0.2/6 ≈ 3.3% per month: doubling roughly every 21 months. With pressure 1 there is no pressure, so nothing moves.",
+      answer:
+        "In Stable (pressure 1) the value equals the anchor, so nothing moves. In Runaway drift the value is always 1.2 × anchor, the anchor closes 1/6 of the 20% gap each month, and so the anchor grows at 0.2 / 6 ≈ 3.3% per month: it goes from 100 to about 201 at month 21 and about 736 by month 60, matching (k − 1)/SAT with a doubling time of about 70 / 3.3 ≈ 21 months. Lesson: an anchor that adjusts toward a value defined as a multiple of itself is a reinforcing loop; constant pressure produces exponential drift, not a new level.",
       link: { label: "Sea Anchor & Adjustment", hash: "/m/seaAnchor" },
     },
     {
       prompt:
         "Open Multivariate Anchoring and load 'Offsetting pressures' (pressure 1 = 4, pressure 2 = 4). Explain why the value stays at the anchor. Then set pressure 1 to its minimum 0.25 with the others at 1. Sketch what an additive formulation (anchor + effect 1 + effect 2 + effect 3) would have needed to make the value fall to zero as one pressure collapsed.",
       hint: "In the product, any one effect near zero pulls the whole result toward zero. A sum cannot do that unless the other effects are tuned for that one case.",
+      answer:
+        "With pressures 1 = 4 and 2 = 4, the value is 100 × √4 × (1/√4) × 1 = 100, so the two effects cancel exactly and the value stays at the anchor. With pressure 1 at 0.25 the value is 100 × √0.25 = 50, and the value in use moves to 50 within a few weeks. In the multiplicative form any one effect near zero drives the whole result toward zero. An additive form, anchor + e1 + e2 + e3, would need effect 1 to equal −100 when pressure 1 collapses and the other effects to be exactly zero at that moment, which breaks as soon as another pressure changes. Use multiplication when each factor is necessary.",
       link: { label: "Multivariate Anchoring", hash: "/m/multivariateAnchor" },
     },
     {
       prompt:
         "Pen and paper: check these invented rules against the five fundamentals and rewrite each. (a) Hiring = Desired staff − Staff. (b) Deliveries = MIN(Orders, Warehouse stock). (c) Desired fleet = the fleet size that maximises discounted profit over the next 20 years. (d) Net migration = Normal migration + Effect of jobs + Effect of housing.",
       hint: "(a) and (b) have unbalanced units (people vs people per month; units per week vs units). (c) breaks the Baker criterion: nobody knows the future profit surface. (d) is additive, so migration need not fall to zero when there are no jobs or no housing.",
+      answer:
+        "(a) Hiring = Desired staff − Staff gives people, not people per month: divide by an adjustment time and add expected attrition, Hiring = MAX(0, Expected quits + (Desired staff − Staff) / Hiring delay). (b) Deliveries = MIN(Orders, Warehouse stock) mixes units per week with units: use MIN(Orders, Warehouse stock / Minimum delivery time) or a fulfilment ratio. (c) Breaks the Baker criterion of using only information the decision maker has: no one knows the next 20 years of profit; use expected demand and observed profitability to drive a desired fleet. (d) Additive effects let migration stay positive with no jobs or no housing: use Normal migration × Effect of jobs × Effect of housing, each effect 1 at normal conditions and 0 when the resource disappears. Each fix must balance units, respect the information really available, and behave sensibly at extremes.",
     },
     {
       prompt:
         "Open Workforce and run 'Ramp up' and then 'Downsize'. The molecule already separates hiring and firing with MAX(0, …). Which real features would justify giving them different adjustment times, and what extra stock would you need to protect so that layoffs of recent hires could never go negative?",
       hint: "Recruiting and training take longer than layoffs; quits follow different cues from hiring. With a rookie and experienced aging chain, layoffs need first-order control on the rookie stock.",
+      answer:
+        "Ramp up hires from 40 toward 80, starting at 10 a year and reaching about 65 by year 4; Downsize fires from 40 toward 20, starting at 5 a year. The molecule uses the same 4-year time for both, but in reality recruiting, screening and training take months while layoffs can happen in weeks (or are held back by severance, morale and law), and quits respond to the labour market rather than to the firm's targets. So hiring and firing deserve separate adjustment times and separate goals. If you split the workforce into an aging chain of rookies and experienced staff, layoffs of recent hires must come out of the rookie stock with first-order control (layoffs ≤ Rookies / minimum layoff time), so that the rookie stock can never go negative.",
       link: { label: "Workforce", hash: "/m/workforce" },
     },
   ],

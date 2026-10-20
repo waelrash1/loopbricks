@@ -310,44 +310,60 @@ export const CHAPTER: StudyChapter = {
         "Feel the 90% syndrome. In Rework Cycle run the High quality preset (quality 0.95) and the Low quality preset (0.6). For each, note the week when Work done passes 900 of the 1000 tasks. Then keep quality at 0.6 and raise the rework discovery time from 5 to 16 weeks. What happens to apparent progress early on, and to the finish date?",
       hint: "Long discovery times make the project look further along than it is, then stretch the tail.",
       link: { label: "Rework Cycle", hash: "/m/reworkCycle" },
+      answer:
+        "Work done passes 900 at about week 10.6 with High quality (0.95) and week 20.6 with Low quality (0.6), almost double. With quality 0.6 and a 16-week discovery time, Work done still passes 900 only at about week 44 and 990 at about week 106, against 20.6 and 40.5 with a 5-week discovery time. Early on the project looks further along: at week 10 the backlog of work to do is 192 instead of 304 tasks, and by week 12 it is down to 47, so the project appears 95% complete while only 648 tasks have actually been done right. Hidden rework sits in the undiscovered stock, where nobody counts it, and then bleeds out slowly, which is the 90% syndrome: reported progress is quick, the last 10% takes forever.",
     },
     {
       prompt:
         "Replicate the claim logic with an as-built and a would-have run. In Rework Cycle set capacity 90 and discovery time 8. Treat quality 0.85 as the would-have case and quality 0.65 (the disruption from design changes) as the as-built case. Record the week each run reaches 950 tasks done; the difference is the delay attributable to the disruption.",
       link: { label: "Rework Cycle", hash: "/m/reworkCycle" },
+      answer:
+        "With capacity 90 and discovery time 8, the would-have run (quality 0.85) reaches 950 tasks done at about week 17.5, and the as-built run (quality 0.65) at about week 31.9. The delay attributable to the disruption is about 14.4 weeks, an 82% overrun. The same model run with and without the disruption separates the cost of the changes from everything else, which is what Ingalls's claim needed; a lower quality fraction does not just add a few tasks, it feeds the rework cycle again and again.",
     },
     {
       prompt:
         "Overtime as a corrective action with a side effect. In Productivity & Fatigue compare Normal hours with the Crunch preset (overtime 1.4). Find the week at which crunch output falls back to normal and what it settles at. Relate this to the shipyard's R1 loop.",
       link: { label: "Productivity & Fatigue", hash: "/m/prodFatigue" },
+      answer:
+        "With Normal hours output stays at 1.0 times normal. With Crunch (overtime 1.4) output jumps to 1.4 at once, but fatigue builds and output falls back to normal at about week 5, then settles at about 0.84, 16% below normal hours, by about week 20. Overtime is a balancing correction for a schedule gap, but it drives up fatigue, which cuts productivity and so reopens the gap; that is the shipyard's R1 loop. The benefit comes first and the cost later, which is why managers who judge by the first month keep using crunch.",
     },
     {
       prompt:
         "Experience dilution. In Coflow with Experience run Steady team and then Hiring surge (dilution). How far does average experience fall, and how many years does it take to recover? Then try Hire veterans. Ingalls doubled its workforce to over 20,000 in a few years: what would that do to productivity and quality?",
       link: { label: "Coflow with Experience", hash: "/m/coflowExperience" },
+      answer:
+        "Steady team holds average experience at 8 years. Hiring surge doubles the workforce from 80 towards 160 and average experience falls to about 6.1 years by year 6; it climbs back only slowly (7.4 by year 25 and still 7.98 at year 60), so it takes about 26 years to get back within half a year of 8. Hire veterans (new hires with 5 years) avoids the dip entirely and lifts the average towards 13 years, because in equilibrium average experience equals the experience of new hires plus the average time people stay. Each recruit enters the experience coflow with less than the average, diluting it; doubling the Ingalls workforce in a few years would sharply cut average experience, productivity and quality just when the work was hardest.",
     },
     {
       prompt:
         "The 'all else equal' leasing argument. In Decay set the stock as cars on the road and compare decay time 6 years (owners keep cars) with 3 years (three-year leases). Compare the outflow (trade-ins) in the first year and after 10 years. Why is the doubling of replacement sales only temporary unless the stock is refilled, and where do the traded-in cars go in the real market?",
       hint: "Initial outflow is 100/6 ≈ 17 versus 100/3 ≈ 33 per year, but the faster outflow empties the stock sooner.",
       link: { label: "Decay", hash: "/m/decay" },
+      answer:
+        "With decay time 6 years trade-ins start at 16.7 per year; with 3 years they start at 33.3, double. After 10 years the order reverses: the 6-year stock still holds about 19 cars and sends 3.1 per year, while the 3-year stock is down to about 3 cars sending only 1.1 per year. Shorter leases double replacement sales only while there are cars to drain; once the stock has emptied, the outflow, and the replacement sales it creates, shrinks unless new sales refill the stock. In the real market the returned cars do not vanish: they enter the stock of late-model used cars and compete with new cars, which is the feedback the 'all else equal' argument missed.",
     },
     {
       prompt:
         "Lease returns as a delayed echo. In Material Delay run Steady pipeline, treating the inflow as leases written each week and the arrivals as cars coming back. When do arrivals reach half the inflow, and when nearly all of it? Then run Long transit (delay 16). How many cars are in the pipeline once it has filled, and why can those returns not be cut when demand falls?",
       hint: "Once filled, the pipeline holds inflow × delay: 72 cars with a 9-week delay and 128 with 16. Every one of them comes back even if no new leases are written.",
       link: { label: "Material Delay", hash: "/m/material" },
+      answer:
+        "With Steady pipeline (delay 9) arrivals reach half the inflow (4 per week) at about week 8 and 95% of it (7.6) at about week 19. With Long transit (delay 16) those times stretch to about week 14 and week 33. Once filled the pipeline holds inflow × delay: 72 cars with 9 weeks and 128 with 16. Those cars are already committed; if lease writing stopped today, all of them would still come back over the next several months, which is why returns lag the market and cannot be turned off when demand falls.",
     },
     {
       prompt:
         "Defects as a stock. In Residence Time treat the inflow (8 per month) as defect creation and τ as the average time a defect survives. Compare Long stay (τ = 10) with Short stay (τ = 2): how large is the equilibrium stock in each, and how long does each run take to get close to it? Connect that adjustment time (about three τ) to the length of the worse-before-better dip after planned maintenance starts.",
       hint: "Equilibrium stock = inflow × τ: 80 versus 16.",
       link: { label: "Residence Time", hash: "/m/residence" },
+      answer:
+        "Long stay (τ = 10) settles at 80 defects and reaches 95% of that at about month 30; Short stay (τ = 2) settles at 16 and gets there by about month 6. Both take about three τ, because the stock approaches equilibrium (inflow × τ) exponentially with time constant τ. When planned maintenance starts, defects that are already in the system must be worked off at that pace, so the worse-before-better dip lasts several residence times; if defects survive for many months, management has to tolerate a long dip before the improvement shows.",
     },
     {
       prompt:
         "Pen and paper: compare the Du Pont loops with the capability trap case. Sketch the work-harder and work-smarter loops, then mark which of the maintenance loops (R1 to R4 in our diagram) correspond to each. Which loop would you break first, and what short-run cost would you have to accept?",
       link: { label: "Capability trap case", hash: "/apps/business/capability-trap" },
+      answer:
+        "A model answer: working harder means repair after failure (B1), which fixes breakdowns now; working smarter means planned maintenance (B2), which removes defects before they fail. The reinforcing loops that trap the plant in working harder are R2 (breakdowns pull mechanics to repairs, leaving less for planned work), R3 (lost uptime makes operators refuse takedowns) and R4 (cost pressure cuts parts, training and planning); R1 (collateral damage) makes each breakdown create more defects. Break R2 first by ring-fencing a share of maintenance hours for planned work, the same move as the capability trap case's protected improvement time. The short-run cost is lost uptime and continued breakdowns while the stock of defects drains: performance gets worse before it gets better, so leaders must commit through the dip.",
     },
   ],
   pitfalls: [

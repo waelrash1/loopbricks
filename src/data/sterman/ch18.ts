@@ -276,37 +276,51 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "In Material Delay, run <b>Steady pipeline</b> (inflow 8, delay 9) and read how much material is in transit at equilibrium. Then choose <b>Long transit</b> (delay 16). Use Little's law to predict the new pipeline content before you run it. This is the logic of desired WIP.",
       hint: "In transit = flow × delay: 72 units, then 128.",
+      answer:
+        "At equilibrium each of the three stages holds 24, so 72 units are in transit, exactly flow × delay = 8 × 9. With the 16-week delay Little's law predicts 8 × 16 = 128, and the run settles at three stages of about 42.7 each, 128 in total. Arrivals still settle at 8 a week; only the amount tied up in the pipeline changes. That is why desired work in process is set as desired production × manufacturing cycle time: a longer cycle time needs a proportionally bigger pipeline to deliver the same flow.",
       link: { label: "Open material delay", hash: "/m/material" },
     },
     {
       prompt:
         "Open Backlog Protected by Level. Compare <b>Healthy stock</b> with <b>Starve production</b> (production 5). Watch shipping fall away from orders as inventory drops below the full-service level. Which part of this molecule plays the role of the order fulfilment ratio?",
+      answer:
+        "With Healthy stock (production 12, orders 12) inventory stays well above the full-service level of 60 (it settles at 94), so shipping equals Backlog / 2 = 12 and the backlog settles at 24. With Starve production (production 5), inventory falls below 60 around month 5, after which shipping shrinks with the stock: about 9 at month 10 and close to 5 by month 40, while the backlog piles up to about 350 by month 60. The term MIN(1, Inventory / full-service inventory) plays the role of the order fulfilment ratio: it is 1 when stock is ample and falls toward 0 as inventory runs out, so shipments can never exceed what the shelves hold.",
       link: { label: "Open backlog and inventory", hash: "/m/backlogLevel" },
     },
     {
       prompt:
         "In Low-Visibility Pipeline Correction, think of the supplier as a second firm. With <b>Tracks the pipeline</b>, slow the supplier from 6 to 12 weeks. Then set awareness to 0 and repeat. Which change (longer supplier delay or lost awareness) does more damage to inventory stability?",
       hint: "With awareness 1 a longer delay only slows the approach; with awareness 0 it produces large swings.",
+      answer:
+        "With awareness 1, slowing the supplier to 12 weeks makes inventory sag lower at first (to about 47) but it then rises smoothly to 100 with no overshoot, because the larger pipeline is counted. With awareness 0 at 6 weeks, inventory overshoots to about 117 and rings; with awareness 0 and 12 weeks it overshoots to about 150 and is still swinging after 150 weeks. Lost awareness does more damage: a longer delay alone only slows the approach, but once the pipeline is ignored the delay becomes the engine of the oscillation, and longer delays then make it much worse.",
       link: { label: "Open low-visibility pipeline", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
         "Play the bullwhip case with <b>Long lead time, partial view</b> (delay 12, weight 0.3). Then raise the weight to 1 and, separately, cut the delay to 6. Which policy corresponds to sharing better supply-line information and which to lean manufacturing or EDI?",
+      answer:
+        "Long lead time, partial view (delay 12, weight 0.3) gives a peak of about 106 after an initial dip to about 51, with orders not received swelling to about 165. Raising the weight to 1 removes the overshoot entirely: inventory rises smoothly to 100. Cutting the delay to 6 with weight 0.3 lowers the peak to about 104. Raising the weight corresponds to sharing better supply-line information (orders in transit, point-of-sale and inventory data across the chain); cutting the delay corresponds to lean manufacturing, faster logistics or EDI, which shorten order processing and lead times. Both help; the information policy acts directly on the cause, misperceiving the pipeline.",
       link: { label: "Bullwhip case", hash: "/apps/business/bullwhip" },
     },
     {
       prompt:
         "Open the vaccine and medicine supply chain case and run <b>Counts doses on order</b>, <b>Ignores doses on order</b> and <b>Long lead time</b>. Which run gives the largest overshoot of stock? Then name one place in a real medicine chain where ordering ahead or allocation during a shortage could close a reinforcing loop like R1 in the lead-time gaming diagram.",
+      answer:
+        "Counts doses on order: no overshoot, stock rises smoothly to 100. Ignores doses on order: the largest overshoot, to about 110 at week 17, with a dip below target afterwards. Long lead time (12 weeks, weight 0.3): after an early dip to about 51, stock peaks at about 106, less than Ignores because a third of the pipeline is still counted, though doses on order swell to about 165. A real reinforcing loop: during a shortage, pharmacies, hospitals or countries that fear rationing order more than they need, or the manufacturer allocates in proportion to orders, so everyone inflates orders, the apparent shortage deepens, and phantom orders vanish when supply recovers. Examples include hospital stockpiling of a scarce drug or national pre-orders of vaccines.",
       link: { label: "Medicine supply case", hash: "/apps/health/medicine-supply" },
     },
     {
       prompt:
         "Pen and paper: write algebraic initial values for inventory, WIP, backlog and expected orders in the single-firm model so that it starts in balanced equilibrium for any parameter values. Then show why setting initial inventory to desired coverage × shipments creates a simultaneous equation.",
       hint: "Use desired shipments or customer orders rather than shipments, which depend on inventory through the fulfilment ratio.",
+      answer:
+        "Start from customer orders (exogenous) and work backwards, never through variables that depend on inventory. Expected orders = Customer orders. Backlog = Customer orders × target delivery delay, so desired shipments = Backlog / target delivery delay = Customer orders. Inventory = Desired inventory coverage × Desired shipments (coverage = minimum processing time + safety stock coverage). WIP = Desired production × manufacturing cycle time, with desired production = expected orders in equilibrium. If you instead set Inventory = coverage × Shipments, you loop back on yourself: Shipments = Desired shipments × Order fulfilment ratio, the ratio depends on maximum shipments = Inventory / minimum processing time, so inventory depends on shipments, which depend on inventory. Using desired shipments or customer orders breaks the simultaneity.",
     },
     {
       prompt:
         "Pen and paper: for each integration policy (shared sales data, EDI, lean cycle times, vendor-managed inventory), name the loop or delay in the diagrams above that it changes and say which partner pays and which gains.",
+      answer:
+        "Shared sales data (point-of-sale information) improves the demand forecast upstream: it shortens or removes the order smoothing and forecasting delay and weakens amplification; the retailer gives up information and the supplier gains most, though everyone benefits from lower safety stock. EDI shortens the order processing and paperwork delay in the supply line; both sides pay for systems, and the upstream supplier usually gains most. Lean cycle times shorten the manufacturing delay (the acquisition lag), which reduces pipeline size and oscillation; the manufacturer pays for process change and the customers gain shorter lead times. Vendor-managed inventory moves the stock management decision to the supplier, who then sees both inventory and the supply line, strengthening the supply-line loop B2; the supplier takes on cost and risk, while the customer gains lower inventory and fewer stockouts. A good answer links each policy to a specific delay or loop and names who pays and who gains.",
     },
   ],
   pitfalls: [

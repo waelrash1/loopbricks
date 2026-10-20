@@ -283,47 +283,63 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Snapshot test on paper. Classify each item as a stock or a flow and give its units: beds occupied in a hospital, admissions, the posted price of fuel, the inflation rate, a manager's forecast of demand, staff morale, the government deficit, the national debt, rainfall, the level of a reservoir.",
       hint: "If it survives a frozen photograph it is a stock. A rate of change (inflation, deficit, admissions, rainfall) is a flow; the price and the forecast are stocks even though they are not physical.",
+      answer:
+        "Stocks: beds occupied (patients), the posted price of fuel (dollars per litre), a manager's forecast of demand (units per week), staff morale (an index), the national debt (dollars), the level of a reservoir (cubic metres). Flows: admissions (patients per day), the inflation rate (percent per year, the rate of change of the price level), the government deficit (dollars per year, the flow into the debt), rainfall (millimetres or cubic metres per day). The test is the snapshot: if time froze, beds, debt, prices, forecasts, morale and water levels would still have a value, but admissions, inflation, deficits and rainfall only exist as rates over a period. Prices, forecasts and morale are stocks even though they are not physical, because they persist and change only through their own rate of adjustment.",
       link: { label: "Stocks, flows and units", hash: "/methods/stocks-flows" },
     },
     {
       prompt:
         "Bathtub: choose the Filling preset (inflow 14, outflow 6, level 50). Before running, write down the level you expect at year 10. Set Stop at to 10 and run. Then choose Draining (inflow 3, outflow 12) and predict when the tub empties and what the outflow does afterwards.",
       hint: "Filling: 50 + (14 − 6) × 10 = 130. Draining: 50 ÷ 9 ≈ 5.6 years; once empty the outflow can only equal what flows in.",
+      answer:
+        "Filling: the level rises by 14 − 6 = 8 units a year, so at year 10 it is 50 + 8 × 10 = 130, which the run confirms. Draining: the level falls by 12 − 3 = 9 a year and reaches zero at about 50 ÷ 9 ≈ 5.6 years. After that the tub cannot hold a negative amount, so the outflow can remove only what flows in: on average it drops to the inflow of 3 a year (on the chart it flickers between 0 and 12 as each small step of inflow is drained). The lesson: a stock changes at the rate of net flow, and an outflow drawn from a stock is limited by what the stock contains.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {
       prompt:
         "Bathtub: choose Steady state (8 in, 8 out). Now move both sliders to 20 and run again. Does the level look any different? Compute the average time a unit of water spends in the tub in each case, and explain why a snapshot of the level alone cannot tell you the throughput.",
       hint: "Both are dynamic equilibria at 50. Average residence time is 50 ÷ 8 ≈ 6.3 years versus 50 ÷ 20 = 2.5 years.",
+      answer:
+        "The level stays at 50 in both runs, so the two charts look identical. Average residence time is the stock divided by the flow through it: 50 ÷ 8 ≈ 6.3 years with 8 in and 8 out, and 50 ÷ 20 = 2.5 years with 20 in and 20 out. Both are dynamic equilibria in which the stock is constant because inflow equals outflow, but the throughput differs by a factor of 2.5. A snapshot shows only the stock, so you need the flows (or the residence time) to know how busy the system is.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {
       prompt:
         "Aggregation by residence time. Open Residence Time with inflow 8 and compare Short stay (τ = 2) with Long stay (τ = 10). Predict each equilibrium stock and roughly how long it takes to get there. If your model's horizon were five years and its decisions monthly, which of the two stocks could you safely lump into a neighbouring stock?",
       hint: "Equilibria are 8 × 2 = 16 and 8 × 10 = 80; settling takes about three to four τ. Only the short-lived stock is a candidate for lumping.",
+      answer:
+        "Short stay settles at 8 × 2 = 16 and Long stay at 8 × 10 = 80, because at equilibrium the outflow Stock/τ must equal the inflow of 8. Short stay reaches 95% of its equilibrium at about 6 months (3τ) and Long stay at about 30 months (also 3τ); after one τ each stock has covered about 63% of the way (about 10 and 51). With a five-year horizon and monthly decisions, the short-stay stock adjusts within about half a year, fast compared with the dynamics you care about, so it can be lumped into a neighbouring stock or treated as a delay. The long-stay stock takes years to settle and must stay as its own stock.",
       link: { label: "Residence Time", hash: "/m/residence" },
     },
     {
       prompt:
         "Serial disaggregation. Open Cascaded Levels with Pulse through (60 units in stage 1, τ = 4 months). Before running, sketch all three stages: which peaks first, when does stage 3 peak, and what is the total in the three stages plus what has left? Then run to check your sketch.",
       hint: "Material is conserved: what is in the stages plus what has left always equals 60. With three equal first-order stages, stage 3 peaks at about 2τ = 8 months.",
+      answer:
+        "Stage 1 starts at 60 and only falls, so it is highest at month 0. Stage 2 peaks at about 22 at month 4 (τ) and stage 3 peaks at about 16 at month 8 (2τ), each later and lower than the one before, because each stage drains into the next at a rate set by its own content. Material is conserved: at month 8 the three stages hold about 41 and about 19 has left, and at month 20 the stages hold about 7 and about 53 has left, always totalling 60. Chaining stages turns a sharp pulse into a delayed, spread-out output, which is why a cascade of first-order stages represents a higher-order material delay.",
       link: { label: "Cascaded Levels", hash: "/m/cascade" },
     },
     {
       prompt:
         "Challenge the clouds. Open the carbon dioxide bathtub case and list every cloud in its map. For each, name the real stock beyond it (fossil reserves, ocean, biosphere) and say whether it could plausibly constrain the flow within a century. Which cloud would you remove first?",
       hint: "The fossil source is effectively unlimited on a century scale; the ocean and land sinks are not, because their uptake slows as they fill.",
+      answer:
+        "The map has two clouds. The source of emissions stands for fossil fuel reserves (plus forests and soils cut for land use): those reserves are large enough that they would not constrain emissions within a century. The sink of net removal stands for the oceans and the land biosphere: these are real stocks that fill up, and as the ocean surface warms and becomes more acidic and forests mature, their uptake slows, so the sink can constrain removal within decades. Remove the sink cloud first: model the ocean and biosphere carbon stocks so that net removal depends on how full they are. In the simple model, emissions of 10 against removal of 5 raise the stock from 250 to 500 over 50 years, and a 30% cut still raises it to 350; with a sink that saturates, removal would fall and the rise would be faster still.",
       link: { label: "CO₂ as a bathtub", hash: "/apps/environment/co2-bathtub" },
     },
     {
       prompt:
         "Draw it yourself. Map the stocks and flows of gasoline from delivery to service stations through station tanks, car tanks and combustion. Add the information links drivers use when they hear of shortages. Using your map, judge whether a purchase cap per visit and odd-even days ease or worsen the shortage, and propose a better policy.",
       hint: "Ask which stock grows when drivers keep their tanks fuller, and what a cap per visit does to the number of visits.",
+      answer:
+        "Model answer: a chain of stocks, refinery and terminal stocks → deliveries → gasoline in station tanks → sales → gasoline in car tanks → combustion (driving) → exhaust (sink). The information links: news of shortages → drivers' fear of running out → desired fuel in their tanks → topping off more often and buying when the tank is still half full. That raises the stock in car tanks, which across millions of cars absorbs a large one-off volume, so station tanks run dry and queues form, which confirms the fear: a reinforcing loop. A purchase cap per visit makes it worse, because drivers make more visits to fill up and spend more time with partly full tanks. Odd-even days force drivers who can buy to fill up completely, so they also keep tanks fuller. Better policies leave car tanks alone: credible public information that total supply is adequate, a minimum purchase or allowing prices to rise briefly, so that the panic loop is not fed.",
     },
     {
       prompt:
         "Auxiliaries. Open Population Growth and set the Stable preset (birth = death = 3%). Confirm that any starting population stays put. Then, on paper, add auxiliaries so that the birth fraction falls as food per person falls. Mark the new loop's polarity and explain why you would not write it as one long equation.",
       hint: "Population → food per capita (−) → fractional birth rate (+) → births (+) → population (+): one negative link, so balancing.",
+      answer:
+        "With births and deaths both at 3% the net rate is zero, so the population stays at 100, and it would stay at any other starting value too, since births exactly equal deaths whatever the stock (it stays at 250 if started there). On paper: Population → (−) Food per capita (food divided by people); Food per capita → (+) Fractional birth rate; Fractional birth rate → (+) Births; Births → (+) Population. One negative link makes it a balancing loop that limits growth. Keeping food per capita and the fractional birth rate as separate auxiliaries keeps each causal link visible with its own polarity and units, lets you check and change the relationship (for example, a nonlinear effect of food on births) and lets you see the loop on the diagram. A single long equation for births would hide a link with a negative effect inside one with a positive effect, so the loop could not be identified.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
   ],

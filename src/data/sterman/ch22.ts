@@ -176,36 +176,50 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Act as the automated tutor. Open Reducing Backlog by Doing Work, choose the Double the workers preset and run it to the end. Note what happens to Work to do and the Overdrawn stock once the backlog is gone. Then open Level Protected by Flow with the Drain to limit preset and explain in one sentence why its outflow cannot overdraw the stock.",
       hint: "The first outflow ignores the stock it drains; the second is capped at Level ÷ fastest draining time.",
+      answer:
+        "With Double the workers (20 × 4 = 80 tasks a month), work to do falls in a straight line from 1,200 to zero at month 15, but production carries on at 80 a month, so the Overdrawn stock grows to 400 by month 20 and 3,600 by month 60: the model is completing work that does not exist. In Level Protected by Flow with Drain to limit, the outflow is MIN(10, Level / 2), so once the stock falls below 20 the outflow shrinks with it and the level settles at 6 where draining equals the replenishment of 3; it cannot overdraw because the outflow is capped at Level ÷ fastest draining time, which goes to zero as the level does. An automated tutor would flag the first molecule's outflow as lacking first-order control.",
       link: { label: "Reducing Backlog", hash: "/m/reducingBacklog" },
     },
     {
       prompt:
         "Run a reality check by hand. In Stock Management choose the Oscillation preset, then set demand to its minimum (2) and desired inventory to its maximum (200). Does the order rate ever go negative? Does inventory? Write down two more extreme-condition tests you would want software to run automatically for this molecule.",
+      answer:
+        "No. With demand 2 and desired inventory 200, the rule wants a huge correction at first (orders start at 37), the supply line fills to about 120, inventory overshoots to about 252 at week 21, and the order rate hits zero around week 10 and stays there until about week 45 while the excess drains, but MAX(0, …) stops it going negative. Inventory never goes negative either; it settles at 200 after a few damped swings. Two more automatic tests worth running: demand set to zero (orders should fall to zero and inventory should hold, not drift) and an acquisition delay at its minimum or a huge pulse in demand (the supply line and inventory must stay non-negative and the order rate finite). Others: desired inventory below current inventory, or the supply-line weight at 1 with very short adjustment times.",
       link: { label: "Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Try an automated sensitivity analysis. Work through the sensitivity lab's behaviour mode experiment and record what share of runs overshoot their final level. Then state which kind of sensitivity (numerical, behaviour mode or policy) would matter most to a manager deciding whether to count the supply line.",
+      answer:
+        "In the sensitivity lab's behaviour mode experiment, about 36% of the 200 runs overshoot their final level (the share moves only a little with the number of runs: 32% with 50, 37% with 400) and the rest settle smoothly. For a manager deciding whether to count the supply line, policy sensitivity matters most: the question is whether the recommended policy changes with the uncertain parameters. Here it does not: counting orders on the way helps or does no harm in 100% of the plausible worlds, while reacting faster helps in only about 30%. Numerical sensitivity (exactly how big the overshoot is) matters least for that decision.",
       link: { label: "Sensitivity lab", hash: "/methods/sensitivity" },
     },
     {
       prompt:
         "Try interactive calibration. In the calibration lab fit by hand first, then let the optimiser search, then hold back the later data. Compare the in-sample and held-back errors for the right and the wrong structure, and explain why automated fitting does not remove the need for structural judgement.",
+      answer:
+        "By hand you can get close to the truth (adjustment time 4 weeks, weight 0.35, error about 1.6). The search from the default guess finds those values in about 24 runs. Fitting only weeks 0 to 16 with the right structure gives about 1.7 in sample and about 1.5 on the held-back weeks, both near the noise. The wrong structure fits the early weeks almost as well (about 2.3, at 7.5 weeks and weight 0.65) but its error on the held-back weeks jumps to about 17.7, because it drives inventory up to about 121 by week 40 while the data settle near 100. An optimiser only finds the best parameters for the structure you give it; it cannot tell you the structure is wrong, and a good in-sample fit can hide a wrong structure. Choosing and testing the structure remains a modeller's judgement.",
       link: { label: "Calibration lab", hash: "/methods/calibration" },
     },
     {
       prompt:
         "Generic structures across domains. Open the Stock Management molecule (or Rework Cycle) and, under At work in the applications, find two cases from different fields that use it. Write a paragraph on what the shared structure predicts about both, which is the open theory question about similar dynamics in different domains.",
+      answer:
+        "Stock Management is used, for example, by the bullwhip case (business), the hog cycle and office building cases (economics), power plant cycles (environment), and training doctors and nurses and medicine supply (health); the Rework Cycle appears in the rework cycle and 90% syndrome cases (projects) and road maintenance (social). A good paragraph picks two, say the hog cycle and office buildings, and states what the shared structure predicts for both: when decision makers correct a stock gap while ignoring a long supply line, the stock overshoots and oscillates, with a period that grows with the acquisition delay, and counting the supply line removes the cycle. Similar dynamics across domains arise from similar structure and decision rules, not from the details of pigs or buildings, which is the open theoretical question: how far generic structures explain behaviour across fields.",
       link: { label: "Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Read the machine learning and AI methods page and sort the tools Sterman (2000) predicted (parameter maps, automated sensitivity, reality checks, calibration, loop dominance, automated tutoring, live data links) into those that exist routinely today, those that exist in research, and those still missing.",
+      answer:
+        "Routine today: calibration (the Calibrate button, the calibration lab), automated sensitivity and Monte Carlo analysis, reality checks or unit checks in most professional software, and live data links to models (dashboards fed from databases). In research or partly available: loop dominance analysis (several methods exist but are not yet routine), parameter maps and scenario discovery (exploratory modelling tools), equation discovery and hybrid models, and generative AI that drafts causal loop diagrams and models (the SD Bot recovered about 60% of links). Still largely missing: an automated tutor that reliably critiques a learner's model and explains its behaviour, and fully automated loop-based explanation in everyday tools. Any good answer sorts each tool and gives a brief reason.",
       link: { label: "Machine learning and AI with system dynamics", hash: "/methods/ml-ai" },
     },
     {
       prompt:
         "Pen and paper: recall an initiative in your organisation that was dropped within a year. Draw it on the flavour-of-the-month loop, estimate the delay between starting the programme and its first visible benefit, and compare that delay with the time before it was judged. What would have had to be protected for the loop to run the other way?",
+      answer:
+        "There is no single right answer. A good one names the initiative (for example a quality programme or a new planning system), draws the loop: launch → effort and attention diverted from current work → short-term performance dips → (after a delay) capability and results improve; and the other side: dip in performance → judged a failure → programme dropped → next initiative launched. Estimate the delay to visible benefit (often 6 to 24 months for process or capability programmes) and compare with the time to judgement (often 3 to 6 months): when judgement comes before benefit, the loop runs toward abandonment. What had to be protected: the time and resources for the programme during the worse-before-better dip, and an evaluation horizon at least as long as the delay, with interim measures of the process rather than only short-term results.",
     },
   ],
   pitfalls: [

@@ -254,46 +254,62 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open Trend and run 'Steady growth' (6% per month, perception time 4 months). Once the start-up transient has passed, compute Perceived ÷ Actual and compare it with 1/(1 + g·τ).",
       hint: "1/(1 + 0.06 × 4) = 1/1.24 ≈ 0.81: the perception settles about 19% below the truth and stays there for as long as growth continues.",
+      answer:
+        "After the first 15 or so months the ratio settles at about 0.81: at month 40 the perceived value is about 883 against an actual 1094, and at month 60 about 2920 against 3621. That matches 1/(1 + g·τ) = 1/(1 + 0.06 × 4) = 1/1.24 ≈ 0.81. First-order smoothing of a growing signal lags it by the perception time, and with exponential growth a 4-month lag means being about 24% behind in growth terms, a constant 19% shortfall that never closes while growth continues. Any decision based on the smoothed value under-estimates a growing quantity.",
       link: { label: "Trend", hash: "/m/trend" },
     },
     {
       prompt:
         "Still in Trend, run 'Turning point' (−4% per month). Is the perceived value now above or below actual, and by how much in steady state? What does this imply for a firm using smoothed sales to set capacity in a declining market?",
       hint: "1/(1 − 0.16) ≈ 1.19: perception stays about 19% too high, so capacity is overbuilt during the decline.",
+      answer:
+        "In decline the perception sits above actual: about 24.0 against 20.1 at month 40, a ratio of about 1.19, matching 1/(1 − 0.04 × 4) = 1/0.84. The same perception lag that makes a smoothed estimate trail growth makes it trail decline from above. A firm that sizes capacity from smoothed sales in a shrinking market will keep perceiving about 19% more demand than exists, so it overbuilds and carries excess capacity throughout the decline. It needs a trend correction, or direct indicators of decline, not just a smoother.",
       link: { label: "Trend", hash: "/m/trend" },
     },
     {
       prompt:
         "Open Extrapolation and run 'Nowcast (horizon 0)'. After the transient, does the extrapolated quantity match the actual quantity? Then run '5-year forecast' and compare the forecast with the actual value five years later.",
       hint: "The nowcast multiplies the perceived value by (1 + trend × perception time), which removes the perception lag, so it converges to the actual value. The molecule extrapolates linearly, so at 3% a year over 5 years it slightly under-shoots compound growth (about 1.14 versus 1.16 times today's value).",
+      answer:
+        "Yes. With horizon 0 the extrapolated quantity starts below actual (about 114 against 116 at year 5) because the trend estimate starts at zero, then converges: about 181.5 against 182 at year 20 and essentially equal by year 30. Multiplying the perceived value by (1 + trend × perception time) removes the perception lag. With the 5-year forecast, at year 20 the forecast is about 208 while the actual value at year 25 turns out to be about 212: the forecast is 1 + 0.03 × 5 = 1.15 times the current perceived level, about 1.14 times today's actual, against compound growth of e^(0.15) ≈ 1.16. Linear extrapolation of a compounding process under-predicts slightly, and more so for long horizons.",
       link: { label: "Extrapolation", hash: "/m/extrapolation" },
     },
     {
       prompt:
         "In Extrapolation, start from '5-year forecast' and change 'Duration over which to calculate trend' from 3 to 10 years. How long does the forecast take to stop under-predicting after the run starts? Relate this to the energy forecasters, whose estimated historical horizon was about 5 years.",
       hint: "All stocks start equal, so the perceived trend starts at zero and must build up. A longer horizon is steadier but much slower to accept a new growth rate.",
+      answer:
+        "Everything starts in equilibrium, so the perceived growth rate starts at 0 and has to build up. With a 3-year trend duration it reaches 95% of the true 3% (about 2.85%) after about 11 years; with 10 years it takes about 27 years, and the forecast under-predicts much more in the meantime (at year 20 the forecast is about 203 instead of about 208). A longer trend horizon filters out noise but makes forecasters very slow to accept a new growth rate. With a historical horizon of about 5 years, energy forecasters kept projecting old growth rates for years after the real rate changed, which is exactly the lag this run shows.",
       link: { label: "Extrapolation", hash: "/m/extrapolation" },
     },
     {
       prompt:
         "Open the inflation expectations application and compare '8% inflation, nowcast' with 'Inflation judged over 10 years', then 'Falling prices (−3%)'. Which features of the Livingston forecasts (bias, lag, attenuation) can you reproduce?",
+      answer:
+        "With 8% inflation and a nowcast, expected inflation builds slowly: the perceived rate is about 5.2% after 5 years and 7.5% after 10, so the expected price level stays below actual for a decade (bias and lag). Judging inflation over 10 years makes it much slower: about 2.4% perceived at year 5 and 5.1% at year 10 (stronger attenuation). With falling prices (−3%) the perceived rate reaches only about −1.8% after 5 years, so forecasts stay too high. The model reproduces the three Livingston features: forecasts are biased toward past inflation, they lag turning points, and they react less than one for one to changes in actual inflation.",
       link: { label: "Adaptive expectations of inflation", hash: "/apps/economics/expectations" },
     },
     {
       prompt:
         "Anchoring a forecast. In Weighted Average, treat Source A as the trend-extrapolated forecast and Source B as the anchor. Set A = 80, B = 40 and the weight on A to 0.75 (an anchor weight of 0.25, as in the sea-anchor model). How far below the extrapolation does the anchored forecast settle? What happens if the anchor itself slowly moves toward A?",
       hint: "0.75 × 80 + 0.25 × 40 = 70, an under-prediction of w × (A − B) = 10. A sea anchor that drifts toward experience shrinks this bias over time; a fixed anchor never does.",
+      answer:
+        "The anchored forecast settles at 0.75 × 80 + 0.25 × 40 = 70, which the run confirms, so it is 10 below the extrapolation, that is w × (A − B) with w = 0.25 on the anchor. If the anchor itself drifts toward A, say as a smooth of recent forecasts, the gap A − B shrinks and the bias decays toward zero over a few anchor time constants. A fixed anchor gives a permanent under-prediction; a moving anchor gives a bias that is temporary but slow, which is what forecasters who anchor on past values show.",
       link: { label: "Weighted Average", hash: "/m/weightedAvg" },
     },
     {
       prompt:
         "Self-fulfilling expectations. Run Sea Anchor & Adjustment with 'Runaway drift', then Protected Sea Anchor with 'Unprotected (drifts)' and 'Protected (stable)'. Explain how an expectation that feeds the very variable it predicts can drift without limit, and why tying it partly to a fundamental stops the drift.",
+      answer:
+        "In Runaway drift the value is 1.2 × anchor and the anchor follows the value, so the anchor grows about 3.3% a month without limit (about 222 at month 24 and 736 at month 60); Unprotected (drifts) does exactly the same. Protected (stable) puts half the weight on a fixed fundamental of 100, so the anchor settles where Anchor = 0.6 × Anchor + 50, at 125, with the value at 150. An expectation that feeds the variable it predicts (expected prices raising actual prices) is a reinforcing loop with gain above 1 whenever there is constant pressure, so it drifts like a speculative bubble. Tying part of the expectation to a fundamental lowers the loop gain below 1 and turns the drift into a new, finite equilibrium.",
       link: { label: "Protected Sea Anchor", hash: "/m/protectedSeaAnchor" },
     },
     {
       prompt:
         "Pen and paper: a utility smooths electricity demand over 2 years and extrapolates the trend. Demand has grown at 7% a year for decades and then growth suddenly falls to 2%. Sketch actual demand, the perceived present condition and a 10-year-ahead forecast over the following 15 years. Mark where the forecast overshoots, then propose a capacity policy that stays sound whatever the growth rate turns out to be.",
       hint: "Before the break, perceived demand trails by about 1/(1 + 0.07 × 2) ≈ 0.88. After the break, the believed trend falls only gradually, so the 10-year forecast stays far too high for years. Robust policies keep options open: shorter lead times, modular capacity, triggers based on observed utilisation.",
+      answer:
+        "Before the break, perceived demand trails actual by about 1/(1 + 0.07 × 2) ≈ 0.88 and the believed trend is 7%. After growth falls to 2%, actual demand bends at once; perceived demand bends a couple of years later; the believed trend takes several more years to fall from 7% toward 2%, so the 10-year forecast (perceived × (1 + trend × 10)) keeps assuming about 7% growth and lies far above the eventual actual demand for most of the 15 years, overshooting by tens of percent at its worst. Your sketch should show three curves: actual with a kink, perceived lagging it, and the forecast running above both and only slowly bending toward actual. A sound policy does not depend on knowing the growth rate: build in small modular units with short lead times, trigger new capacity from observed utilisation and reserve margins rather than long forecasts, keep options (sites, permits) ready, and review forecasts against outcomes.",
     },
   ],
   pitfalls: [

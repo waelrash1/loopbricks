@@ -239,38 +239,52 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Noise depends on purpose (pen and paper). Sketch a monthly industrial production series with a rising trend, a cycle of a few years and month-to-month jitter. For each of three purposes (long-run growth, the business cycle, monthly production scheduling), mark which component is the behaviour to explain and which is noise.",
       hint: "The same wiggle moves from 'noise' to 'signal' as the purpose becomes more detailed.",
+      answer:
+        "Purpose 1, long-run growth: the rising trend is the behaviour to explain; the business cycle and the monthly jitter are both noise to be averaged out. Purpose 2, the business cycle: the cycle of a few years is the behaviour; the trend is context (often removed by detrending) and the monthly jitter is noise. Purpose 3, monthly production scheduling: the month-to-month movements are the signal to anticipate, while the trend and cycle are slow background conditions that can be treated as given. A good sketch labels the same series three times. The lesson: noise is not a property of the data but of the question; what is noise for one purpose is signal for another.",
     },
     {
       prompt:
         "Smoothing as a filter. Open Smooth and compare the Snappy preset (τ = 2 weeks) with Slow (τ = 15 weeks) after the step. Then reason about a one-week blip in the input: a first-order smooth passes about 1 − e^(−1/τ) of it in that week, about 39% when τ = 2 but only about 6.5% when τ = 15. Explain why a long correlation time in the pink noise formula needs a larger white noise amplitude.",
       hint: "The smooth that makes pink noise is the same structure: long τ removes more of the fast variation, so more must go in to leave the required spread.",
+      answer:
+        "After the step from 30 to 80, Snappy (τ = 2) covers about 63% of the change in 2 weeks (about 61 at week 2) and is essentially at 80 by week 10; Slow (τ = 15) is only at about 62 after 15 weeks and 73 after 30. For a one-week blip, a first-order smooth passes about 1 − e^(−1/τ): 39% when τ = 2 and 6.5% when τ = 15 (the app shows about 37% and 6% in the first week after its step, close to the formula). Pink noise is white noise passed through exactly this kind of smooth with the correlation time as τ. A long correlation time filters out most of each random shock, so to keep the pink noise at the required standard deviation the white noise feeding it must be much larger: its amplitude scales with √(Tc / dt).",
       link: { label: "Open Smooth", hash: "/m/smooth" },
     },
     {
       prompt:
         "Find the mode noise would excite. Open Stock Management with the Oscillation preset (supply-line weight 0) and measure the time between inventory peaks: about 33 weeks. Set the acquisition delay to 12 weeks and measure again (about 45 weeks). Then switch to the Stable preset (weight 1). For each case, say whether pink noise with a correlation time of 4 weeks would be likely to produce visible cycles, and why white noise with the app's step of 0.1 weeks would not.",
       hint: "Noise can only amplify a mode that exists. With weight 1 the system has no strong oscillatory mode to resonate.",
+      answer:
+        "Oscillation (weight 0, delay 6): inventory peaks at about 110 at week 17, then 101 at week 50, 33 weeks apart, a lightly damped oscillatory mode. With a 12-week delay the peaks are about 45 weeks apart and larger. Stable (weight 1): inventory rises smoothly with no overshoot, so there is no oscillatory mode. Pink noise with a 4-week correlation time has a lot of power at periods of a few weeks to several months, enough to keep exciting a 33 or 45 week mode, so both weight-0 cases would show visible, irregular cycles; the stable case would only jiggle around 100. White noise at dt = 0.1 weeks spreads its power over extremely high frequencies, changes every step and averages out within the inventory stock and the 4-week correction, so very little energy reaches the slow mode. Noise can only amplify a mode the structure already has.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Scaling factor by hand. With correlation time 4 weeks and dt 0.125 weeks, compute √(24 × Tc / dt). Using a 5% standard deviation, find the range of the white noise multiplier (mean 1). Then halve dt and recompute. What happens to the white noise range, and why does the pink noise's standard deviation stay the same?",
       hint: "√768 ≈ 27.7, so the white noise spans about 1 ± 0.69. Halving dt multiplies the factor by √2.",
+      answer:
+        "√(24 × 4 / 0.125) = √768 ≈ 27.7. With a 5% standard deviation the white noise term is 0.05 × 27.7 ≈ 1.39 times a uniform draw on [−0.5, 0.5], so the multiplier ranges over about 1 ± 0.69, that is from about 0.31 to 1.69. Halving dt to 0.0625 gives √1536 ≈ 39.2, so the range becomes about 1 ± 0.98, wider by √2. The pink noise keeps the same standard deviation because the smoothing averages over more, smaller steps: with twice as many independent draws per correlation time, each must be √2 larger to leave the same variance after averaging. The scaling factor is chosen exactly to make the pink noise's spread independent of dt.",
     },
     {
       prompt:
         "Build white and pink noise in a spreadsheet. Make 3,200 rows (400 weeks at dt = 0.125). Column A: a uniform draw on [−0.5, 0.5]. Column B: white noise = 1 + 0.05 × √(24 × 4 / 0.125) × A. Column C: pink noise, starting at 1, each row = previous + (B − previous) × dt / 4. Plot B and C, compute their standard deviations, and compute the correlation of C with itself 32 rows (4 weeks) earlier.",
       hint: "Column C should have a standard deviation near 0.05 and a 4-week autocorrelation near e⁻¹ ≈ 0.37. Column B has a much larger spread but no memory.",
+      answer:
+        "Column B (white noise) has a standard deviation of about 0.05 × 27.7 / √12 ≈ 0.40 (a uniform draw on [−0.5, 0.5] has standard deviation 1/√12 ≈ 0.29), with no memory: its correlation with the row 32 earlier is near 0. Column C (pink noise) should have a standard deviation near 0.05 and a 4-week autocorrelation near e⁻¹ ≈ 0.37. Your numbers will differ a little from run to run, more so for the autocorrelation, because 400 weeks hold only about 100 correlation times. If the standard deviation of C is far from 0.05, check the scaling factor (√(24 × Tc / dt)) and that each row uses dt / Tc = 0.125 / 4.",
     },
     {
       prompt:
         "Noise in fit statistics. In the calibration lab, fit the data by hand until the error is close to the measurement noise. Note how much of the remaining error is in the timing share UC. Explain, using these ideas about noise, why a model should not be blamed for missing the random component of data, and why point-by-point error can be large even for a perfect model of a noise-driven system.",
+      answer:
+        "Fitting the calibration data by hand with the right structure, the best error is about 1.6, close to the measurement noise of about 1.7, and about 86% of what remains is in the timing share UC, with only about 2% in bias (UM). That remaining error is the random component in the data: a model that reproduces the underlying path cannot also reproduce the random draws, so it should not be blamed for them. For a system driven by noise, even a perfect model run with its own random inputs will not match the realised series point by point; its errors will be large and mostly in UC, so judge it by whether it reproduces the statistical features (mean, variance, typical periods, autocorrelation) rather than each data point.",
       link: { label: "Open the calibration lab", hash: "/methods/calibration" },
     },
     {
       prompt:
         "One realisation is not enough. In the sensitivity lab, set simulations per experiment to 50 and note the share of stock-management runs that overshoot; then raise it to 400. How much does the share move? Relate this to the advice to run noisy models long enough, or many times, and to fix the seed when comparing policies.",
       hint: "The lab uses a fixed random seed, so the same settings always give the same runs; more runs make the estimate steadier.",
+      answer:
+        "With 50 runs about 32% of stock-management runs overshoot; with 100, 31%; with 200, 36%; with 400, 37%. The share moves by about 5 points between 50 and 400 runs and steadies as the number of runs grows, because a share estimated from n random runs has sampling error of roughly √(p(1 − p)/n), about 7 points at 50 runs and 2 points at 400. The lab uses a fixed random seed, so the same settings always reproduce the same runs. That is the advice for noisy models: run them long enough or many times to see the distribution of outcomes, and fix the seed (common random numbers) when comparing policies, so that differences come from the policy and not from different noise.",
       link: { label: "Open the sensitivity lab", hash: "/methods/sensitivity" },
     },
   ],

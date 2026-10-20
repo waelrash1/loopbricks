@@ -2,7 +2,7 @@
 // in our own words; `from` lists which notes a module draws on, in the order they are taught.
 import type { Level } from "@/data/learn/types";
 
-export type ModuleDef = { id: string; title: string; level: Level; summary: string; prereqs: string[]; from: string[]; deeper?: { label: string; hash: string }[] };
+export type ModuleDef = { id: string; title: string; level: Level; summary: string; prereqs: string[]; from: string[]; deeper?: { label: string; hash: string }[]; managerOptional?: boolean };
 
 export const MODULES: ModuleDef[] = [
   { id: "surprise", level: "Foundations", title: "Why complex systems surprise us", from: ["ch01"], prereqs: [], summary: "Feedback, delays and side effects make well-meant policies fail. Learning to see them starts with how we learn.", deeper: [{ label: "The modelling process", hash: "/methods/process" }] },
@@ -17,11 +17,11 @@ export const MODULES: ModuleDef[] = [
   { id: "oscillation", level: "Core dynamics", title: "Oscillation: stock management and supply chains", from: ["ch17", "ch18"], prereqs: ["delays"], summary: "Why supply chains swing and amplify, how the supply line causes it, and what decision makers can change." },
   { id: "archetypes", level: "Core dynamics", title: "System archetypes", from: [], prereqs: ["loops", "patterns"], summary: "Recurring feedback stories, from limits to growth to the tragedy of the commons, each linked to a molecule you can run." },
   { id: "process", level: "Modelling practice", title: "The modelling process and problem framing", from: ["ch03", "ch02"], prereqs: ["patterns"], summary: "Purpose, reference modes, time horizon and boundary, illustrated by projects that changed real decisions.", deeper: [{ label: "The modelling process", hash: "/methods/process" }, { label: "Reference modes", hash: "/methods/reference-modes" }] },
-  { id: "formulation", level: "Modelling practice", title: "Formulating decision rules and nonlinear effects", from: ["ch13", "ch14"], prereqs: ["first-order", "process"], summary: "The craft of writing equations: robust rate formulations, floating goals, and table functions that behave at the extremes." },
+  { id: "formulation", level: "Modelling practice", managerOptional: true, title: "Formulating decision rules and nonlinear effects", from: ["ch13", "ch14"], prereqs: ["first-order", "process"], summary: "The craft of writing equations: robust rate formulations, floating goals, and table functions that behave at the extremes." },
   { id: "behaviour", level: "Modelling practice", title: "Bounded rationality and expectations", from: ["ch15", "ch16"], prereqs: ["formulation"], summary: "Modelling how people actually decide, and how they forecast, with adaptive expectations and trends." },
   { id: "cycles", level: "Modelling practice", title: "Cycles in business, labour and commodity markets", from: ["ch19", "ch20"], prereqs: ["oscillation"], summary: "Inventory and workforce together drive business cycles; capacity and price drive commodity cycles." },
   { id: "testing", level: "Modelling practice", title: "Testing and building confidence in models", from: ["ch21"], prereqs: ["process"], summary: "Why no model can be validated, and the tests that build justified confidence instead.", deeper: [{ label: "Validation", hash: "/methods/validation" }, { label: "Calibration lab", hash: "/methods/calibration" }, { label: "Sensitivity lab", hash: "/methods/sensitivity" }] },
-  { id: "mechanics", level: "Advanced", title: "Simulation mechanics: integration and noise", from: ["appA", "appB"], prereqs: ["first-order"], summary: "How simulators step through time, how to choose the time step, and how correlated noise excites a model's modes." },
+  { id: "mechanics", level: "Advanced", managerOptional: true, title: "Simulation mechanics: integration and noise", from: ["appA", "appB"], prereqs: ["first-order"], summary: "How simulators step through time, how to choose the time step, and how correlated noise excites a model's modes." },
   { id: "frontier", level: "Advanced", title: "Where system dynamics is going", from: ["ch22"], prereqs: ["testing"], summary: "Open problems in theory, technology, implementation and education.", deeper: [{ label: "Machine learning and AI with system dynamics", hash: "/methods/ml-ai" }] },
 ];
 export const moduleById = (id?: string) => MODULES.find((m) => m.id === id);

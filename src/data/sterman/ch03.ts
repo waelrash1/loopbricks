@@ -200,37 +200,51 @@ export const CHAPTER: StudyChapter = {
         "Choose a problem you care about and write a one-sentence purpose that names the problem behaviour and the decision it should inform. Then list five things a client might ask you to include and decide, using only the purpose, which you would leave out.",
       hint: "If the purpose cannot settle the question, it is not yet specific enough: it is describing a system rather than a problem.",
       link: { label: "The modelling process", hash: "/methods/process" },
+      answer:
+        "A good purpose names a problem behaviour over time and a decision, for example: 'Why has our clinic's waiting list grown for three years despite extra staff, and would changing referral rules or adding capacity shrink it?' Use it as a filter: an item stays only if it could change the answer to that question. For the waiting list, staff numbers, referrals and appointment no-shows stay in; the IT system, building layout or national politics go unless they plausibly feed back on waiting times. If you cannot decide about an item, sharpen the purpose rather than expanding the model.",
     },
     {
       prompt:
         "Sketch a reference mode for your problem: three to five variables on aligned time axes, a stated horizon, and rough scales. Mark which features come from data and which are estimates.",
       link: { label: "Reference modes", hash: "/methods/reference-modes" },
+      answer:
+        "A good reference mode plots the problem variables against the same time axis, with dates, units and rough scales, over a horizon long enough to show the behaviour and its causes (often several times the longest delay). Include the variable that defines the problem and those you think drive it, for example waiting list, referrals and staff over 10 years. Mark the past from data, and the future as what you fear and what you hope; label estimates clearly as estimates. The pattern it shows (growth, decline, oscillation, overshoot) points to the kinds of feedback you will need to find.",
     },
     {
       prompt:
         "See how the horizon changes the story. Open Constrained Growth with the S-curve preset and look only at the first 10 years: what would you conclude? Now look at the full run. Then open Population Growth (Growing preset) and ask what limit a longer horizon would eventually reveal.",
       hint: "Early S-shaped growth is indistinguishable from exponential growth; the balancing loop has not yet left a trace in the data.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
+      answer:
+        "In the S-curve run the population grows from 10 to about 48 in the first 10 years, and crowding deaths are only about 2 per year against 8.6 births, so the curve looks exponential and you would forecast unlimited growth. The full run shows it bending at year 16, when it reaches 100, and levelling off just under 200 by year 40. Population Growth on the Growing preset climbs from 100 to about 2,000 in 100 years without ever bending, because that model has no balancing loop; a longer horizon in the real system would reveal some limit (food, land, crowding) that the model omits. A horizon that is too short hides the balancing loop entirely, so it must be long enough for the slowest feedback to show.",
     },
     {
       prompt:
-        "Repeat the Sahel lesson in the fishery case. Run 'Open access, strong investment' and judge the policy on the first 10 years only (catch and fleet), then on the whole run. Which loop does the short horizon hide?",
+        "Repeat the Sahel lesson in the fishery case. Run 'Open access, strong investment' and judge the policy on the first 5 years only (catch and fleet), then on the whole run. Which loop does the short horizon hide?",
       link: { label: "Fishery case", hash: "/apps/environment/fishery" },
+      answer:
+        "Judged on the first 5 years, the policy looks like a triumph: the fleet grows from 10 to about 240 boats and the catch rises from 20 to its peak of about 257 per year. The full run shows the bust: the fleet keeps growing to about 340 boats by year 7, the fish stock collapses from 1,000 to about 9 by year 24, the catch falls to 2 or 3 per year and stays low for decades while the oversized fleet slowly retires; only after year 40 does the stock recover enough to start a second boom. The short horizon hides the balancing loop through the fish stock (more boats, more catch, fewer fish, lower catch per boat), which acts with a long delay because investment responds to profits, not to the stock. As in the Sahel, the early success is what builds the capacity that causes the collapse.",
     },
     {
       prompt:
         "Run an extreme-conditions test in Stock Management. Set demand to its minimum of 2 and desired inventory to 200, then demand to 20 with desired inventory 40. Do orders ever go negative? Does inventory behave as physics requires?",
       hint: "The order rule uses MAX(0, …), so orders cannot become negative, and inventory can only fall through sales.",
       link: { label: "Stock Management", hash: "/m/stockmgmt" },
+      answer:
+        "Neither test makes orders go negative. Demand 2 with desired inventory 200 starts with orders of 25 per week, and inventory rises smoothly from 60 to 200 while orders fall back to demand. Demand 20 with desired inventory 40 starts with orders of 30 per week (the supply line of 60 is far below the 120 needed) and inventory dips to about 35 before settling at 40, with orders back at 20. To force the MAX(0, …) clamp, try demand 2 and desired inventory 40: the formula asks for −15 per week, orders are held at 0 for about 30 weeks, and inventory drains through sales to just above 40 without ever going below zero. A model that passes such tests respects physical limits for the right reasons, not just because history never pushed it there.",
     },
     {
       prompt:
         "Write a model boundary chart (endogenous, exogenous, excluded) for the market growth case. For each exogenous item, name one feedback from inside the model that might make you bring it inside, and for each excluded item say which conclusion it could bias.",
       link: { label: "Market growth case", hash: "/apps/business/market-growth" },
+      answer:
+        "Endogenous: sales force, orders, backlog, delivery delay, production capacity and the hiring and capacity decisions that respond to them. Exogenous: the market's potential size, the firm's goals for delivery delay and the delays in hiring and building capacity; each could become endogenous if, say, customers lost to slow delivery shrink the market or the delivery goal drifts with past performance (eroding goals). Excluded: price, competitors, product quality and finance; leaving out competitors could make capacity limits look like the only cause of stalled growth, and leaving out finance hides the possibility that cash, not capacity, stops investment. A good chart lists all three columns and says which conclusions each omission could bias.",
     },
     {
       prompt:
         "Draw a subsystem diagram for an organisation you know with three or four sectors (for example, operations, sales, finance, customers). Label the material, money, order and information flows between them. Which of these flows would you model endogenously?",
+      answer:
+        "Any good answer has three or four sectors with labelled flows of different kinds: material (goods from operations to customers), money (payments from customers to finance, budgets from finance to operations and sales), orders (from customers to sales, then to operations) and information (delivery times and quality to customers, sales forecasts to operations, cash position to management). Model endogenously the flows that close loops relevant to the problem, for example orders responding to delivery delay or budgets responding to revenue. Flows that only enter the system and are not affected by it, such as a regulator's rules, can be exogenous.",
     },
   ],
   pitfalls: [

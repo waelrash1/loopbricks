@@ -304,44 +304,60 @@ export const CHAPTER: StudyChapter = {
         "Open the Market Share molecule and choose the No network effect preset (network effect 0). A starts with 105 customers and B with 95, a 52.5% share for A. Run it and watch A's share of the total. Explain why it neither grows nor shrinks, and which version of the Polya urn this corresponds to.",
       hint: "With network effect 0, each product wins new customers in proportion to its current base, exactly like drawing stones in proportion to their colour. Every split is an equilibrium (neutral stability).",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
+      answer:
+        "A's share stays at exactly 52.5% for the whole run, even though the total base grows from 200 to about 360 (20 new customers a month × 18 months). With network effect 0, A wins 52.5% of new customers because it holds 52.5% of the base, and both bases churn at the same rate, so nothing pushes the split either way. This is the original linear Polya urn: the probability of drawing a colour equals its current proportion. Every split is an equilibrium and none is favoured, so whatever share history hands out at the start is the share that persists (neutral stability).",
     },
     {
       prompt:
         "Now run the Lock-in preset (network effect 0.7) and then Winner takes all (1.0). For each, note roughly when A's share first passes 90%. Then try network effect 0.3. How does the strength of increasing returns change the speed of lock-in, and does it change who wins?",
       hint: "In a quick check A passed 90% after about 44 months at 0.7, about 34 at 1.0 and about 94 at 0.3. A wins every time, because its tiny head start is the only asymmetry: this is the nonlinear urn with no noise.",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
+      answer:
+        "A's share of the installed base passes 90% after about 94 months at network effect 0.3, about 44 at 0.7 and about 34 at 1.0; A's share of new customers gets there sooner (about 73, 23 and 14 months). Stronger increasing returns make a small lead count for more, so the reinforcing loop (bigger base, more attractive, bigger share of new customers, bigger base) runs faster. It never changes the winner here, because A's 10-customer head start is the only asymmetry and the model has no noise. The lesson: the strength of increasing returns sets the speed of lock-in, while the initial conditions (and, in reality, chance events) pick the winner.",
     },
     {
       prompt:
         "Keep network effect 0.7 and compare churn time 6, 18 and 36 months. Does faster turnover of the installed base speed lock-in up or slow it down? Explain using the gap between market share and share of the installed base.",
       hint: "When customers leave and are replaced quickly, the installed base soon reflects recent market share, so the reinforcing loop closes faster. With slow churn, old purchases dilute the effect of each month's share, much like stones piling up in the urn.",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
+      answer:
+        "Faster churn speeds lock-in: A's base share passes 90% after about 21 months with a 6-month churn time, 44 months with 18 and 66 months with 36. Market share responds to the installed base, but the installed base responds to market share only as old customers leave and are replaced. When customers stay long, the base is mostly old purchases made when the split was close to even, so it lags well behind current market share and the reinforcing loop is slow to close. With fast turnover the base soon mirrors this month's share, and each gain feeds straight back into attractiveness.",
     },
     {
       prompt:
         "In the Market Share molecule, attractiveness depends only on the ratio of the two bases. Compare new customers of 5 and 40 a month (default 20, network effect 0.7). Does the outcome change? Then explain, in a few sentences, why the standards model of Sterman (2000) would behave differently when the whole market is small, and what that implies for a late entrant.",
-      hint: "In the molecule A still wins; only the speed changes (A passes 90% of the base after about 68 months with 5 new customers a month and about 34 with 40), because the starting bases are large or small relative to the market's eventual size. In the standards model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
+      hint: "In the molecule A still wins; only the speed changes (A passes 90% of the base after about 68 months with 5 new customers a month and about 33 with 40), because the starting bases are large or small relative to the market's eventual size. In the standards model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
+      answer:
+        "The winner does not change: A takes the market in every case, and only the speed differs (A passes 90% of the base after about 68 months with 5 new customers a month, 44 with 20 and 33 with 40). The total market does change, settling at new customers × churn time (90, 360 and 720), but attractiveness here depends only on the ratio of the bases, so scale cannot change who wins; the speed differs only because a trickle of new customers takes longer to reshape a starting base of 200 than a flood does. In the standards model, compatibility depends on each base relative to a fixed threshold, so while the whole market is small neither product offers much compatibility, the network loop is weak and a near-even split can persist. A late entrant can therefore win only in that window, by entering early with better attributes, lower prices or wider licensing before the incumbent's base is large relative to the threshold.",
     },
     {
       prompt:
         "Work through the competing standards case. Run Strong increasing returns, then Users switch often (6 months). Answer the case's first try-this question (when does B's user base peak and start to shrink?), and say what a firm in B's position would need to do, and by when, to reverse the outcome.",
       link: { label: "Competing standards and lock-in", hash: "/apps/business/lock-in" },
+      answer:
+        "With strong increasing returns, B's user base keeps growing for a while, peaks at about 113 thousand around month 10 and then shrinks towards zero (about 87 thousand at month 24, 15 thousand at month 60); A takes 72% of new users by month 12 and 91% by month 24. With users switching every 6 months, B never grows at all: the total market falls from 200 towards 120 thousand (20 × 6) and B shrinks from the start, while A's share of the base passes 90% by about month 21. B's growth in the first case is only the market filling up, not success; its share of new users is falling from day one. To reverse the outcome B would need to close A's lead in the first few months, while the bases are still close (25 thousand apart at month 6, 53 thousand at month 12), with a better product, lower prices or subsidised adoption; after about a year the reinforcing loop is too strong to overcome.",
     },
     {
       prompt:
         "Pen and paper: using the logit formulation with sensitivity s = 2, confirm that bases of 0.2 and 0.1 times the threshold give the leader about 55% of sales and bases of 2 and 1 give about 88%. Then repeat with s = 4. What does a stronger network effect do to the value of an early lead?",
       hint: "Share = e^(s·B1) / (e^(s·B1) + e^(s·B2)). With s = 4 you should get about 60% and 98%.",
+      answer:
+        "Share = 1 / (1 + e^(−s·(B1 − B2))). With s = 2: bases 0.2 and 0.1 give 1 / (1 + e^(−0.2)) ≈ 0.55, and bases 2 and 1 give 1 / (1 + e^(−2)) ≈ 0.88. With s = 4: 1 / (1 + e^(−0.4)) ≈ 0.60 and 1 / (1 + e^(−4)) ≈ 0.98. Notice that the same 2:1 ratio gives very different shares depending on scale, because the logit responds to the difference in bases, not their ratio. A stronger network effect makes any lead worth more, and once bases are large relative to the threshold an early lead becomes almost decisive.",
     },
     {
       prompt:
         "Open the alternative-fuel vehicles case. Sketch the loop linking the number of alternative vehicles, the number of fuelling stations and the attractiveness of the vehicles, and mark its polarity. Then explain why an incumbent fuel can stay locked in even if the newcomer is better, and which policies could tip the balance.",
       hint: "This is the complementary-goods loop: infrastructure follows the fleet and the fleet follows the infrastructure. Seeding both sides at once is one way to move the system off the incumbent's attractor.",
       link: { label: "Alternative-fuel vehicles", hash: "/apps/environment/alt-fuel-vehicles" },
+      answer:
+        "The loop is reinforcing: more alternative vehicles on the road → more fuelling stations become profitable (+) → greater convenience and attractiveness of the vehicles (+) → more alternative vehicles sold (+). The incumbent sits on the same loop running in its favour, with a huge fleet and a dense station network, so a newcomer with no fleet has no stations and no stations means no fleet, even if its technology is better: that is a stable attractor for the incumbent. The case's simulator has no infrastructure loop, yet it shows the same starting problem: with no marketing and no early adopters nobody ever switches, because word of mouth has nothing to spread. Policies that can tip the balance include subsidising both sides together (vehicles and stations), mandating fuel availability, targeting dense regions or fleets where a local threshold is easier to pass, and keeping marketing and subsidies in place long enough for the reinforcing loops to become self-sustaining.",
     },
     {
       prompt:
         "Pen and paper: pick a platform market you know (an app store, a payment network, a messaging service). Draw a causal loop diagram with at least three of the growth loops described here and one balancing limit. Identify one pair of loops whose strategies conflict, as differentiation and low-price volume did for Sony.",
+      answer:
+        "Many answers are acceptable. Take a messaging service as an example: a network effect loop (R: users → value of joining → new users → users), a word of mouth loop (R: users → invitations → new users), a complementary goods loop (R: users → developers building bots and integrations → value → users), and a scale or learning loop (R: users → revenue → investment in features → attractiveness → users). A good balancing limit is market saturation (B: users → remaining potential users (−) → new users), or congestion and spam (B: users → spam and noise (+) → value (−)). A conflicting pair could be monetising through ads (revenue for development) against keeping the service attractive (ads reduce value), or charging a premium against growing the base fast. Any good answer marks every link and loop polarity and explains the trade-off between the two conflicting loops.",
     },
   ],
   pitfalls: [

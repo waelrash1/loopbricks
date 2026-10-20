@@ -257,45 +257,61 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open First-Order Stock Adjustment and choose <b>No replacement ordering</b> (outflow 10, desired 100, adjustment time 4, replacement 0). Where does the level settle? Now set the adjustment time to 8. Predict the new resting level before you run it, then switch replacement back to 1.",
       hint: "Equilibrium needs (100 − level)/4 = 10, so the level rests at 60; with 8 months it rests at 20. Replacing losses removes the gap.",
+      answer:
+        "With replacement 0 and adjustment time 4 the level rises from 40 to 60: in equilibrium the only inflow, (100 − Level)/4, must equal the outflow of 10, so the gap stays at 40. With adjustment time 8 the gap must be 10 × 8 = 80, so the level falls from 40 to about 20. A slower correction leaves a bigger permanent shortfall, outflow × adjustment time. With replacement back at 1 the rule orders the outflow plus the correction, so the gap can close and the level goes all the way to 100. Lesson: always replace expected losses; the gap term is only for correcting.",
       link: { label: "Open stock adjustment", hash: "/m/stockAdjust" },
     },
     {
       prompt:
         "In Stock Management, run <b>Stable (sees pipeline)</b> (weight 1), then <b>Oscillation (ignores it)</b> (weight 0). Compare the supply line peaks (about 78 against 90) and the inventory peaks (100 against about 110). Explain the difference in terms of loop B2.",
       hint: "Without B2 the rule keeps ordering for a gap that orders already in the pipeline will close, so the supply line overfills, inventory overshoots and the supply line then drops below its normal 60 as orders are cut. Both runs end at 100; only the path differs.",
+      answer:
+        "With weight 1 the supply line peaks at about 78 near week 5 and inventory rises smoothly to 100 without overshooting. With weight 0 the supply line climbs to about 90 near week 6, inventory overshoots to about 110 at week 17, and the supply line then drops to about 52 as orders are cut below demand (to about 7.5), giving a damped cycle before both settle at 100 and 60. Loop B2 (supply line → orders, negative) tells the manager that the gap is already being filled by goods on the way; without it the rule keeps ordering until the inventory gap closes, by which time a whole delay's worth of extra goods is still in transit. Both runs end in the same equilibrium; ignoring the pipeline only damages the path.",
       link: { label: "Open stock management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Still in Stock Management with weight 0, change only the inventory adjustment time: 2 weeks, then 8 weeks. Which setting gives the larger overshoot and more ringing, and why does reacting faster make things worse when the pipeline is ignored?",
       hint: "At 2 weeks inventory peaks near 116 at week 11 and swings several times; at 8 weeks it creeps up to a gentle peak of about 104 near week 27.",
+      answer:
+        "Adjustment time 2 gives the bigger overshoot: inventory peaks at about 116 at week 11, dips to about 93, and keeps ringing (peaks near 103 and 100.4 later). With 8 weeks inventory creeps up to a single gentle peak of about 104.5 near week 27 and barely rings. When the pipeline is ignored, a faster correction means ordering hard for a gap that orders already placed will fill; the more aggressively you react, the more excess you have in transit when the gap closes. So with poor pipeline visibility, patience stabilises the system: a shorter adjustment time only helps if you also count the supply line.",
       link: { label: "Open stock management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "In Low-Visibility Pipeline Correction, set the awareness of the pipeline to 0.34, the Beer Game average, keeping the other defaults. Then keep 0.34 and slow the supplier to 12 weeks. How much does the longer delay raise the peak inventory? Relate this to the claim that longer delays strengthen amplification.",
       hint: "With a 6-week supplier inventory peaks at about 106; with 12 weeks at about 118, and orders not received overshoot to about 200. This molecule weights the desired pipeline too, as in the effective total stock formulation, so inventory still settles at 100.",
+      answer:
+        "With awareness 0.34 and a 6-week supplier, inventory peaks at about 106 near week 17 and then rings gently around 100. With a 12-week supplier, inventory first sags to about 43, then overshoots to about 118 near week 26, and orders not received swell to about 200 (versus a desired pipeline of 120). The longer delay roughly triples the overshoot because more orders are hidden in a pipeline that is only one third counted, and they keep arriving long after the gap has closed. This is the general finding: for a given misperception of the supply line, longer delays mean stronger amplification and bigger cycles.",
       link: { label: "Open low-visibility pipeline", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
         "In Low-Visibility Pipeline Correction, compare <b>Tracks the pipeline</b> with <b>Ignores the pipeline</b>, then run <b>Boom and bust (slow supplier)</b>. Count the inventory peaks in each run and note how big the orders-not-received stock gets in the last one.",
       hint: "Ignoring the pipeline gives a damped cycle around 100; the slow supplier with a 2-week inventory correction swells orders not received to roughly 280 and inventory swings from about 45 to 185.",
+      answer:
+        "Tracks the pipeline: no inventory peaks at all; inventory rises smoothly to 100 and orders not received peak once at about 84. Ignores the pipeline: a damped cycle with peaks at about 117 (week 16), 104 (week 45) and 101 (week 74), settling at 100. Boom and bust: the slow 12-week supplier plus a 2-week inventory correction gives a cycle that does not die away: orders not received reach about 285, inventory swings between about 45 and 184 with peaks roughly every 41 weeks (4 in 150 weeks). Ignoring the pipeline turns smooth adjustment into a cycle; adding a long delay and an aggressive correction makes the cycle self-sustaining.",
       link: { label: "Open low-visibility pipeline", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
         "Play the bullwhip case and compare <b>Counts orders in transit</b> with <b>Ignores orders in transit</b>. Write two sentences explaining, without equations, why the stage that ignores its pipeline swings more than its customer.",
+      answer:
+        "When the stage counts orders in transit, it orders a burst once (orders peak at 20 and the pipeline peaks near 78) and inventory rises smoothly to 100. When it ignores them, it keeps ordering as long as its own shelves look short, even though plenty is already on the way; the pipeline swells to about 90, inventory overshoots to about 110, and orders then collapse to about 7.5, below its customer's steady demand of 10. So its orders swing more than the demand it serves, because it reacts to its own stock gap rather than to the goods already coming, and every upstream stage receives an amplified, delayed signal.",
       link: { label: "Bullwhip case", hash: "/apps/business/bullwhip" },
     },
     {
       prompt:
         "Open the office building case. Run <b>Developers ignore the pipeline</b>, then <b>Half the pipeline counted</b> and <b>Developers count space under construction</b>. Relate the three runs to the developer interviews: what would it take, institutionally, for developers to raise their supply-line weight?",
+      answer:
+        "With developers ignoring the pipeline, they keep starting buildings while vacancy is low; vacancy then overshoots to about 121 around year 5.5, new construction stops completely around year 3, and the market rings in a cycle of roughly 11 years. With half the pipeline counted the overshoot is only about 102, and counting space under construction gives a smooth rise to 100. This matches the interviews: developers know buildings are under construction but each acts on current vacancy and rents and on financing that is available now. Raising the supply-line weight would need shared, public data on space under construction, lenders who assess projects against the whole pipeline, and incentives that reward developers for the market's health rather than for being first to build.",
       link: { label: "Office cycle case", hash: "/apps/economics/office-cycle" },
     },
     {
       prompt:
         "Pen and paper: pick a stock you manage (cash, a reading list, a freezer, a team's backlog). Name the inflow you control, the delay, what sits in the supply line, and whether you normally count it. Sketch the stock management CLD for it and mark the loop you tend to neglect.",
+      answer:
+        "There is no single right answer. A good one names: the stock (for example the freezer contents), the inflow you control (food bought), the delay (time between deciding to buy and the food arriving, such as a weekly shop or delivery), the supply line (groceries ordered or on the shopping list but not yet in the freezer), and whether you count it (most people look only in the freezer). The CLD should show the stock adjustment loop (B1: stock gap → orders → supply line → acquisitions → stock) and the supply-line loop (B2: supply line → orders, negative); mark B2 as the one you neglect if you do not count goods on the way. Say what happens when you neglect it: double orders and overstocking, followed by a period of buying nothing.",
     },
   ],
   pitfalls: [

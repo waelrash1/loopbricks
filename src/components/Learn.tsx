@@ -133,11 +133,72 @@ const LEVELS: { level: Level; blurb: string }[] = [
   { level: "Modelling practice", blurb: "Turning a problem into a model you can trust: framing, formulation, human decisions, cycles and testing." },
   { level: "Advanced", blurb: "How simulators work underneath, and the open questions of the field." },
 ];
-const doneKey = (id: string) => `done:learn/${id}`;
+export const PRACTICE: [string, string, string][] = [
+  ["Decision games", "Run a supply chain, a fishery or a firefighting team, week by week, and see what your decisions do.", "/learn/games"],
+  ["Draw the loops", "Connect variables with signed links and check your diagram against a model answer.", "/learn/draw"],
+  ["Build a model", "Lay out stocks and flows, write the equations, and run your own model.", "/learn/build"],
+  ["Capstone projects", "Take one problem from client brief to policy advice, stage by stage.", "/learn/projects"],
+  ["Mixed review", "Questions drawn across the modules you have finished.", "/learn/review"],
+  ["Before and after", "A short test of common misconceptions: take it now, and again at the end.", "/learn/check"],
+  ["Glossary", "Every term, defined plainly, with a link to where it is taught.", "/learn/glossary"],
+  ["For instructors", "A 12-week syllabus, assessment, assignment links and progress export.", "/learn/teach"],
+];
+export const doneKey = (id: string) => `done:learn/${id}`;
+
+// two ways through the curriculum: modellers see everything; managers can skip the equations and the most technical modules
+export type Track = "modeller" | "manager";
+const TRACK_KEY = "loopbricks-track";
+const readTrack = (): Track => {
+  try {
+    return localStorage.getItem(TRACK_KEY) === "manager" ? "manager" : "modeller";
+  } catch {
+    return "modeller";
+  }
+};
+const trackSubs = new Set<(t: Track) => void>();
+export function useTrack(): [Track, (t: Track) => void] {
+  const [t, setT] = useState<Track>(readTrack);
+  useEffect(() => {
+    trackSubs.add(setT);
+    return () => void trackSubs.delete(setT);
+  }, []);
+  const set = (v: Track) => {
+    try {
+      localStorage.setItem(TRACK_KEY, v);
+    } catch {
+      /* not stored: applies to this page only */
+    }
+    trackSubs.forEach((f) => f(v));
+  };
+  return [t, set];
+}
+function TrackSwitch() {
+  const [t, set] = useTrack();
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <div role="radiogroup" aria-label="Your track" className="inline-flex rounded-[10px] border border-border p-1 bg-card">
+        {(
+          [
+            ["modeller", "Modeller"],
+            ["manager", "Manager"],
+          ] as const
+        ).map(([k, label]) => (
+          <button key={k} role="radio" aria-checked={t === k} onClick={() => set(k)} className={cn("h-8 px-3.5 rounded-[7px] text-[13px] font-semibold", t === k ? "bg-accent" : "text-muted-foreground hover:bg-muted")}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <span className="text-[13.5px] text-muted-foreground max-w-[52ch]">
+        {t === "manager" ? "Concepts, diagrams and runs; equations hidden, and the two most technical modules optional." : "Everything, including the equations and how to formulate them."}
+      </span>
+    </div>
+  );
+}
 const byId = (id: string) => MODULE_CONTENT.find((m) => m.def.id === id);
 
 export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) => void; onOpen: (hash: string) => void }) {
   const seen = useSeen();
+  const [track] = useTrack();
   const done = MODULE_CONTENT.filter((m) => seen.has(doneKey(m.def.id))).length;
   const next = MODULE_CONTENT.find((m) => !seen.has(doneKey(m.def.id)));
   return (
@@ -160,6 +221,9 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
           {done} of {MODULE_CONTENT.length} modules done
         </span>
       </div>
+      <div className="mt-6">
+        <TrackSwitch />
+      </div>
 
       {LEVELS.map(({ level, blurb }, li) => (
         <section key={level} className="mt-12">
@@ -178,6 +242,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
                       {m.def.title}
                       {isDone && <Check size={16} strokeWidth={3} aria-label="done" className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
                     </span>
+                    {track === "manager" && m.def.managerOptional && <span className="mt-1 text-[12.5px] font-semibold text-accent-edge">Optional on the manager track</span>}
                     <span className="mt-1.5 text-[13.5px] leading-[1.5] text-muted-foreground">{m.def.summary}</span>
                     <span className="mt-auto pt-3 flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
                       <Clock size={13} aria-hidden /> about {m.minutes} min
@@ -190,6 +255,19 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
           </ol>
         </section>
       ))}
+
+      <section className="mt-14">
+        <h2 className="heading text-[24px]">Practise</h2>
+        <p className="mt-1 text-[15px] text-muted-foreground max-w-[70ch]">Reading and running are not enough: decide, draw and build, then check yourself.</p>
+        <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {PRACTICE.map(([title, text, hash]) => (
+            <button key={hash} onClick={() => onOpen(hash)} className="brick brick-w text-left p-4">
+              <span className="heading text-[16px]">{title}</span>
+              <span className="mt-1.5 block text-[13.5px] leading-[1.5] text-muted-foreground">{text}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="mt-14">
         <h2 className="heading text-[22px]">Hands-on labs and method guides</h2>
@@ -217,7 +295,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
   );
 }
 
-function QuizBlock({ quiz }: { quiz: Quiz[] }) {
+export function QuizBlock({ quiz }: { quiz: Quiz[] }) {
   const [picked, setPicked] = useState<Record<number, number>>({});
   const answered = Object.keys(picked).length, right = quiz.filter((q, i) => picked[i] === q.answer).length;
   return (
@@ -268,7 +346,43 @@ function QuizBlock({ quiz }: { quiz: Quiz[] }) {
   );
 }
 
-// A live run of one molecule beside the text: sliders and a chart that redraws as they move.
+// learners predict before they run: on by default, remembered per browser
+const PREDICT_KEY = "loopbricks-predict-first";
+const predictFirst = () => {
+  try {
+    return localStorage.getItem(PREDICT_KEY) !== "0";
+  } catch {
+    return true;
+  }
+};
+type Pt = { t: number; v: number };
+// value of a sketch at time t, by straight lines between the drawn points; null outside what was drawn
+const sketchAt = (pts: Pt[], t: number) => {
+  if (pts.length < 2 || t < pts[0].t || t > pts[pts.length - 1].t) return null;
+  const k = pts.findIndex((p) => p.t >= t);
+  if (k <= 0) return pts[0].v;
+  const a = pts[k - 1], b = pts[k];
+  return a.v + ((b.v - a.v) * (t - a.t)) / (b.t - a.t || 1);
+};
+// compare a sketch with the run: average gap, end value and overshoot, in words a learner can act on
+export function compareSketch(pts: Pt[], ys: number[], T: number) {
+  const ts = ys.map((_, j) => (j * T) / (ys.length - 1));
+  const span = Math.max(...ys) - Math.min(...ys) || Math.abs(ys[0]) || 1;
+  const pairs = ts.map((t, j) => [sketchAt(pts, t), ys[j]] as const).filter(([s]) => s !== null) as [number, number][];
+  if (pairs.length < 5) return null;
+  const gap = pairs.reduce((a, [s, y]) => a + Math.abs(s - y), 0) / pairs.length / span;
+  const end = ys[ys.length - 1], sEnd = pts[pts.length - 1].v;
+  const over = (v: number[], e: number, s0: number) => (e >= s0 ? Math.max(...v) - e : e - Math.min(...v)) > 0.08 * span;
+  const runOver = over(ys, end, ys[0]), sketchOver = over(pts.map((p) => p.v), sEnd, pts[0].v);
+  const notes: string[] = [];
+  notes.push(`You expected it to end near ${fmtNum(sEnd)}; the run ends near ${fmtNum(end)}.`);
+  if (runOver && !sketchOver) notes.push("The run overshoots and comes back; your sketch did not. Look for a delay inside a balancing loop.");
+  if (!runOver && sketchOver) notes.push("Your sketch overshoots, but the run approaches its final value without passing it.");
+  return { score: Math.max(0, Math.round(100 * (1 - gap))), notes, covered: pairs.length / ys.length };
+}
+const fmtNum = (v: number) => (Math.abs(v) >= 100 ? Math.round(v).toString() : +v.toFixed(1) + "");
+
+// A live run of one molecule beside the text: predict the curve, then sliders and a chart that redraws as they move.
 function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash: string) => void }) {
   const m = MODELS[run.molecule];
   const base = useMemo(() => ({ ...initParams(m), ...run.params }), [m, run.params]);
@@ -276,63 +390,171 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
   useEffect(() => setP(base), [base]);
   const series = useMemo(() => sampleModel(m, p, run.T, 121), [m, p, run.T]);
   const lines = m.stocks.map((st, i) => ({ st, ys: series[i] })).filter((l) => !l.st.hidden && !l.st.chartHidden);
+  const [phase, setPhase] = useState<"predict" | "shown">(() => (predictFirst() ? "predict" : "shown"));
+  const [target, setTarget] = useState(lines[0]?.st.id);
+  const [sketch, setSketch] = useState<Pt[]>([]);
+  const drawing = useRef(false);
+  const svg = useRef<SVGSVGElement>(null);
+  const tLine = lines.find((l) => l.st.id === target) ?? lines[0];
   const all = lines.flatMap((l) => l.ys);
-  const lo = Math.min(0, ...all), hi = Math.max(...all, lo + 1e-9);
-  const W = 520, H = 230, L = 40, B = 22;
-  const x = (j: number, n: number) => L + (j / Math.max(1, n - 1)) * (W - L - 8);
+  // while predicting, the axis comes from the stock's fixed display scale, so it does not give the answer away
+  const lo = phase === "predict" ? Math.min(0, tLine.ys[0]) : Math.min(0, ...all, ...sketch.map((s) => s.v));
+  const hi = phase === "predict" ? Math.max(tLine.st.scale, tLine.ys[0] * 1.5, 1) : Math.max(...all, ...sketch.map((s) => s.v), lo + 1e-9);
+  const W = 520, H = 230, L = 40, B = 22, R = 8;
+  const xt = (t: number) => L + (t / run.T) * (W - L - R);
+  const x = (j: number, n: number) => xt((j / Math.max(1, n - 1)) * run.T);
   const y = (v: number) => 8 + (1 - (v - lo) / (hi - lo)) * (H - B - 8);
-  const fmt = (v: number) => (Math.abs(v) >= 100 ? Math.round(v).toString() : +v.toFixed(1) + "");
   const changed = m.params.some((d) => p[d.id] !== base[d.id]);
+  const cmp = phase === "shown" && sketch.length > 1 ? compareSketch(sketch, tLine.ys, run.T) : null;
+
+  const toData = (e: React.PointerEvent): Pt | null => {
+    const s = svg.current, ctm = s?.getScreenCTM();
+    if (!s || !ctm) return null;
+    const q = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    const t = Math.min(run.T, Math.max(0, ((q.x - L) / (W - L - R)) * run.T));
+    const v = lo + (1 - (q.y - 8) / (H - B - 8)) * (hi - lo);
+    return { t, v };
+  };
+  const add = (pt: Pt | null) => pt && setSketch((s) => [...s.filter((q) => q.t < pt.t), pt]); // drawing back over a part redraws it
+  const setPredict = (on: boolean) => {
+    try {
+      localStorage.setItem(PREDICT_KEY, on ? "1" : "0");
+    } catch {
+      /* private mode: the choice lasts for this page only */
+    }
+  };
+
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={`${m.name}: ${lines.map((l) => l.st.label).join(", ")} over ${run.T} ${m.timeUnit}`}>
+      {phase === "predict" && (
+        <div className="mb-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
+          <b>Predict first.</b> Draw how you expect <b>{tLine.st.label}</b> to move over {run.T} {m.timeUnit}, starting from the dot. Then run it and compare.
+          {lines.length > 1 && (
+            <label className="mt-2 flex items-center gap-2">
+              <span>Sketch</span>
+              <select value={tLine.st.id} onChange={(e) => (setTarget(e.target.value), setSketch([]))} className="rounded-[6px] border border-border bg-background px-2 py-1">
+                {lines.map((l) => (
+                  <option key={l.st.id} value={l.st.id}>
+                    {l.st.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+      <svg
+        ref={svg}
+        viewBox={`0 0 ${W} ${H}`}
+        className={cn("w-full h-auto select-none", phase === "predict" && "cursor-crosshair touch-none")}
+        role="img"
+        aria-label={phase === "predict" ? `Drawing area: sketch ${tLine.st.label} over time` : `${m.name}: ${lines.map((l) => l.st.label).join(", ")} over ${run.T} ${m.timeUnit}`}
+        onPointerDown={(e) => {
+          if (phase !== "predict") return;
+          drawing.current = true;
+          (e.target as Element).setPointerCapture?.(e.pointerId);
+          const pt = toData(e);
+          setSketch(pt ? [{ t: 0, v: tLine.ys[0] }, ...(pt.t > 0 ? [pt] : [])] : []);
+        }}
+        onPointerMove={(e) => phase === "predict" && drawing.current && add(toData(e))}
+        onPointerUp={() => (drawing.current = false)}
+      >
         {[lo, (lo + hi) / 2, hi].map((v) => (
           <g key={v}>
-            <line x1={L} x2={W - 8} y1={y(v)} y2={y(v)} stroke="hsl(var(--border))" />
+            <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} stroke="hsl(var(--border))" />
             <text x={L - 6} y={y(v) + 4} textAnchor="end" fontSize="11" fill="hsl(var(--muted-foreground))">
-              {fmt(v)}
+              {fmtNum(v)}
             </text>
           </g>
         ))}
         <text x={L} y={H - 4} fontSize="11" fill="hsl(var(--muted-foreground))">0</text>
-        <text x={W - 8} y={H - 4} textAnchor="end" fontSize="11" fill="hsl(var(--muted-foreground))">
+        <text x={W - R} y={H - 4} textAnchor="end" fontSize="11" fill="hsl(var(--muted-foreground))">
           {run.T} {m.timeUnit}
         </text>
-        {lines.map(({ st, ys }) => (
-          <polyline key={st.id} fill="none" stroke={st.color} strokeWidth="2.25" strokeLinejoin="round" points={ys.map((v, j) => `${x(j, ys.length)},${y(v)}`).join(" ")} />
-        ))}
+        {phase === "shown" &&
+          lines.map(({ st, ys }) => (
+            <polyline key={st.id} fill="none" stroke={st.color} strokeWidth="2.25" strokeLinejoin="round" points={ys.map((v, j) => `${x(j, ys.length)},${y(v)}`).join(" ")} />
+          ))}
+        {sketch.length > 1 && (
+          <polyline fill="none" stroke="hsl(var(--foreground))" strokeWidth="2" strokeDasharray="5 4" strokeLinejoin="round" points={sketch.map((s) => `${xt(s.t)},${y(s.v)}`).join(" ")} />
+        )}
+        {phase === "predict" && <circle cx={xt(0)} cy={y(tLine.ys[0])} r={5} fill={tLine.st.color} />}
       </svg>
       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
-        {lines.map(({ st }) => (
-          <span key={st.id} className="flex items-center gap-1.5">
-            <span aria-hidden className="inline-block w-4 h-[3px] rounded" style={{ background: st.color }} />
-            {st.label}
-          </span>
-        ))}
-      </div>
-      <div className="mt-3 grid sm:grid-cols-2 gap-x-5 gap-y-2">
-        {m.params.map((d) => (
-          <label key={d.id} className="text-[12.5px]">
-            <span className="flex justify-between gap-2">
-              <span className="truncate">{d.label}</span>
-              <b className="tabular-nums">
-                {p[d.id]} {d.unit}
-              </b>
+        {phase === "shown" &&
+          lines.map(({ st }) => (
+            <span key={st.id} className="flex items-center gap-1.5">
+              <span aria-hidden className="inline-block w-4 h-[3px] rounded" style={{ background: st.color }} />
+              {st.label}
             </span>
-            <input type="range" min={d.min} max={d.max} step={d.step} value={p[d.id]} onChange={(e) => setP((q) => ({ ...q, [d.id]: +e.target.value }))} className="w-full accent-[hsl(var(--accent-edge))]" />
-          </label>
-        ))}
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {changed && (
-          <button onClick={() => setP(base)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
-            Reset
-          </button>
+          ))}
+        {sketch.length > 1 && (
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden className="inline-block w-4 border-t-2 border-dashed border-foreground" />
+            Your prediction
+          </span>
         )}
-        <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
-          Open {m.name} in the simulator
-        </button>
       </div>
+      {phase === "predict" ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button onClick={() => setPhase("shown")} disabled={sketch.length < 3} className="brick brick-y h-9 px-3.5 text-[13px] font-semibold disabled:opacity-50">
+            Run and compare
+          </button>
+          {sketch.length > 0 && (
+            <button onClick={() => setSketch([])} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+              Clear sketch
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setPredict(false);
+              setPhase("shown");
+            }}
+            className="h-9 px-2 text-[13px] text-muted-foreground underline underline-offset-2"
+          >
+            Skip predictions
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* what to notice comes after the learner has committed to a prediction */}
+          <p className="mt-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
+            <b>Look for: </b>
+            {run.look}
+          </p>
+          {cmp && (
+            <div role="status" className="mt-2 rounded-[8px] border border-border px-3 py-2 text-[13.5px] leading-[1.55]">
+              <b>Your prediction matched {cmp.score}%</b> of the way{cmp.covered < 0.8 ? " over the part you drew" : ""}. {cmp.notes.join(" ")}
+            </div>
+          )}
+          <div className="mt-3 grid sm:grid-cols-2 gap-x-5 gap-y-2">
+            {m.params.map((d) => (
+              <label key={d.id} className="text-[12.5px]">
+                <span className="flex justify-between gap-2">
+                  <span className="truncate">{d.label}</span>
+                  <b className="tabular-nums">
+                    {p[d.id]} {d.unit}
+                  </b>
+                </span>
+                <input type="range" min={d.min} max={d.max} step={d.step} value={p[d.id]} onChange={(e) => setP((q) => ({ ...q, [d.id]: +e.target.value }))} className="w-full accent-[hsl(var(--accent-edge))]" />
+              </label>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {changed && (
+              <button onClick={() => setP(base)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+                Reset
+              </button>
+            )}
+            <button onClick={() => (setSketch([]), setP(base), setPhase("predict"), setPredict(true))} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+              Predict again
+            </button>
+            <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+              Open {m.name} in the simulator
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -342,6 +564,8 @@ type Tab = "all" | "diagram" | "equation" | "run";
 
 // The workbench: the diagram, equation and live run for one step, side by side with its text.
 function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => void; sticky?: boolean }) {
+  const [track] = useTrack();
+  if (track === "manager") r = { ...r, formulation: undefined };
   const tabs = [
     (r.diagram || r.archetype) && (["diagram", "Diagram"] as const),
     r.formulation && (["equation", "Equation"] as const),
@@ -400,12 +624,6 @@ function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => v
           </div>
         )}
       </div>
-      {r.step.run && (t === "run" || t === "all") && (
-        <p className="mx-2 mb-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
-          <b>Look for: </b>
-          {r.step.run.look}
-        </p>
-      )}
     </div>
   );
 }
@@ -480,6 +698,12 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             <p className="mt-1 leading-[1.6] text-foreground/85">{x.hint}</p>
           </details>
         )}
+        {x.answer && (
+          <details className="mt-2 text-[14px]">
+            <summary className="cursor-pointer font-semibold text-foreground/80">Show a worked answer</summary>
+            <p className="mt-1 leading-[1.6] text-foreground/85">{x.answer}</p>
+          </details>
+        )}
         {x.link && (
           <button onClick={() => onOpen(x.link!.hash)} className="brick brick-w mt-3 h-9 px-3.5 text-[13px] font-semibold">
             {x.link.label}
@@ -549,7 +773,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
       </div>
 
       <div className="mt-14 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] gap-x-12">
-        <ol className="relative">
+        <ol className="relative min-w-0">
           {/* the spine: one line through every step, with the current one lit */}
           <span aria-hidden className="absolute left-[17px] top-2 bottom-2 w-[2px] bg-border" />
           {steps.map((s, k) => {

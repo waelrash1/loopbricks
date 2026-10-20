@@ -42,7 +42,8 @@ export type StudyChapter = {
   diagrams: StudyDiagram[];
   formulations: Formulation[];
   cases: { title: string; text: string; pages?: string }[];
-  exercises: { prompt: string; hint?: string; link?: { label: string; hash: string } }[];
+  // answer: a worked answer the learner can reveal after trying, with the numbers the app actually produces
+  exercises: { prompt: string; hint?: string; answer?: string; link?: { label: string; hash: string } }[];
   pitfalls: string[];
   molecules: string[]; // LoopBricks molecule keys to practise with
 };

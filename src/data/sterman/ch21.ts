@@ -367,89 +367,119 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Questions users should ask. Open the bullwhip case and answer, in writing, the boundary questions for model users: what is the purpose, which variables are endogenous, which are exogenous, what is left out, and is anything left out only because it has no numerical data? Then name one excluded feedback that could change the policy conclusion.",
       hint: "Customer demand is usually exogenous in supply-chain models. Ask what would happen if long delivery delays drove customers away.",
+      answer:
+        "Purpose: to explain why orders swing more than demand along a supply chain and to test ordering policies that damp it. Endogenous: the stage's stock on hand, orders placed but not yet received, and its own order rate. Exogenous: customer demand, the target stock and the supplier lead time (the supplier is assumed always able to deliver). Left out: upstream stages, supplier capacity and stockouts, prices, costs and customers' reactions to service. Customer patience and goodwill are often omitted simply because they lack numerical data, which is not a valid reason. One excluded feedback that could change the conclusion: if long delivery delays or stockouts drive customers away, demand becomes endogenous, and a policy that saves inventory by tolerating stockouts may look good in the model but lose customers in reality.",
       link: { label: "Open the bullwhip case", hash: "/apps/business/bullwhip" },
     },
     {
       prompt:
         "Test 1, boundary adequacy. Run Population Growth with the Growing preset (births 5%, deaths 2%) for 60 years and note the conclusion it gives about long-run population. Then open Constrained Growth with the S-curve preset (growth rate 18%, carrying capacity 200), where crowding is inside the boundary and the population levels off at 200. Write one sentence on how moving crowding from outside to inside the boundary changes the answer to 'how large will the population be?'.",
       hint: "In the first model the only limit is outside the boundary, so it never acts. In the second the limit is endogenous.",
+      answer:
+        "Population Growth (births 5%, deaths 2%) grows exponentially at 3% a year, from 100 to about 603 at year 60, doubling about every 23 years, and the model says it will grow for ever: crowding is outside the boundary, so it can never act. Constrained Growth with the S-curve preset starts at 10, grows almost exponentially at first, then slows and levels off at the carrying capacity of 200 (about 131 at year 20, 184 at year 30, 197 at year 40). Moving crowding inside the boundary changes the answer from 'without limit' to 'about 200', and the limit now comes from the system's own feedback. Boundary adequacy asks whether the feedbacks that matter for the question are endogenous.",
       link: { label: "Open Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Test 2, structure assessment. Open Backlog Protected by Level, choose Starve production (production 5 a month) and run it. Confirm from the equations that shipping is multiplied by MIN(1, Inventory / full-service inventory), the first-order loop that keeps inventory non-negative. Then look for a free lunch: what does production need in the real world that this molecule does not require?",
       hint: "Production here arrives at a fixed rate with no labour, materials or capacity behind it. That is acceptable for some purposes and not others.",
+      answer:
+        "With production at 5 a month and orders at 12, inventory drains from 100; once it falls below the full-service level of 60 (around month 5), shipping is multiplied by MIN(1, Inventory / 60) and falls with the stock, toward the production rate of 5, while the backlog grows to about 350 by month 60. Inventory approaches zero but never goes below it, because the outflow shrinks as the stock does: that is the first-order loop. The free lunch is production: it arrives at a fixed rate with no labour, materials, capacity or work in process behind it, so the firm could produce at any rate for nothing. That is acceptable if the purpose is to study order fulfilment, but not if the question involves capacity, hiring or production lead times.",
       link: { label: "Open Backlog Protected by Level", hash: "/m/backlogLevel" },
     },
     {
       prompt:
         "Test 3, dimensional consistency. Open Stock Management and write the units of every term in the order rate: demand, (desired inventory − inventory) / adjustment time, and weight × (desired supply line − supply line) / adjustment time. Check that each is in units per week, and say what unit the supply-line weight must have for the equation to balance.",
       hint: "Inventory is in units and the adjustment time in weeks, so the gap term is units per week. The weight must be dimensionless.",
+      answer:
+        "Order rate = Demand + (Desired inventory − Inventory) / Adjustment time + Weight × (Desired supply line − Supply line) / Adjustment time. Demand is in units/week. (Desired inventory − Inventory) is in units and the adjustment time in weeks, so the second term is units/week. The supply line is in units, so (Desired supply line − Supply line) / Adjustment time is units/week, and the weight must be dimensionless (a pure number from 0 to 1) for the whole equation to balance. A good answer also checks the derived variable: desired supply line = demand (units/week) × acquisition delay (weeks) = units.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Test 4, parameter assessment. In the calibration lab, three parameters (demand, target inventory and delivery delay) are known from records, as judgemental or archival estimates would be, and two must be estimated. Fit the two by hand, then let the search run from your guess. Compare your values with the hidden truth at the end. Which parameter is pinned down more tightly by the data, judging by the error landscape?",
       hint: "A long, narrow valley in the error map means many combinations fit almost equally well: the model is close to underidentified in that direction.",
+      answer:
+        "The hidden truth is adjustment time 4 weeks and supply-line weight 0.35. The search from the default guess (9 weeks, 0.9) finds about 4 weeks and 0.35 after about 24 simulations, with an RMSE of about 1.6. The error landscape shows a diagonal valley: a longer adjustment time combined with a lower weight fits almost as well (3 weeks with 0.5, or 5 weeks with 0.15, both give an error near 2). The adjustment time is pinned down more tightly: near the best fit, moving it by 1.5 weeks roughly doubles the error, while the weight can move across about a third of its range along the valley with little penalty. Data alone identify combinations better than the individual parameters, so judgement and other evidence are needed to choose along the valley.",
       link: { label: "Open the calibration lab", hash: "/methods/calibration" },
     },
     {
       prompt:
         "Test 5, extreme conditions. Open Reducing Backlog by Doing Work and set workers to 30 and productivity to 10 (300 tasks a month against 1,200 tasks). Run 60 months and watch the 'Overdrawn (below zero)' stock: work to do empties at month 4, after which the molecule would keep 'completing' work that does not exist, about 16,800 tasks by month 60. Repeat on Level Protected by PDY with 20 workers and normal productivity 10, and confirm the remaining work stops at zero.",
       hint: "The first molecule lacks first-order control of its outflow; the second lets productivity fall as the work runs out.",
+      answer:
+        "With 30 workers × 10 = 300 tasks a month, work to do falls in a straight line from 1,200 to zero at month 4, but the molecule keeps 'completing' 300 tasks a month after that, so the overdrawn stock reaches 300 at month 5 and about 16,800 by month 60: the outflow ignores the stock it drains. In Level Protected by PDY with 20 workers and normal productivity 10 (200 tasks a month), remaining work falls from 300 to 100 by month 1, then productivity falls as the work runs short (MIN(1, Remaining / 60)), and the stock tapers to zero without crossing it. Extreme conditions expose the missing first-order control: every outflow from a physical stock must go to zero as the stock does.",
       link: { label: "Open Reducing Backlog", hash: "/m/reducingBacklog" },
     },
     {
       prompt:
         "Test 6, integration error (pen and paper). Take Close Gap with goal 60, starting value 20 and adjustment time 1 week. Simulate by hand with Euler steps of dt = 2, 1 and 0.5 weeks for 6 weeks. With dt = 2 the value jumps 20, 100, 20, 100 for ever; with dt = 1 it lands on 60 in one step; with dt = 0.5 it rises 20, 40, 50, 55. Which run is closest to the true exponential approach? Then open the molecule with the Aggressive preset (adjustment time 1.5) to see the smooth path the app computes with its much shorter step.",
       hint: "The exact solution covers 63% of the gap in one adjustment time. A step should be a small fraction of the shortest time constant.",
+      answer:
+        "By hand with AT = 1: dt = 2 overshoots: each step adds 2 × the gap, so the value jumps 20, 100, 20, 100 for ever, a pure artefact. dt = 1 removes the whole gap in one step and lands on 60 at week 1, too fast: the exact value at week 1 is only 60 − 40e^−1 ≈ 45.3. dt = 0.5 rises 20, 40, 50, 55, 57.5, against the exact 20, 35.7, 45.3, 51.1, 54.6; it is the only run that looks like the smooth exponential approach and is clearly closest. In the app, Aggressive (AT 1.5 with dt 0.1) gives a smooth path that reaches about 45.8 at week 1.5, close to the exact 63% of the gap. A step should be a small fraction (a quarter or less) of the shortest time constant.",
       link: { label: "Open Close Gap", hash: "/m/closegap" },
     },
     {
       prompt:
         "Test 7, behaviour reproduction. Work through the fit page's worked example, then go to the calibration lab and fit the data by hand. Watch RMSE, MAPE and the Theil shares as you move the sliders. Stop when the error is near the size of the measurement noise (about 1.7) and most of what remains is in the timing share UC. Explain why you should not try to drive the error lower still.",
       hint: "Once UC dominates, the leftover error is the noise in the dots; chasing it would mean fitting the noise.",
+      answer:
+        "With the right structure you can reach an RMSE of about 1.6 (adjustment time 4, weight 0.35), close to the measurement noise of about 1.7, with MAPE about 1.6%, a bias share Um of about 0.02 and a timing share Uc of about 0.86. Once most of the remaining error sits in Uc, the model's line passes through the middle of the dots and what is left is the random scatter of the data around the true path. Driving the error lower would mean bending the model to follow the noise: you would distort the parameters (or add structure) to match random wiggles that the next data set will not repeat, so the fit would look better and predict worse.",
       link: { label: "Open Measuring fit to data", hash: "/methods/fit" },
     },
     {
       prompt:
         "Test 8, behaviour anomaly. Open Stock Management with the Stable preset (supply-line weight 1) and run it: inventory rises smoothly to 100. Knock out the supply-line loop by setting the weight to 0: inventory now overshoots to about 110 around week 17, dips below 100 and rings for several cycles. Then keep the weight at 0 but also weaken the inventory loop by setting the adjustment time to 12 weeks. What do the two knockouts tell you about which loops matter for stability?",
       hint: "With adjustment time 12 the peak falls to about 102 but arrives much later, around week 37.",
+      answer:
+        "With weight 1 inventory rises smoothly to 100. With weight 0 it overshoots to about 110 near week 17, dips to about 97 and rings for several cycles. With weight 0 and adjustment time 12 the overshoot shrinks to about 102 but arrives much later, near week 37, and the approach is sluggish. The knockouts show the supply-line loop is what keeps the system stable: removing it creates the anomaly (overshoot and oscillation). The inventory loop's strength sets how violent the oscillation is: weakening it damps the swings but makes the correction slow. Stability depends on the balance between the two loops, not on either alone.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Test 9, family member. Using the Oscillation preset of Stock Management (weight 0), note the time between inventory peaks (about 33 weeks). Now set the acquisition delay to 12 weeks, as a slower industry might have: the peak rises to about 120 and peaks come roughly every 45 weeks. Then open the hog cycle case and identify which parameter there plays the role of the acquisition delay.",
       hint: "One structure, re-parameterised, produces a family of cycles. In livestock the delay is gestation and growing time.",
+      answer:
+        "Under Oscillation (weight 0, delay 6) inventory peaks at about 110 at week 17, 101 at week 50 and 100 at week 84: about 33 weeks between peaks. With a 12-week acquisition delay the first peak rises to about 120 at week 27, after an early dip to about 49, and the next peaks come at about weeks 72 and 118, roughly 45 weeks apart. One structure, re-parameterised, gives a family of cycles whose period and amplitude grow with the delay. In the hog cycle case the parameter that plays the role of the acquisition delay is the breeding and fattening time (10 months by default): the biological lag between deciding to breed and having hogs ready for market.",
       link: { label: "Open the hog cycle case", hash: "/apps/economics/hog-cycle" },
     },
     {
       prompt:
         "Test 10, surprise behaviour. In Stock Management, set desired inventory to 60 (where inventory starts), keep demand at 10, set the supply-line weight to 0 and double the acquisition delay to 12 weeks. Before running anything, write down what you expect: inventory starts on target and demand never changes. Then run 100 weeks. Inventory falls to about 36 by week 9, overshoots to about 69 near week 32 and is still ringing at week 100. Use the equations to explain why anything happens at all, and say whether you would report it as a real-world finding or fix the model.",
       hint: "The supply line starts at 60, but a 12-week delay needs 10 × 12 = 120 in the pipeline to deliver 10 a week. Deliveries drop to 60 ÷ 12 = 5 a week at once: the model did not start in equilibrium. Initialise the supply line at demand × delay before trusting a run.",
+      answer:
+        "Inventory falls to about 36 by week 9, overshoots to about 69 near week 32, and is still ringing at week 100, even though it started on target and demand never changed. The equations explain it: deliveries are Supply line / 12, and the supply line starts at 60, so deliveries are only 5 a week at the start while sales are 10. To deliver 10 a week the pipeline needs 10 × 12 = 120 units. Inventory drains, orders rise to refill both stock and pipeline, and with weight 0 the rule ignores the pipeline, so it over-orders and oscillates. The model did not start in equilibrium. Do not report this as a real finding; fix the initial supply line to demand × delay (or initialise it with an equation) and rerun.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Test 11, sensitivity analysis. In the sensitivity lab, set the uncertainty to ±25% and then ±50%, and note how the diffusion bands widen during growth and narrow as the market saturates. Then read the behaviour mode experiment (the share of runs that overshoot) and the policy experiment. Classify each result as numerical, behaviour mode or policy sensitivity, and say which policy you would recommend and why.",
       hint: "Counting the supply line never adds to the glut, whatever the delays turn out to be; whether reacting faster helps depends on how much of the supply line managers count. On the average-gap score the ranking changes, so say which cost matters.",
+      answer:
+        "Numerical: in the diffusion experiment, at week 26 the middle 90% of runs spans about 778 to 956 adopters at ±25% and about 585 to 982 at ±50%; the bands widen during the growth phase and narrow toward 1,000 as the market saturates. Every run is still an S-curve. Behaviour mode: in stock management about 36% of the 200 runs overshoot their final level and the rest settle smoothly, so the mode depends on uncertain parameters. Policy: reacting faster (2 weeks instead of 8) cuts the glut in only about 30% of worlds (about half where managers count at least half the supply line, about 10% where they count less), while counting the supply line helps or does no harm in 100% of worlds. Recommend counting the supply line: it is robust to what we do not know. On the average-gap score the ranking flips (faster helps in all worlds, counting in about 60%), so state that the cost being minimised is excess stock.",
       link: { label: "Open the sensitivity lab", hash: "/methods/sensitivity" },
     },
     {
       prompt:
         "Best and worst cases. On Diffusion, run a cautious case (innovation 0.8%, imitation 13%) and a hot case (innovation 2%, imitation 27%). Adoption peaks at about 37 a week near week 20 in the first and about 78 a week near week 9 in the second. If you were sizing production capacity, how would these bounds change your plan, and what would a Monte Carlo run add?",
       hint: "Best and worst cases bound the outcome but are not likely outcomes themselves; Monte Carlo bands show how likely each region is.",
+      answer:
+        "Cautious case: adoption peaks at about 37 a week near week 20. Hot case: about 78 a week near week 9. A capacity plan sized to the hot case would need about twice the peak capacity of the cautious case, available eleven weeks sooner, and much of it would sit idle after the peak; a plan for the cautious case would leave large unmet demand if the hot case occurs. So plan for flexibility: modular or outsourced capacity, staged commitments triggered by observed early adoption, or inventory built ahead. Best and worst cases bound the outcome but say nothing about how likely each is; a Monte Carlo run gives the distribution of peak timing and size, so you can size capacity to a chosen risk level.",
       link: { label: "Open Diffusion", hash: "/m/diffusion" },
     },
     {
       prompt:
         "Test 12, system improvement (planning). Choose the delayed discharge case and write a one-page evaluation plan for a model-based intervention in a hospital: the success measures agreed at the start, the data on mental models, behaviour, policies and performance you would collect before and after, and a comparison group (another ward or hospital) to rule out rival explanations.",
       hint: "Plan it prospectively. After the event, the data you need will not have been collected and memories will be coloured by hindsight.",
+      answer:
+        "A good plan is prospective and agreed before the intervention starts. Success measures agreed at the start: for example delayed discharges per day, ED waits for a bed, bed occupancy, length of stay and patient outcomes, each with a target and a time frame. Data before and after: mental models (interviews or causal maps from discharge planners, social care and managers about what causes delays), behaviour (daily time series of admissions, discharges, people medically fit but waiting, placements available), policies (discharge rules, care placement commissioning, bed management decisions actually in use), and performance against the measures. Comparison group: a similar ward or hospital that does not get the intervention, measured the same way over the same period, to rule out rival explanations such as seasonal demand, extra funding or a national policy change. Also record implementation (who used the model, what changed) and plan follow-up after at least a year.",
       link: { label: "Open the delayed discharge case", hash: "/apps/health/delayed-discharge" },
     },
     {
       prompt:
         "A whole testing plan. Read the validation page, then pick any molecule you know well and write a short test log in the reflective style: for each of the twelve tests, one line saying whether it applies, what you did, what you found and what you changed. Finish with a list of the model's limitations for its purpose, written for a client.",
+      answer:
+        "Any molecule can be used, and a good log has one line per test. For example, for Stock Management: boundary (demand exogenous; acceptable for ordering-policy questions, not for customer loss); structure (the order rule matches documented ordering practice; MAX(0, …) prevents negative orders); dimensions (all terms in units per week, weight dimensionless); parameters (delay from supplier records, adjustment time and weight estimated); extreme conditions (demand at 2 or 20, desired inventory 200: orders never negative, inventory never negative); integration error (dt = 0.1 is well below the 4 and 6 week time constants; halving it changes nothing visible); behaviour reproduction (fits the calibration lab data to the noise level); anomaly (removing the supply-line loop produces oscillation); family member (hog cycle, office cycle); surprise behaviour (a mis-initialised supply line causes a cycle, so initialise in equilibrium); sensitivity (overshoot depends on the weight and delay; counting the pipeline is robust); system improvement (not applicable yet). End with limitations for the client, such as exogenous demand, a supplier with unlimited capacity, a single product and no costs.",
       link: { label: "Open Validating a model", hash: "/methods/validation" },
     },
   ],

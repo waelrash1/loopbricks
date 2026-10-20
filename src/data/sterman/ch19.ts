@@ -252,37 +252,51 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open the Workforce molecule and choose <b>Ramp up</b> (desired 80, 4 years to hire). Note the initial hiring rate and how long the workforce takes to get most of the way. Repeat with time to hire 1 year. Which time constant in the labour model described here (Sterman 2000) corresponds to this slider?",
       hint: "Hiring starts at (80 − 40) / 4 = 10 a year, or 40 a year with a 1-year adjustment. It plays the role of the labour adjustment time.",
+      answer:
+        "With a 4-year time to hire, hiring starts at (80 − 40) / 4 = 10 a year and falls as the gap closes; the workforce reaches about 65 (63% of the gap) after 4 years and about 78 after 12. With a 1-year time, hiring starts at 40 a year, the workforce reaches about 66 after 1 year and about 78 after 3. This is first-order goal seeking: the time constant sets how long it takes to close about 63% of the gap, and roughly three time constants to close 95%. The slider plays the role of the labour adjustment time (time to adjust labour) in the labour model, which bundles the delays of noticing a need, recruiting and hiring.",
       link: { label: "Open workforce", hash: "/m/workforce" },
     },
     {
       prompt:
         "In Desired Workforce from Workflow, run <b>Staff up</b> and then <b>Workload falls</b>. The molecule hires and releases symmetrically. Write the two extra equations you would add to make releases depend on a willingness to lay off, as in the labour model described here.",
+      answer:
+        "Staff up raises the workforce from 10 to the 120 / 4 = 30 people the workload requires (about 23 after 4 weeks), and Workload falls releases people from 10 down to 20 / 4 = 5 at the same speed, because one adjustment time governs both. To make releases depend on management's willingness to lay off, add: Desired layoffs = MAX(0, (Workforce − Desired workforce) / Time to adjust workforce); Releasing = Willingness to lay off × Desired layoffs, with willingness between 0 (no layoffs, only attrition) and 1. Optionally make willingness a function of how long the excess has lasted or of financial pressure. With low willingness, excess labour shrinks only through attrition, so downsizing is far slower than hiring.",
       link: { label: "Open desired workforce", hash: "/m/desiredWorkforce" },
     },
     {
       prompt:
         "Open the Overtime molecule. Compare <b>Capped by the limit</b> (10 workers, limit 1.3) with <b>Enough people</b> (15 workers). Then move the overtime limit from 1.0 to 2.0 with 10 workers. Relate what you see to the over/undertime loop B2: how much of a demand gap can hours absorb before hiring must take over?",
+      answer:
+        "Capped by the limit: 10 workers × 4 tasks need 1.5 × normal hours to meet 60 a week, the limit holds them at 1.3, so they complete 52 and fall behind by 8 a week. Enough people: 15 workers meet 60 at normal hours and overtime drops to 1. With 10 workers, a limit of 1.0 gives 40 a week (20 behind), 1.2 gives 48 (12 behind), and any limit of 1.5 or more meets the full 60 using exactly 1.5. The over/undertime loop B2 can absorb a demand gap of up to (limit − 1) × normal capacity, 30% here or 12 tasks a week; beyond that, and for any gap that lasts, hiring must take over. Hours act fast but are capped; hiring is slow but unbounded.",
       link: { label: "Open overtime", hash: "/m/overtime" },
     },
     {
       prompt:
         "Open the inventory and business cycle case. Run <b>Firms ignore work in progress</b> and <b>Firms track work in progress</b>, then <b>Long lead time (12 months)</b>. Treat the lead time as the combined production and hiring delay: how does lengthening it change the period and size of the swings?",
+      answer:
+        "Firms ignore work in progress: inventory overshoots to about 117 at month 16 and rings with a period of about 29 months, damping out over the 120 months. Firms track work in progress: inventory rises smoothly to 100, no cycle. Long lead time (12 months): inventory first drops to about 40, then peaks at about 150 at month 28, and the cycle lengthens to about 43 months and damps much more slowly (peaks near 133 and 124 follow). A longer combined production and hiring delay lengthens the period (roughly in proportion to the delay) and enlarges the swings, because more orders are hidden in the pipeline that firms do not count.",
       link: { label: "Inventory cycle case", hash: "/apps/economics/inventory-cycle" },
     },
     {
       prompt:
         "In the same case, run <b>Gentle inventory correction</b> (8 months). Does slowing the inventory correction stabilise the cycle? Before simulating, predict whether shorter or longer inventory and WIP adjustment times help, then compare your prediction with the result.",
       hint: "In this molecule a slower correction gives a single gentle overshoot instead of a ring. Write your prediction down first.",
+      answer:
+        "Yes, in this molecule. With an 8-month inventory correction (WIP still ignored), inventory rises to a single gentle peak of about 106 at month 24 and then settles, compared with a peak of about 117 and several swings at 4 months. Many people predict that faster correction stabilises the system, because it closes gaps sooner; the simulation shows the opposite when the pipeline is ignored, since aggressive correction orders more than the pipeline will deliver. Slower inventory correction trades a slower recovery for much less overshoot. Shorter WIP adjustment times help only if firms actually track WIP.",
       link: { label: "Inventory cycle case", hash: "/apps/economics/inventory-cycle" },
     },
     {
       prompt:
         "Open Aging Chain with PDY and switch from <b>Steady</b> to <b>Rapid hiring (dilution)</b>. Headcount rises but the share of rookies rises too. Explain how this would add a delay and a positive loop to the inventory-workforce model if rookies are less productive and need mentoring.",
+      answer:
+        "Rapid hiring raises headcount but the rookie share climbs from about 8% to about 13% at year 5. If rookies are less productive and need mentoring from experienced staff, effective capacity rises more slowly than headcount: there is an extra delay (time to mature, about 3 years here) between hiring and full productivity. And a positive loop appears: a capacity shortfall triggers hiring, more rookies dilute productivity and take experienced people away from production to mentor them, capacity falls further, and the firm hires even more. In the inventory-workforce model this lengthens the effective labour delay, which deepens and lengthens the cycle.",
       link: { label: "Open aging chain with productivity", hash: "/m/agingPDY" },
     },
     {
       prompt:
         "Pen and paper: write your own week-by-week explanation of the cycle from memory, answering three questions: why is the system not in equilibrium when inventory first returns to target, when starts first equal orders, and when labour first equals desired labour?",
+      answer:
+        "A good answer contains three points. When inventory first returns to target, the system is not in equilibrium because production is still above demand: the pipeline is full and labour is still rising, so inventory overshoots. When starts first equal orders, the work-in-process pipeline is still too large (or too small) and inventory is still away from target, so starts must keep falling or rising to correct both. When labour first equals desired labour, the workforce is still changing at its fastest rate and desired labour itself is moving, because desired production depends on inventory and WIP gaps that have not closed. In every case a stock is at its target while its rate of change is not zero, so it carries on past the goal: that, together with the delays in hiring and production, is why the cycle continues.",
     },
   ],
   pitfalls: [

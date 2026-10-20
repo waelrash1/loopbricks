@@ -18,6 +18,7 @@ import { STEPS } from "@/data/learn/steps";
 import { MODULE_CONTENT } from "@/data/learn";
 import { sampleModel } from "@/data/apps/sim";
 import { CAL_DATA, CAL_FIXED, CAL_MODEL, CAL_TRUTH, calHoldout, calRef, monteCarlo, overshoots, policyTest } from "@/lib/labs";
+import { beerCost, beerPeak, beerRun, fireRun, fireScore, fishProfit, fishRun, goodOrder } from "@/lib/games";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
 const all = Object.keys(MODELS);
@@ -211,6 +212,71 @@ for (const t of BOOK_TOC) {
     const body = JSON.stringify(t.chapter ?? {});
     if (/\b(this|the) chapter\b|\bchapter \d/i.test(body)) errs.push(`learn notes ${t.id}: refers to a book chapter`);
   }
+}
+// decision games: the engines must behave as the debriefs say
+{
+  const comp = beerRun(), good = beerRun(goodOrder);
+  if (!(beerPeak(comp, 3) > beerPeak(comp, 0))) errs.push("games/beer: computer chain does not amplify orders upstream");
+  if (!(beerCost(good) < beerCost(comp))) errs.push("games/beer: good policy does not cost less than the computer chain");
+  if (beerCost(beerRun(undefined, 2, comp.hist.orders[2])) !== beerCost(comp)) errs.push("games/beer: replaying the computer's orders changes the result");
+  const open = fishRun(0), limit = fishRun(8), held = fishRun(0, false, []);
+  if (!(open.hist.res[30] < 25 && limit.hist.res[30] > 60)) errs.push("games/fishery: catch limit does not protect the stock");
+  if (!(fishProfit(held).a > fishProfit(held).b)) errs.push("games/fishery: a restrained Fleet A should out-earn expanding Fleet B");
+  const lo = fireRun(0.2), hi = fireRun(0.8);
+  if (!(hi.hist.prob[8] < lo.hist.prob[8] && hi.hist.prob[104] > lo.hist.prob[104] && fireScore(hi) > fireScore(lo))) errs.push("games/firefighting: no better before worse");
+}
+// model builder: the expression engine and the starter templates
+import { compile as exprCompile, tryCompile as exprTry } from "@/lib/expr";
+import { TEMPLATES, simulate as bSimulate, template as bTemplate, validate as bValidate } from "@/lib/builder";
+{
+  const ev = (s: string, sc: Record<string, number> = {}) => exprCompile(s).eval({ TIME: 0, DT: 1, ...sc });
+  const cases: [string, number, Record<string, number>?][] = [
+    ["1 + 2 * 3", 7], ["(1 + 2) * 3", 9], ["2 ^ 3 ^ 2", 512], ["-2 ^ 2", -4], ["2 ^ -1", 0.5], ["10 − 4 − 3", 3], ["8 / 4 / 2", 1], ["3 × 4", 12], ["1 + 2 < 4", 1],
+    ["2 <> 2", 0], ["3 >= 3", 1], ["MIN(3, 1, 2) + max(1, 5)", 6], ["ABS(-2) + SQRT(9) + LN(EXP(2))", 7], ["IF(a > 1, 10, 1 / 0)", 10, { a: 2 }],
+    ["STEP(5, 10)", 0, { TIME: 9.75 }], ["STEP(5, 10)", 5, { TIME: 10 }], ["PULSE(4, 2, 1)", 4, { TIME: 2.5 }], ["PULSE(4, 2, 1)", 0, { TIME: 3 }], ["RAMP(2, 5)", 6, { TIME: 8 }],
+    ["TIME * 2", 6, { TIME: 3 }], ['"Birth fraction" * Population', 30, { birth_fraction: 0.03, population: 1000 }],
+  ];
+  for (const [src, want, sc] of cases) {
+    const got = ev(src, sc);
+    if (Math.abs(got - want) > 1e-9) errs.push(`expr: ${src} gave ${got}, expected ${want}`);
+  }
+  if (exprCompile("a * b + A").refs.join() !== "a,b") errs.push("expr: references should be a,b");
+  for (const [src, hint] of [["1 +", "character 4"], ["(1 + 2", 'Missing ")"'], ["1 + 2)", 'Unexpected ")"'], ["FOO(1)", "Unknown function"], ["MIN(1)", "at least 2"], ["2 $ 3", 'Unexpected character "$"'], ["", "empty"]]) {
+    const r = exprTry(src);
+    if (r.ok || !r.error.message.includes(hint)) errs.push(`expr: "${src}" should fail with "${hint}", got ${r.ok ? "no error" : r.error.message}`);
+  }
+  try {
+    ev("x + 1");
+    errs.push("expr: an unknown name should throw");
+  } catch (e) {
+    if (!String(e).includes('Unknown name "x"')) errs.push(`expr: unknown name message: ${e}`);
+  }
+  // every template is clean, runs, and gives the textbook behaviour
+  for (const t of TEMPLATES) {
+    bValidate(bTemplate(t.id)).issues.forEach((i) => errs.push(`builder ${t.id}: ${i.msg}`));
+    const r = bSimulate(bTemplate(t.id));
+    if (!r.ok) errs.push(`builder ${t.id}: run failed: ${r.issues.map((i) => i.msg).join("; ")}`);
+  }
+  const at = (id: string, r: ReturnType<typeof bSimulate>, t: number) => r.values[id][r.times.findIndex((x) => x >= t - 1e-9)];
+  const end = (id: string, r: ReturnType<typeof bSimulate>) => r.values[id][r.values[id].length - 1];
+  const bath = bSimulate(bTemplate("bathtub"));
+  if (Math.abs(end("s1", bath) - 50) > 0.5 || bath.values.s1.some((v, i, a) => i > 0 && v < a[i - 1])) errs.push("builder bathtub: water should rise steadily to 50 litres");
+  const pop = bSimulate(bTemplate("population"));
+  if (Math.abs(end("s1", pop) / (1000 * Math.exp(2)) - 1) > 0.01 || Math.abs(at("s1", pop, 34.75) / 2000 - 1) > 0.02) errs.push("builder population: should grow exponentially, doubling in about 35 years");
+  const sm = bSimulate(bTemplate("stock-management"));
+  const inv = sm.values.s2, ord = sm.values.f1;
+  if (at("s2", sm, 10) !== 100 || Math.min(...inv) > 90 || Math.abs(end("s2", sm) - 100) > 1 || Math.max(...ord) < 16 || Math.abs(end("s1", sm) - 90) > 1)
+    errs.push(`builder stock management: expected a dip, recovery to 100 and amplified orders (min ${Math.min(...inv).toFixed(1)}, end ${end("s2", sm).toFixed(1)}, peak orders ${Math.max(...ord).toFixed(1)})`);
+  // the checks catch what learners get wrong
+  const bad = bTemplate("bathtub");
+  bad.vars.push({ id: "v8", name: "a", eq: "b + 1", x: 0, y: 0 }, { id: "v9", name: "b", eq: "a", x: 0, y: 0 }, { id: "v7", name: "Water", eq: "1", x: 0, y: 0 });
+  bad.flows.push({ id: "f9", name: "leak", eq: "drian_time", x: 0, y: 0 });
+  const msgs = bValidate(bad).issues.map((i) => `${i.id}: ${i.msg}`).join("\n");
+  for (const want of ["v8: Circular", "v9: Circular", "v7: Another element", "s1: Another element", "f9: Connect it", "Did you mean Drain_time?"]) if (!msgs.includes(want)) errs.push(`builder validation: missing "${want}"`);
+  const zero = bTemplate("bathtub");
+  zero.vars[0].eq = "0";
+  const zr = bSimulate(zero);
+  if (zr.ok || zr.issues[0]?.id !== "f2") errs.push("builder: a division by zero should stop the run and blame the drain");
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");

@@ -306,46 +306,62 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open Population Growth and run the Growing preset (birth 5%/yr, death 2%/yr). Use the rule of 70 to predict when the population first reaches 200 and 400, then check on the chart. Now set births equal to deaths and then below deaths: what do you see, and is the loop still reinforcing?",
       hint: "Net fractional growth is 3%/yr, so the doubling time is about 70 / 3 ≈ 23 years, and it stays 23 years for every doubling. Decline is the same R loop running downwards.",
+      answer:
+        "Growing doubles at about year 23 (200) and again at about year 46 (400), and reaches 800 at about year 69: every doubling takes the same 23 years, because net growth is a constant 3% of whatever population exists. With births equal to deaths (3% and 3%) the population stays at 100 forever. With births below deaths (2% and 5%) it halves every 23 years, to about 50 by year 23 and 25 by year 46. The loop is still reinforcing: a smaller population means fewer births, which means a still smaller population, so the same R loop that drives exponential growth drives exponential decay when the net rate is negative.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Contrast linear and exponential growth. Run the Bathtub with the Filling preset and Population Growth with the Growing preset. Which flow depends on its own stock? Explain why only one of them has a constant doubling time.",
       hint: "In the bathtub the inflow is a fixed number, so there is no loop from the level to its inflow and the level rises in a straight line.",
+      answer:
+        "Only Population Growth has a flow that depends on its own stock: births are a fraction of the population. The bathtub's inflow is a fixed 14 a year, so Filling adds the same 8 a year (14 − 6) every year and the level rises in a straight line from 50 to 130 at year 10 and 210 at year 20, with no feedback at all. Doubling time is constant only when growth is proportional to the stock: in the bathtub each doubling takes longer than the last (50 to 100 takes 6.25 years, 100 to 200 takes 12.5), while the population doubles every 23 years. Linear growth comes from an open-loop constant flow; exponential growth needs a reinforcing loop.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {
       prompt:
         "Open Close Gap and run Reach goal (goal 60, adjustment time 5 weeks, starting at 20). Predict when half the 40-unit gap has closed, then check. Repeat with Sluggish (adjustment time 15) and Aggressive (1.5).",
       hint: "Half-life ≈ 0.7 × adjustment time: about 3.5 weeks, 10.4 weeks and 1 week. The state reaches about 40 at the half-life.",
+      answer:
+        "Half the 40-unit gap is closed (the state reaches 40) at about 3.5 weeks with Reach goal, about 10.4 weeks with Sluggish and about 1.1 weeks with Aggressive. Each is roughly 0.7 times the adjustment time, because the adjustment is a constant fraction (1/AT) of the remaining gap, so the gap decays exponentially and its half-life is ln 2 × AT. The time to close half the gap does not depend on the size of the gap, only on the adjustment time: that is the signature of first-order goal seeking.",
       link: { label: "Close Gap", hash: "/m/closegap" },
     },
     {
       prompt:
         "Turn goal seeking into oscillation. In Low-Visibility Pipeline Correction run Tracks the pipeline, then Ignores the pipeline. Then raise the supplier delay from 6 to 12 weeks with awareness of the pipeline still at 0. Where is the delay in the balancing loop, and what happens to the amplitude and period of the swings?",
       hint: "The delay sits between ordering and arrival. Ignoring orders already placed means corrections keep going after the gap is closed. Doubling the delay raises the first peak from about 117 to about 150 and stretches the cycle from roughly 29 to roughly 43 weeks.",
+      answer:
+        "The delay sits between placing an order and receiving it, inside the balancing loop that corrects inventory. Tracking the pipeline, inventory rises smoothly to the goal of 100 with no overshoot. Ignoring it, inventory first dips, then peaks at about 117 near week 16 and swings with a period of about 29 weeks, each swing smaller (104, then 101). With the supplier delay at 12 weeks the first peak rises to about 150 near week 28, the period stretches to about 43 weeks, and the swings die out far more slowly (133, then 124). A longer delay means more orders are already in transit when the gap closes, so the overshoot is bigger and each cycle takes longer: oscillation comes from a delay in a balancing loop combined with a decision rule that ignores what is on the way.",
       link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
         "Open Constrained Growth and run S-curve (growth rate 18%/yr, capacity 200, starting at 10). Read off the time at which the curve stops accelerating, and the population at that moment. Then try Higher capacity and Fast to cap. Does the inflection always occur at half the capacity?",
       hint: "For logistic growth the inflection is at C/2 (100 in the S-curve preset), reached after about ln(19)/0.18 ≈ 16 years.",
+      answer:
+        "In S-curve the growth stops accelerating at about year 16.4, when the population is about 100, half the capacity of 200; this matches ln(19)/0.18 ≈ 16.4. Higher capacity inflects at about year 19.7 at 175 (half of 350), and Fast to cap at about year 8.5 at 100. In this logistic model the inflection is always at half the capacity, because net growth r × P × (1 − P/C) is largest when P = C/2; changing r moves it in time but not in level. Real S-curves need not be symmetric: if the balancing loop's strength depends on the stock in a different way, the inflection can come earlier or later.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
     },
     {
       prompt:
         "S-shaped growth with overshoot: open the boom and bust case and compare 'Fast market, ignores capacity on order' with 'Fast market, counts capacity on order', then 'Long construction delay (4 years)'. Which delay lets capacity overshoot what the market can absorb?",
+      answer:
+        "The capacity acquisition delay, combined with a decision rule that ignores capacity already on order, lets capacity overshoot. In 'Fast market, ignores capacity on order' demand peaks at about 206 near year 7 and then falls to its long-run 100 as the market saturates, but capacity keeps arriving and peaks at about 239 near year 10, well after demand has turned. Counting capacity on order cuts the peak to about 178. With a 4-year construction delay capacity peaks at about 271 near year 12.5 and is still about 156 at year 25, half again more than demand. The lesson: when the growth is fast relative to the delay, the balancing loop that should stop investment gets its information too late, so S-shaped growth turns into overshoot.",
       link: { label: "Boom and bust case", hash: "/apps/business/boom-bust" },
     },
     {
       prompt:
         "Overshoot with an eroding resource: open the fishery case and run 'Open access, strong investment', then 'Catch limit at maximum sustainable yield'. Track the fleet and the fish stock. Which loop lets the fleet keep growing after the fish stock has started to fall, and why does the fleet shrink so slowly?",
       hint: "Boats are bought while the catch per boat beats break-even, but they leave only as they wear out (20-year life).",
+      answer:
+        "In 'Open access, strong investment' the fish stock starts falling at once, yet the fleet keeps growing to about 343 boats at year 7.4, when the fish stock is already down from 1,000 to about 195. The reinforcing investment loop (catch per boat above break-even → profits → more boats) keeps running as long as each boat still earns, and the balancing loop through the fish stock acts only with a delay. The fleet then shrinks slowly because boats leave only as they wear out, about 5% a year with a 20-year life: it takes until about year 22 to fall to half its peak, while the fish stock bottoms out near 9 at year 24. With the catch limit at maximum sustainable yield the catch cannot exceed 75 a year, so the fish stock stays above half capacity (about 550 at year 60) even though the fleet still grows to about 188 boats, many of them idle. The lesson: overshoot and collapse need a renewable resource that erodes, plus a capacity that adjusts faster on the way up than on the way down.",
       link: { label: "Fishery case", hash: "/apps/environment/fishery" },
     },
     {
       prompt:
         "Pen and paper: pick three time series you know (a company's sales, a waiting list, a commodity price). Classify each by mode, sketch the loop structure that must have been dominant, and then list two latent loops that have not yet shown up in the data but could change the behaviour.",
+      answer:
+        "Answers will differ. A good answer names the mode for each series (exponential growth, goal seeking, S-shaped growth, oscillation, overshoot and collapse, or a combination) and the loop structure it implies: a dominant R loop for exponential growth, a dominant B loop for goal seeking, a B loop with a delay for oscillation, an R loop that hands over to a B loop for S-shaped growth. For example, a waiting list that rises and then levels off suggests a balancing loop where more waiting leads to more capacity or fewer referrals. The latent loops are limits that have not yet bitten (market saturation, a capacity ceiling, a resource that can be depleted, a regulator's response) or reinforcing loops that have not yet started (word of mouth, a vicious cycle of quality and staff turnover). The key point is that past data only reveal the loops that have been dominant so far.",
       link: { label: "Reference modes", hash: "/methods/reference-modes" },
     },
   ],

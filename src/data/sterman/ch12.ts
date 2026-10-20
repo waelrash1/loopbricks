@@ -290,46 +290,62 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open the aging chain, load the <b>Baby boom</b> preset (births 35/yr) and run it for 200 years. In what order do the cohorts approach their new equilibria, and roughly how long does each take to get within 10% of it? Relate the times to the youth duration (18 yr) and adult duration (45 yr).",
       hint: "The equilibrium of each cohort is births × its duration: 630 young, 1575 adults and 525 elderly. The young get within 10% in about 30 years; the adults and elderly need about a century, because they wait on the youth stage and then drain through the 45-year adult stage.",
+      answer:
+        "The cohorts settle in order down the chain. Each equilibrium is births × residence time: 35 × 18 = 630 young, 35 × 45 = 1575 adults and 35 × 15 = 525 elderly. The young reach 567 (within 10%) at about year 30, close to their 18-year residence time plus a little, while the adults only reach 1418 around year 95 and the elderly reach 473 around year 112. The later stages are slow because they cannot start rising until the extra births have matured, and then they fill through the long 45-year adult stage: delays in a chain add up, so the oldest stock feels a baby boom for generations.",
       link: { label: "Aging chain", hash: "/m/aging" },
     },
     {
       prompt:
         "Still in the aging chain, compare <b>Longer lives</b> (elder lifespan 28 yr) with the default (15 yr). Births are unchanged, so why does total population rise, and which cohort carries all of the increase? What does that imply for long-term care demand?",
       hint: "Only the elderly stock's outflow changes; its equilibrium becomes 20 × 28 = 560 instead of 300.",
+      answer:
+        "Total population rises from about 1560 to about 1820 even though births stay at 20 a year, and the whole increase is in the elderly: young and adults head for the same 360 and 900 in both runs, while the elderly approach 20 × 28 = 560 instead of 300 (about 458 by year 50 and 526 by year 100). A stock's equilibrium is its inflow times its residence time, so lengthening only the last residence time raises only the last stock. Long-term care demand therefore grows almost in proportion to life expectancy after 65, with no change in births needed, and it builds up over decades.",
       link: { label: "Aging chain", hash: "/m/aging" },
     },
     {
       prompt:
         "Open Aging Chain with PDY and load <b>Rapid hiring</b> (40/yr). Read the rookie, experienced and veteran stocks after 2, 5 and 20 years and compute the rookie share each time. Repeat with <b>Steady</b> (20/yr, which starts in equilibrium). Why is the rookie share higher under rapid hiring at every reading, and why does the gap close in the long run?",
       hint: "At year 5 rookies are about 13% of staff under rapid hiring against a constant 8% under Steady. In equilibrium every stock is hiring × its residence time (60, 500, 160 or 120, 1000, 320), so the long-run mix is the same; the extra dilution lasts only while the experienced ranks catch up with the larger intake.",
+      answer:
+        "Under Rapid hiring the rookie share is about 89.5 / 760 ≈ 12% at year 2, 109 / 820 ≈ 13% at year 5 and 120 / 1075 ≈ 11% at year 20, against a constant 60 / 720 ≈ 8.3% under Steady. Doubling the intake fills the rookie stock within a few years (its residence time is only 3 years), but the experienced and veteran stocks drain and fill over 25 and 8 years, so for a long time the newcomers make up an unusually large slice of the workforce. In the long run every stock is hiring × residence time (120, 1000, 320), so the rookie share returns to 120 / 1440 ≈ 8.3%. Dilution is a transient caused by the difference in delays, and it lasts as long as the slowest stage takes to catch up.",
       link: { label: "Aging Chain with PDY", hash: "/m/agingPDY" },
     },
     {
       prompt:
         "In Coflow with Experience, load <b>Steady team</b> (hiring 10, time to quit 8 yr, new hires 0 yr). Note average experience. Switch to <b>Hiring surge (dilution)</b> and watch the average fall, then recover. Finally try <b>Hire veterans</b>. Which slider changes the long-run average and which only changes the path?",
       hint: "With no decay, equilibrium average experience = new-hire experience + average time in the firm.",
+      answer:
+        "Steady team stays at an average experience of 8 years (0 for new hires plus an average 8 years in the firm). Hiring surge doubles hiring to 20, and the average drops to about 6.1 years around year 6 because many people with zero experience arrive at once, then recovers to 8 as the workforce settles at 160. Hire veterans raises the long-run average to 5 + 8 = 13 years. So the experience of new hires and the time to quit set the long-run average, while the hiring rate only changes the path (and the headcount): it moves the dilution term, not the equilibrium.",
       link: { label: "Coflow with Experience", hash: "/m/coflowExperience" },
     },
     {
       prompt:
         "Show why a delay is not a coflow. In the Coflow molecule, set hiring to 0 and watch average experience: it keeps rising by a year every year, because experience accrues while nobody joins. Now imagine the attribute were labour per machine with no accrual: if investment stopped, what should happen to the average, and what would a SMOOTH towards the new-machine value wrongly do?",
       hint: "With no inflow and first-order outflow, leavers remove the average, so the average of a conserved attribute cannot change.",
+      answer:
+        "With hiring at 0, headcount falls from 50 to about 22 by year 5 and 9 by year 10, while average experience rises from 2 to about 7.0 at year 5, 12.1 at year 10 and 22.2 at year 20, roughly a year per year, because everyone left ages and leavers take only the average with them. If the attribute did not accrue (labour per machine), first-order leavers would remove exactly the average, so with no inflow the average would stay put. A SMOOTH toward the new-machine value would wrongly drift the average toward a value that no new machines are bringing in. A coflow changes its average only through what enters (and any accrual), which a delay cannot represent.",
       link: { label: "Coflow", hash: "/m/coflow" },
     },
     {
       prompt:
         "Open Cascaded Coflow with the <b>Value added</b> preset. Predict the equilibrium average cost in stage 1 and stage 2 before running (input cost 1 $/u, 0.5 $/u·wk added, 4 weeks per stage), then check. What happens to stage-2 cost if you lengthen the stage time to 8 weeks?",
       hint: "Each stage adds value added × stage time on average: 1 + 2 = 3 in stage 1, 3 + 2 = 5 in stage 2.",
+      answer:
+        "Each stage adds value added × time spent in it: stage 1 settles at 1 + 0.5 × 4 = 3 $/unit and stage 2 at 3 + 0.5 × 4 = 5 $/unit, which the run shows (2.84 and 4.10 at week 10, exactly 3.00 and 5.00 by week 40). With an 8-week stage time each stage adds 4 $/unit, so stage 1 settles at 5 and stage 2 at 9 $/unit, and the work in progress doubles to 64 per stage. Longer stages pile up more cost per unit as well as more inventory, which is why cutting cycle time lowers unit cost in a coflow.",
       link: { label: "Cascaded Coflow", hash: "/m/cascadedCoflow" },
     },
     {
       prompt:
         "Pen and paper: a professional firm has three ranks with average stays of 2, 6 and 25 years, and 40% are promoted at each review (the rest leave). Use Little's Law to find the equilibrium share in each rank. Then explain in words what happens to promotion odds if the firm's growth falls from 10%/yr to zero.",
       hint: "Per new hire: 2 years at rank 1, 0.4 × 6 at rank 2, 0.16 × 25 at rank 3; divide each by the total.",
+      answer:
+        "Per new hire: 2 years at rank 1, 0.4 × 6 = 2.4 years at rank 2 and 0.4 × 0.4 × 25 = 4 years at rank 3, 8.4 person-years in total. By Little's Law each rank's share is its person-years over the total: 2 / 8.4 ≈ 24%, 2.4 / 8.4 ≈ 29% and 4 / 8.4 ≈ 48%. In a growing firm each year's intake is larger than the last, so the junior ranks are relatively bigger and the senior ranks must keep expanding, which creates promotion slots. When growth drops to zero, senior places open only as people leave, so either fewer people can be promoted or they wait longer for it; the pyramid has to change shape, and ambitious juniors leave. Any good answer shows the share calculation and links promotion chances to growth.",
     },
     {
       prompt:
         "Explore the health and workforce applications that use these structures: experience dilution in project teams, ageing and long-term care, and training pipelines for doctors and nurses. For each, name the aging chain or coflow and the attribute that matters.",
+      answer:
+        "Experience dilution in project teams is a coflow: the attribute is years of experience riding along with headcount, diluted by inexperienced hires. Ageing and long-term care is an aging chain (young, working age, 65+), and the attribute that matters is the size of the oldest stock, set by inflow × life expectancy after 65. Training doctors and nurses is an aging chain with a supply line (trainees, then practising clinicians); the key quantity is the number in training, which planners must count to avoid over-correcting. A good answer names, for each case, the stocks in sequence, their residence times, and whether something is carried along with the people (a coflow) or the people themselves move (an aging chain).",
       link: { label: "Hiring and the experience of a workforce", hash: "/apps/projects/experience-dilution" },
     },
   ],

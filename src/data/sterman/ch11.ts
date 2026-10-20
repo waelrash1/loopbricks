@@ -279,45 +279,61 @@ export const CHAPTER: StudyChapter = {
         "Open Decay with the default τ = 5 years. Treat the starting stock of 100 as a pulse just injected into a first-order delay. Read off the stock at years 5, 10 and 15 and compare with 37, 14 and 5. Then confirm that the outflow is largest at the very start.",
       hint: "After one time constant about 63% has left, after two about 86%, after three about 95%.",
       link: { label: "Decay", hash: "/m/decay" },
+      answer:
+        "The app shows about 36.4 at year 5, 13.3 at year 10 and 4.8 at year 15, very close to the exact 36.8, 13.5 and 5.0 (the small difference comes from the 0.1-year time step). The outflow is Stock / τ, so it is largest at the very start, 100 / 5 = 20 units a year, and falls to about 7.3 by year 5. This is the signature of a first-order delay: the response to a pulse starts at its maximum and decays exponentially, so a third of the material has left after about 2 years even though the average delay is 5. That is why a first-order delay is a poor model for any process whose output should start slowly.",
     },
     {
       prompt:
         "Open Cascaded Levels and choose the Pulse through preset (60 units in stage 1, τ = 4 months per stage, so the mean delay is 12 months). When does stage 3 peak? Is the peak before or after 12 months? Now try τ = 1.5 and say what changes and what does not.",
       hint: "For equal stages the third stock peaks at about 2τ, well before the 3τ mean: higher-order delays peak early and have a long tail.",
       link: { label: "Cascaded Levels", hash: "/m/cascade" },
+      answer:
+        "With τ = 4, stage 3 peaks at about month 8 (about 16.5 units), well before the 12-month mean delay; the mean time at which the material leaves is indeed about 12 months, because the outflow has a long tail. With τ = 1.5 the peak moves to about month 3 and the mean to about 4.5 months, but the peak height (about 16.8) and the shape of the curve hardly change. Changing the stage time rescales the time axis; changing the number of stages would change the shape. The lesson is that a higher-order delay peaks before its mean, so judging a delay by when the output peaks underestimates it.",
     },
     {
       prompt:
         "Open Material Delay and pick Steady pipeline (inflow 8/wk, delay 9 wk). Add up the three in-transit stocks once arrivals have caught up with the inflow. Check your total against Little's law. Then switch to Long transit (delay 16 wk) and predict the new total before you run it.",
       hint: "8 × 9 = 72 units; 8 × 16 = 128 units. Note how slowly arrivals build up at first: the third stage holds almost nothing for the first few weeks.",
       link: { label: "Material Delay", hash: "/m/material" },
+      answer:
+        "With Steady pipeline the three stages settle at 24 each, 72 units in total, which matches Little's law: stock in transit = throughput × delay = 8 × 9 = 72. With Long transit the total becomes 8 × 16 = 128 (about 42.7 per stage). The build-up is slow: at week 3 stage 3 holds under 2 units and arrivals are well under 1 a week, and arrivals reach 99% of the inflow only after about 25 weeks with the 9-week delay and about 45 weeks with the 16-week delay. Little's law gives the equilibrium only; while the pipeline is filling, the inventory in transit is lower and depends on the delay's shape.",
     },
     {
       prompt:
         "Open Smooth with the Step up preset (input jumps from 30 to 80, τ = 6 weeks). Compare the first- and third-order perceptions at week 2 and again at week 12. Which responds first, and which arrives first? Repeat with τ = 15 and describe what a manager using each forecast would experience.",
-      hint: "At week 2 the first-order smooth has closed about 28% of the gap, the third-order only about 7%. Later the third-order catches up steeply.",
+      hint: "At week 2 the first-order smooth has closed about 27% of the gap, the third-order only about 7%. Later the third-order catches up steeply.",
       link: { label: "Smooth", hash: "/m/smooth" },
+      answer:
+        "At week 2 the first-order smooth is at about 43.7 (27% of the gap of 50 closed) while the third-order is at about 33.3 (7%). By week 12 the order has reversed: the first-order is at about 73.2 (86%) and the third-order at about 77.0 (94%); the third-order overtakes at about week 7. With τ = 15 the same pattern stretches out: at week 2 the first-order has closed 12% of the gap and the third-order under 1%, and they cross at about week 18. The first-order smooth responds first but has a long tail, while the third-order waits and then arrives sooner. A manager using the first-order forecast sees change right away but keeps under-forecasting for a long time; one using the third-order forecast sees nothing for weeks, then a sudden catch-up, and with a long τ that silence lasts a whole season.",
     },
     {
       prompt:
         "Open Smooth (Higher-Order). Run Equal stages (2, 2, 2), then One long stage (5, 0.5, 0.5). Both have a total delay of 6 years. How do their shapes differ? Explain why splitting a delay evenly across stages gives the most S-shaped response.",
       link: { label: "Smooth (Higher-Order)", hash: "/m/smoothHigher" },
+      answer:
+        "Equal stages give a clear S-shape: almost nothing in year 1 (20.7), steepest change around year 4, half the gap closed at about year 5.4 and 90% at about year 10.5. One long stage responds almost at once (22.8 at year 1, steepest around year 2), closes half the gap sooner (year 4.5) but has a longer tail, reaching 90% only at about year 12.5; its shape is close to a first-order exponential approach. For stages in series the variance of the total delay is the sum of each stage's time squared, and for a fixed total of 6 that sum is smallest when the stages are equal (12 against about 25.5). The smaller the spread around the mean, the more the response is concentrated around year 6, which is what makes it S-shaped: the effective order is mean² ÷ variance, 3 for equal stages but only about 1.4 for one long stage.",
     },
     {
       prompt:
         "Open Trend with Steady growth (6%/month, perception time 4 months). Once the run settles, compute Actual ÷ Perceived and compare with 1 + 0.06 × 4. Then choose Turning point (−4%/month), where the quantity declines from the start, and measure how far the perception overstates reality once the run settles (compare with 1 ÷ (1 − 0.04 × 4)). What does this imply for anyone smoothing a growing or shrinking series?",
       hint: "Under steady exponential growth a first-order smooth falls permanently behind by a factor of 1 + g × D; in a steady decline it stays above the actual value by a factor of 1 ÷ (1 − |g| × D), about 1.19 here.",
       link: { label: "Trend", hash: "/m/trend" },
+      answer:
+        "With Steady growth the ratio Actual ÷ Perceived settles at 1.24 by about month 30, exactly 1 + 0.06 × 4. With Turning point (−4%/month) the ratio settles at 0.84, so the perception sits about 1.19 times above reality, matching 1 ÷ (1 − 0.04 × 4) = 1 ÷ 0.84. A first-order smooth of a growing quantity never catches up: it is always reporting the value from about one perception time ago, and in steady growth that gap grows in absolute size forever. Anyone smoothing a trending series should expect to understate a growing quantity and overstate a shrinking one by roughly the growth rate × the smoothing time, and should correct for the trend (as the Trend molecule's perceived growth rate does) rather than treat the smoothed value as current.",
     },
     {
       prompt:
         "In the adaptive expectations of inflation case, compare 8% inflation, nowcast with Inflation judged over 10 years. The perceived price level is the same in both, because only the period used to judge inflation changes. How much further behind the actual price level does the expected price level run in the first 10 years when inflation is judged over 10 years instead of 3, and how would that affect wage or interest-rate decisions?",
       link: { label: "Adaptive expectations of inflation", hash: "/apps/economics/expectations" },
+      answer:
+        "The perceived price level is identical in both runs (about 191 at year 10 against an actual 222), but the expected price level differs. Judging inflation over 3 years, the expectation is at most about 7% behind the actual level (around year 2) and only about 1.6% behind by year 10 (218 against 222). Judging it over 10 years, it falls about 10% behind around year 3, is still about 10% behind at year 5 (134 against 149) and about 6% behind at year 10 (209 against 222). A longer window means the perceived trend is learned more slowly, so the trend correction closes the gap later. People who set wages or lend money on that expectation would underestimate inflation for years: real wages would fall and lenders would charge too little interest, until the expectation catches up.",
     },
     {
       prompt:
         "Pen and paper. An aircraft parts shop records every lot as taking exactly its scheduled 10 days, but on the shop floor the mean is 22 days with a standard deviation of 9 days. Assuming an Erlang shape, estimate the order of the delay. Next, an insurer holds 50,000 open claims and settles 25,000 a month: what is the average wait? Finally, decompose a delay from your own work into stages and estimate each one.",
       hint: "Order ≈ mean² / variance = 484 / 81 ≈ 6. Waiting time = 50,000 / 25,000 = 2 months (in equilibrium only).",
+      answer:
+        "Order: for an Erlang delay, variance = mean² ÷ n, so n ≈ mean² ÷ variance = 22² ÷ 9² = 484 ÷ 81 ≈ 6, a sixth-order delay, which responds late and fairly sharply. Note that the recorded 10 days is useless here: it is the schedule, not the real delay, so the shop must be measured on the floor. Waiting time: by Little's law, average wait = stock ÷ throughput = 50,000 ÷ 25,000 = 2 months, valid only if the claims backlog is roughly in equilibrium. For your own delay, a good decomposition names each stage (for example, a purchase request: waiting for approval, approval, supplier quoting, order placement, production, shipping, receiving), gives each a time estimate, adds them to get the mean, and notes which stages vary most, since those set the spread and the order of the delay.",
     },
   ],
   pitfalls: [

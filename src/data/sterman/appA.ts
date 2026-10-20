@@ -180,36 +180,48 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Do one Euler step by hand. Open Go To Zero with Quick (τ = 2), current value 100. Compute the action (100 ÷ 2 = 50 per month) and the value after one step of dt = 0.1. Press Step once and compare. Press it again and repeat the calculation with the new value.",
       hint: "100 − 0.1 × 50 = 95; next 95 − 0.1 × 47.5 = 90.25. Each step multiplies the stock by 1 − dt/τ = 0.95.",
+      answer:
+        "The action is Current value / τ = 100 / 2 = 50 per month, so one step of dt = 0.1 removes 0.1 × 50 = 5 and leaves 95, which is what Step shows. The second step uses the new value: action 95 / 2 = 47.5, change 0.1 × 47.5 = 4.75, value 90.25 (the app shows 90.25 and an action of about 45.1 after it). Each Euler step multiplies the stock by 1 − dt/τ = 0.95, so after n steps the value is 100 × 0.95^n. Euler simply holds each rate constant for one step, then recomputes it from the new stock.",
       link: { label: "Go To Zero", hash: "/m/goToZero" },
     },
     {
       prompt:
         "Euler versus exact growth. In Population Growth with birth 5% and death 2%, compute the exact population at year 60 (100·e^1.8) and the Euler value with the app's dt = 0.1 (100·1.003^600). Set Stop at to 60 and read the simulated value. Which is it closer to, and why must Euler undershoot?",
       hint: "Exact ≈ 605.0, Euler ≈ 603.3. Each step compounds once instead of continuously.",
+      answer:
+        "Exact: 100 × e^(0.03 × 60) = 100 × e^1.8 ≈ 605.0. Euler with dt = 0.1: each step multiplies by 1 + 0.03 × 0.1 = 1.003, so 100 × 1.003^600 ≈ 603.3, and the app shows 603.3 at year 60, matching the Euler value, not the exact one. Euler must undershoot growth because it holds the growth rate constant over each step at its value from the start of the step, while the true stock (and so its inflow) keeps rising during the step: it compounds once per step instead of continuously. The error is small here (about 0.3%) because dt is 1/333 of the 33-year time constant.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Error in a stable system. Open Decay and set τ = 1 (the shortest allowed), so dt = 0.1 is one-tenth of the time constant. Compute the exact stock at t = 1 and t = 5 (100·e^−t) and the Euler values (100·0.9^(10t)). Is the absolute error growing or shrinking over time? Compare with the growth case.",
       hint: "t = 1: 36.8 exact, 34.9 Euler; t = 5: 0.67 versus 0.52. The absolute error shrinks as the stock settles, unlike in the growth model.",
+      answer:
+        "Exact at t = 1: 100 × e^−1 ≈ 36.8; Euler 100 × 0.9^10 ≈ 34.9 (the app shows 34.87). At t = 5: exact 100 × e^−5 ≈ 0.67; Euler 100 × 0.9^50 ≈ 0.52 (app 0.515). The absolute error shrinks, from about 1.9 at t = 1 to about 0.15 at t = 5, because both paths go to zero; the relative error grows, but it applies to an ever smaller stock. In the growth case the opposite happens: the absolute error keeps growing with the stock. In a stable system Euler errors die out with the dynamics; in an unstable one they compound.",
       link: { label: "Decay", hash: "/m/decay" },
     },
     {
       prompt:
         "Pen and paper: break the goal-seeking model. With goal 100, start 0 and adjustment time 1, carry out Euler by hand for five steps with dt = 0.5, 1, 1.5 and 2.5. Plot the four paths against the exact curve 100(1 − e^−t). Which step sizes produce behaviour a single stock can never really show?",
       hint: "Gap multiplier 1 − dt/AT: 0.5, 0, −0.5, −1.5. dt = 1.5 gives damped spurious oscillation; dt = 2.5 explodes.",
+      answer:
+        "With goal 100, start 0 and AT = 1 each Euler step multiplies the gap by 1 − dt/AT. dt = 0.5 (multiplier 0.5): 0, 50, 75, 87.5, 93.75, 96.9, smooth and a bit fast against the exact 100(1 − e^−t). dt = 1 (multiplier 0): 0, 100, 100, 100, … reaching the goal in one step. dt = 1.5 (multiplier −0.5): 0, 150, 75, 112.5, 93.75, 103.1, overshooting and oscillating with damping. dt = 2.5 (multiplier −1.5): 0, 250, −125, 437.5, −406.25, 859.4, an exploding oscillation. A single first-order stock can never overshoot or oscillate, so the dt = 1.5 and dt = 2.5 paths (and the instant jump at dt = 1) are pure integration artefacts: the time step must be well below the adjustment time.",
       link: { label: "Close Gap", hash: "/m/closegap" },
     },
     {
       prompt:
         "Choose a time step. List the time constants in the Cascaded Levels molecule at its Fast (τ = 1.5 months) preset. What range of dt would the quarter-to-tenth rule recommend, which power of 2 would you pick, and is the app's dt = 0.1 month inside the range?",
       hint: "Each stage has τ = 1.5, so dt between about 0.15 and 0.375; 0.25 is the power of 2 inside that range. The app's 0.1 is a little smaller still, which costs only run time.",
+      answer:
+        "Each of the three stages drains with the same time constant τ = 1.5 months, so the shortest (and only) time constant is 1.5 months. The quarter-to-tenth rule gives dt between 1.5 / 10 = 0.15 and 1.5 / 4 = 0.375 months. The power of 2 in that range is 0.25 (1/4); 0.125 is just below it and also acceptable. The app's dt = 0.1 month is slightly smaller than the range, which only costs computing time and makes the integration a little more accurate. Choose dt from the shortest time constant in the model, then halve it and check that the results do not change.",
       link: { label: "Cascaded Levels", hash: "/m/cascade" },
     },
     {
       prompt:
         "Pen and paper: RK2 versus Euler. For dS/dt = −S with S(0) = 100 and dt = 0.5, compute one Euler step and one RK2 step and compare both with the exact value 100·e^−0.5 ≈ 60.65.",
       hint: "Euler: 50. RK2: k₁ = −100, provisional 50, k₂ = −50, step gives 100 − 0.5 × 75 = 62.5, far closer.",
+      answer:
+        "Euler: rate k₁ = −100, so S(0.5) = 100 + 0.5 × (−100) = 50, an error of about 10.65 below the exact 60.65. RK2 (Heun): k₁ = −100 gives a provisional value 50; the rate there is k₂ = −50; the step uses the average slope (−100 − 50) / 2 = −75, so S(0.5) = 100 − 0.5 × 75 = 62.5, an error of about 1.85. RK2 cuts the error by a factor of almost 6 in this step because it uses the slope at both ends of the interval, so it captures how the rate changes during the step. For the same accuracy, Euler would need a much smaller dt.",
     },
   ],
   pitfalls: [

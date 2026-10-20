@@ -376,42 +376,58 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Practise reading polarity. Open Population Growth and run Growing, then lower the birth rate from 5% to 4%. The population is still rising. Explain, using the precise definition of link polarity, why Births → (+) Population is still correct.",
+      answer:
+        "With births at 4% and deaths at 2% the population still rises (about 122 at year 10 instead of about 135 with births at 5%). The link Births → (+) Population is defined by what the stock does compared with what it would otherwise have been: a positive link into a stock means the inflow adds to it, so more births make the population higher than it would have been, and fewer births make it lower than it would have been. It does not say the population falls when births fall; the population keeps growing as long as births exceed deaths. Polarity describes the structure of the link, not the behaviour of the variables.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Trace loop polarity the right way. For each loop in the workload diagrams, start with a small increase in Work pressure and follow it around. Then start from a different variable in the same loop and check you get the same answer. Which link signs are easiest to get wrong?",
+      answer:
+        "Starting from a small increase in Work pressure, follow each link and keep track of whether each variable ends up higher or lower than it would otherwise have been. Midnight Oil: more pressure → more overtime → more work completed → less work remaining → less pressure, so it is balancing. Corner Cutting: more pressure → less time per task → faster completion → less work remaining → less pressure, also balancing. Burnout: more overtime → more fatigue (with a delay) → lower productivity → less work completed → more work remaining → more pressure, so it is reinforcing. Haste Makes Waste: less time per task → more errors → more rework → more work remaining → more pressure, also reinforcing. Starting from a different variable in the same loop must give the same polarity. The links easiest to get wrong are those through outflows and inverse effects (work completed lowers work remaining; less time per task raises errors), so trace each one in words rather than counting minus signs.",
       link: { label: "Causal loop diagrams", hash: "/methods/causal-loops" },
     },
     {
       prompt:
         "Feel Burnout dominate Midnight Oil. Open the crunch case and compare 'Normal hours', '20% overtime' and '40% overtime'. After a few months, is more overtime still producing more output? Where is the delay in the loop?",
       hint: "Fatigue builds over the 'time to fatigue'; the extra hours pay off at first and then productivity falls.",
+      answer:
+        "Output jumps at once to 1.2, 1.4 or 1.6 times normal, then falls as fatigue builds over the 4-week time to get fatigued. With 40% overtime output drops below normal at about week 5 and ends at about 0.84 times normal at week 20; with 20% it ends at about 0.96, so after a few months more overtime produces less, not more. Over the 20 weeks 40% overtime produced slightly less in total than normal hours (about 19.1 against 20 weeks of normal output), and 60% produced about 16.7. The delay is the build-up of fatigue between hours worked and productivity. Because the gain is immediate and the cost delayed, the Midnight Oil loop dominates at first and the Burnout loop dominates later, which is why crunch feels productive while it is starting to backfire.",
       link: { label: "Crunch case", hash: "/apps/projects/crunch" },
     },
     {
       prompt:
         "Schedule pressure as a balancing loop. In the deadline case compare 'Realistic deadline (15 weeks)' with 'Tight deadline (5 weeks)'. Which of the workload loops (Midnight Oil, Corner Cutting) does the model represent, and what would you have to add to show Burnout or Haste Makes Waste?",
+      answer:
+        "With the realistic 15-week deadline the work finishes at about week 15; with the tight 5-week deadline about 150 tasks are still left at week 5 and the work ends at about week 8.3, because the pace cannot rise above twice normal. The model has one balancing loop in which schedule pressure raises the work rate: it stands for Midnight Oil and Corner Cutting lumped together, since both raise the completion rate when the gap grows, and it gives that extra pace for free. To show Burnout you would add a fatigue stock fed by hours worked that lowers productivity after a delay (as in the crunch case); to show Haste Makes Waste you would add an error fraction that rises with pressure and a rework stock that feeds undiscovered errors back into work remaining. Those are the reinforcing side effects that make tight deadlines backfire.",
       link: { label: "Deadline pressure case", hash: "/apps/projects/deadline-pressure" },
     },
     {
       prompt:
         "The invisible hand with a delay. Open Smooth Pricing and run Demand shock, then Sticky (slow). Which part of the market structure does the price adjustment time stand for, and how would the long delays in the supply loop change how quickly the market reaches its natural price?",
+      answer:
+        "The demand shock sets the indicated price 40% above the reference, so the price moves from 10 towards 14. With a 4-year adjustment time it closes 63% of the gap by year 4 and 95% by about year 12; with the sticky 10-year setting it takes 10 and about 30 years. The price adjustment time stands for the delays in the price-setting loop: how slowly sellers notice the imbalance and revise list prices and contracts. It is only one of the delays in a real market: supply responds through investment, capacity construction and learning, which take years, and demand adjusts as people change habits and equipment. With those long delays the balancing loops act on old information, so the market approaches its natural price slowly and often overshoots it rather than settling smoothly as this first-order model does.",
       link: { label: "Smooth Pricing", hash: "/m/smoothPricing" },
     },
     {
       prompt:
         "A supply loop with long delays. In the hog cycle case run 'Producers ignore the pipeline', then 'Short lag (5 months)'. Relate the result to the point that markets with weak short-run and strong long-run responses are prone to persistent disequilibrium.",
+      answer:
+        "When producers ignore hogs on the way, inventory starts at 60, peaks at about 117 at month 24, and keeps cycling with a period of about 42 months, slowly damping (102, then 100). With a 5-month lag the first peak is only about 109 at month 14.5, the period shortens to about 31 months and the cycle dies out much faster. The strong supply response comes only after the biological lag, while producers keep responding to today's gap, so by the time the hogs arrive the market has already been corrected and prices swing the other way. Markets with a weak short-run response (supply fixed until the hogs mature) and a strong long-run response (many producers add sows) are therefore prone to persistent disequilibrium, and counting the pipeline (the 'count hogs on the way' preset) removes the overshoot.",
       link: { label: "Hog cycle case", hash: "/apps/economics/hog-cycle" },
     },
     {
       prompt:
         "Pen and paper: draw a CLD for the Medigap death spiral with premiums, the average health of subscribers, the number of subscribers, insurer losses and the number of insurers. Mark every link and loop polarity and the main delays, then use it to judge a state subsidy for premiums and a rule that all insurers must accept every applicant.",
       hint: "The core is a reinforcing loop: higher premium, healthier people leave, average cost per subscriber rises, higher premium.",
+      answer:
+        "Model answer: Premium → (+) Healthy subscribers leaving (a link to the outflow); fewer healthy subscribers → average health of subscribers falls (−); worse average health → (+) claims per subscriber → (+) insurer losses → (+) premium, with a delay of a year or more because premiums are reset annually from last year's claims. That is the core reinforcing loop, the death spiral. A second reinforcing loop runs through the number of insurers: higher losses → (−) insurers in the market → less competition and a smaller pool → higher premiums. Balancing loops are weak here: higher premiums raise revenue per subscriber, but the healthy leave faster than revenue rises. A premium subsidy weakens the first link and slows healthy people leaving, but it treats the symptom and its cost grows if the spiral continues. Forcing insurers to accept every applicant does not stop the healthy leaving and can strengthen the spiral, unless it is paired with something that keeps the healthy in the pool (a mandate, a single pool or risk adjustment).",
     },
     {
       prompt:
         "Policy resistance: add a carpool (HOV) lane to the traffic diagram. Trace what happens to trips per day, travel time and attractiveness of driving, and decide which compensating loops absorb the gain. Then compare with a congestion toll and with lower speed limits.",
+      answer:
+        "Model answer: an HOV lane adds road capacity, so travel time falls at first; shorter travel time raises the attractiveness of driving, which raises trips per day and car use (people switch from transit, travel at peak hours, or move further out), and the extra traffic pushes travel time back up. Those compensating balancing loops, acting with delays of months for trips and years for where people live and work, absorb most of the gain, which is the classic example of policy resistance. A congestion toll acts on the attractiveness of driving directly: it cuts trips instead of adding capacity that new trips fill, so the same loops work for the policy rather than against it. Lower speed limits raise travel time and reduce the attractiveness of driving, but also cut capacity, so they may shift demand rather than solve congestion. The key point is to look for the actors who respond to the change in travel time, not only the cars on the road today.",
       link: { label: "Policy resistance case", hash: "/apps/social/policy-resistance" },
     },
   ],

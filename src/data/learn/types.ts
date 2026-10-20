@@ -34,3 +34,20 @@ export type Step = {
   example?: string;
   exercises?: number[];
 };
+
+// A guided project from problem to policy, built on the app's molecules and cases.
+export type Project = {
+  id: string;
+  field: string; // "Health", "Business", "Environment"
+  title: string;
+  problem: string; // the situation and the question the client asks
+  stages: { title: string; task: string; deliverable: string; tools: { label: string; hash: string }[]; check: string[] }[];
+  sources: string[];
+};
+
+export type GlossaryTerm = { term: string; def: string; see?: { label: string; hash: string }[] };
+
+// A question in the before-and-after test; skill names the misconception it probes.
+export type DiagQuestion = { skill: string; q: string; options: string[]; answer: number; why: string };
+
+export type Week = { week: number; modules: string[]; activity: string };

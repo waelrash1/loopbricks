@@ -20,8 +20,7 @@ import FamilyTree from "@/components/FamilyTree";
 import RunsPanel from "@/components/RunsPanel";
 import { MethodsIndex, MethodsPage } from "@/components/Methods";
 // the study guide is large and only some visitors open it, so it loads on demand
-const CurriculumIndex = lazy(() => import("@/components/Learn").then((m) => ({ default: m.CurriculumIndex })));
-const ModulePage = lazy(() => import("@/components/Learn").then((m) => ({ default: m.ModulePage })));
+const LearnRoutes = lazy(() => import("@/components/LearnRoutes"));
 const LearnPanel = lazy(() => import("@/components/Learn").then((m) => ({ default: m.LearnPanel })));
 import { METHOD_PAGES } from "@/data/methods";
 import { useShelf } from "@/lib/runs";
@@ -35,12 +34,12 @@ import { caseIn, casesUsing, domainById } from "@/data/apps";
 //   #/methods     methods guide; #/methods/<page> one page; #/learn[/<module>] the curriculum
 //   #/tree        family tree; #/tree/<key> with that molecule selected
 //   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "curriculum"; module?: string };
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "curriculum"; module?: string; id?: string };
 function parseRoute(): Route {
   const [, a, b, c] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
-  if (a === "learn") return { view: "curriculum", module: b || undefined };
+  if (a === "learn") return { view: "curriculum", module: b || undefined, id: c || undefined };
   // the old chapter-by-chapter study guide now lives in the curriculum
   if (a === "methods" && b === "book") return { view: "curriculum" };
   if (a === "methods") return { view: "methods", page: METHOD_PAGES.some((p) => p.id === b) ? b : undefined };
@@ -178,11 +177,7 @@ export default function MoleculeExplorer() {
           </>
         ) : route.view === "curriculum" ? (
           <Suspense fallback={<p className="max-w-[1100px] mx-auto px-4 md:px-8 pt-10 text-muted-foreground">Loading…</p>}>
-            {route.module ? (
-              <ModulePage key={route.module} id={route.module} onModule={(id) => go(`/learn/${id}`)} onIndex={() => go("/learn")} onOpen={(h) => go(h)} />
-            ) : (
-              <CurriculumIndex onModule={(id) => go(`/learn/${id}`)} onOpen={(h) => go(h)} />
-            )}
+            <LearnRoutes page={route.module} id={route.id} go={go} />
           </Suspense>
         ) : route.view === "methods" ? (
           route.page ? (

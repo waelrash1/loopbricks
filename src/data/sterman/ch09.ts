@@ -300,48 +300,56 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open the constrained-growth molecule with the S-curve preset (growth rate 18%/yr, capacity 200). Note the time at which the population passes 100 and check that the growth flow is at its maximum there. Then set capacity to 350 and confirm the fastest growth now occurs near 175.",
       hint: "In the logistic model the inflection point is always at half the carrying capacity, because the net growth rate is a symmetric parabola in P.",
+      answer: "With r = 18% and K = 200 the population passes 100 at about year 16.5, and the growth flow (births minus crowding deaths) peaks there at 9 a year. With K = 350 the fastest growth, 15.75 a year, occurs when the population is 175, at about year 19.7. Net growth r·P·(1 − P/K) is a parabola in P that is symmetric about K/2, so the inflection point is always at half the carrying capacity whatever r is; changing r only changes when it happens.",
       link: { label: "Constrained growth", hash: "/m/logistic" },
     },
     {
       prompt:
         "Reproduce the base-case epidemic of Sterman (2000) in the outbreak case: set R₀ to 3, the infectious period to 2 days, and contact reduction and vaccination to 0. Record the day of the peak and the number never infected. Then lower R₀ step by step to 1.2, 1.0 and 0.9. At what value does the outbreak stop taking off?",
       hint: "R₀ here is c·i·d. The base-case example (6 contacts a day, infectivity 0.25, 2 days) gives 3. Around 6% of people should escape infection at R₀ = 3.",
+      answer: "At R₀ = 3 with a 2-day infectious period the infected count peaks near day 8 at about 3,070 of 10,000, and about 560 people (5.6%) are never infected. At R₀ = 1.2 the outbreak is slow and small: a peak of about 156 near day 41, with about 3,200 eventually infected. At R₀ = 1.0 and 0.9 the number infected never rises above the initial 10; it only falls. The outbreak stops taking off at R₀ = 1, the tipping point where each case replaces itself exactly. Above it the contagion loop dominates at the start; below it the recovery loop does, and even at 1.2 most people escape.",
       link: { label: "Epidemic case", hash: "/apps/health/epidemic" },
     },
     {
       prompt:
         "Run the outbreak case at R₀ = 3 with a 7-day infectious period, then at R₀ = 3 with a 14-day period. The threshold is the same, so why does the timing change? Next keep R₀ = 3 and set contact reduction to 67%. Explain what you see in terms of loop dominance.",
       hint: "A 67% cut gives an effective R₀ of about 1: the contagion loop and the recovery loop are nearly balanced.",
+      answer: "At R₀ = 3 the 7-day run peaks around day 27 and the 14-day run around day 54, but both peaks are about 3,000 infected and both leave about 590 never infected. R₀ = contacts × infectivity × duration is unchanged, so the final size and threshold are the same; a longer infectious period with the same R₀ means fewer infections per day per case, so every step of the outbreak takes twice as long. With a 67% contact reduction the effective R₀ is 3 × 0.33 ≈ 0.99, just below 1: the infected count never rises and drifts slowly down, with fewer than 200 people ever infected. The reinforcing contagion loop and the balancing recovery loop are almost exactly matched, so neither dominates strongly and the infected stock barely moves.",
       link: { label: "Epidemic case", hash: "/apps/health/epidemic" },
     },
     {
       prompt:
         "Pen and paper, then check in the vaccination case. Suppose disease X has a contact number of 4 and disease Y of 15. What share of the population must be immune to block an epidemic of each? If the vaccine only protects 90% of those who receive it, what share must be vaccinated? Explain why one disease could be eliminated by routine vaccination and the other might persist. Then open the vaccination case with R₀ 4 and compare a slow and a fast campaign.",
       hint: "1 − 1/4 = 75% (83% vaccinated at 90% effectiveness); 1 − 1/15 ≈ 93% (over 100% at 90% effectiveness, which is impossible).",
+      answer: "Herd immunity requires a share 1 − 1/R₀ immune: 75% for disease X and 1 − 1/15 ≈ 93% for disease Y. With a 90% effective vaccine the required vaccination share is 0.75 ÷ 0.9 ≈ 83% for X but 0.93 ÷ 0.9 ≈ 104% for Y, which is impossible, so routine vaccination can push X below its threshold and eliminate it while Y will keep circulating. In the vaccination case at R₀ 4, no vaccination peaks at about 4,070 infected around day 19; a slow campaign (0.5% a day) barely changes that, peaking at about 3,540; a fast campaign (3% a day) cuts the peak to about 1,410. Vaccination works by moving people out of the susceptible stock fast enough that the contagion loop drops below its threshold; a slow campaign loses the race against an outbreak that is already growing.",
       link: { label: "Vaccination case", hash: "/apps/health/vaccination" },
     },
     {
       prompt:
         "In the diffusion molecule set innovation p to 0 and imitation q to 18%. Run it: why does nothing happen? Now set p to 0.5%. This is the startup problem of the logistic model and the Bass fix in one experiment.",
       hint: "The run starts with zero adopters, and with p = 0 zero adopters is an equilibrium.",
+      answer: "With p = 0 nothing happens: adopters stay at 0 for the whole run. The adoption rate is (p + q·Adopters/N) × Potential, and with no adopters the word-of-mouth term is zero, so zero adopters is an equilibrium of the reinforcing loop. Setting p to 0.5% gives a launch rate of 5 a week from advertising alone, enough to seed the loop, and then word of mouth takes over: adoption peaks at about 47.5 a week near week 19.5 and almost the whole market of 1,000 adopts. This is the logistic model's startup problem and the Bass fix: an external source of adoption is needed to start any reinforcing loop from zero.",
       link: { label: "Diffusion", hash: "/m/diffusion" },
     },
     {
       prompt:
         "Compare the Ad-driven (p 4%, q 5%) and Viral (p 0.5%, q 35%) presets of the diffusion molecule. Sketch the adoption flow for each. Which one shows a clear S in the adopter curve, and when should the adoption rate peak according to t* = ln(q/p)/(p + q)? Check the formula against the Word-of-mouth preset (p 1%, q 18%).",
       hint: "For p = 1%, q = 18% per week, t* = ln(18)/0.19 ≈ 15 weeks; for Viral, ln(70)/0.355 ≈ 12 weeks. For Ad-driven, ln(1.25)/0.09 ≈ 2.5 weeks and the peak is barely above the launch rate, so there is almost no S. If p ≥ q the formula gives zero or a negative time: adoption is highest at launch.",
+      answer: "Viral (p 0.5%, q 35%) shows a clear S: adoption starts at 5 a week and peaks at about 90 a week at week 12.1, matching ln(70)/0.355 ≈ 12.0. Word-of-mouth (p 1%, q 18%) peaks at about 50 a week at week 15.3, matching ln(18)/0.19 ≈ 15.2. Ad-driven (p 4%, q 5%) starts at 40 a week and peaks at only 40.5 around week 2.5, so the adopter curve is almost a simple decay-shaped approach with no visible S. The S comes from word of mouth; when q is small relative to p, adoption is dominated by the balancing depletion of potential adopters from the start.",
       link: { label: "Diffusion", hash: "/m/diffusion" },
     },
     {
       prompt:
         "Open the Bass case and run the Typical durable preset (p 3%, q 38%), then Strong word of mouth (p 1%, q 40%). Which reaches half the market first? A product manager proposes an advertising push that would triple p. Use the model to say when that would matter most, and what it cannot tell you about whether word of mouth is really the driver.",
       hint: "Think about the warning on fit: if growth is partly driven by loops the model omits, the fitted q absorbs them.",
+      answer: "Typical durable reaches half the market (500 thousand households) in about 6.7 years, and Strong word of mouth only after about 9.3 years: its stronger word of mouth cannot make up for a weaker start, because the reinforcing loop has fewer early adopters to work with. Tripling p to 9% in the Typical case brings the half-market date forward to about 4.0 years and raises the peak sales rate from about 111 to 145 thousand a year. Advertising matters most early, when there are few adopters to spread the word; once the installed base is large, word of mouth dominates and extra advertising adds little. What the model cannot tell you is whether q really measures word of mouth: if network effects, falling prices or complementary products drive growth, the fitted q absorbs them and the model may point to the wrong lever.",
       link: { label: "Bass diffusion case", hash: "/apps/business/new-product-diffusion" },
     },
     {
       prompt:
         "Pen and paper: a new app has active users who each make 40 conversations a year with non-users, 5% of which persuade the other person to install it, and the average person stays active for 6 months. Is the app above or below its tipping point at launch? How much longer would people need to stay active for word of mouth alone to sustain growth? Then compare the Word of mouth and Fact-checking presets of the rumour case. That model has word of mouth but nobody ever stops sharing, so what does it leave out, and why does it have no tipping point?",
       hint: "c·i·d = 40 × 0.05 × 0.5 = 1.0 when nearly everyone is a potential adopter: exactly at the threshold, so any longer period of active use tips it into growth. Without a stock of people who stop sharing, the rumour model behaves like the SI model: any word of mouth at all eventually reaches almost everyone.",
+      answer: "c·i·d = 40 × 0.05 × 0.5 year = 1.0, so with almost everyone still a potential user the app sits exactly at its tipping point: each user recruits one replacement before going inactive, and growth neither takes off nor dies out. Any increase in the active period above 6 months, even slightly, pushes c·i·d above 1 and tips it into self-sustaining growth (doubling to 12 months would give 2). In the rumour case Word of mouth reaches half the population of 1,000 thousand in about 22 days and Fact-checking (sharing halved) takes about 40 days, but both keep going until almost everyone is reached (about 920 thousand by day 60 with fact-checking, still rising). That model has no outflow from the sharing stock, so nobody ever stops spreading the rumour; with no balancing loop draining sharers there is no threshold, and any positive word of mouth eventually saturates the population. Adding a flow of people who lose interest would restore the tipping point.",
       link: { label: "Rumour case", hash: "/apps/social/rumours" },
     },
   ],

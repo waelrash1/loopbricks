@@ -273,47 +273,55 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Rule of 70 before you run. Open Population Growth with birth 5% and death 2% (population 100). Predict the doubling time and the population at year 60. Set Stop at to 60 and run. Then predict how the doubling time changes if the birth rate is raised to 9%, and check.",
       hint: "Net 3%: about 23 years to double, and 100·e^1.8 ≈ 605 at year 60. Net 7%: about 10 years.",
+      answer: "With net growth of 3% a year the rule of 70 gives a doubling time of about 23 years; the app reaches 200 at year 23.2, and the population at year 60 is about 603 (100·e^1.8 ≈ 605). Raising the birth rate to 9% makes net growth 7%, so the doubling time drops to about 70 ÷ 7 = 10 years, and the app passes 200 at year 10. The doubling time depends only on the net fractional growth rate, not on the size of the stock, which is why a modest change in the rate makes a dramatic difference over decades.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Doublings look the same at every scale. In Population Growth (net 3%), read the time it takes to go from 100 to 200 and from 200 to 400. Then explain, in one sentence, why a forecaster who extends the first 10 years as a straight line will be badly wrong by year 60.",
       hint: "Both take about 23 years. A straight line from the first decade (about +35) predicts roughly 310 at year 60, half the true value.",
+      answer: "The app goes from 100 to 200 in about 23.2 years and from 200 to 400 by year 46.3, so the second doubling takes the same 23 years even though it adds twice as many people. The first decade adds only about 35 (to 135), so a straight line through it predicts about 310 at year 60, roughly half the true 603. A reinforcing loop adds a fixed percentage, not a fixed amount, so linear extrapolation from early data always underestimates how quickly an exponential process arrives at its limits.",
       link: { label: "Population Growth", hash: "/m/growth" },
     },
     {
       prompt:
         "Half-life before you run. Open Decay with τ = 5 (stock 100). Predict the time for the stock to halve, and the stock left at t = 5, 10 and 15. Run with Stop at set to each time and check. Then try the Fast decay and Slow decay presets.",
       hint: "Half-life ≈ 3.5 years; about 37, 14 and 5 remain. τ = 2 halves in about 1.4 years, τ = 15 in about 10.",
+      answer: "Half-life is 0.69 × τ ≈ 3.5 years for τ = 5, and the app shows the stock crossing 50 at year 3.5. The remaining stock is about 36.4 at t = 5, 13.3 at t = 10 and 4.8 at t = 15 (37%, 14% and 5% of the start, that is e^−1, e^−2 and e^−3). Fast decay (τ = 2) halves in about 1.4 years and Slow decay (τ = 15) in about 10.4. Each time constant removes the same 63% of whatever is left, so the half-life is fixed by τ and does not depend on how much stock there is.",
       link: { label: "Decay", hash: "/m/decay" },
     },
     {
       prompt:
         "The tangent line. Open Go To Zero with Quick (τ = 2) and then Slow (τ = 12). The second line shows what happens if the initial action is held constant. Before running, predict when the constant-action stock hits zero and how much of the real stock is left at that moment. Then choose With replenishment and predict the new equilibrium.",
       hint: "The constant path hits zero at t = τ; the real stock still has 37% left. With replenishment 8 and τ = 5 the stock settles at 8 × 5 = 40.",
+      answer: "If the initial action (100 ÷ τ) were held constant, the stock would hit zero at exactly t = τ: month 2 for Quick and month 12 for Slow. At that moment the real stock, whose outflow shrinks as it empties, still holds about 37% of its start (35.8 and 36.6 in the app). With replenishment 8 and τ = 5 the stock falls to an equilibrium where inflow equals outflow, Stock ÷ 5 = 8, so 40. The tangent line at the start always reaches the goal after one time constant, which is a quick way to read τ from a chart, but the real balancing loop slows as the gap closes and never quite gets there.",
       link: { label: "Go To Zero", hash: "/m/goToZero" },
     },
     {
       prompt:
         "Goal seeking. Open Close Gap with Reach goal (actual 20, goal 60, AT 5 weeks). Predict the initial adjustment rate and the level after 5, 10 and 15 weeks. Run and check. Then compare Aggressive (AT 1.5) and Sluggish (AT 15): which closes 95% of the gap first, and roughly when?",
       hint: "Initial rate 40/5 = 8 per week; levels about 45, 55 and 58. Closing 95% takes about 3·AT: about 4.5 weeks versus 45 weeks.",
+      answer: "The initial adjustment rate is the gap over AT, 40 ÷ 5 = 8 per week. The app shows the level at about 45.4, 54.7 and 58.1 after 5, 10 and 15 weeks: 63%, 86% and 95% of the gap closed. Closing 95% of the gap takes about 3 adjustment times: 4.4 weeks for Aggressive (AT 1.5) and 44.8 weeks for Sluggish (AT 15). The balancing loop closes a constant fraction of the remaining gap per unit time, so halving AT halves the time to any given degree of completion.",
       link: { label: "Close Gap", hash: "/m/closegap" },
     },
     {
       prompt:
         "Pen and paper: workforce with a moving target. A firm adjusts its workforce to a desired level with AT = 4 weeks. Sketch the workforce and net hiring when the desired workforce steps from 1000 to 1800 at week 4 and back to 1400 at week 12. Repeat with AT = 2. Then sketch the case where the desired level instead rises steadily by 50 per week from week 4: does the workforce ever catch up?",
       hint: "Each step starts a fresh exponential approach; at week 12 the gap is about 13% of 800 for AT = 4. With a ramp, the workforce ends up trailing by a constant 50 × 4 = 200 people and grows at 50 per week.",
+      answer: "Model answer: with AT = 4, the workforce rises from 1000 at week 4 in an exponential approach toward 1800, net hiring jumping to 200 a week and decaying. By week 12 (two adjustment times) it is about 1692, still about 108 (13.5% of 800) short. When the target drops to 1400, hiring turns into net layoffs of about (1400 − 1692) ÷ 4 ≈ −73 a week, decaying as the workforce approaches 1400. With AT = 2 the approach is twice as fast, reaching about 1785 by week 12 (only 1.8% short), with larger peaks in hiring and layoffs. For the ramp, the workforce never catches up: once the transient dies out it grows at the same 50 a week but trails the target by a constant 50 × 4 = 200 people, the steady-state error of a first-order balancing loop chasing a moving goal.",
     },
     {
       prompt:
         "S-shaped growth and the inflection point. Open Constrained Growth with the S-curve preset (r = 18%, K = 200, P(0) = 10). Predict the population at which growth is fastest and roughly when it occurs, using P(t) = K/(1 + (K/P0 − 1)e^(−rt)). Run to check, then try Fast to cap and Higher capacity and predict how each changes the inflection.",
       hint: "Fastest at K/2 = 100, at t = ln(19)/0.18 ≈ 16 years. Doubling r halves that time; K = 350 moves the inflection to 175 and a little later.",
+      answer: "The logistic formula gives the fastest growth at P = K/2 = 100, at t = ln(K/P0 − 1)/r = ln 19 ÷ 0.18 ≈ 16.4 years; the app peaks at a net growth of 9 a year near year 16.4 with the population at 100. Fast to cap (r = 35%) moves the inflection to about year 8.5 (ln 19 ÷ 0.35), with the same population of 100 but a peak flow of 17.5. Higher capacity (K = 350) moves the inflection to population 175 at about year 19.7 (ln 34 ÷ 0.18), with a peak flow of 15.75. The inflection is where the reinforcing growth loop stops dominating the balancing crowding loop.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
     },
     {
       prompt:
         "Draw the phase plot. For Constrained Growth with r = 18% and K = 200, sketch net growth (r·P − r·P²/K) against P from 0 to 250 on paper. Mark both equilibria, say which is stable, mark where the reinforcing loop stops dominating, and explain why a population starting at 300 would fall straight back to 200 without overshooting.",
       hint: "An inverted parabola through 0 and 200 with peak 9 per year at P = 100. One stock cannot overshoot and oscillate.",
+      answer: "Model answer: net growth = 0.18·P − 0.18·P²/200 is an inverted parabola, zero at P = 0 and P = 200, with its peak of 9 per year at P = 100, and negative beyond 200 (−27 per year at P = 300). P = 0 is an unstable equilibrium (any small population grows away from it) and P = 200 is stable (net growth is positive below and negative above). The reinforcing loop dominates for P below 100, where the curve slopes upward; above 100 the balancing loop dominates. Starting at 300, net growth is negative and shrinks to zero as P approaches 200, so the stock glides down to 200 without overshooting: a single stock with no delay cannot cross its equilibrium, because the flow becomes zero exactly as it arrives.",
       link: { label: "Constrained Growth", hash: "/m/logistic" },
     },
   ],
