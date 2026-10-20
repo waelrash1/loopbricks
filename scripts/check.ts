@@ -9,6 +9,7 @@ import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
 import { METHOD_PAGES, METHOD_REFS } from "@/data/methods";
+import { BOOK_TOC } from "@/data/sterman";
 import { CAL_DATA, CAL_FIXED, CAL_HOLDOUT, CAL_MODEL, CAL_TRUTH, calFit, calRef, monteCarlo, overshoots } from "@/lib/labs";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
@@ -122,6 +123,31 @@ for (const p of METHOD_PAGES) {
   if (!pol.every((w) => cost(one({ ...w.params, slw: 1 })) <= cost(one({ ...w.params, slw: 0 })))) errs.push("sensitivity lab: counting the supply line should never hurt");
   const shares = monteCarlo("stockmgmt", { slw: 0.5, acq: 6, adj: 4 }, ["slw", "acq", "adj"], 1, "inv", 80, 200, 13).runs.filter((r) => overshoots(r.ys)).length / 200;
   if (shares < 0.05 || shares > 0.95) errs.push(`sensitivity lab: behaviour-mode experiment should mix modes, got ${shares}`);
+}
+// study guide: every written chapter is substantial, its diagrams readable and its links real
+const ROUTE = /^\/(m\/[A-Za-z]+|apps\/[a-z-]+\/[a-z0-9-]+|apps\/[a-z-]+|tree(\/[A-Za-z]+)?|methods\/[a-z-]+|methods\/book\/[a-zA-Z0-9]+|tour\/\d+)$/;
+for (const t of BOOK_TOC) {
+  const c = t.chapter;
+  if (!c) continue;
+  const id = `book/${t.id}`;
+  if (c.id !== t.id) errs.push(`${id}: id field says ${c.id}`);
+  if (c.bigIdeas.length < 6) errs.push(`${id}: needs at least 6 big ideas`);
+  if (c.diagrams.length < 2) errs.push(`${id}: needs at least 2 diagrams`);
+  if (c.exercises.length < 4) errs.push(`${id}: needs at least 4 exercises`);
+  if (c.pitfalls.length < 3) errs.push(`${id}: needs at least 3 pitfalls`);
+  if (new Set(c.diagrams.map((d) => d.title)).size !== c.diagrams.length) errs.push(`${id}: diagram titles must be unique`);
+  c.molecules.forEach((k) => !MODELS[k] && errs.push(`${id}: unknown molecule ${k}`));
+  c.formulations.forEach((f) => f.molecule && !MODELS[f.molecule] && errs.push(`${id}: formulation ${f.name} names unknown molecule ${f.molecule}`));
+  c.exercises.forEach((x) => x.link && !ROUTE.test(x.link.hash) && errs.push(`${id}: exercise link ${x.link.hash} is not an app route`));
+  c.exercises.forEach((x) => { const m = x.link?.hash.match(/^\/m\/(\w+)/); if (m && !MODELS[m[1]]) errs.push(`${id}: exercise links unknown molecule ${m[1]}`); });
+  c.diagrams.forEach((d) => {
+    if (d.kind === "cld") lintCld(d.cld).forEach((e) => errs.push(`${id} diagram "${d.title}": ${e}`));
+    if (d.kind === "cycle" && (d.nodes.length < 3 || d.nodes.length > 8)) errs.push(`${id} diagram "${d.title}": a cycle needs 3 to 8 nodes`);
+    if (d.kind === "cycle" && d.nodes.some((n) => n.length > 44)) errs.push(`${id} diagram "${d.title}": cycle labels must be 44 characters or fewer`);
+    if (d.kind === "sequence" && (d.steps.length < 2 || d.steps.length > 8)) errs.push(`${id} diagram "${d.title}": a sequence needs 2 to 8 steps`);
+  });
+  const text = JSON.stringify(c);
+  if (/\u2014/.test(text) || text.includes("\u2014") || text.includes("—")) errs.push(`${id}: no em dashes in study-guide text`);
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");

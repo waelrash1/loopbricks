@@ -24,7 +24,7 @@ export type Model = {
   rates: (s: Vars, p: Vars) => Vars;
   derivs: (s: Vars, p: Vars, r: Vars) => Vars;
   diagram: { stocks: Record<string, StockGeo>; flows: FlowGeo[] };
-  cld: { vars: CldVar[]; links: CldLink[]; loops: CldLoop[]; caption: string };
+  cld: { vars: CldVar[]; links: CldLink[]; loops: CldLoop[]; caption: string; size?: [number, number] };
   desc: string;
 };
 

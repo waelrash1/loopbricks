@@ -1,5 +1,5 @@
 import type { Model } from "@/data/molecules";
-import { CLD_H, CLD_W, LOOP_R, layoutCld } from "@/lib/cldGeometry";
+import { LOOP_R, cldSize, layoutCld } from "@/lib/cldGeometry";
 
 const POS = "var(--viz-good)";
 const NEG = "var(--viz-pink)";
@@ -7,6 +7,7 @@ const NEG = "var(--viz-pink)";
 // Static diagram (feedback structure doesn't change over time) → pure render.
 export default function CausalLoopDiagram({ model }: { model: Model }) {
   const { boxes, links } = layoutCld(model.cld);
+  const [CLD_W, CLD_H] = cldSize(model.cld);
 
   return (
     <>

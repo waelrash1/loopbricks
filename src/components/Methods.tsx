@@ -27,14 +27,24 @@ function Refs({ keys }: { keys: string[] }) {
   );
 }
 
-export function MethodsIndex({ onPage }: { onPage: (id: string) => void }) {
+export function MethodsIndex({ onPage, onBook }: { onPage: (id: string) => void; onBook: () => void }) {
   return (
     <div className={`${wrap} pt-10 md:pt-14`}>
       <h1 className="display text-[38px] md:text-[52px] max-w-[20ch]">Methods for real models</h1>
       <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[60ch]">
         How to frame a problem with a reference mode, test a model until you trust it, measure its fit to data, and where machine learning and AI help.
       </p>
-      <ol className="mt-10 grid md:grid-cols-2 gap-4">
+      <button onClick={onBook} className="brick brick-y mt-8 w-full text-left p-6 grid md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
+        <span>
+          <span className="heading block text-[22px]">Business Dynamics, chapter by chapter</span>
+          <span className="block mt-1.5 text-[15px] leading-[1.55] max-w-[70ch]">
+            A study guide to Sterman's textbook: the big ideas, the classic feedback structures redrawn, the formulations, the cases and exercises you can run here.
+          </span>
+        </span>
+        <span className="text-[15px] font-semibold whitespace-nowrap">Open the study guide</span>
+      </button>
+      <h2 className="heading text-[22px] mt-12">The learning path</h2>
+      <ol className="mt-5 grid md:grid-cols-2 gap-4">
         {METHOD_PAGES.map((p, i) => (
           <li key={p.id}>
             <button onClick={() => onPage(p.id)} className="brick brick-w w-full h-full text-left p-6 grid grid-cols-[40px_minmax(0,1fr)] gap-3">

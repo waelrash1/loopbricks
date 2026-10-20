@@ -4,6 +4,8 @@ import type { CldLink, CldVar, Model } from "@/data/molecules";
 
 export const CLD_W = 520;
 export const CLD_H = 270;
+// a diagram may ask for a larger canvas (the study guide's bigger structures); molecules use the default
+export const cldSize = (cld: { size?: [number, number] }): [number, number] => cld.size ?? [CLD_W, CLD_H];
 export const LOOP_R = 15; // radius of the B/R loop marker
 
 export type Box = { id: string; x: number; y: number; w: number; h: number; cx: number; cy: number };
@@ -126,12 +128,13 @@ export function loopsIn(cld: Model["cld"]): ("B" | "R")[] {
 // Human-readable clarity problems for one diagram; empty means clean.
 export function lintCld(cld: Model["cld"]): string[] {
   const { boxes, links } = layoutCld(cld);
+  const [CW, CH] = cldSize(cld);
   const B = Object.values(boxes);
   const p: string[] = [];
   const inBox = (x: number, y: number, b: Box, pad = 0) => x > b.x - pad && x < b.x + b.w + pad && y > b.y - pad && y < b.y + b.h + pad;
   const name = (g: LinkGeo) => `${g.link.from}→${g.link.to}`;
 
-  B.forEach((b) => (b.x < 2 || b.y < 2 || b.x + b.w > CLD_W - 2 || b.y + b.h > CLD_H - 2) && p.push(`node "${b.id}" is outside the canvas`));
+  B.forEach((b) => (b.x < 2 || b.y < 2 || b.x + b.w > CW - 2 || b.y + b.h > CH - 2) && p.push(`node "${b.id}" is outside the canvas`));
   B.forEach((a, i) =>
     B.slice(i + 1).forEach((b) => a.x < b.x + b.w + 6 && b.x < a.x + a.w + 6 && a.y < b.y + b.h + 6 && b.y < a.y + a.h + 6 && p.push(`nodes "${a.id}" and "${b.id}" touch`))
   );
@@ -140,8 +143,8 @@ export function lintCld(cld: Model["cld"]): string[] {
   cld.vars.forEach((v) => !used.has(v.id) && p.push(`node "${v.id}" has no links`));
 
   for (const g of links) {
-    if (g.sx < 8 || g.sx > CLD_W - 8 || g.sy < 8 || g.sy > CLD_H - 8) p.push(`sign of ${name(g)} is outside the canvas`);
-    if (g.pts.some(([x, y]) => x < 3 || x > CLD_W - 3 || y < 3 || y > CLD_H - 3)) p.push(`link ${name(g)} leaves the canvas`);
+    if (g.sx < 8 || g.sx > CW - 8 || g.sy < 8 || g.sy > CH - 8) p.push(`sign of ${name(g)} is outside the canvas`);
+    if (g.pts.some(([x, y]) => x < 3 || x > CW - 3 || y < 3 || y > CH - 3)) p.push(`link ${name(g)} leaves the canvas`);
     B.forEach((b) => inBox(g.sx, g.sy, b, 5) && p.push(`sign of ${name(g)} sits on node "${b.id}"`));
     if (g.link.self) continue;
     const [a, z] = [g.pts[0], g.pts[g.pts.length - 1]];
@@ -150,7 +153,7 @@ export function lintCld(cld: Model["cld"]): string[] {
     if (g.link.note) {
       const w = noteWidth(g.link.note);
       const hit = (x: number, y: number, pad: number) => x > g.nx - w / 2 - pad && x < g.nx + w / 2 + pad && y > g.ny - 7 - pad && y < g.ny + 7 + pad;
-      if (g.nx - w / 2 < 2 || g.nx + w / 2 > CLD_W - 2 || g.ny < 9 || g.ny > CLD_H - 9) p.push(`note "${g.link.note}" is clipped`);
+      if (g.nx - w / 2 < 2 || g.nx + w / 2 > CW - 2 || g.ny < 9 || g.ny > CH - 9) p.push(`note "${g.link.note}" is clipped`);
       B.forEach((b) => g.nx - w / 2 < b.x + b.w && b.x < g.nx + w / 2 && g.ny - 7 < b.y + b.h && b.y < g.ny + 7 && p.push(`note "${g.link.note}" overlaps node "${b.id}"`));
       links.forEach((o) => o.pts.some(([x, y]) => hit(x, y, 1)) && p.push(`note "${g.link.note}" crosses link ${name(o)}`));
       links.forEach((o) => o !== g && hit(o.sx, o.sy, 5) && p.push(`note "${g.link.note}" collides with the sign of ${name(o)}`));
@@ -167,7 +170,7 @@ export function lintCld(cld: Model["cld"]): string[] {
   );
 
   for (const lp of cld.loops) {
-    if (lp.x < LOOP_R + 4 || lp.x > CLD_W - LOOP_R - 4 || lp.y < LOOP_R + 4 || lp.y > CLD_H - LOOP_R - 4) p.push(`loop marker ${lp.label} is outside the canvas`);
+    if (lp.x < LOOP_R + 4 || lp.x > CW - LOOP_R - 4 || lp.y < LOOP_R + 4 || lp.y > CH - LOOP_R - 4) p.push(`loop marker ${lp.label} is outside the canvas`);
     B.forEach((b) => inBox(lp.x, lp.y, b, LOOP_R) && p.push(`loop marker ${lp.label} overlaps node "${b.id}"`));
     links.forEach((g) => {
       if (g.pts.some(([x, y]) => Math.hypot(x - lp.x, y - lp.y) < LOOP_R + 2)) p.push(`loop marker ${lp.label} sits on link ${name(g)}`);
