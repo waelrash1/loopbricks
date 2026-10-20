@@ -7,6 +7,7 @@ import { LESSONS } from "@/data/lessons";
 import { useSimulation } from "@/hooks/useSimulation";
 import TopBar from "@/components/TopBar";
 import SidePane from "@/components/SidePane";
+import SiteFooter from "@/components/SiteFooter";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
@@ -139,7 +140,7 @@ export default function MoleculeExplorer() {
             onClose={() => togglePane(false)}
           />
         )}
-        <main id="main" tabIndex={-1} className="flex-1 min-w-0 pb-16 focus:outline-none">
+        <main id="main" tabIndex={-1} className="flex-1 min-w-0 focus:outline-none">
         {view === "map" ? (
           <>
             {route.view === "map" && route.missing && (
@@ -344,6 +345,7 @@ export default function MoleculeExplorer() {
             </nav>
           </div>
         )}
+          <SiteFooter />
         </main>
       </div>
     </div>

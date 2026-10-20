@@ -166,13 +166,12 @@ export default function MoleculeMap({ onSelect, onStartTour, onApps }: { onSelec
         </section>
       )}
 
-      <footer className="mt-20 border-t border-border py-8 text-[13px] leading-[1.6] text-muted-foreground grid md:grid-cols-[minmax(0,1fr)_auto] gap-6">
+      <footer className="mt-20 border-t border-border pt-8 text-[13px] leading-[1.6] text-muted-foreground">
         <p className="max-w-[70ch]">
           <span className="chip chipB">B</span>marks a balancing loop, <span className="chip chipR">R</span>a reinforcing one. Main reference: Jim Hines,{" "}
           <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03 (2015). The molecules and their equations are his; the
           lessons and causal loop diagrams were added for this app.
         </p>
-        <p>Created by Wael Rashwan</p>
       </footer>
     </div>
   );

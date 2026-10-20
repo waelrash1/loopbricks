@@ -20,10 +20,21 @@ not the book's. The book itself is not included in this repository.
 
 ## Acknowledgements
 
-Created and directed by **Wael Rashwan**, who conceived the app, chose the
+Created and directed by **Dr Wael Rashwan**, who conceived the app, chose the
 design directions and reviewed every molecule against the book.
 Thanks to Jim Hines and the many modellers he credits for the molecules.
 Built with the help of Claude Code.
+
+## Contact
+
+**Dr Wael Rashwan**, Lecturer in Business Analytics, School of Business, Maynooth University
+
+- Co-lead, Data Science and Digital Transformation Research Beacon
+- Principal investigator, Rinn-AI funded project
+- Collaborator, IVI
+
+Email: [wael.rashwan@mu.ie](mailto:wael.rashwan@mu.ie)
+TSI Building, School of Business, Maynooth University, Maynooth, Co. Kildare, Ireland
 
 ## Run
 
