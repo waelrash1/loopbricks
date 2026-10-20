@@ -11,11 +11,12 @@ export type MethodSection = {
   // a worked example: numbered steps, an optional data table, and a link to try it on a molecule or case
   example?: { title: string; steps: string[]; data?: { head: string[]; rows: string[][] }; link?: { label: string; hash: string } };
 };
-export type MethodPage = { id: string; title: string; summary: string; tryIt?: { text: string; label: string; hash: string }; sections: MethodSection[]; refs: string[] };
+export type MethodPage = { id: string; title: string; summary: string; lab?: "calibration" | "sensitivity"; tryIt?: { text: string; label: string; hash: string }; sections: MethodSection[]; refs: string[] };
 
 export const METHOD_REFS: Record<string, MethodRef> = {
   saeed1998: { short: "Saeed 1998", text: "Saeed K (1998). Defining a problem or constructing a reference mode. Proceedings of the 16th International Conference of the System Dynamics Society.", url: "https://archives.albany.edu/description/catalog/ua435aspace_f73856ed1a9e43d7fd7a3e9ccad2940e" },
-  sterman2000: { short: "Sterman 2000", text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 3 The modeling process; ch. 4 Structure and behavior of dynamic systems; ch. 21 Truth and beauty: validation and model testing." },
+  sterman2000: { short: "Sterman 2000", text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Page numbers in the text refer to this edition." },
+  sterman1989: { short: "Sterman 1989", text: "Sterman JD (1989). Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment. Management Science 35(3):321-339.", doi: "10.1287/mnsc.35.3.321" },
   martinezmoyano2013: { short: "Martinez-Moyano and Richardson 2013", text: "Martinez-Moyano IJ, Richardson GP (2013). Best practices in system dynamics modeling. System Dynamics Review 29(2):102-123.", doi: "10.1002/sdr.1495" },
   forrester1980: { short: "Forrester and Senge 1980", text: "Forrester JW, Senge PM (1980). Tests for building confidence in system dynamics models. In Legasto AA, Forrester JW, Lyneis JM (eds), System Dynamics. TIMS Studies in the Management Sciences 14. North-Holland." },
   barlas1996: { short: "Barlas 1996", text: "Barlas Y (1996). Formal aspects of model validity and validation in system dynamics. System Dynamics Review 12(3):183-210.", doi: "10.1002/(SICI)1099-1727(199623)12:3<183::AID-SDR103>3.0.CO;2-4" },
@@ -48,7 +49,230 @@ export const METHOD_REFS: Record<string, MethodRef> = {
   li2025: { short: "Li and Wu 2025", text: "Li Z, Wu Q (2025). Let it go or control it all? The dilemma of prompt engineering in generative agent-based models. System Dynamics Review 41(3):e70008.", doi: "10.1002/sdr.70008" },
   rudin2019: { short: "Rudin 2019", text: "Rudin C (2019). Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead. Nature Machine Intelligence 1(5):206-215.", doi: "10.1038/s42256-019-0048-x" },
 };
-export const METHOD_PAGES: MethodPage[] = [
+const PAGES: MethodPage[] = [
+  {
+    id: "process",
+    title: "The modelling process",
+    summary: "Five steps, revisited many times: articulate the problem, form a dynamic hypothesis, build a simulation model, test it, then design and evaluate policies.",
+    tryIt: { text: "Every application case in LoopBricks is laid out along these steps: the question, the reference mode, the structure, the tests and the policies.", label: "Walk through a case", hash: "/apps/health/delayed-discharge" },
+    sections: [
+      {
+        heading: "Five steps",
+        body: ["Sterman sets out the process as five steps, each with its own questions (Sterman 2000, p. 86). The summary below is in our words."],
+        table: {
+          head: ["Step", "Questions to answer", "Tools"],
+          rows: [
+            ["1. Articulate the problem", "What is the problem and why is it a problem? Which variables matter? How far back do its roots go, and how far ahead must we look? How have the key variables behaved, and how might they behave?", "Reference modes, time horizon"],
+            ["2. Form a dynamic hypothesis", "What theories already exist? Which feedback structure could generate the problem from within the system?", "Model boundary chart, subsystem diagram, causal loop diagrams, stock and flow maps"],
+            ["3. Build a simulation model", "What are the decision rules, parameters and starting values? Is the model consistent with its purpose and boundary?", "Equations, estimation, units"],
+            ["4. Test", "Does it reproduce the reference modes? Does it behave sensibly under extreme conditions? How sensitive is it to what we do not know?", "The validation tests, sensitivity analysis"],
+            ["5. Design and evaluate policies", "Which new decision rules, strategies or structures could work? What do they do, are they robust, and do they interact?", "Scenarios, what-if runs, sensitivity of policies"],
+          ],
+        },
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "It is a loop, not a line",
+        body: [
+          "Modelling is iterative. Testing sends you back to the hypothesis, a policy result changes what counts as the problem, and the purpose sharpens as you learn (Sterman 2000, p. 87). Expect to pass through the steps several times, with the model growing and shrinking as you go.",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Purpose first",
+        body: [
+          "A clear purpose is the most important ingredient of a useful model (Sterman 2000, p. 89). A model of a whole system has no basis for deciding what to leave out; a model of a problem does. The art is knowing what to cut, so that only what the purpose needs remains.",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Choosing the time horizon",
+        list: [
+          "Go back far enough to see how the problem emerged, not just its latest symptoms.",
+          "Go forward far enough to capture the delayed and indirect effects of the policies you might try.",
+          "People routinely underestimate delays, so horizons are usually too short. A rule of thumb: several times the longest delay in the system, and then some (Sterman 2000, pp. 90-91).",
+          "Be wary of horizons set by the calendar, such as the fiscal year or a planning cycle; they have nothing to do with the dynamics.",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Look for explanations from within",
+        body: [
+          "System dynamics seeks endogenous explanations: the behaviour should arise from the feedback structure inside the boundary, not be imposed from outside (Sterman 2000, pp. 95-96). A model boundary chart makes the choice visible by listing what is endogenous, what is exogenous, and what is deliberately left out.",
+        ],
+        example: {
+          title: "a boundary chart for the hospital case",
+          steps: [
+            "Endogenous: patients waiting in the emergency department, patients in hospital, patients waiting to be discharged, free beds.",
+            "Exogenous: emergency admissions per day, number of beds, community care places.",
+            "Excluded: staff, elective surgery, seasonal illness. Each exclusion is a claim that it does not change the answer to this question, and a candidate for a boundary adequacy test.",
+          ],
+          link: { label: "Open the hospital case", hash: "/apps/health/delayed-discharge" },
+        },
+        cite: ["sterman2000"],
+      },
+    ],
+    refs: ["sterman2000", "martinezmoyano2013"],
+  },
+  {
+    id: "causal-loops",
+    title: "Causal loop diagrams that communicate",
+    summary: "A causal loop diagram shows the feedback structure of a dynamic hypothesis. A few rules keep it honest and readable.",
+    tryIt: { text: "Every molecule page has a causal loop diagram with signed links and marked loops. Compare it with the stock and flow diagram above it.", label: "See Stock Management's diagram", hash: "/m/stockmgmt" },
+    sections: [
+      {
+        heading: "Eleven guidelines",
+        body: ["Paraphrased from Sterman (2000, pp. 141-157)."],
+        table: {
+          head: ["Guideline", "Why it matters"],
+          rows: [
+            ["Draw only causal links", "Correlations describe past behaviour, not structure; they can break down when policies change. Ice cream sales and murders are correlated because both rise in summer, not because one causes the other."],
+            ["Label every link's polarity", "A + means the effect moves the same way as the cause, all else equal; a − means the opposite way."],
+            ["Find each loop's polarity", "The quick way: an even number of negative links makes a reinforcing loop, an odd number a balancing one. The sure way: trace a small change around the loop and see whether it comes back larger or opposed."],
+            ["Name and number your loops", "R1, B2 and a short name let a group discuss a loop without retracing it."],
+            ["Mark important delays", "Delays create inertia and oscillation and separate short-run from long-run effects."],
+            ["Use nouns for variables", "The links carry the actions. Write \"Cost\", not \"Costs rise\"."],
+            ["Give names a clear direction", "Prefer variables that can be larger or smaller, such as \"Morale\" rather than \"Mood\"."],
+            ["Choose the right level of detail", "Too much hides the loops; too little hides the logic. Add intermediate variables where a link confuses people."],
+            ["Split large diagrams", "Several small diagrams, each telling part of the story, beat one diagram with every loop."],
+            ["Make goals of balancing loops explicit", "Every balancing loop compares a state with a goal. Showing the goal prompts the question of where it comes from."],
+            ["Separate actual from perceived", "Measurement and reporting add delays and bias. Perceived quality is not quality."],
+          ],
+        },
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "What a causal loop diagram cannot show",
+        body: [
+          "Causal loop diagrams do not distinguish stocks from flows, so they hide accumulation, conservation and the delays that stocks create. Use them to communicate the feedback logic, and switch to stock and flow maps before you reason about behaviour over time (Sterman 2000, pp. 166-167, 210).",
+        ],
+        cite: ["sterman2000"],
+      },
+    ],
+    refs: ["sterman2000"],
+  },
+  {
+    id: "stocks-flows",
+    title: "Stocks, flows and units",
+    summary: "Stocks are the memory of a system and the source of its delays and inertia. Telling them apart from flows, and keeping units consistent, prevents the most common modelling errors.",
+    tryIt: { text: "The Bathtub molecule is a single stock with one inflow and one outflow. Set the inflow above the outflow, then lower the inflow without letting it fall below the outflow: the level keeps rising.", label: "Open the Bathtub", hash: "/m/bathtub" },
+    sections: [
+      {
+        heading: "The snapshot test",
+        body: [
+          "Imagine freezing the system in a photograph. Whatever you could count or measure in the picture is a stock: water in a reservoir, cash in an account, people employed, even a manager's current belief about demand. What you cannot see in a still picture, such as how fast the water level is changing, is a flow (Sterman 2000, p. 199).",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Units tell you which is which",
+        list: [
+          "A stock is a quantity: widgets, people, euros. Its flows have the same unit per unit of time: widgets per week, people per month.",
+          "The time unit is a free choice, but it must be used consistently: 1,200 a day and 8,400 a week are the same flow.",
+          "Every equation must balance in units without fudge factors that have no meaning in the real world (Sterman 2000, pp. 198-199, 866).",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Three rules of stock and flow structure",
+        list: [
+          "Conservation: what enters a stock stays there until it flows out, and what leaves one stock arrives in the next (p. 201).",
+          "Stocks change only through their flows. No information arrow can point directly into a stock (p. 204).",
+          "Information is not conserved: knowing a stock's value does not use it up, which is how feedback reads stocks to set flows.",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Why stocks matter for behaviour",
+        body: [
+          "Stocks accumulate the difference between inflow and outflow, so they change smoothly even when flows jump. They give systems inertia and memory, create delays, and decouple inflows from outflows. Reasoning about them is hard. A common error is to expect a stock to fall as soon as its inflow falls, even while the inflow is still above the outflow.",
+        ],
+        example: {
+          title: "graphical integration in your head",
+          steps: [
+            "A stock starts at 50 units. Its inflow is 10 per year and its outflow 8 per year.",
+            "The net flow is +2 a year, so after 10 years the stock is 70.",
+            "Now cut the inflow to 9 a year. The stock still rises, by 1 a year, because the inflow is still above the outflow.",
+            "Only when the inflow drops below 8 does the stock begin to fall.",
+          ],
+          link: { label: "Try it on the Bathtub", hash: "/m/bathtub" },
+        },
+        cite: ["sterman2000"],
+      },
+    ],
+    refs: ["sterman2000"],
+  },
+  {
+    id: "calibration",
+    title: "Calibration lab: how a model learns its parameters",
+    summary: "A hands-on walk-through of what the Calibrate button does: fit by hand, see the error landscape, watch the optimiser search, test on held-back data, and compare with the truth.",
+    lab: "calibration",
+    sections: [
+      {
+        heading: "Two ways to estimate a parameter",
+        body: [
+          "Sterman distinguishes formal statistical estimation from numerical data and judgemental estimation from interviews, workshops, archives and experience, and recommends using both: knowledge of the system bounds the plausible range, and statistics check the judgement (Sterman 2000, pp. 866-867).",
+          "Ordinary least squares regression is often a poor fit for dynamic models. It is unreliable when explanatory variables are correlated with each other, when the variable depends on its own past values (which is what feedback means), or when the variance changes over time (p. 867). Fitting the whole simulated model to the data, as this lab does, avoids treating each equation in isolation.",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Partial model estimation",
+        body: [
+          "In a large model it is rarely practical to estimate every parameter at once. Isolate one decision rule, cut its feedback loops, drive its inputs with the historical data, and choose its parameters so its output fits. Then reconnect it to the full model (Sterman 2000, pp. 867-868). The beer-game estimates above were made this way: the ordering rule was fitted to each player's orders, given the inventory and orders they actually saw.",
+        ],
+        cite: ["sterman2000", "sterman1989"],
+      },
+      {
+        heading: "What a fitted parameter does and does not tell you",
+        list: [
+          "Statistical significance shows a relationship fits the data, not that it is causal. Causality is a judgement made from all the evidence (Sterman 2000, p. 868).",
+          "A relationship can be real yet statistically insignificant because there are too few data points or too little variation. If knowledge of the system says it matters, keep it and estimate it judgementally (p. 868).",
+          "Estimation can reveal structure. Fitting a service-quality model to bank data, Oliva found that loan officers' standards for time per customer fell quickly under pressure but never rose again; the estimated time to raise them was effectively infinite (p. 868).",
+        ],
+        cite: ["sterman2000", "oliva2003"],
+      },
+      {
+        heading: "Calibrating in your own models",
+        list: [
+          "On any molecule or case, open Runs and data, add your data with Add data, tick the settings to estimate, and press Calibrate.",
+          "Estimate as few parameters as you can; the more you free, the more combinations fit equally well.",
+          "Start the search from several guesses. If they end in different places, the data do not pin the parameters down.",
+          "Hold back the most recent data and check the fit there before trusting the model outside the history.",
+        ],
+        cite: ["oliva2003"],
+      },
+    ],
+    refs: ["sterman2000", "sterman1989", "oliva2003", "andrade2020", "rahmandad2015"],
+  },
+  {
+    id: "sensitivity",
+    title: "Sensitivity lab: does the conclusion survive what you do not know?",
+    summary: "All models are wrong, so test whether the conclusions change across the plausible range of assumptions. Three Monte Carlo experiments show Sterman's three kinds of sensitivity.",
+    lab: "sensitivity",
+    sections: [
+      {
+        heading: "Three kinds of sensitivity",
+        table: {
+          head: ["Kind", "What changes", "When it matters"],
+          rows: [
+            ["Numerical", "The numbers in the results", "Always present. Matters when precise values are the purpose, as in engineering"],
+            ["Behaviour mode", "The pattern of behaviour, for example smooth adjustment versus oscillation", "Whenever the model is used to understand or anticipate behaviour"],
+            ["Policy", "Whether a policy helps or harms", "Most of all: it decides whether a recommendation is robust"],
+          ],
+        },
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "More than parameters",
+        body: [
+          "Uncertainty in parameter values must be tested, but models are usually far more sensitive to assumptions about the boundary, the level of aggregation and the way people are assumed to decide. A full sensitivity analysis varies those too (Sterman 2000, p. 884).",
+        ],
+        cite: ["sterman2000"],
+      },
+    ],
+    refs: ["sterman2000", "kwakkel2013"],
+  },
   {
     id: "reference-modes",
     title: "Reference modes: start from the behaviour",
@@ -239,6 +463,42 @@ export const METHOD_PAGES: MethodPage[] = [
         ],
         cite: ["martinezmoyano2013", "forrester1980"],
       },
+      {
+        heading: "Validation is impossible; testing is not",
+        body: [
+          "Strictly, no model can be validated or verified, because every model is a simplification and differs from reality in countless ways. What testing can do is uncover flaws, so that modeller and client understand the model's limits, improve it, and use the best model available for the decision (Sterman 2000, pp. 845-847).",
+          "Tests should be designed to find errors, not to show off a good fit. A common failure is to concentrate on reproducing historical data while ignoring the assumptions, the robustness and the sensitivity of the results to the boundary and feedback structure (p. 846).",
+        ],
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Three cautionary stories from Sterman's chapter 21",
+        table: {
+          head: ["Test", "What happened", "The lesson"],
+          rows: [
+            ["Extreme conditions", "Asked what would happen to the US economy if every energy source vanished, a respected macroeconomic model reported that output went up: oil imports fell, so net exports rose (pp. 870-871)", "A model that fits history can still lack the physical constraints a policy question needs"],
+            ["Integration error", "A celebrated model of the Tsembaga people's pig festivals and wars used a one-year time step. With a smaller step, the cycle of festival and war turned into continuous small skirmishes (p. 873)", "The time step had been acting as a behavioural parameter. Halve it before trusting any result"],
+            ["Behaviour reproduction", "Regressions on the deterrent effect of capital punishment gave anything from 29 murders deterred per execution to 12 more murders, depending on which control variables were chosen (p. 880)", "A good fit within one specification says little; test the boundary"],
+          ],
+        },
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "Loop knockout",
+        body: [
+          "To test whether a loop matters, switch it off and see whether behaviour becomes anomalous. In a rule of the form correction = (goal − state) / adjustment time, set the adjustment time to a very large value. Delays can be set to infinity, and table functions to 1 everywhere. If removing a loop produces implausible behaviour, that is evidence the loop belongs in the model (Sterman 2000, p. 880).",
+        ],
+        example: {
+          title: "knock out the supply-line loop",
+          steps: [
+            "Open Stock Management and run it with the supply-line weight at 1: inventory rises smoothly to its target of 100.",
+            "Set the weight to 0, which cuts the loop that accounts for orders already on the way, and run again.",
+            "Inventory now overshoots to about 185 and settles at 160. The loop is doing real work, and its strength is worth estimating carefully.",
+          ],
+          link: { label: "Try it on Stock Management", hash: "/m/stockmgmt" },
+        },
+        cite: ["sterman2000"],
+      },
     ],
     refs: ["forrester1980", "barlas1996", "barlas1989", "qudratullah2010", "oliva2003", "sterman2000", "sterman2002", "martinezmoyano2013"],
   },
@@ -248,8 +508,8 @@ export const METHOD_PAGES: MethodPage[] = [
     summary: "How far a run is from the data, and why. Theil's statistics split the error into bias, unequal variation and unequal covariation, so you know what to fix.",
     tryIt: {
       text: "On any molecule or case, add data in the Runs and data panel. The panel computes RMSE, MAPE, R² and Theil's shares for the current run, and Calibrate tunes the sliders you tick to fit the data.",
-      label: "Fit Decay to data",
-      hash: "/m/decay",
+      label: "Open the calibration lab",
+      hash: "/methods/calibration",
     },
     sections: [
       {
@@ -319,6 +579,39 @@ export const METHOD_PAGES: MethodPage[] = [
           "Testing on the data you fitted: hold back the last part of the history and check the fit there before trusting the model.",
         ],
         cite: ["sterman1984", "oliva2003"],
+      },
+      {
+        heading: "Which error measure to use",
+        body: ["Sterman's table of common fit statistics (Sterman 2000, p. 875), with his advice in our words."],
+        table: {
+          head: ["Measure", "What it is", "Advice"],
+          rows: [
+            ["MAE", "Mean absolute error, in the variable's units", "Weights all errors equally"],
+            ["RMSE", "Root mean square error, in the variable's units", "Weights large errors much more; usually no strong reason to prefer it over MAE"],
+            ["MAPE", "Mean absolute percentage error", "Easy to read, but never use it when the data come close to zero"],
+            ["MAE / mean", "Mean absolute error divided by the data's mean", "A robust dimensionless alternative to MAPE"],
+            ["R²", "Square of the correlation between model and data", "Widely expected but not very useful: two series with a common trend can have a high R² and a large error"],
+            ["Theil's Um, Us, Uc", "Shares of the squared error due to bias, unequal variation and unequal covariation", "Shows whether the error is systematic (Um, Us) or unsystematic (Uc)"],
+          ],
+        },
+        cite: ["sterman2000"],
+      },
+      {
+        heading: "When point-by-point fit is the wrong test",
+        body: [
+          "Many systems amplify random shocks. In a model driven by noise, even a perfect replica of the real system will drift away from the data once its random shocks differ: Sterman shows two runs of the same model, identical until the noise sequence changes, after which they bear no point-by-point resemblance (Sterman 2000, pp. 877-878).",
+          "For such models, compare modes of behaviour instead: the same frequencies and amplitudes of fluctuation, the same leads and lags between variables. Always plot model and data together (pp. 878-879).",
+        ],
+        cite: ["sterman2000", "barlas1989"],
+      },
+      {
+        heading: "Use the fit to find flaws",
+        list: [
+          "A model that fits the data is not thereby correct: many models can fit the same data and still disagree outside it (Sterman 2000, p. 879).",
+          "Show clients where the model does not fit. Each discrepancy is a lead to a wrong parameter or assumption.",
+          "Never add fudge factors or extra outside inputs only to improve the historical fit; they hide the flaws instead of fixing them (pp. 879-880).",
+        ],
+        cite: ["sterman2000"],
       },
     ],
     refs: ["sterman1984", "theil1966", "oliva2003", "andrade2020", "rahmandad2015"],
@@ -413,3 +706,7 @@ export const METHOD_PAGES: MethodPage[] = [
     refs: ["rahmandad2015", "andrade2020", "oliva2003", "kwakkel2013", "bryant2010", "pruyt2014", "brunton2016", "rackauckas2020", "chen2018", "edali2019", "yucel2011", "coyle1985", "chen2011", "rahmandad2008rl", "klu2023", "hosseinichimeh2024", "schoenberg2026", "hu2025", "akhavan2024", "ghaffarzadegan2024", "li2025", "rahmandad2008ms", "rudin2019", "barlas1996", "barlas1989", "qudratullah2010"],
   },
 ];
+
+// the order of the learning path, from framing a problem to using data-driven methods
+const ORDER = ["process", "reference-modes", "causal-loops", "stocks-flows", "validation", "fit", "calibration", "sensitivity", "ml-ai"];
+export const METHOD_PAGES: MethodPage[] = [...PAGES].sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));

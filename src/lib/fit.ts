@@ -65,7 +65,13 @@ export function calibrate(m: Model, start: Record<string, number>, ids: string[]
     });
     return out;
   };
-  const f = (u: number[]) => objective(m, toParams(u), refs);
+  // every guess the search tries, in order, so it can be shown and taught
+  const trace: { params: Record<string, number>; error: number }[] = [];
+  const f = (u: number[]) => {
+    const params = toParams(u), error = objective(m, params, refs);
+    trace.push({ params, error });
+    return error;
+  };
   const x0 = box.map((b) => (start[b.id] - b.min) / (b.max - b.min || 1));
   let simplex = [x0, ...x0.map((_, i) => x0.map((v, j) => (j === i ? (v < 0.85 ? v + 0.15 : v - 0.15) : v)))].map((x) => ({ x, f: f(x) }));
   let evals = simplex.length;
@@ -94,5 +100,5 @@ export function calibrate(m: Model, start: Record<string, number>, ids: string[]
     }
   }
   simplex.sort((a, b) => a.f - b.f);
-  return { params: toParams(simplex[0].x), before, after: simplex[0].f, evals };
+  return { params: toParams(simplex[0].x), before, after: simplex[0].f, evals, trace };
 }

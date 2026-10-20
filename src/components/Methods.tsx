@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { METHOD_PAGES, METHOD_REFS, type MethodPage } from "@/data/methods";
 import { cn } from "@/lib/utils";
+import { CalibrationLab, SensitivityLab } from "@/components/Labs";
 
 const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
 
@@ -80,6 +81,9 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
           </button>
         </div>
       )}
+
+      {p.lab === "calibration" && <CalibrationLab />}
+      {p.lab === "sensitivity" && <SensitivityLab />}
 
       {p.sections.map((s) => (
         <section key={s.heading} className="mt-12 max-w-[75ch]">

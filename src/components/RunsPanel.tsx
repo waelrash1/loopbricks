@@ -266,6 +266,12 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
 
           <div className="mt-4 rounded-[8px] bg-background p-3">
             <p className="text-[13px] font-semibold">Calibrate: let the computer tune sliders to fit the visible data</p>
+            <p className="mt-1 text-[12.5px] text-muted-foreground">
+              It runs the model many times, changing the ticked sliders to make the error as small as possible.{" "}
+              <a href="#/methods/calibration" className="tlink font-semibold text-foreground">
+                How calibration works
+              </a>
+            </p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px]">
               {model.params.map((p) => (
                 <label key={p.id} className="inline-flex items-center gap-1.5 cursor-pointer">
