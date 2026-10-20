@@ -1,0 +1,959 @@
+// Healthcare and population-health case library.
+// Every reference below was checked against PubMed or Crossref (Oct 2026); findings quote the abstract or full text.
+import type { Preset } from "@/data/presets";
+import { MODELS } from "@/data/molecules";
+
+export const THEMES = [
+  "Infectious disease",
+  "Chronic disease and risk factors",
+  "Population and long-term care",
+  "Hospital and patient flow",
+  "Workforce and supply",
+  "Mental health and substance use",
+] as const;
+export type Theme = (typeof THEMES)[number];
+export type Level = "Starter" | "Intermediate" | "Advanced";
+
+export type HealthCase = {
+  id: string;
+  title: string;
+  theme: Theme;
+  level: Level;
+  summary: string;
+  question: string; // the policy question a model answers
+  sim?: string; // HEALTH_MODELS key; absent when no small model does the case justice
+  presets?: Preset[];
+  map: [string, string][]; // model element → what it is in this case
+  molecules: string[]; // catalogue molecules the structure is built from
+  evidence: string[]; // what published models found
+  insight: string; // the dynamic lesson
+  tryThis: string[];
+  data: [string, string][]; // what you need → where it usually comes from
+  practice: string[]; // case-specific modelling advice and pitfalls
+  refs: string[]; // REFS keys
+  tags: string[];
+};
+
+export type Ref = { text: string; doi?: string; pmid?: string; url?: string };
+export const REFS: Record<string, Ref> = {
+  kermack1927: { text: "Kermack WO, McKendrick AG (1927). A contribution to the mathematical theory of epidemics. Proc R Soc Lond A 115(772):700-721.", doi: "10.1098/rspa.1927.0118" },
+  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 9, S-shaped growth: epidemics, innovation diffusion and the growth of new products." },
+  rahmandad2021: { text: "Rahmandad H, Lim TY, Sterman J (2021). Behavioral dynamics of COVID-19: estimating underreporting, multiple waves, and adherence fatigue across 92 nations. System Dynamics Review 37(1):5-31.", doi: "10.1002/sdr.1673" },
+  struben2020: { text: "Struben J (2020). The coronavirus disease (COVID-19) pandemic: simulation-based assessment of outbreak responses and postpeak strategies. System Dynamics Review 36(3):247-293.", doi: "10.1002/sdr.1660" },
+  thompson2007: { text: "Thompson KM, Duintjer Tebbens RJ (2007). Eradication versus control for poliomyelitis: an economic analysis. Lancet 369(9570):1363-1371.", doi: "10.1016/S0140-6736(07)60532-7" },
+  thompson2008: { text: "Thompson KM, Duintjer Tebbens RJ (2008). Using system dynamics to develop policies that matter: global management of poliomyelitis and beyond. System Dynamics Review 24(4):433-449.", doi: "10.1002/sdr.419" },
+  gardner2011: { text: "Gardner EM, McLees MP, Steiner JF, et al. (2011). The spectrum of engagement in HIV care and its relevance to test-and-treat strategies for prevention of HIV infection. Clin Infect Dis 52(6):793-800.", doi: "10.1093/cid/ciq243", pmid: "21367734" },
+  dangerfield2001: { text: "Dangerfield BC, Fang Y, Roberts CA (2001). Model-based scenarios for the epidemiology of HIV/AIDS: the consequences of highly active antiretroviral therapy. System Dynamics Review 17(2):119-150.", doi: "10.1002/sdr.211" },
+  austin1999: { text: "Austin DJ, Kristinsson KG, Anderson RM (1999). The relationship between the volume of antimicrobial consumption in human communities and the frequency of resistance. PNAS 96(3):1152-1156.", doi: "10.1073/pnas.96.3.1152" },
+  kianmehr2020: { text: "Kianmehr H, Sabounchi NS, Sabounchi SS, Cosler LE (2020). A system dynamics model of infection risk, expectations, and perceptions on antibiotic prescribing in the United States. J Eval Clin Pract 26(3):1054-1064.", doi: "10.1111/jep.13203", pmid: "31206901" },
+  jones2006: { text: "Jones AP, Homer JB, Murphy DL, et al. (2006). Understanding diabetes population dynamics through simulation modeling and experimentation. Am J Public Health 96(3):488-494.", doi: "10.2105/AJPH.2005.063529", pmid: "16449587" },
+  knowler2002: { text: "Knowler WC, Barrett-Connor E, Fowler SE, et al. (2002). Reduction in the incidence of type 2 diabetes with lifestyle intervention or metformin. N Engl J Med 346(6):393-403.", doi: "10.1056/NEJMoa012512", pmid: "11832527" },
+  hirsch2010: { text: "Hirsch G, Homer J, Evans E, et al. (2010). A system dynamics model for planning cardiovascular disease interventions. Am J Public Health 100(4):616-622.", doi: "10.2105/AJPH.2009.159434", pmid: "20167899" },
+  homer2010: { text: "Homer J, Milstein B, Wile K, et al. (2010). Simulating and evaluating local interventions to improve cardiovascular health. Prev Chronic Dis 7(1):A18.", pmid: "20040233" },
+  hall2011: { text: "Hall KD, Sacks G, Chandramohan D, et al. (2011). Quantification of the effect of energy imbalance on bodyweight. Lancet 378(9793):826-837.", doi: "10.1016/S0140-6736(11)60812-X", pmid: "21872751" },
+  abdelhamid2002: { text: "Abdel-Hamid TK (2002). Modeling the dynamics of human energy regulation and its implications for obesity treatment. System Dynamics Review 18(4):431-471.", doi: "10.1002/sdr.240" },
+  tengs2001: { text: "Tengs TO, Osgood ND, Chen LL (2001). The cost-effectiveness of intensive national school-based anti-tobacco education: results from the tobacco policy model. Prev Med 33(6):558-570.", doi: "10.1006/pmed.2001.0922", pmid: "11716651" },
+  tobias2010: { text: "Tobias MI, Cavana RY, Bloomfield A (2010). Application of a system dynamics model to inform investment in smoking cessation services in New Zealand. Am J Public Health 100(7):1274-1281.", doi: "10.2105/AJPH.2009.171165", pmid: "20466963" },
+  homerWakeland2021: { text: "Homer J, Wakeland W (2021). A dynamic model of the opioid drug epidemic with implications for policy. Am J Drug Alcohol Abuse 47(1):5-15.", doi: "10.1080/00952990.2020.1755677", pmid: "32515234" },
+  lim2022: { text: "Lim TY, Stringfellow EJ, Stafford CA, et al. (2022). Modeling the evolution of the US opioid crisis for national policy development. PNAS 119(23):e2115714119.", doi: "10.1073/pnas.2115714119", pmid: "35639699" },
+  occhipinti2021: { text: "Occhipinti JA, Skinner A, Iorfino F, et al. (2021). Reducing youth suicide: systems modelling and simulation to guide targeted investments across the determinants. BMC Med 19:61.", doi: "10.1186/s12916-021-01935-4", pmid: "33706764" },
+  atkinson2015: { text: "Atkinson JA, Wells R, Page A, et al. (2015). Applications of system dynamics modelling to support health policy. Public Health Res Pract 25(3):e2531531.", doi: "10.17061/phrp2531531", pmid: "26243490" },
+  ansah2014: { text: "Ansah JP, Eberlein RL, Love SR, et al. (2014). Implications of long-term care capacity response policies for an aging population: a simulation analysis. Health Policy 116(1):105-113.", doi: "10.1016/j.healthpol.2014.01.006", pmid: "24472329" },
+  wolstenholme1999: { text: "Wolstenholme E (1999). A patient flow perspective of U.K. health services: exploring the case for new 'intermediate care' initiatives. System Dynamics Review 15(3):253-271.", doi: "10.1002/(SICI)1099-1727(199923)15:3<253::AID-SDR172>3.0.CO;2-P" },
+  bagust1999: { text: "Bagust A, Place M, Posnett JW (1999). Dynamics of bed use in accommodating emergency admissions: stochastic simulation model. BMJ 319(7203):155-158.", doi: "10.1136/bmj.319.7203.155", pmid: "10406748" },
+  lane2000: { text: "Lane DC, Monefeldt C, Rosenhead JV (2000). Looking in the wrong place for healthcare improvements: a system dynamics study of an accident and emergency department. J Oper Res Soc 51(5):518-531.", doi: "10.1057/palgrave.jors.2600892" },
+  lattimer2004: { text: "Lattimer V, Brailsford S, Turnbull J, et al. (2004). Reviewing emergency care systems I: insights from system dynamics modelling. Emerg Med J 21(6):685-691.", doi: "10.1136/emj.2002.003673", pmid: "15496694" },
+  vanackere1999: { text: "van Ackere A, Smith PC (1999). Towards a macro model of National Health Service waiting lists. System Dynamics Review 15(3):225-252.", doi: "10.1002/(SICI)1099-1727(199923)15:3<225::AID-SDR171>3.0.CO;2-P" },
+  homer2004: { text: "Homer J, Hirsch G, Minniti M, Pierson M (2004). Models for collaboration: how system dynamics helped a community organize cost-effective care for chronic illness. System Dynamics Review 20(3):199-222.", doi: "10.1002/sdr.295" },
+  milstein2010: { text: "Milstein B, Homer J, Hirsch G (2010). Analyzing national health reform strategies with a dynamic simulation model. Am J Public Health 100(5):811-819.", doi: "10.2105/AJPH.2009.174490", pmid: "20299653" },
+  milstein2011: { text: "Milstein B, Homer J, Briss P, et al. (2011). Why behavioral and environmental interventions are needed to improve health at lower cost. Health Aff 30(5):823-832.", doi: "10.1377/hlthaff.2010.1116", pmid: "21555468" },
+  barber2010: { text: "Barber P, López-Valcárcel BG (2010). Forecasting the need for medical specialists in Spain: application of a system dynamics model. Hum Resour Health 8:24.", doi: "10.1186/1478-4491-8-24", pmid: "21034458" },
+  hynes2025: { text: "Hynes T, Caulfield P, O'Connor P, et al. (2025). Self-sufficiency in the healthcare workforce: a system dynamics model of the domestic and foreign educated nursing and midwifery workforce in Ireland. Hum Resour Health 23(1):44.", doi: "10.1186/s12960-025-01004-4", pmid: "40842008" },
+  aiken2002: { text: "Aiken LH, Clarke SP, Sloane DM, et al. (2002). Hospital nurse staffing and patient mortality, nurse burnout, and job dissatisfaction. JAMA 288(16):1987-1993.", doi: "10.1001/jama.288.16.1987", pmid: "12387650" },
+  sterman1989: { text: "Sterman JD (1989). Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment. Management Science 35(3):321-339.", doi: "10.1287/mnsc.35.3.321" },
+  // reviews and method
+  homerHirsch2006: { text: "Homer JB, Hirsch GB (2006). System dynamics modeling for public health: background and opportunities. Am J Public Health 96(3):452-458.", doi: "10.2105/AJPH.2005.062059", pmid: "16449591" },
+  darabi2020: { text: "Darabi N, Hosseinichimeh N (2020). System dynamics modeling in health and medicine: a systematic literature review. System Dynamics Review 36(1):29-73.", doi: "10.1002/sdr.1646" },
+  davahli2020: { text: "Davahli MR, Karwowski W, Taiar R (2020). A system dynamics simulation applied to healthcare: a systematic review. Int J Environ Res Public Health 17(16):5741.", doi: "10.3390/ijerph17165741", pmid: "32784439" },
+  marshall2015: { text: "Marshall DA, Burgos-Liz L, IJzerman MJ, et al. (2015). Applying dynamic simulation modeling methods in health care delivery research: the SIMULATE checklist. Value Health 18(1):5-16.", doi: "10.1016/j.jval.2014.12.001", pmid: "25595229" },
+  sterman2006: { text: "Sterman JD (2006). Learning from evidence in a complex world. Am J Public Health 96(3):505-514.", doi: "10.2105/AJPH.2005.066043", pmid: "16449579" },
+  forrester1980: { text: "Forrester JW, Senge PM (1980). Tests for building confidence in system dynamics models. In: Legasto AA, Forrester JW, Lyneis JM (eds), System Dynamics. TIMS Studies in the Management Sciences 14:209-228. North-Holland." },
+  barlas1996: { text: "Barlas Y (1996). Formal aspects of model validity and validation in system dynamics. System Dynamics Review 12(3):183-210.", doi: "10.1002/(SICI)1099-1727(199623)12:3<183::AID-SDR103>3.0.CO;2-4" },
+  rahmandad2012: { text: "Rahmandad H, Sterman JD (2012). Reporting guidelines for simulation-based research in social sciences. System Dynamics Review 28(4):396-411.", doi: "10.1002/sdr.1481" },
+  ghaffarzadegan2011: { text: "Ghaffarzadegan N, Lyneis J, Richardson GP (2011). How small system dynamics models can help the public policy process. System Dynamics Review 27(1):22-44.", doi: "10.1002/sdr.442" },
+  vennix1996: { text: "Vennix JAM (1996). Group Model Building: Facilitating Team Learning Using System Dynamics. Wiley." },
+  hovmand2014: { text: "Hovmand PS (2014). Community Based System Dynamics. Springer.", doi: "10.1007/978-1-4614-8763-0" },
+  oliva2003: { text: "Oliva R (2003). Model calibration as a testing strategy for system dynamics models. European Journal of Operational Research 151(3):552-568.", doi: "10.1016/S0377-2217(02)00622-7" },
+  tian2016: { text: "Tian Y, Hassmiller Lich K, Osgood ND, et al. (2016). Linked sensitivity analysis, calibration, and uncertainty analysis using a system dynamics model for stroke comparative effectiveness research. Med Decis Making 36(8):1043-1057.", doi: "10.1177/0272989X16643940", pmid: "27091379" },
+  pitt2016: { text: "Pitt M, Monks T, Crowe S, Vasilakis C (2016). Systems modelling and simulation in health service design, delivery and decision making. BMJ Qual Saf 25(1):38-45.", doi: "10.1136/bmjqs-2015-004430", pmid: "26115667" },
+  sterman2002: { text: "Sterman JD (2002). All models are wrong: reflections on becoming a systems scientist. System Dynamics Review 18(4):501-531.", doi: "10.1002/sdr.261" },
+  brailsford2009: { text: "Brailsford SC, Harper PR, Patel B, Pitt M (2009). An analysis of the academic literature on simulation and modelling in health care. Journal of Simulation 3(3):130-140.", doi: "10.1057/jos.2009.10" },
+};
+
+export const CASES: HealthCase[] = [
+  {
+    id: "epidemic",
+    title: "An outbreak: who gets infected, and when it turns",
+    theme: "Infectious disease",
+    level: "Starter",
+    summary: "The susceptible–infected–recovered structure, and why outbreaks turn before everyone is infected.",
+    question: "How big will the peak be, when will it come, and how much does each control measure flatten it?",
+    sim: "sir",
+    presets: [
+      { label: "Uncontrolled, R₀ 3", params: { r0: 3, dur: 7, dist: 0, vacc: 0 } },
+      { label: "Distancing cuts contacts 40%", params: { r0: 3, dur: 7, dist: 40, vacc: 0 } },
+      { label: "Highly contagious, R₀ 6", params: { r0: 6, dur: 7, dist: 0, vacc: 0 } },
+      { label: "Below threshold, R₀ 0.9", params: { r0: 0.9, dur: 7, dist: 0, vacc: 0 } },
+    ],
+    map: [
+      ["Stock: Susceptible", "People who can still catch the infection"],
+      ["Stock: Infected", "People currently infectious"],
+      ["Stock: Recovered or immune", "People who cannot be infected again, by recovery or vaccination"],
+      ["Flow: infection", "β × S × I / N, where β = R₀ / infectious period"],
+      ["Loop R (contagion)", "More infected people → more infections → more infected"],
+      ["Loop B (depletion)", "Each infection removes a susceptible, so contagion runs out of people to reach"],
+    ],
+    molecules: ["diffusion", "cascade", "decay"],
+    evidence: [
+      "Kermack and McKendrick (1927) set out the compartmental structure every later epidemic model builds on.",
+      "Sterman (2000, ch. 9) presents epidemics and product adoption as the same S-shaped growth structure: a reinforcing contagion loop that hands over to a balancing depletion loop.",
+    ],
+    insight:
+      "The outbreak peaks when the effective reproduction number R₀ × (susceptible share) falls to 1, not when everyone has been infected. That is also why some people are never infected, and why immunising a share of 1 − 1/R₀ of the population stops spread (a standard SIR result).",
+    tryThis: [
+      "Run the uncontrolled preset. Note the day of the peak and how many people are never infected.",
+      "Switch to R₀ 0.9. Why does the outbreak die out even though nobody acted?",
+      "Run the uncontrolled preset again and move contact reduction to 40% halfway up the rise. Compare the peak and the total infected.",
+    ],
+    data: [
+      ["Population size and initial cases", "Census or UN World Population Prospects; surveillance line lists"],
+      ["Infectious period", "Clinical studies of shedding or symptom duration"],
+      ["R₀ or the early growth rate", "Fitted from early case counts (doubling time) or published estimates"],
+      ["Daily or weekly reported cases", "National surveillance; WHO Global Health Observatory; ECDC Surveillance Atlas"],
+      ["Under-reporting ratio", "Serosurveys or model-based estimates; reported cases undercount true infections"],
+    ],
+    practice: [
+      "Fit to deaths or hospital admissions as well as cases: testing changes case counts more than it changes deaths.",
+      "Keep the population closed (no births or deaths) only when the outbreak is short compared with a lifetime.",
+      "Report R₀ together with the infectious period: the same R₀ with a shorter period gives a faster, sharper outbreak.",
+    ],
+    refs: ["kermack1927", "sterman2000"],
+    tags: ["SIR", "epidemic", "outbreak", "R0", "contagion", "infection", "herd immunity", "flatten the curve"],
+  },
+  {
+    id: "covid-behaviour",
+    title: "COVID-19: behaviour, waves and adherence fatigue",
+    theme: "Infectious disease",
+    level: "Advanced",
+    summary: "People cut contacts when risk feels high and relax when it feels low: a balancing loop that produces repeated waves.",
+    question: "Why did many countries see several waves, and how much would quicker, steadier responses have saved?",
+    sim: "sir",
+    presets: [
+      { label: "No response", params: { r0: 2.8, dur: 8, dist: 0, vacc: 0 } },
+      { label: "Strong distancing (60%)", params: { r0: 2.8, dur: 8, dist: 60, vacc: 0 } },
+      { label: "Moderate distancing plus vaccination", params: { r0: 2.8, dur: 8, dist: 30, vacc: 0.5 } },
+    ],
+    map: [
+      ["Stock: Infected", "Active infections, most of them never reported"],
+      ["Parameter: contact reduction", "Stands in for the behavioural response; in the published models it depends on perceived risk"],
+      ["Loop B (risk response)", "More deaths → higher perceived risk → fewer contacts → fewer infections (published models; here you play this loop by hand)"],
+      ["Adherence fatigue", "The response weakens the longer it lasts, so the balancing loop loses strength"],
+    ],
+    molecules: ["diffusion", "smooth", "effectFunction"],
+    evidence: [
+      "Rahmandad, Lim and Sterman (2021), 92 nations: by 22 December 2020 true cumulative cases were about 7.03 times and deaths 1.44 times the official counts. The infection fatality rate was about 0.51% and falling. Without adherence fatigue, cumulative cases would have been 47% lower.",
+      "In the same study, modestly better responsiveness through June 2021 could have cut cases and deaths by about 14%, more than vaccinating half the population by then.",
+      "Struben (2020) calibrated a behavioural model to six countries. The timing and scale of testing and of contact reduction explain much of the difference between them. After the peak, contacts had to stay well below pre-pandemic levels.",
+    ],
+    insight:
+      "When behaviour responds to risk, the epidemic does not burn out once. It is held near R = 1 by people's reactions, and every relaxation restarts growth. Policies that keep the response steady matter as much as how strong it is.",
+    tryThis: [
+      "Start the No response preset. When infections reach about 1,000, set contact reduction to 60%. When they fall below 100, set it back to 0. Repeat. Count the waves.",
+      "Do the same with 30%, held from early on. Compare the total recovered at day 200.",
+      "Add 0.5%/day vaccination and see how much distancing you still need to stop a second wave.",
+    ],
+    data: [
+      ["Reported cases, tests, deaths", "National dashboards; Our World in Data"],
+      ["Mobility or contact data", "Mobility reports and contact surveys"],
+      ["Seroprevalence", "Serosurveys, to estimate under-reporting"],
+      ["Vaccination coverage by age", "National immunisation registries"],
+    ],
+    practice: [
+      "Model reporting explicitly: true infections, tests and reported cases are different variables.",
+      "Make behaviour endogenous (perceived risk from recent deaths) rather than fixing contact reduction by date: that is what generates waves.",
+      "Calibrate across many places at once. A behavioural parameter fitted to one country is poorly identified.",
+    ],
+    refs: ["rahmandad2021", "struben2020"],
+    tags: ["COVID-19", "pandemic", "behaviour", "waves", "fatigue", "distancing", "lockdown", "under-reporting"],
+  },
+  {
+    id: "vaccination",
+    title: "Vaccination, herd immunity and eradication",
+    theme: "Infectious disease",
+    level: "Intermediate",
+    summary: "Vaccination moves people straight from susceptible to immune. Keeping coverage high enough is a stock-management problem.",
+    question: "What coverage stops transmission, and what happens if a programme eases off before eradication?",
+    sim: "sir",
+    presets: [
+      { label: "No vaccination", params: { r0: 4, dur: 7, dist: 0, vacc: 0 } },
+      { label: "Slow campaign (0.5%/day)", params: { r0: 4, dur: 7, dist: 0, vacc: 0.5 } },
+      { label: "Fast campaign (3%/day)", params: { r0: 4, dur: 7, dist: 0, vacc: 3 } },
+    ],
+    map: [
+      ["Flow: vaccination", "Vaccination rate × Susceptible, straight into the immune stock"],
+      ["Herd immunity threshold", "1 − 1/R₀ of the population immune: 75% for R₀ = 4"],
+      ["Missing in this small model", "Births adding new susceptibles, and waning immunity. Both refill the susceptible stock over years."],
+    ],
+    molecules: ["split", "diffusion", "stockAdjust"],
+    evidence: [
+      "Thompson and Duintjer Tebbens (2007), polio: immunisation intensity must rise to finish eradication, and small decreases can trigger large outbreaks. A low-cost control policy could mean about 200,000 paralytic cases a year in low-income countries.",
+      "Thompson and Duintjer Tebbens (2008) reflect on how their model shaped global polio policy. Leading with the policy question, and keeping the modelling in the background, helped decision makers use the results.",
+    ],
+    insight:
+      "Immunity is a stock that births and waning drain away. A programme that succeeds lowers cases, which lowers perceived need, which tempts funders to ease off just as the susceptible stock refills.",
+    tryThis: [
+      "Compare the three presets. How much does a fast campaign shrink the peak compared with a slow one?",
+      "With R₀ 4, find the slowest vaccination rate that keeps peak infections below 500.",
+      "Raise R₀ to 6. How much faster must vaccination go?",
+    ],
+    data: [
+      ["Coverage by birth cohort and dose", "Immunisation registries; WHO/UNICEF coverage estimates"],
+      ["Vaccine effectiveness and waning", "Trials and observational studies"],
+      ["Birth rate", "UN World Population Prospects"],
+      ["Case surveillance", "WHO Global Health Observatory; ECDC Surveillance Atlas"],
+    ],
+    practice: [
+      "Add births and waning before drawing long-term conclusions: they decide whether immunity gaps rebuild.",
+      "Separate eligible from vaccinated cohorts with an aging chain when the vaccine is given at a set age.",
+      "Show decision makers the cost of easing off, not just the cost of continuing.",
+    ],
+    refs: ["thompson2007", "thompson2008", "sterman2000"],
+    tags: ["vaccine", "vaccination", "immunisation", "herd immunity", "polio", "eradication", "measles", "coverage"],
+  },
+  {
+    id: "hiv-cascade",
+    title: "The HIV care cascade",
+    theme: "Infectious disease",
+    level: "Intermediate",
+    summary: "People move from diagnosis to treatment to viral suppression, and some are lost at every step.",
+    question: "Where in the cascade are most people lost, and which step gives the biggest gain in viral suppression?",
+    sim: "hivCascade",
+    presets: [
+      { label: "30% lost before treatment", params: { inflow: 10, tau: 4, leak: 0.3 } },
+      { label: "Better linkage (10% lost)", params: { inflow: 10, tau: 4, leak: 0.1 } },
+      { label: "Faster start (τ 1.5 months)", params: { inflow: 10, tau: 1.5, leak: 0.3 } },
+    ],
+    map: [
+      ["Stock: Diagnosed, not yet on treatment", "People who know their status but are not on treatment"],
+      ["Stock: On treatment", "People on antiretroviral therapy"],
+      ["Flow: lost to follow-up", "The leak in a broken cascade"],
+      ["Flow: starting treatment", "Linkage and initiation"],
+    ],
+    molecules: ["broken", "cascade", "aging"],
+    evidence: [
+      "Gardner et al. (2011), about 1.1 million people living with HIV in the US in 2006: 79% were aware of their infection, about 59% were linked to care, 40% were retained in care, and about 24% received treatment. Only about 19% (about 210,000 people) had an undetectable viral load.",
+      "Dangerfield, Fang and Roberts (2001) fitted a system dynamics model to UK data from 1981 to 1998. They used it to explore the consequences of triple-combination therapy introduced in 1996.",
+    ],
+    insight:
+      "Losses multiply along a cascade: four steps that each keep 80% deliver only about 41% to the end. Plugging the biggest early leak often helps more than perfecting the last step.",
+    tryThis: [
+      "Compare 30% and 10% lost. How much larger does the treated stock get at steady state?",
+      "Keep the leak at 30% but start treatment faster. Does speed fix the loss?",
+      "Explain why the treated stock keeps rising long after you change the policy.",
+    ],
+    data: [
+      ["New diagnoses", "National HIV surveillance; UNAIDS AIDSinfo"],
+      ["Linkage within 1–3 months", "Clinic records or laboratory (first CD4 or viral-load test) data"],
+      ["Retention and viral suppression", "Laboratory surveillance of viral-load tests"],
+      ["Undiagnosed estimate", "Back-calculation models (often published by national agencies)"],
+    ],
+    practice: [
+      "Gardner's figures are conditional rates multiplied along the chain. Say whether you use conditional or cumulative shares.",
+      "Add re-engagement (a return flow from lost to follow-up to care): many 'lost' people come back.",
+      "Couple the cascade to transmission: viral suppression lowers new infections, which closes a loop.",
+    ],
+    refs: ["gardner2011", "dangerfield2001"],
+    tags: ["HIV", "AIDS", "care cascade", "antiretroviral", "ART", "linkage", "retention", "viral suppression", "lost to follow-up"],
+  },
+  {
+    id: "amr",
+    title: "Antibiotic prescribing and resistance",
+    theme: "Infectious disease",
+    level: "Advanced",
+    summary: "Resistance spreads through infections much as an innovation spreads, and it is slow to reverse once established.",
+    question: "If prescribing falls, how fast does resistance fall, and what drives prescribing in the first place?",
+    sim: "outbreakDiffusion",
+    presets: [
+      { label: "Slow emergence, strong spread", params: { p: 0.5, q: 18 } },
+      { label: "Heavy prescribing pressure", params: { p: 3, q: 18 } },
+      { label: "Weak advantage for resistance", params: { p: 0.5, q: 5 } },
+    ],
+    map: [
+      ["Stock: Not yet affected", "Infections still caused by susceptible strains"],
+      ["Stock: Affected", "Infections caused by resistant strains"],
+      ["p (outside exposure)", "Resistance arising or imported independently of local spread"],
+      ["q (spread through contact)", "Transmission advantage of resistant strains under antibiotic pressure"],
+    ],
+    molecules: ["diffusion", "weightedAvg", "smooth"],
+    evidence: [
+      "Austin, Kristinsson and Anderson (1999): resistance emerges much faster than it decays once drug use is cut, so large reductions in resistance need equally large reductions in consumption.",
+      "Kianmehr et al. (2020) validated an SD model on about 53,000 visits for acute respiratory infection (US NAMCS, 1993–2015). Prescribing was driven by the doctor's past prescribing, perceived infection risk and patient expectation; patient expectation fell over two decades.",
+    ],
+    insight:
+      "This small model only shows the rise. Austin et al. show the fall is slower than the rise: resistance has momentum, so stewardship has to start before resistance is common.",
+    tryThis: [
+      "Compare heavy and slow emergence. How much earlier does resistance dominate?",
+      "Lower q to 5 (weak advantage). Why does the curve stretch out over many more weeks?",
+      "Sketch the missing loop: what would make prescribing itself respond to resistance?",
+    ],
+    data: [
+      ["Antibiotic consumption", "National prescribing data in defined daily doses"],
+      ["Resistance frequency by organism", "Laboratory surveillance (for Europe, ECDC Surveillance Atlas)"],
+      ["Visit and prescribing records", "Ambulatory care surveys such as US NAMCS"],
+    ],
+    practice: [
+      "Model the prescriber's decision explicitly; Kianmehr et al. show habit and expectations matter as much as clinical risk.",
+      "Include a fitness cost so resistance can decline without drug pressure, and test how slowly it does.",
+      "Stated plainly: this case uses a diffusion skin for the rise of resistance. It is a teaching simplification, not Austin's model.",
+    ],
+    refs: ["austin1999", "kianmehr2020"],
+    tags: ["antibiotic", "antimicrobial resistance", "AMR", "prescribing", "stewardship", "resistance"],
+  },
+  {
+    id: "diabetes",
+    title: "Diabetes in a population: prevention versus management",
+    theme: "Chronic disease and risk factors",
+    level: "Intermediate",
+    summary: "People move from no risk to prediabetes to diabetes to complications. Prevention and care act at different points of the chain.",
+    question: "What mix of prevention and disease management reduces diabetes burden over 10 and over 30 years?",
+    sim: "chronic",
+    presets: [
+      { label: "Current care", params: { onset: 3, prog: 6, reach: 0, care: 40 } },
+      { label: "Better management only", params: { onset: 3, prog: 6, reach: 0, care: 90 } },
+      { label: "Prevention reaching 60%", params: { onset: 3, prog: 6, reach: 60, care: 40 } },
+      { label: "Both", params: { onset: 3, prog: 6, reach: 60, care: 90 } },
+    ],
+    map: [
+      ["Stock: At risk", "Prediabetes (impaired fasting glucose or glucose tolerance)"],
+      ["Stock: With disease", "Diagnosed diabetes without complications"],
+      ["Stock: With complications", "Diabetes with complications such as kidney disease or amputation"],
+      ["Prevention reach", "Share of at-risk people in a lifestyle programme; cuts progression by 58% for them"],
+      ["Care quality", "Share of people with diabetes whose glucose and blood pressure are controlled"],
+    ],
+    molecules: ["aging", "cascade", "effectFunction"],
+    evidence: [
+      "Jones et al. (2006), the CDC diabetes model: better diabetes control raises prevalence, because people with diabetes live longer; control efforts alone cannot reduce diabetes-related deaths in the long run; and there are long delays between primary prevention and downstream outcomes.",
+      "Knowler et al. (2002), the Diabetes Prevention Program trial: a lifestyle intervention cut the incidence of type 2 diabetes by 58% compared with placebo. This is the effect size the simulator uses.",
+    ],
+    insight:
+      "Management pays back fast but grows the stock of people living with diabetes. Prevention shrinks the stock, but its effect builds over decades. A 10-year horizon will always favour management, so choose the horizon before you compare.",
+    tryThis: [
+      "Run Current care for 30 years and note the size of the disease stock.",
+      "Compare Better management only with Prevention reaching 60% at year 5 and at year 30. Which looks better at each time?",
+      "Run Both. Is the combination better than the sum of its parts?",
+    ],
+    data: [
+      ["Prevalence of prediabetes and diabetes by age", "Examination surveys (NHANES); GBD results"],
+      ["Incidence and progression rates", "Cohort studies; prevention trials"],
+      ["Complication and mortality rates", "Registries; CDC WONDER death data"],
+      ["Programme reach and costs", "Programme records; health-economic studies"],
+    ],
+    practice: [
+      "Split the at-risk stock by diagnosed and undiagnosed: most people with prediabetes do not know it.",
+      "Drive onset from obesity prevalence when you can (link to the body-weight case) rather than fixing it.",
+      "Present results over several horizons. Homer and Hirsch (2006) recommend an ecological scope: outcomes, behaviours, environment and delivery resources.",
+    ],
+    refs: ["jones2006", "knowler2002", "homer2004", "homerHirsch2006"],
+    tags: ["diabetes", "prediabetes", "chronic disease", "prevention", "DPP", "lifestyle", "complications", "prevalence"],
+  },
+  {
+    id: "cardiovascular",
+    title: "Cardiovascular risk and local prevention",
+    theme: "Chronic disease and risk factors",
+    level: "Advanced",
+    summary: "Risk factors such as smoking, high blood pressure and high cholesterol accumulate in a population and drive first and repeat heart attacks and strokes.",
+    question: "Which local interventions cut cardiovascular deaths and costs most, and how long until they show?",
+    sim: "chronic",
+    presets: [
+      { label: "Status quo", params: { onset: 3, prog: 6, reach: 0, care: 40 } },
+      { label: "Upstream: risk prevention", params: { onset: 1.5, prog: 6, reach: 30, care: 40 } },
+      { label: "Downstream: better treatment", params: { onset: 3, prog: 6, reach: 0, care: 85 } },
+    ],
+    map: [
+      ["Stock: At risk", "Adults with one or more uncontrolled risk factors"],
+      ["Stock: With disease", "People who have had a first cardiovascular event"],
+      ["Stock: With complications", "People with repeat events or heart failure"],
+      ["Risk-factor onset", "Driven in full models by smoking, diet, activity and air quality"],
+    ],
+    molecules: ["aging", "coflow", "effectFunction", "weightedAvg"],
+    evidence: [
+      "Homer et al. (2010), all US adults without a prior event, 1990–2040: of 19 interventions tested, at least 15 are potentially cost saving. Together they could cut deaths from first events by about 20% and total consequence costs by 26%.",
+      "Hirsch et al. (2010) built a county-level model for a Colorado health department, tracking how risk factors drive first and recurrent events and testing intervention strategies against the county's burden.",
+    ],
+    insight:
+      "Population turnover and aging push risk-factor trends as much as any programme does. Upstream measures show in event rates only after years, because the stock of people already at risk is large.",
+    tryThis: [
+      "Compare Upstream and Downstream at year 5 and at year 30.",
+      "Halve onset and leave everything else alone. How long until the disease stock stops growing?",
+    ],
+    data: [
+      ["Risk-factor prevalence", "BRFSS, NHANES or national health surveys"],
+      ["Event rates (first and recurrent)", "Hospital discharge data; registries"],
+      ["Treatment coverage and control", "Primary-care records; examination surveys"],
+      ["Costs of events and programmes", "Claims data (for the US, CMS); published cost studies"],
+    ],
+    practice: [
+      "Track each risk factor as its own stock with its own inflows (starting) and outflows (quitting, control).",
+      "Represent recurrent events separately: survivors of a first event carry much higher risk.",
+      "Tobacco is a classic sub-model: Tengs et al. (2001) and Tobias et al. (2010) built SD tobacco-policy models used for investment decisions.",
+    ],
+    refs: ["homer2010", "hirsch2010", "tengs2001", "tobias2010"],
+    tags: ["cardiovascular", "heart disease", "stroke", "blood pressure", "cholesterol", "smoking", "tobacco", "prevention", "PRISM"],
+  },
+  {
+    id: "body-weight",
+    title: "Body weight and energy balance",
+    theme: "Chronic disease and risk factors",
+    level: "Starter",
+    summary: "Body weight is a stock that drifts toward the level a person's intake supports, slowly.",
+    question: "If someone cuts intake for good, how much weight do they lose, and how fast?",
+    sim: "bodyWeight",
+    presets: [
+      { label: "Cut 1,000 kJ/day (−10 kg)", params: { goal: 85, at: 17 } },
+      { label: "Cut 500 kJ/day (−5 kg)", params: { goal: 90, at: 17 } },
+      { label: "The '3,500 kcal' myth (fast and linear)", params: { goal: 85, at: 4 } },
+    ],
+    map: [
+      ["Stock: Body weight", "Fat mass plus lean mass (Hall et al. model them separately)"],
+      ["Goal: weight the new intake supports", "About 1 kg lower for each 100 kJ/day permanently cut"],
+      ["Time constant", "About 17 months, so half the change comes in about 1 year"],
+      ["Loop B", "Lower weight → lower energy expenditure → smaller deficit: the body adapts"],
+    ],
+    molecules: ["closegap", "smooth", "decay"],
+    evidence: [
+      "Hall et al. (2011): every permanent change of 100 kJ/day in intake leads to an eventual weight change of about 1 kg. Half the change is reached in about 1 year and 95% in about 3 years. The paper explicitly rejects the '3,500 kcal per pound' rule.",
+      "Abdel-Hamid (2002) built an SD model of nutrition, metabolism, hormones, body composition and activity. It reproduces the mixed results of exercise studies and explains why they vary.",
+    ],
+    insight:
+      "Weight loss slows because the deficit closes itself: this is goal seeking, not a straight line. Expecting linear loss makes people think a diet has 'stopped working' when it is behaving exactly as physiology predicts.",
+    tryThis: [
+      "Run Cut 1,000 kJ/day. When is half the loss done? When is 95% done?",
+      "Run the myth preset and compare it with the evidence-based curve at month 6.",
+      "Change the goal back to 95 at month 12 (going back to the old diet). What happens?",
+    ],
+    data: [
+      ["Baseline weight, height, age and sex", "Clinical records or surveys (NHANES)"],
+      ["Change in energy intake", "Dietary records; doubly labelled water studies"],
+      ["Physical activity", "Accelerometry or questionnaires"],
+    ],
+    practice: [
+      "Split body weight into fat and lean mass if the question involves exercise or protein.",
+      "At population scale, link the intake goal to the food environment rather than fixing it.",
+      "Never extrapolate a 3-month weight trend linearly.",
+    ],
+    refs: ["hall2011", "abdelhamid2002"],
+    tags: ["obesity", "body weight", "BMI", "diet", "energy balance", "calories", "nutrition", "weight loss"],
+  },
+  {
+    id: "opioids",
+    title: "The opioid epidemic",
+    theme: "Mental health and substance use",
+    level: "Advanced",
+    summary: "Misuse spreads partly through social contact, progresses to use disorder, and overdose deaths feed back on perceived risk.",
+    question: "Which mix of supply, treatment and overdose-prevention policies reduces both use disorder and deaths?",
+    sim: "outbreakDiffusion",
+    presets: [
+      { label: "Social spread dominates", params: { p: 0.5, q: 20 } },
+      { label: "Supply-driven (high exposure)", params: { p: 3, q: 8 } },
+    ],
+    map: [
+      ["Stock: Not yet affected", "People aged 12 and over not misusing opioids"],
+      ["Stock: Affected", "People misusing prescription or illicit opioids (only initiation is modelled here)"],
+      ["p (outside exposure)", "Exposure through prescribing and drug supply"],
+      ["q (spread through contact)", "Social influence on starting use, a loop named by Lim et al."],
+    ],
+    molecules: ["diffusion", "cascade", "broken", "capacityUtil"],
+    evidence: [
+      "Homer and Wakeland (2021) fitted 12 historical series (average error 9%). For 2020–2030, cutting prescription dosage by 20% reduced people with use disorder by 11%; cutting diversion by 30% reduced them by 16%; raising lay naloxone use from 4% to 20% cut overdose deaths by 12%. No single intervention reduced both use disorder and deaths; all four together cut use disorder by 24% and deaths by 18%.",
+      "Lim et al. (2022), the SOURCE model calibrated to 1999–2020: social influence on starting and escalating use, risk perception driven by overdose deaths, and treatment capacity limits shape the epidemic, alongside changes in supply and the spread of illicit fentanyl.",
+    ],
+    insight:
+      "Policies that act on one stock can push another the wrong way: naloxone saves lives but keeps more people in the use-disorder stock, and supply cuts can push people to more dangerous illicit opioids. Only combinations improve both outcomes.",
+    tryThis: [
+      "Compare the two presets. Which curve rises sooner, and which rises faster once started?",
+      "Sketch the full chain: misuse → use disorder → treatment → remission, with overdose deaths leaving from use disorder. Which molecules would you use?",
+    ],
+    data: [
+      ["Prevalence of misuse and use disorder", "National drug use surveys"],
+      ["Overdose deaths by drug", "Death certificates (for the US, CDC WONDER)"],
+      ["Prescribing volume and dose", "Prescription monitoring programmes"],
+      ["Treatment admissions and capacity", "Treatment episode data; provider surveys"],
+    ],
+    practice: [
+      "Separate prescription and illicit pathways: they respond to policies in opposite directions.",
+      "Report several outcomes (use disorder, overdoses, deaths) side by side; one measure hides trade-offs.",
+      "Stated plainly: the simulator shows initiation only. Use Cascade and Broken Cascade to build progression and treatment.",
+    ],
+    refs: ["homerWakeland2021", "lim2022"],
+    tags: ["opioid", "overdose", "fentanyl", "naloxone", "addiction", "substance use", "OUD", "drug policy"],
+  },
+  {
+    id: "mental-health",
+    title: "Youth mental health: access to care and suicide prevention",
+    theme: "Mental health and substance use",
+    level: "Intermediate",
+    summary: "Demand for mental-health care meets limited service capacity. Waiting lists grow whenever demand exceeds what services can treat.",
+    question: "Which combination of services and social programmes reduces self-harm and suicide most?",
+    sim: "mentalHealthAccess",
+    presets: [
+      { label: "Demand above capacity", params: { orders: 12, shipTime: 3, capacity: 10 } },
+      { label: "Capacity matches demand", params: { orders: 12, shipTime: 3, capacity: 14 } },
+      { label: "Prevention lowers demand", params: { orders: 9, shipTime: 3, capacity: 10 } },
+    ],
+    map: [
+      ["Stock: Waiting for care", "People referred or seeking care who have not started treatment"],
+      ["Flow: people seeking care", "Driven by psychological distress in the population"],
+      ["Flow: starting care", "Limited by service capacity"],
+    ],
+    molecules: ["backlogFlow", "capacityUtil", "cascade"],
+    evidence: [
+      "Occhipinti et al. (2021), a participatory regional SD model run over 20 years: the best combination was social connectedness programmes, technology-enabled coordinated care, aftercare after an attempt, reduced childhood adversity and higher youth employment. It cut self-harm hospitalisations by 28.5% and suicide deaths by 29.3%. Adding more interventions gave only marginal gains.",
+      "Atkinson et al. (2015) reviewed SD in health policy and found only 6 papers covering 8 case studies; only 3 engaged stakeholders in building the model.",
+    ],
+    insight:
+      "When demand exceeds capacity the waiting list grows without limit. Prevention that lowers demand can do as much as new capacity, and the best package mixes services with action on the social causes of distress.",
+    tryThis: [
+      "Run Demand above capacity. How fast does the list grow each month?",
+      "Compare adding 4 places of capacity with cutting demand by 3. Which clears the list sooner?",
+    ],
+    data: [
+      ["Prevalence of psychological distress", "Population health surveys"],
+      ["Referrals, waiting times, service capacity", "Service activity data"],
+      ["Self-harm hospitalisations and suicide deaths", "Hospital records; coroner and death registration data"],
+      ["Social determinants (employment, adversity)", "Labour-force statistics; child-welfare data"],
+    ],
+    practice: [
+      "Build it with the people who run and use the services: participatory modelling improves both the model and its uptake.",
+      "Model drop-out from waiting lists: long waits lose people, which hides unmet need.",
+      "Test combinations, not single interventions; Occhipinti et al. found more is not necessarily better.",
+    ],
+    refs: ["occhipinti2021", "atkinson2015", "hovmand2014"],
+    tags: ["mental health", "suicide", "self-harm", "youth", "waiting list", "access", "depression", "anxiety", "services"],
+  },
+  {
+    id: "ageing-ltc",
+    title: "Population ageing and long-term care",
+    theme: "Population and long-term care",
+    level: "Starter",
+    summary: "An aging chain shows how longer lives and past baby booms reshape demand for care decades ahead.",
+    question: "How much will demand for long-term care grow, and what happens if care capacity lags behind it?",
+    sim: "ageingCare",
+    presets: [
+      { label: "Steady births", params: { births: 20, tY: 18, tA: 47, tO: 15 } },
+      { label: "Longer lives after 65", params: { births: 20, tY: 18, tA: 47, tO: 25 } },
+      { label: "Falling births", params: { births: 10, tY: 18, tA: 47, tO: 20 } },
+    ],
+    map: [
+      ["Stock: Older people (65+)", "The group that drives most long-term care demand"],
+      ["Parameter: life expectancy at 65", "How long people stay in the oldest stock"],
+      ["Old-age dependency", "Older people ÷ working-age people (compare the two stocks)"],
+    ],
+    molecules: ["aging", "cascade", "coflow"],
+    evidence: [
+      "Ansah et al. (2014), a stylised SD model of Singapore: demand for long-term care doubles over 30 years. When long-term care capacity expands slowly, demand shifts to acute hospitals, raising total care needs and risking overbuilt acute care, longer waits and staff shortages.",
+    ],
+    insight:
+      "Demographic change is slow but certain: the people who will be over 65 in 30 years are already alive. Each stock settles at inflow × time spent in it, so longer lives grow the oldest stock directly.",
+    tryThis: [
+      "Raise life expectancy at 65 from 15 to 25 years. How much does the oldest stock grow, and how long does it take?",
+      "Halve births. When does the working-age stock start to shrink, and why so late?",
+    ],
+    data: [
+      ["Population by single year of age", "Census; UN World Population Prospects"],
+      ["Fertility, mortality and migration", "Civil registration; UN World Population Prospects"],
+      ["Disability and care need by age", "Health and ageing surveys"],
+      ["Care capacity (beds, home-care hours)", "Long-term care registers; OECD Health Statistics"],
+    ],
+    practice: [
+      "Use finer age bands where care need changes quickly (75–84, 85+).",
+      "Link care need to capacity with a protected level, so unmet need spills into hospitals as Ansah et al. found.",
+      "Check the chain against a published projection before adding policy.",
+    ],
+    refs: ["ansah2014"],
+    tags: ["ageing", "aging", "older people", "long-term care", "social care", "demography", "dependency ratio", "elderly"],
+  },
+  {
+    id: "delayed-discharge",
+    title: "Hospital beds and delayed discharge",
+    theme: "Hospital and patient flow",
+    level: "Starter",
+    summary: "Patients who are medically fit but have nowhere to go keep their beds, and the queue shows up in the emergency department.",
+    question: "Should we add beds or fix discharge to community care?",
+    sim: "patientFlow",
+    presets: [
+      { label: "Balanced (95 placements/day)", params: { arrivals: 90, beds: 500, los: 4.5, outCap: 95 } },
+      { label: "Discharge bottleneck (85/day)", params: { arrivals: 90, beds: 500, los: 4.5, outCap: 85 } },
+      { label: "Bottleneck plus 100 beds", params: { arrivals: 90, beds: 600, los: 4.5, outCap: 85 } },
+      { label: "Fix discharge instead", params: { arrivals: 90, beds: 500, los: 4.5, outCap: 100 } },
+    ],
+    map: [
+      ["Stock: Waiting in ED for a bed", "Patients admitted but still in the emergency department"],
+      ["Stock: In hospital, needing care", "Patients receiving acute treatment"],
+      ["Stock: Medically fit, awaiting discharge", "Delayed transfers of care; they still occupy a bed"],
+      ["Occupancy", "(In hospital + Awaiting discharge) ÷ Beds"],
+    ],
+    molecules: ["backlogFlow", "protLevel", "residence", "ceiling"],
+    evidence: [
+      "Wolstenholme (1999) modelled total patient flow through the NHS. Intermediate care with shorter community-care stays cut total patient waits far more than adding acute beds: changing flows gave much more leverage than changing capacities.",
+      "Bagust, Place and Posnett (1999), a stochastic simulation: risks become noticeable once average bed occupancy goes above about 85%. At 90% or more, regular bed shortages and periodic bed crises should be expected.",
+    ],
+    insight:
+      "If discharges are slower than admissions, extra beds only delay the crisis: they fill with patients waiting to leave. The queue appears two steps upstream, in the ED, so the problem is easy to blame on the wrong department.",
+    tryThis: [
+      "Run Discharge bottleneck for 60 days. On which day does the ED queue start to climb?",
+      "Run Bottleneck plus 100 beds. How many extra days do the beds buy?",
+      "Run Fix discharge instead. Compare the cost of 100 beds with 15 more community placements a day.",
+      "In the balanced run, work out occupancy. Is it above the 85% warning level?",
+    ],
+    data: [
+      ["Emergency admissions per day", "Hospital activity data (NHS HES; AHRQ HCUP)"],
+      ["Beds available and occupied", "NHS bed availability and occupancy statistics; OECD Health Statistics"],
+      ["Length of stay, split acute and delayed", "Hospital episode data; delayed-transfer reports"],
+      ["Community and social care capacity", "Local authority and care-home data"],
+    ],
+    practice: [
+      "Count delayed patients separately from acute patients: they share beds but respond to different policies.",
+      "Use daily or weekly data; monthly averages hide the peaks that cause crises.",
+      "Use discrete-event simulation for the variability at a single ward; SD is for the whole-system flow question.",
+    ],
+    refs: ["wolstenholme1999", "bagust1999", "lane2000"],
+    tags: ["hospital", "beds", "bed occupancy", "delayed discharge", "patient flow", "intermediate care", "social care", "DTOC", "bed blocking"],
+  },
+  {
+    id: "ed-crowding",
+    title: "Emergency department crowding",
+    theme: "Hospital and patient flow",
+    level: "Intermediate",
+    summary: "ED waits are often set by bed availability elsewhere in the hospital, not by the ED itself.",
+    question: "Where should a hospital act to cut ED waits: in the ED, on the wards, or before patients arrive?",
+    sim: "patientFlow",
+    presets: [
+      { label: "Winter surge (110/day)", params: { arrivals: 110, beds: 500, los: 4.5, outCap: 95 } },
+      { label: "Surge plus shorter stays (3.8 days)", params: { arrivals: 110, beds: 500, los: 3.8, outCap: 115 } },
+      { label: "Avoid 6% of admissions", params: { arrivals: 103, beds: 500, los: 4.5, outCap: 110 } },
+    ],
+    map: [
+      ["Stock: Waiting in ED for a bed", "Patients 'boarding' in the ED after the decision to admit"],
+      ["Emergency admissions", "Shaped by GP referrals, ageing and winter illness"],
+      ["Length of stay", "How quickly beds turn over"],
+    ],
+    molecules: ["backlogFlow", "capacityUtil", "residence"],
+    evidence: [
+      "Lane, Monefeldt and Rosenhead (2000): some A&E delays can be cut by adding resources within and around A&E. Cutting bed numbers did not lengthen waits for emergency admission but sharply increased cancellations of elective surgery, moving the shortfall onto another patient group.",
+      "Lattimer et al. (2004): emergency admissions grew faster than the national average from 1998 to 2001, and admissions from general practice had the most influence on bed occupancy. Preventing 3–6% of older people's emergency admissions each year cut occupancy by 1% a year over five years.",
+    ],
+    insight:
+      "Hospitals protect emergency patients by cancelling planned ones, so the ED can look fine while the true cost shows up as elective cancellations. Judge any policy on several measures at once.",
+    tryThis: [
+      "Run Winter surge. How fast does the ED queue grow?",
+      "Compare shortening stays with avoiding admissions. Which brings the queue back under control sooner?",
+    ],
+    data: [
+      ["ED attendances, admissions, 4-hour performance", "NHS England A&E attendances and emergency admissions statistics; HCUP NEDS"],
+      ["Admissions by source (GP, ED, other)", "Hospital episode data"],
+      ["Elective cancellations", "Hospital performance reports"],
+    ],
+    practice: [
+      "Include elective activity in the same bed pool, or you will miss where the shortfall goes.",
+      "Model seasonality in arrivals explicitly; winter peaks drive most crises.",
+    ],
+    refs: ["lane2000", "lattimer2004", "bagust1999"],
+    tags: ["emergency department", "A&E", "ED", "crowding", "boarding", "4-hour target", "winter pressures", "admissions"],
+  },
+  {
+    id: "waiting-list",
+    title: "Elective waiting lists",
+    theme: "Hospital and patient flow",
+    level: "Starter",
+    summary: "A waiting list is a backlog: it grows whenever referrals exceed treatment capacity, however small the gap.",
+    question: "How much extra capacity clears a waiting list, and why do lists come back after an initiative ends?",
+    sim: "waitingList",
+    presets: [
+      { label: "Referrals exceed capacity", params: { orders: 12, shipTime: 3, capacity: 10 } },
+      { label: "Short-term initiative (+50%)", params: { orders: 12, shipTime: 3, capacity: 15 } },
+      { label: "Capacity just matches", params: { orders: 12, shipTime: 3, capacity: 12 } },
+    ],
+    map: [
+      ["Stock: Waiting list", "Patients referred for planned treatment and not yet treated"],
+      ["Flow: referrals", "In van Ackere and Smith's model, these respond to waiting time: long waits deter referrals"],
+      ["Flow: treated", "The smaller of what the list needs and what capacity allows"],
+      ["Average wait", "Waiting list ÷ treatment rate (Little's law)"],
+    ],
+    molecules: ["backlogFlow", "backlogLevel", "residence"],
+    evidence: [
+      "van Ackere and Smith (1999): waiting lists come from the interaction of supply (resources and how efficiently they are used) and demand. Perceived waiting time influences how much elective surgery patients, GPs and managers demand and supply.",
+      "Lane et al. (2000) showed that cutting beds shifts pressure onto elective cancellations, which feeds the waiting list.",
+    ],
+    insight:
+      "Waiting time balances the system: shorter waits encourage more referrals, so a one-off push to cut the list is partly absorbed by new demand. Capacity has to match demand for good, not just for one push.",
+    tryThis: [
+      "Run Referrals exceed capacity. The gap is 2 patients a month. What is the list after 60 months?",
+      "Run the initiative for 12 months, then set capacity back to 10. Does the list return?",
+      "Work out the average wait at steady state when capacity matches demand.",
+    ],
+    data: [
+      ["Referrals and clock starts", "NHS England Referral to Treatment (RTT) statistics"],
+      ["Waiting-list size and wait distribution", "RTT statistics by specialty"],
+      ["Theatre and clinic capacity", "Hospital activity and workforce data"],
+    ],
+    practice: [
+      "Model the waiting-time effect on referrals; without it, capacity looks more effective than it is.",
+      "Track wait distribution, not only list size: long waiters are what targets measure.",
+    ],
+    refs: ["vanackere1999", "lane2000"],
+    tags: ["waiting list", "elective surgery", "waiting times", "RTT", "backlog", "planned care", "capacity"],
+  },
+  {
+    id: "chronic-care-reform",
+    title: "Health reform: coverage, care and protection",
+    theme: "Chronic disease and risk factors",
+    level: "Advanced",
+    summary: "National strategies differ in where they act: coverage and care treat disease, protection prevents it. Their effects on health and cost unfold at different speeds.",
+    question: "Which strategy improves health and lowers cost over 10 and 25 years?",
+    sim: "chronic",
+    presets: [
+      { label: "Care only", params: { onset: 3, prog: 6, reach: 0, care: 85 } },
+      { label: "Care plus protection", params: { onset: 2, prog: 6, reach: 40, care: 85 } },
+    ],
+    map: [
+      ["Risk-factor onset", "What health protection (healthier behaviours and environments) lowers"],
+      ["Care quality", "What coverage and better care raise"],
+      ["Stocks of disease", "What drives long-run cost"],
+    ],
+    molecules: ["aging", "effectFunction", "split"],
+    evidence: [
+      "Milstein, Homer and Hirsch (2010), the HealthBound model: expanding coverage and improving care raised health status but also costs and inequity. Adding stronger primary care and health protection improved health, reduced inequity and lowered costs.",
+      "Milstein et al. (2011): health protection is the only strategy that slows disease prevalence. Added to coverage plus care, it saved 90% more lives and cut costs by 30% in year 10. By year 25 it saved about 140% more lives and cut costs by 62%.",
+      "Homer et al. (2004) used diabetes and heart-failure models to help a Washington State county plan a chronic-care programme, including who would gain and who would lose financially.",
+    ],
+    insight: "Care saves lives quickly; protection shrinks the stocks of disease that drive cost. The gap between them widens with time, so short budget horizons undervalue prevention.",
+    tryThis: ["Compare the presets at year 10 and year 25. When does Care plus protection pull ahead on the disease stock?"],
+    data: [
+      ["Prevalence and incidence of major chronic conditions", "GBD; national surveys"],
+      ["Coverage and access", "Insurance and utilisation data (for the US, CMS)"],
+      ["Cost per condition and per service", "Claims data; national health accounts; OECD Health Statistics"],
+    ],
+    practice: [
+      "Show who pays and who saves: Homer et al. found that dealing with financial winners and losers decided whether partners took part.",
+      "Report results at several horizons and say which one the decision uses.",
+    ],
+    refs: ["milstein2010", "milstein2011", "homer2004"],
+    tags: ["health reform", "health policy", "coverage", "primary care", "prevention", "health protection", "cost", "inequity", "HealthBound"],
+  },
+  {
+    id: "workforce-planning",
+    title: "Training enough doctors and nurses",
+    theme: "Workforce and supply",
+    level: "Intermediate",
+    summary: "Clinicians take years to train. Planners who ignore people already in training over-correct and create boom and bust.",
+    question: "How many training places are needed, and what happens if planners only look at today's shortage?",
+    sim: "physicianPipeline",
+    presets: [
+      { label: "Planners count trainees", params: { demand: 10, desInv: 100, adj: 4, acq: 6, slw: 1 } },
+      { label: "Planners ignore trainees", params: { demand: 10, desInv: 100, adj: 4, acq: 6, slw: 0 } },
+      { label: "Longer training (10 years)", params: { demand: 10, desInv: 100, adj: 4, acq: 10, slw: 0.3 } },
+    ],
+    map: [
+      ["Stock: In training", "The supply line: medical or nursing students and residents"],
+      ["Stock: Practising clinicians", "The workforce that delivers care"],
+      ["Flow: training places", "The planning decision"],
+      ["Counts trainees", "1 = planners account for everyone already in training; 0 = they look only at the current gap"],
+    ],
+    molecules: ["stockmgmt", "aging", "agingPDY", "workforce"],
+    evidence: [
+      "Barber and López-Valcárcel (2010) modelled supply and need for 43 specialties in Spain. With moderate population growth, the shortage grows from 2% (2,800) to 14.3% (almost 21,000) by 2025. The biggest shortfalls are in anaesthesiology, orthopaedic surgery and family medicine.",
+      "Hynes et al. (2025), Ireland: meeting the 2021 need of 3,019 nurses and midwives from home would have needed 3,965 student places in 2017, 153% more than the 1,570 available. The recruitment need rises to 4,497 by 2051.",
+    ],
+    insight:
+      "With a long training delay, reacting only to the current shortage over-orders, then under-orders: the bullwhip of the stock-management molecule. Counting the pipeline removes most of the oscillation.",
+    tryThis: [
+      "Compare the first two presets. How far does the workforce overshoot when trainees are ignored?",
+      "Make training 10 years long. Why does the swing get worse?",
+    ],
+    data: [
+      ["Workforce headcount and FTE by age and specialty", "Professional registers; WHO National Health Workforce Accounts"],
+      ["Training intake, completion and attrition", "Universities and training bodies"],
+      ["Retirements, exits and migration", "Registers; labour-force surveys"],
+      ["Need or demand per population", "Activity data, demographic projections, Delphi panels"],
+    ],
+    practice: [
+      "Use an aging chain for the workforce: retirement depends on age.",
+      "Model international recruitment as a separate inflow; it can mask domestic under-supply.",
+      "Express need from population and service models, not from a fixed ratio.",
+    ],
+    refs: ["barber2010", "hynes2025", "sterman2000"],
+    tags: ["workforce", "doctors", "physicians", "nurses", "training", "medical school", "shortage", "HRH", "planning", "midwives"],
+  },
+  {
+    id: "nurse-staffing",
+    title: "Nurse staffing, overtime and burnout",
+    theme: "Workforce and supply",
+    level: "Intermediate",
+    summary: "Overtime raises care delivered at first, but fatigue builds and eats the gain.",
+    question: "Can a ward cover a staffing gap with overtime, and for how long?",
+    sim: "nurseFatigue",
+    presets: [
+      { label: "Normal hours", params: { overtime: 1, timeToFatigue: 4, workforce: 20, normalPDY: 5 } },
+      { label: "Sustained overtime (1.4×)", params: { overtime: 1.4, timeToFatigue: 4, workforce: 20, normalPDY: 5 } },
+    ],
+    map: [
+      ["Hours worked (× contract)", "Overtime and extra shifts"],
+      ["Stock: Fatigue", "Builds toward the hours worked, with a delay"],
+      ["Care delivered", "Hours × productivity, where productivity falls as fatigue rises"],
+    ],
+    molecules: ["prodFatigue", "effectFatigue", "overtime"],
+    evidence: [
+      "Aiken et al. (2002), 168 Pennsylvania hospitals and 232,342 surgical patients: each extra patient per nurse was linked to 7% higher odds of death within 30 days, 23% higher odds of nurse burnout and 15% higher odds of job dissatisfaction.",
+    ],
+    insight: "Overtime is a quick fix with a delayed side effect. Fatigue arrives weeks later and lowers productivity; burnout then raises turnover, which deepens the staffing gap that caused the overtime.",
+    tryThis: [
+      "Run Sustained overtime. When does care delivered peak, and where does it settle?",
+      "Sketch the loop the model leaves out: burnout → resignations → fewer nurses → more overtime. Is it reinforcing or balancing?",
+    ],
+    data: [
+      ["Nurse-to-patient ratios", "Staffing rosters; nurse surveys"],
+      ["Overtime and agency hours", "Payroll data"],
+      ["Burnout and intention to leave", "Validated survey instruments"],
+      ["Turnover and vacancies", "Human-resources records"],
+    ],
+    practice: [
+      "Add turnover driven by burnout before using the model for policy: that loop makes overtime self-defeating.",
+      "Link staffing to patient outcomes with published effect sizes, and state their uncertainty.",
+    ],
+    refs: ["aiken2002"],
+    tags: ["nurses", "staffing", "overtime", "burnout", "fatigue", "patient safety", "turnover", "ratios"],
+  },
+  {
+    id: "medicine-supply",
+    title: "Vaccine and medicine supply chains",
+    theme: "Workforce and supply",
+    level: "Starter",
+    summary: "Clinics that reorder without counting what is already on its way swing between shortage and waste.",
+    question: "How should a clinic or national programme set orders to avoid stock-outs and expired doses?",
+    sim: "supplyChain",
+    presets: [
+      { label: "Counts doses on order", params: { demand: 10, desInv: 100, adj: 4, acq: 6, slw: 1 } },
+      { label: "Ignores doses on order", params: { demand: 10, desInv: 100, adj: 4, acq: 6, slw: 0 } },
+      { label: "Long lead time", params: { demand: 10, desInv: 100, adj: 4, acq: 12, slw: 0.3 } },
+    ],
+    map: [
+      ["Stock: Doses on order", "The supply line"],
+      ["Stock: Doses in clinics", "Usable inventory"],
+      ["Counts doses on order", "How much the ordering rule accounts for the supply line"],
+    ],
+    molecules: ["stockmgmt", "material", "lowVisPipeline"],
+    evidence: [
+      "Sterman (1989), the Beer Game: decision makers systematically under-weight the supply line, which produces oscillation and amplification even when demand is steady.",
+    ],
+    insight: "Ignoring the pipeline makes a steady system oscillate. For medicines with a shelf life, the overshoot turns into expired stock, and the trough into missed doses.",
+    tryThis: ["Compare the first two presets. How big is the overshoot when orders already on their way are ignored?", "Make the lead time 12 weeks. Why does the swing get worse?"],
+    data: [
+      ["Consumption by facility", "Logistics management information systems"],
+      ["Lead times and their variability", "Supplier records"],
+      ["Stock on hand and on order", "Stock records"],
+      ["Shelf life and wastage", "Programme reports"],
+    ],
+    practice: ["Model expiry as an outflow from inventory with a delay equal to the shelf life.", "Count each tier separately: clinics, districts and national stores each add delay."],
+    refs: ["sterman1989", "sterman2000"],
+    tags: ["supply chain", "vaccine", "medicines", "stock-out", "inventory", "ordering", "bullwhip", "logistics", "pharmacy"],
+  },
+  {
+    id: "tobacco",
+    title: "Tobacco control",
+    theme: "Chronic disease and risk factors",
+    level: "Advanced",
+    summary: "Smoking status moves through never, current and former smokers. Policies act on starting, quitting and relapse, with health effects decades later.",
+    question: "What do school education and cessation services each buy in prevalence and deaths over 50 years?",
+    map: [
+      ["Stocks", "Never smokers → current smokers → former smokers, in an aging chain by age band"],
+      ["Flows", "Starting (mostly in youth), quitting, relapse, deaths"],
+      ["Coflow", "Years smoked or pack-years, which sets disease risk"],
+    ],
+    molecules: ["aging", "cascade", "coflow", "split"],
+    evidence: [
+      "Tengs, Osgood and Chen (2001), the Tobacco Policy Model over 50 years: school-based education costs $4,900 to $340,000 per QALY depending on effectiveness and how long it lasts; at 30% effectiveness fading over 4 years, about $20,000 per QALY.",
+      "Tobias, Cavana and Bloomfield (2010), New Zealand 2001–2051: enhanced cessation gave an 11% greater fall in adult prevalence, 16% in consumption and 11% in tobacco-attributable deaths, and informed a NZ$42 million funding decision.",
+    ],
+    insight: "Prevention works through the youngest stock and pays off decades later; cessation works on current smokers and pays off sooner. A full model needs both an aging chain and smoking status.",
+    tryThis: [
+      "Open Aging Chain and Coflow and sketch how you would combine them for smoking status by age.",
+      "Which flow would a tobacco tax change, and which would a cessation service change?",
+    ],
+    data: [
+      ["Smoking prevalence by age and sex", "National health surveys; BRFSS"],
+      ["Initiation, cessation and relapse rates", "Cohort studies; survey recall"],
+      ["Relative risks of disease and death", "Epidemiological studies; GBD"],
+    ],
+    practice: ["Separate former smokers by years since quitting: risk falls with time.", "Calibrate prevalence by age before testing policy."],
+    refs: ["tengs2001", "tobias2010"],
+    tags: ["tobacco", "smoking", "cessation", "nicotine", "prevention", "QALY", "cost-effectiveness"],
+  },
+];
+
+// Best practice for building health models, step by step, each grounded in a source.
+export const PRACTICE: { step: string; detail: string; refs: string[] }[] = [
+  { step: "Start from the problem, not the model", detail: "Write the policy question and sketch the behaviour over time you want to explain (the reference mode) before drawing any structure. A model is useful for a purpose, not in general.", refs: ["homerHirsch2006", "sterman2000"] },
+  { step: "Check that system dynamics fits", detail: "Use the SIMULATE checklist: System, Interactions, Multilevel, Understanding, Loops, Agents, Time, Emergence. Choose SD for aggregate stocks, feedback and long delays; discrete-event or agent-based simulation for individual variability and queues at one site.", refs: ["marshall2015", "pitt2016"] },
+  { step: "Build it with the people who own the problem", detail: "Group model building brings clinicians, managers, patients and communities into the modelling, which improves both the structure and the chance of use. A 2015 review found only 3 of 8 SD health-policy studies did this.", refs: ["vennix1996", "hovmand2014", "atkinson2015"] },
+  { step: "Draw the boundary wide enough", detail: "For chronic disease, include outcomes, behaviours, the environment and delivery resources. Policy resistance usually comes from feedback that sits just outside a narrow boundary.", refs: ["homerHirsch2006", "sterman2006"] },
+  { step: "Keep it as small as the question allows", detail: "Small models give clear, communicable policy lessons. Add structure only when a test shows it changes the answer.", refs: ["ghaffarzadegan2011"] },
+  { step: "Use every kind of data", detail: "Numerical time series, written records and the knowledge of the people in the system are all data. Make sure every stock has units and every flow can be traced to a source.", refs: ["sterman2000", "forrester1980"] },
+  { step: "Calibrate against history", detail: "Fitting to observed series is a demanding test of whether the structure can produce the behaviour. Fit several outcomes at once, not just one.", refs: ["oliva2003"] },
+  { step: "Build confidence with structured tests", detail: "Test structure first (units, extreme conditions, boundary adequacy), then behaviour (reproducing history, behaviour anomalies), then policy (sensitivity of conclusions). Validity is confidence that builds up, not proof.", refs: ["forrester1980", "barlas1996"] },
+  { step: "Show uncertainty", detail: "Screen which parameters matter, calibrate those, and run Monte Carlo analysis. Report whether the policy ranking survives the uncertainty, not just the central estimate.", refs: ["tian2016"] },
+  { step: "Report so others can reproduce it", detail: "Publish equations, parameter sources and the simulation experiments. Reviews find documentation, data use and validation are the weakest parts of published health SD models.", refs: ["rahmandad2012", "darabi2020", "davahli2020"] },
+  { step: "Design for use", detail: "Lead with the policy question and keep the technical modelling in the background. Most health models are never implemented; plan how the result will reach a decision.", refs: ["thompson2008", "pitt2016", "brailsford2009"] },
+  { step: "Stay humble", detail: "All models are wrong. The point is to test and improve mental models, not to forecast precisely.", refs: ["sterman2002"] },
+];
+
+export const DATA_SOURCES: { name: string; url: string; what: string; scope: "Population health" | "Health services" }[] = [
+  { name: "WHO Global Health Observatory", url: "https://www.who.int/data/gho", what: "Country indicators on mortality, disease, risk factors and health systems", scope: "Population health" },
+  { name: "IHME Global Burden of Disease results", url: "https://vizhub.healthdata.org/gbd-results/", what: "Incidence, prevalence, deaths and DALYs by cause, age, sex and location", scope: "Population health" },
+  { name: "UN World Population Prospects", url: "https://population.un.org/wpp/", what: "Population by age and sex; fertility, mortality and migration; projections", scope: "Population health" },
+  { name: "Our World in Data", url: "https://ourworldindata.org/", what: "Curated global time series on health, demography and development", scope: "Population health" },
+  { name: "World Bank World Development Indicators", url: "https://databank.worldbank.org/source/world-development-indicators", what: "Population, health spending, income and other country indicators", scope: "Population health" },
+  { name: "CDC WONDER", url: "https://wonder.cdc.gov/", what: "US deaths, births, cancer and other public-health data", scope: "Population health" },
+  { name: "NHANES", url: "https://www.cdc.gov/nchs/nhanes/", what: "US examination and laboratory measures: BMI, blood pressure, glucose, diet", scope: "Population health" },
+  { name: "BRFSS", url: "https://www.cdc.gov/brfss/", what: "US state-level self-reported risk behaviours and chronic conditions", scope: "Population health" },
+  { name: "ECDC Surveillance Atlas of Infectious Diseases", url: "https://atlas.ecdc.europa.eu/public/", what: "EU/EEA reported cases and rates by disease, country and time", scope: "Population health" },
+  { name: "UNAIDS AIDSinfo", url: "https://aidsinfo.unaids.org/", what: "HIV estimates, including the testing and treatment cascade by country", scope: "Population health" },
+  { name: "NHS Hospital Episode Statistics", url: "https://digital.nhs.uk/data-and-information/data-tools-and-services/data-services/hospital-episode-statistics", what: "Admitted patient care, outpatient and A&E activity in England", scope: "Health services" },
+  { name: "NHS England A&E attendances and emergency admissions", url: "https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/", what: "Monthly A&E attendances, 4-hour performance and emergency admissions", scope: "Health services" },
+  { name: "NHS England Referral to Treatment waiting times", url: "https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/", what: "Monthly elective waiting-list size and waits by specialty", scope: "Health services" },
+  { name: "NHS England bed availability and occupancy", url: "https://www.england.nhs.uk/statistics/statistical-work-areas/bed-availability-and-occupancy/", what: "Quarterly available and occupied overnight beds", scope: "Health services" },
+  { name: "AHRQ Healthcare Cost and Utilization Project (HCUP)", url: "https://hcup-us.ahrq.gov/", what: "US all-payer inpatient, emergency department and ambulatory surgery databases", scope: "Health services" },
+  { name: "OECD Health Statistics", url: "https://www.oecd.org/health/health-data.htm", what: "Comparable data on spending, workforce, beds, service use and health status", scope: "Health services" },
+  { name: "WHO National Health Workforce Accounts", url: "https://apps.who.int/nhwaportal/", what: "Health worker stock, education, flows and distribution by country", scope: "Health services" },
+  { name: "CMS Data", url: "https://data.cms.gov/", what: "US Medicare and Medicaid use, spending, providers and hospitals", scope: "Health services" },
+];
+
+// "Homer and Hirsch 2006", "Sterman 2000", "Jones et al. 2006"
+export function shortCite(k: string) {
+  const [authors, rest] = REFS[k].text.split(" (");
+  const names = authors.split(", ").filter((a) => a !== "et al.").map((a) => a.replace(/ [A-Z-]+$/, ""));
+  const many = names.length > 2 || authors.includes("et al.");
+  return `${many ? names[0] + " et al." : names.join(" and ")} ${rest.slice(0, 4)}`;
+}
+
+export const caseById = (id: string) => CASES.find((c) => c.id === id);
+export const casesUsing = (moleculeKey: string) => CASES.filter((c) => c.molecules.includes(moleculeKey));
+
+// Case-insensitive match on everything a learner might type: condition, setting, method or molecule.
+export function searchCases(query: string, theme?: Theme): HealthCase[] {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return CASES.filter((c) => {
+    if (theme && c.theme !== theme) return false;
+    const hay = [c.title, c.summary, c.question, c.theme, c.level, ...c.tags, ...c.molecules.map((k) => MODELS[k]?.name ?? "")].join(" ").toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
+}

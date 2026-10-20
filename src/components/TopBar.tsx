@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PanelLeft, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { groupOf, search } from "@/data/catalog";
+import { searchCases } from "@/data/health/cases";
 import { cn } from "@/lib/utils";
 
 // two studs on a brick
@@ -21,25 +22,37 @@ const navLink = (active: boolean) =>
 
 export default function TopBar({
   onSelect,
+  onCase,
   showMap,
   mapActive,
   startTour,
   tourActive,
+  showHealth,
+  healthActive,
   paneOpen,
   togglePane,
 }: {
   onSelect: (k: string) => void;
+  onCase: (id: string) => void;
   showMap: () => void;
   mapActive: boolean;
   startTour: () => void;
   tourActive: boolean;
+  showHealth: () => void;
+  healthActive: boolean;
   paneOpen: boolean;
   togglePane: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const box = useRef<HTMLInputElement>(null);
-  const results = query.trim() ? search(query).slice(0, 8) : [];
+  // molecules first, then healthcare cases; each knows how to open itself
+  const results = query.trim()
+    ? [
+        ...search(query).map(({ key, via }) => ({ id: "m:" + key, label: MODELS[key].name, sub: via ? `Covers ${via}` : groupOf(key), go: () => onSelect(key) })),
+        ...searchCases(query).map((c) => ({ id: "c:" + c.id, label: c.title, sub: `Healthcare: ${c.theme}`, go: () => onCase(c.id) })),
+      ].slice(0, 9)
+    : [];
 
   // "/" jumps to search from anywhere
   useEffect(() => {
@@ -53,10 +66,10 @@ export default function TopBar({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const pick = (k: string) => {
+  const pick = (r: (typeof results)[number]) => {
     setQuery("");
     box.current?.blur();
-    onSelect(k);
+    r.go();
   };
 
   return (
@@ -65,8 +78,8 @@ export default function TopBar({
         <button
           onClick={togglePane}
           aria-expanded={paneOpen}
-          aria-label={paneOpen ? "Hide the molecule list" : "Show the molecule list"}
-          title={paneOpen ? "Hide the molecule list" : "Show the molecule list"}
+          aria-label={paneOpen ? "Hide the side list" : "Show the side list"}
+          title={paneOpen ? "Hide the side list" : "Show the side list"}
           className={cn("-mr-3 grid place-items-center w-9 h-9 rounded-[8px] hover:bg-muted", paneOpen ? "text-foreground" : "text-muted-foreground")}
         >
           <PanelLeft size={19} aria-hidden />
@@ -82,11 +95,14 @@ export default function TopBar({
           <button onClick={startTour} aria-current={tourActive ? "page" : undefined} className={navLink(tourActive)}>
             Guided tour
           </button>
+          <button onClick={showHealth} aria-current={healthActive ? "page" : undefined} className={navLink(healthActive)}>
+            Healthcare
+          </button>
         </nav>
 
         <div className="relative ml-auto w-full sm:w-[300px] order-4 sm:order-none pb-3 sm:pb-0">
           <label>
-            <span className="sr-only">Find a molecule</span>
+            <span className="sr-only">Find a molecule or healthcare case</span>
             <Search size={16} aria-hidden className="absolute left-3 top-[20px] sm:top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               ref={box}
@@ -102,11 +118,11 @@ export default function TopBar({
               onKeyDown={(e) => {
                 if (e.key === "ArrowDown") (e.preventDefault(), setCursor((c) => Math.min(c + 1, results.length - 1)));
                 if (e.key === "ArrowUp") (e.preventDefault(), setCursor((c) => Math.max(c - 1, 0)));
-                if (e.key === "Enter" && results[cursor]) pick(results[cursor].key);
+                if (e.key === "Enter" && results[cursor]) pick(results[cursor]);
                 if (e.key === "Escape") setQuery("");
               }}
               onBlur={() => setQuery("")}
-              placeholder="Find a molecule"
+              placeholder="Find a molecule or case"
               className="w-full h-10 rounded-btn border border-border bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
             />
             <kbd aria-hidden className="hidden sm:grid absolute right-2.5 top-1/2 -translate-y-1/2 place-items-center w-5 h-5 rounded-[5px] bg-muted text-[11px] font-semibold text-muted-foreground">
@@ -116,18 +132,18 @@ export default function TopBar({
           {query.trim() && (
             <div id="search-results" role="listbox" className="absolute right-0 left-0 sm:left-auto sm:w-[360px] top-full mt-2 sheet !p-1.5 shadow-[0_12px_32px_-12px_hsl(var(--foreground)/0.35)]">
               {results.length ? (
-                results.map(({ key, via }, i) => (
+                results.map((r, i) => (
                   <button
-                    key={key}
+                    key={r.id}
                     role="option"
                     aria-selected={i === cursor}
                     onMouseEnter={() => setCursor(i)}
                     onMouseDown={(e) => e.preventDefault()} // keep focus so the blur doesn't close the list first
-                    onClick={() => pick(key)}
+                    onClick={() => pick(r)}
                     className={cn("w-full text-left rounded-[7px] px-3 py-2", i === cursor && "bg-accent/35")}
                   >
-                    <span className="block text-sm font-semibold">{MODELS[key].name}</span>
-                    <span className="block text-xs text-muted-foreground">{via ? `Covers ${via}` : groupOf(key)}</span>
+                    <span className="block text-sm font-semibold">{r.label}</span>
+                    <span className="block text-xs text-muted-foreground">{r.sub}</span>
                   </button>
                 ))
               ) : (

@@ -125,7 +125,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
           <span>Stop at</span>
           <span className={val}>{sim.stopTime === 0 ? "Never" : `${sim.stopTime} ${model.timeUnit}`}</span>
         </div>
-        <Slider aria-label="Stop at" min={0} max={60} step={1} value={[sim.stopTime]} onValueChange={([v]) => sim.setStopTime(v)} />
+        <Slider aria-label="Stop at" min={0} max={Math.max(60, sim.stopTime)} step={1} value={[sim.stopTime]} onValueChange={([v]) => sim.setStopTime(v)} />
       </div>
 
       <Readout model={model} subscribe={sim.subscribe} />

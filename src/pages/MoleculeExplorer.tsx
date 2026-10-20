@@ -14,16 +14,20 @@ import EquationsPanel from "@/components/EquationsPanel";
 import Controls from "@/components/Controls";
 import MoleculeMap from "@/components/MoleculeMap";
 import LessonPanel from "@/components/LessonPanel";
+import { HealthCasePage, HealthLibrary } from "@/components/Health";
+import { caseById, casesUsing } from "@/data/health/cases";
 
 // The address bar is the source of truth, so Back/Forward and shared links work:
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number };
+//   #/health      healthcare case library; #/health/<id> one case
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "health"; id?: string };
 function parseRoute(): Route {
   const [, a, b] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
+  if (a === "health") return { view: "health", id: caseById(b) ? b : undefined };
   // a link to a molecule that doesn't exist lands on the catalogue with a note, not silently
   return { view: "map", missing: a === "m" && b ? b : undefined };
 }
@@ -68,6 +72,8 @@ export default function MoleculeExplorer() {
   const open = (k: string) => go(`/m/${k}`);
   const showMap = () => go("/");
   const startTour = () => go("/tour/1");
+  const showHealth = () => go("/health");
+  const openCase = (id: string) => go(`/health/${id}`);
   const gotoLesson = (i: number) => go(`/tour/${Math.max(0, Math.min(TOUR.length - 1, i)) + 1}`);
 
   const pos = TOUR.indexOf(key);
@@ -79,7 +85,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "health") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -117,10 +123,17 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showHealth={showHealth} healthActive={view === "health"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
       <div className="flex">
-        {paneOpen && <SidePane current={view === "map" ? undefined : key} onSelect={open} onClose={() => togglePane(false)} />}
+        {paneOpen && (
+          <SidePane
+            health={view === "health"}
+            current={route.view === "health" ? route.id : view === "map" ? undefined : key}
+            onSelect={view === "health" ? openCase : open}
+            onClose={() => togglePane(false)}
+          />
+        )}
         <main id="main" tabIndex={-1} className="flex-1 min-w-0 pb-16 focus:outline-none">
         {view === "map" ? (
           <>
@@ -131,8 +144,10 @@ export default function MoleculeExplorer() {
                 </span>
               </p>
             )}
-            <MoleculeMap onSelect={open} onStartTour={startTour} />
+            <MoleculeMap onSelect={open} onStartTour={startTour} onHealth={showHealth} />
           </>
+        ) : route.view === "health" ? (
+          route.id ? <HealthCasePage key={route.id} id={route.id} onOpen={open} onCase={openCase} onLibrary={showHealth} /> : <HealthLibrary onOpen={openCase} />
         ) : view === "learn" ? (
           <div className={`${wrap} pt-8 md:pt-10`}>
             <LessonPanel
@@ -265,6 +280,20 @@ export default function MoleculeExplorer() {
               <h2 className="heading text-[26px]">What it is and when to use it</h2>
               <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />
             </section>
+
+            {casesUsing(key).length > 0 && (
+              <section className="mt-16">
+                <h2 className="heading text-[20px] mb-1">In healthcare</h2>
+                <p className="text-[14px] text-muted-foreground mb-4">Cases in the healthcare library that use this molecule.</p>
+                <div className="flex flex-wrap gap-2">
+                  {casesUsing(key).map((c) => (
+                    <button key={c.id} onClick={() => openCase(c.id)} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
+                      {c.title}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {siblings.length > 1 && (
               <section className="mt-16">
