@@ -208,7 +208,7 @@ const THEMES = ["Growth and markets", "Supply chains and inventory", "Capacity a
 
 const REFS: Record<string, Ref> = {
   bass1969: { text: "Bass FM (1969). A new product growth for model consumer durables. Management Science 15(5):215-227.", doi: "10.1287/mnsc.15.5.215" },
-  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 9, S-shaped growth: epidemics, innovation diffusion and the growth of new products." },
+  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill." },
   sterman1989: { text: "Sterman JD (1989). Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment. Management Science 35(3):321-339.", doi: "10.1287/mnsc.35.3.321" },
   lee1997: { text: "Lee HL, Padmanabhan V, Whang S (1997). Information distortion in a supply chain: the bullwhip effect. Management Science 43(4):546-558.", doi: "10.1287/mnsc.43.4.546" },
   paich1993: { text: "Paich M, Sterman JD (1993). Boom, bust, and failures to learn in experimental markets. Management Science 39(12):1439-1458.", doi: "10.1287/mnsc.39.12.1439" },

@@ -15,7 +15,9 @@ for (const f of files) {
     const title = norm(w.title?.[0] ?? "");
     const years = [w.issued, w["published-print"], w["published-online"]].map((d) => String(d?.["date-parts"]?.[0]?.[0] ?? ""));
     const t = norm(text);
-    const titleOk = title !== "" && t.includes(title.split(" ").slice(0, 6).join(" "));
+    // some records carry a journal section label before the title ("Systems Simulation. Expectation formation…")
+    const variants = [w.title?.[0] ?? "", (w.title?.[0] ?? "").split(". ").slice(1).join(". ")].map(norm).filter(Boolean);
+    const titleOk = variants.some((v) => t.includes(v.split(" ").slice(0, 6).join(" ")));
     const yearOk = years.some((y) => y && text.includes(`(${y})`));
     if (!titleOk || !yearOk) { console.log(`✗ ${f} ${key}: ${!titleOk ? `title mismatch, Crossref: "${w.title?.[0]}"` : ""} ${!yearOk ? `year mismatch, Crossref: ${years.join("/")}` : ""}`); bad++; }
   }

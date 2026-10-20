@@ -1,4 +1,647 @@
-import type { Domain } from "@/data/apps/types";
+// Economics, markets and finance case library.
+// Every reference was checked against Crossref, OpenAlex or a publisher or library record (Oct 2026); findings quote the abstract or full text.
+// Every model is a Hines molecule under economic names (a "skin"), so the structure matches the catalogue.
+import type { AppCase, DataSource, Domain, Ref } from "@/data/apps/types";
+import { skins, type Skin } from "@/data/apps/sim";
 
-// ponytail: placeholder until this domain's cases are written; an empty domain is hidden
-export const ECONOMICS: Domain = { id: "economics", name: "economics", short: "economics", blurb: "", themes: [], cases: [], refs: {}, models: {}, stop: {}, dataSources: [] };
+const SKINS: Record<string, Skin> = {
+  eco_hogCycle: {
+    base: "stockmgmt",
+    name: "The hog cycle",
+    timeUnit: "mo",
+    unitY: "thousand hogs",
+    stocks: { sl: { label: "Hogs being bred and fattened" }, inv: { label: "Hogs ready for market" } },
+    params: {
+      demand: { label: "Slaughter for consumption", unit: "k/mo" },
+      desInv: { label: "Market supply producers aim for" },
+      adj: { label: "Time to respond to the price signal", unit: "mo" },
+      acq: { label: "Breeding and fattening time", value: 10, unit: "mo" },
+      slw: { label: "Weight on hogs already in the pipeline", value: 0 },
+    },
+    flows: {
+      orders: ["breeding starts", "slaughter + supply gap / τ + pipeline gap / τ"],
+      acquisition: ["hogs reaching market weight", "Pipeline / breeding and fattening time"],
+      sales: ["slaughter", "slaughter for consumption"],
+    },
+  },
+  eco_officeCycle: {
+    base: "stockmgmt",
+    name: "Office construction cycle",
+    timeUnit: "yr",
+    unitY: "thousand m²",
+    stocks: { sl: { label: "Space under construction" }, inv: { label: "Vacant space on the market" } },
+    params: {
+      demand: { label: "Net take-up by tenants", unit: "k m²/yr" },
+      desInv: { label: "Vacant space the market needs" },
+      adj: { label: "Time developers take to react", value: 1, unit: "yr" },
+      acq: { label: "Construction time", value: 3, unit: "yr" },
+      slw: { label: "Weight on space already under construction", value: 0 },
+    },
+    flows: {
+      orders: ["construction starts", "take-up + vacancy gap / τ + pipeline gap / τ"],
+      acquisition: ["completions", "Under construction / construction time"],
+      sales: ["take-up", "net take-up by tenants"],
+    },
+  },
+  eco_inventoryCycle: {
+    base: "lowVisPipeline",
+    name: "Inventory and production cycle",
+    timeUnit: "mo",
+    unitY: "units",
+    stocks: { onr: { label: "Production ordered, not yet finished" }, inv: { label: "Finished-goods inventory" } },
+    params: {
+      ship: { label: "Sales", unit: "/mo" },
+      tInv: { label: "Time to correct inventory", unit: "mo" },
+      tPipe: { label: "Time to correct work in progress", unit: "mo" },
+      delay: { label: "Production and hiring lead time", unit: "mo" },
+      aware: { label: "Attention to work in progress" },
+    },
+    flows: {
+      ordering: ["production starts", "sales + inventory gap / t_inv + work-in-progress gap × attention / t_pipe"],
+      receiving: ["output", "last production stage / (lead time / 2)"],
+      shipping: ["sales", "sales"],
+    },
+  },
+  eco_inflationExpect: {
+    base: "extrapolation",
+    name: "Adaptive inflation expectations",
+    unitY: "price index",
+    stocks: {
+      actual: { label: "Price level" },
+      perceived: { label: "Perceived price level" },
+      historical: { label: "Price level a while ago" },
+      extrapolatedDisp: { label: "Expected price level" },
+    },
+    params: {
+      growth: { label: "Actual inflation", unit: "%/yr" },
+      timeToPerceive: { label: "Time to perceive prices" },
+      trendDuration: { label: "Period over which inflation is judged" },
+      forecastHorizon: { label: "Forecast horizon" },
+    },
+    flows: {
+      changeInActual: ["inflation", "Price level × inflation / 100"],
+      perceiving: ["updating perceived prices", "(Price level − Perceived) / time to perceive"],
+      changeInHistorical: ["updating the reference", "(Perceived − Price a while ago) / trend period"],
+    },
+  },
+  eco_debtRatio: {
+    base: "growth",
+    name: "Debt snowball",
+    unitY: "% of GDP",
+    stocks: { pop: { label: "Debt-to-GDP ratio (%)", init: 60, scale: 300 } },
+    params: {
+      birth: { label: "Interest rate on debt r", value: 5 },
+      death: { label: "Nominal GDP growth g", value: 3 },
+    },
+    flows: { births: ["interest added", "Debt ratio × r"], deaths: ["growth dilution", "Debt ratio × g"] },
+  },
+  eco_discount: {
+    base: "presentValue",
+    name: "Discounting a stream of payments",
+    stocks: { pv: { label: "Present value of payments so far" } },
+    params: { cashFlow: { label: "Payment per year" }, r: { label: "Discount rate" } },
+    flows: { discounting: ["discounted payments", "payment × e^(−r·t)"] },
+  },
+  eco_stickyPrice: {
+    base: "smoothPricing",
+    name: "Sticky prices",
+    timeUnit: "mo",
+    stocks: { price: { label: "Posted price" }, indicatedDisp: { label: "Price that costs and demand indicate" } },
+    params: {
+      refPrice: { label: "Normal price" },
+      pressure: { label: "Cost and demand pressure" },
+      tau: { label: "Price adjustment time", value: 6, unit: "mo" },
+    },
+    flows: { changing: ["repricing", "(indicated price − Posted price) / adjustment time"] },
+  },
+  eco_priceAnchor: {
+    base: "seaAnchorPricing",
+    name: "Price anchoring and drift",
+    stocks: { underlyingPrice: { label: "Anchor (the going price)" }, priceDisp: { label: "Price set" } },
+    params: {
+      inventory: { label: "Inventory" },
+      targetInventory: { label: "Target inventory" },
+      relMarketShare: { label: "Relative market share" },
+      timeToChange: { label: "Time for the anchor to follow price" },
+    },
+    flows: { changeInUnderlyingPrice: ["anchor drifting", "(Price set − Anchor) / time to follow,  Price set = Anchor × pressure"] },
+  },
+};
+
+export const ECO_MODELS = skins(SKINS);
+
+// where each run should stop so the interesting part fills the chart (in the model's own time unit)
+const STOP: Record<string, number> = {
+  eco_hogCycle: 120, eco_officeCycle: 60, eco_inventoryCycle: 120, eco_inflationExpect: 30,
+  eco_debtRatio: 60, eco_discount: 50, eco_stickyPrice: 24, eco_priceAnchor: 20,
+};
+
+const THEMES = ["Commodity and property cycles", "Business cycles and investment", "Expectations and prices", "Debt, interest and valuation"] as const;
+
+const REFS: Record<string, Ref> = {
+  meadows1970: { text: "Meadows DL (1970). Dynamics of Commodity Production Cycles. Wright-Allen Press, Cambridge MA.", url: "https://systemdynamics.org/?p=1058" },
+  ezekiel1938: { text: "Ezekiel M (1938). The cobweb theorem. Quarterly Journal of Economics 52(2):255-280.", doi: "10.2307/1881734" },
+  rosen1994: { text: "Rosen S, Murphy KM, Scheinkman JA (1994). Cattle cycles. Journal of Political Economy 102(3):468-492.", doi: "10.1086/261942" },
+  kummerow1999: { text: "Kummerow M (1999). A system dynamics model of cyclical office oversupply. Journal of Real Estate Research 18(1):233-256.", doi: "10.1080/10835547.1999.12090993" },
+  wheaton1987: { text: "Wheaton WC (1987). The cyclic behavior of the national office market. Real Estate Economics 15(4):281-299.", doi: "10.1111/1540-6229.00433" },
+  barras1994: { text: "Barras R (1994). Property and the economic cycle: building cycles revisited. Journal of Property Research 11(3):183-197.", doi: "10.1080/09599919408724116" },
+  mass1975: { text: "Mass NJ (1975). Economic Cycles: An Analysis of Underlying Causes. Wright-Allen Press, Cambridge MA." },
+  blinder1991: { text: "Blinder AS, Maccini LJ (1991). Taking stock: a critical assessment of recent research on inventories. Journal of Economic Perspectives 5(1):73-96.", doi: "10.1257/jep.5.1.73" },
+  sterman1989: { text: "Sterman JD (1989). Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment. Management Science 35(3):321-339.", doi: "10.1287/mnsc.35.3.321" },
+  sterman1985: { text: "Sterman JD (1985). A behavioral model of the economic long wave. Journal of Economic Behavior & Organization 6(1):17-53.", doi: "10.1016/0167-2681(85)90023-X" },
+  sterman1985wp: { text: "Sterman JD (1985). A simple model of the economic long wave. Collaborative Paper CP-85-21. International Institute for Applied Systems Analysis, Laxenburg.", url: "https://pure.iiasa.ac.at/id/eprint/2727/1/CP-85-021.pdf" },
+  sterman1987ms: { text: "Sterman JD (1987). Testing behavioral simulation models by direct experiment. Management Science 33(12):1572-1592.", doi: "10.1287/mnsc.33.12.1572" },
+  forrester1977: { text: "Forrester JW (1977). Growth cycles. De Economist 125(4):525-543.", doi: "10.1007/BF01221050" },
+  sterman1987bs: { text: "Sterman JD (1987). Expectation formation in behavioral simulation models. Behavioral Science 32(3):190-211.", doi: "10.1002/bs.3830320304" },
+  tversky1974: { text: "Tversky A, Kahneman D (1974). Judgment under uncertainty: heuristics and biases. Science 185(4157):1124-1131.", doi: "10.1126/science.185.4157.1124" },
+  blanchard2019: { text: "Blanchard O (2019). Public debt and low interest rates. American Economic Review 109(4):1197-1229.", doi: "10.1257/aer.109.4.1197" },
+  weitzman2001: { text: "Weitzman ML (2001). Gamma discounting. American Economic Review 91(1):260-271.", doi: "10.1257/aer.91.1.260" },
+  frederick2002: { text: "Frederick S, Loewenstein G, O'Donoghue T (2002). Time discounting and time preference: a critical review. Journal of Economic Literature 40(2):351-401.", doi: "10.1257/jel.40.2.351" },
+  bils2004: { text: "Bils M, Klenow PJ (2004). Some evidence on the importance of sticky prices. Journal of Political Economy 112(5):947-985.", doi: "10.1086/422559" },
+};
+
+const CASES: AppCase[] = [
+  {
+    id: "hog-cycle",
+    title: "The hog cycle: why commodity supply swings",
+    theme: "Commodity and property cycles",
+    level: "Starter",
+    summary: "Farmers respond to today's shortage by breeding more, but the extra hogs reach market only months later, after the shortage has passed.",
+    question: "Why do pork supply and prices cycle every few years, and what would damp the cycle?",
+    sim: "eco_hogCycle",
+    presets: [
+      { label: "Producers ignore the pipeline", params: { demand: 10, desInv: 100, adj: 4, acq: 10, slw: 0 } },
+      { label: "Producers count hogs on the way", params: { demand: 10, desInv: 100, adj: 4, acq: 10, slw: 1 } },
+      { label: "Longer biological lag (12 months)", params: { demand: 10, desInv: 100, adj: 4, acq: 12, slw: 0 } },
+      { label: "Short lag (5 months)", params: { demand: 10, desInv: 100, adj: 4, acq: 5, slw: 0 } },
+    ],
+    map: [
+      ["Stock: Hogs being bred and fattened", "The biological pipeline: sows bred, litters born, pigs growing to market weight"],
+      ["Stock: Hogs ready for market", "Supply available for slaughter; when it is short, price is high"],
+      ["Flow: breeding starts", "Producers' response to the market: more breeding when supply is short (price high)"],
+      ["Parameter: breeding and fattening time", "The production delay, about ten months from breeding to market"],
+      ["Parameter: weight on hogs already in the pipeline", "How far producers allow for hogs that other farms have already started"],
+      ["Loop B (supply correction)", "Short supply → more breeding → more hogs, after the delay → supply recovers"],
+    ],
+    molecules: ["stockmgmt", "material", "smoothPricing"],
+    evidence: [
+      "Meadows (1970) built a general system dynamics model of commodity production and tested it on US pork. The hog model's behaviour is similar to the observed four-year cycle, and with other biological and managerial coefficients it also gives the typical cattle and chicken cycles. He found the classical cobweb theorem inadequate as a description of real commodity systems.",
+      "Ezekiel (1938) set out the cobweb theorem: with a lag in supply, prices can show continuous, divergent or convergent fluctuations. He also noted that not all commodity cycles are cobwebs.",
+      "Rosen, Murphy and Scheinkman (1994) call US beef cattle stocks among the most periodic economic time series. Low cow fertility and long lags between breeding and consumption decisions make the herd respond cyclically to shocks.",
+    ],
+    validation: "Meadows (1970) set the general model's parameters to values for US pork and compared its behaviour with the observed cycle; the publisher's description reports no fit statistics. Rosen, Murphy and Scheinkman (1994) compared their model's benchmarks with independent econometric estimates over 1875-1990 and report that it fits extremely well. The small model here is checked only for its qualitative behaviour.",
+    insight:
+      "The cycle comes from the structure, not from shocks: a long production delay plus a breeding decision that reacts to today's supply and ignores what is already in the pipeline. Each farmer acts sensibly on local information, and together they overshoot.",
+    tryThis: [
+      "Run the first preset and measure the time between the first two peaks in market supply. How close is it to four years?",
+      "Switch to the preset where producers count hogs on the way. What happens to the cycle?",
+      "Compare the 5-month and 12-month lags. Which gives the bigger swing, and why?",
+    ],
+    data: [
+      ["Hog inventory, breeding herd and farrowings", "USDA NASS Quarterly Hogs and Pigs; USDA ERS hogs and pork data"],
+      ["Slaughter and pork production", "USDA ERS livestock and meat statistics"],
+      ["Hog and retail pork prices", "USDA ERS price spreads; FRED price series"],
+      ["Biological delays", "Animal science: gestation of about four months, plus months of growth to market weight"],
+    ],
+    practice: [
+      "This small model has no explicit price: the gap between desired and actual market supply stands in for the price signal. A fuller model adds price formation (see the sticky prices case) and demand that responds to price.",
+      "With the pipeline weight below 1 this molecule settles above its target, because it adds the normal pipeline to breeding starts without counting the hogs already in it. Read the overshoot and the cycle, not the final level.",
+      "Fit the period first: it is set mainly by the biological delay and how fast producers react, and both can be measured.",
+    ],
+    refs: ["meadows1970", "ezekiel1938", "rosen1994"],
+    tags: ["hog cycle", "pork cycle", "commodity", "cobweb", "agriculture", "livestock", "cattle cycle", "supply line", "oscillation"],
+    checks: [
+      { claim: "When producers ignore hogs already in the pipeline, market supply overshoots to more than twice the target", test: (run) => run({ slw: 0 }).max.inv > 200 },
+      { claim: "When producers count the pipeline in full, market supply rises to the target without overshooting", test: (run) => run({ slw: 1 }).max.inv <= 100.5 },
+      { claim: "A longer breeding and fattening time makes the swing bigger", test: (run) => run({ slw: 0, acq: 12 }).max.inv > run({ slw: 0, acq: 5 }).max.inv },
+    ],
+  },
+  {
+    id: "office-cycle",
+    title: "Office building booms and gluts",
+    theme: "Commodity and property cycles",
+    level: "Intermediate",
+    summary: "Developers start buildings when vacancy is low, but the space arrives years later, often all at once and into a weaker market.",
+    question: "Why do office markets swing between shortage and oversupply every decade or so, and which information would help?",
+    sim: "eco_officeCycle",
+    presets: [
+      { label: "Developers ignore the pipeline", params: { demand: 10, desInv: 100, adj: 1, acq: 3, slw: 0 } },
+      { label: "Developers count space under construction", params: { demand: 10, desInv: 100, adj: 1, acq: 3, slw: 1 } },
+      { label: "Slower construction (5 years)", params: { demand: 10, desInv: 100, adj: 1, acq: 5, slw: 0 } },
+      { label: "Half the pipeline counted", params: { demand: 10, desInv: 100, adj: 1, acq: 3, slw: 0.5 } },
+    ],
+    map: [
+      ["Stock: Space under construction", "Buildings started but not yet completed"],
+      ["Stock: Vacant space on the market", "Completed space without a tenant; low vacancy means high rents"],
+      ["Flow: construction starts", "Developers' response to low vacancy and high rents"],
+      ["Flow: take-up", "Net absorption of space by tenants"],
+      ["Parameter: weight on space under construction", "Whether developers, lenders and planners look at the whole pipeline or only at today's vacancy"],
+    ],
+    molecules: ["stockmgmt", "material", "cascade"],
+    evidence: [
+      "Kummerow (1999) built a simple system dynamics model of an office market. Lag and adjustment parameters similar to real markets generate explosive cycles, and changing the information structure reduces the deviations from equilibrium. He proposes better forecasting and a municipal queue for projects as leverage points.",
+      "Wheaton (1987) found a recurrent ten- to twelve-year cycle in post-war US office construction and vacancy. The market clears slowly, and supply responds more to market conditions than demand does.",
+      "Barras (1994) argues that property is subject to several cycles of different lengths, and that major speculative building booms happen when strong demand growth, supply shortages and credit expansion coincide.",
+    ],
+    validation: "Kummerow (1999) chose lag and adjustment parameters similar to real office markets; the abstract reports no calibration statistics. Wheaton (1987) estimated a structural econometric model on post-war national construction and vacancy data. Barras (1994) is a historical and conceptual analysis; the abstract reports no model tests.",
+    insight:
+      "Construction takes years, so a developer who reacts only to today's vacancy keeps starting buildings while the shortage is already being fixed by projects in progress. Counting the pipeline is the cheapest way to damp the cycle.",
+    tryThis: [
+      "Run the first preset. Measure the time between peaks in vacant space and compare it with the 10-12 year cycle Wheaton reports.",
+      "Raise the weight on space under construction step by step. At what weight does the overshoot almost disappear?",
+      "Lengthen construction to 5 years. What happens to the size of the glut?",
+    ],
+    data: [
+      ["Office stock, completions and starts", "Commercial property brokers' market reports; national statistics on construction output"],
+      ["Vacancy and rents", "Broker reports; for housing, BIS residential property prices"],
+      ["Construction spending", "US Census Bureau construction spending (C30)"],
+      ["Construction time and planning lags", "Planning records and developer interviews"],
+    ],
+    practice: [
+      "This small model fixes take-up and has no rents. In real markets rents fall as vacancy rises, which changes take-up and the financing of new projects.",
+      "Like the hog-cycle model, it settles above its target when the pipeline weight is below 1. Use it to compare overshoot and period, not the final vacancy.",
+      "The molecule's floor on construction starts (they cannot go below zero) keeps the cycle bounded. Kummerow's explosive cycles need a model where that limit binds later, or not at all.",
+      "Model lenders explicitly when credit is part of the question: Barras points to credit expansion as one ingredient of the biggest booms.",
+    ],
+    refs: ["kummerow1999", "wheaton1987", "barras1994"],
+    tags: ["real estate", "property", "office", "construction", "vacancy", "building cycle", "oversupply", "rents"],
+    checks: [
+      { claim: "Developers who ignore the pipeline push vacant space at least 50% higher than developers who count it", test: (run) => run({ slw: 0 }).max.inv > 1.5 * run({ slw: 1 }).max.inv },
+      { claim: "In the bust, space under construction falls below a fifth of its long-run level of 30", test: (run) => run({ slw: 0 }).min.sl < 6 },
+      { claim: "A longer construction time makes the glut bigger", test: (run) => run({ slw: 0, acq: 5 }).max.inv > run({ slw: 0, acq: 3 }).max.inv },
+    ],
+  },
+  {
+    id: "inventory-cycle",
+    title: "Inventories, production and the business cycle",
+    theme: "Business cycles and investment",
+    level: "Intermediate",
+    summary: "Firms correct inventory gaps through production that takes months to arrive; if they lose track of what is already in progress, they overshoot and output cycles.",
+    question: "How much of the business cycle can come from the way firms manage inventory and production, without any outside shock?",
+    sim: "eco_inventoryCycle",
+    presets: [
+      { label: "Firms ignore work in progress", params: { ship: 10, tInv: 4, tPipe: 4, delay: 6, aware: 0 } },
+      { label: "Firms track work in progress", params: { ship: 10, tInv: 4, tPipe: 4, delay: 6, aware: 1 } },
+      { label: "Long lead time (12 months)", params: { ship: 10, tInv: 4, tPipe: 4, delay: 12, aware: 0 } },
+      { label: "Gentle inventory correction", params: { ship: 10, tInv: 8, tPipe: 4, delay: 6, aware: 0 } },
+    ],
+    map: [
+      ["Stock: Production ordered, not yet finished", "Work in progress, plus output held up by hiring and training"],
+      ["Stock: Finished-goods inventory", "Goods ready to ship; the target is 100 units"],
+      ["Flow: production starts", "Sales plus corrections for the inventory gap and the work-in-progress gap"],
+      ["Parameter: production and hiring lead time", "How long it takes extra orders to become extra output"],
+      ["Parameter: attention to work in progress", "0 means managers react only to inventory; 1 means they also count what is already being made"],
+    ],
+    molecules: ["lowVisPipeline", "stockmgmt", "workforce"],
+    evidence: [
+      "Blinder and Maccini (1991) note that inventory investment is of first-order importance in business cycles. Macroeconomists had long seen inventories as destabilising while the standard production-smoothing model saw them as stabilising, and by the early 1980s that model was in deep trouble.",
+      "Sterman (1989) had people manage a simulated inventory distribution system. An anchoring-and-adjustment rule for stock management explained their decisions well, and the estimates showed they were insensitive to the feedback from their own decisions, so the system diverged systematically from optimal behaviour.",
+      "Mass (1975) uses system dynamics models to analyse the underlying causes of economic cycles.",
+    ],
+    validation: "Sterman (1989) estimated the decision rule econometrically from experimental data and reports that it explains subjects' behaviour well. Blinder and Maccini (1991) is a review of empirical and theoretical research. The catalogue record for Mass (1975) gives no detail on validation.",
+    insight:
+      "The business cycle can be generated inside firms: a production delay plus a stock-correction rule that undercounts work in progress is enough to produce overshoot and a cycle of a few years. Correcting gaps more gently, or watching the pipeline, damps it.",
+    tryThis: [
+      "Run the first preset. How many months apart are the inventory peaks?",
+      "Lengthen the lead time from 6 to 12 months. How do the period and the size of the swing change?",
+      "Keep attention at 0 and raise the time to correct inventory to 8 months. Why does correcting more slowly make the system calmer?",
+    ],
+    data: [
+      ["Inventories and sales by industry", "US Census Bureau Manufacturing and Trade Inventories and Sales; national accounts"],
+      ["Inventory investment in GDP", "BEA national accounts; FRED"],
+      ["Production lead times", "Purchasing managers' surveys; firm data"],
+      ["Employment and hours", "National labour force and payroll statistics"],
+    ],
+    practice: [
+      "This small model has one firm and no workforce stock. Labour adds a hiring delay that lengthens the effective lead time; here that delay is folded into the lead time.",
+      "Demand is fixed, so the cycle here starts only from the initial inventory gap. In an economy, lower production means lower income and lower demand, which strengthens the cycle.",
+      "Estimate the decision rule from data before blaming the structure: Sterman (1989) shows how.",
+    ],
+    refs: ["blinder1991", "sterman1989", "mass1975"],
+    tags: ["business cycle", "inventory", "production", "recession", "bullwhip", "supply line", "work in progress", "macroeconomics"],
+    checks: [
+      { claim: "Firms that ignore work in progress overshoot their inventory target by more than 10%", test: (run) => run({ aware: 0 }).max.inv > 110 },
+      { claim: "Firms that track work in progress reach the target without overshooting", test: (run) => run({ aware: 1 }).max.inv <= 100.5 },
+      { claim: "A longer lead time makes the swing bigger", test: (run) => run({ aware: 0, delay: 12 }).max.inv > run({ aware: 0, delay: 6 }).max.inv },
+      { claim: "Correcting inventory gaps more gently (8 months instead of 4) shrinks the overshoot", test: (run) => run({ aware: 0, tInv: 8 }).max.inv < run({ aware: 0, tInv: 4 }).max.inv },
+    ],
+  },
+  {
+    id: "long-wave",
+    title: "The economic long wave and capital self-ordering",
+    theme: "Business cycles and investment",
+    level: "Advanced",
+    summary: "The capital-producing sector needs its own output to expand, so a boom in capital orders feeds on itself and then leaves decades of excess capacity.",
+    question: "Can the way the economy builds its own capital produce a cycle of about fifty years?",
+    map: [
+      ["Stocks", "Capital in the capital-producing sector and in the goods sector; backlogs of orders for capital"],
+      ["Flows", "Capital orders, acquisitions after a delivery delay, and discards over a capital life of about twenty years"],
+      ["Loop R (self-ordering)", "More demand for capital → the capital sector orders capital for itself → still more demand for capital"],
+      ["Loop B (stock management)", "Capital rises to meet orders, then excess capacity cuts new orders"],
+    ],
+    molecules: ["stockmgmt", "aging", "decay", "trend"],
+    evidence: [
+      "Sterman's simple long-wave model (IIASA working paper, 1985) produces a limit cycle with a steady-state period of 49 years after a 1% rise in orders. Without self-ordering, the same production sector oscillates with a period of about twenty years and a damping ratio of 93%.",
+      "In the same paper, the period depends mainly on the strength of self-ordering, not on the life of capital: cutting the life from twenty to ten years shortened the cycle by only six years. Giving the capital sector priority for its own output gave a 37-year cycle with 70% of the base amplitude.",
+      "The paper quotes Forrester (1977): self-ordering 'creates the 50-year cycle out of what would otherwise be a 20-year medium cycle in capital acquisition'. It reports that the full System Dynamics National Model shows a 4- to 7-year business cycle and a 48- to 56-year long wave.",
+      "Sterman (1987) tested the capital investment rule of a simple multiplier-accelerator model by experiment. Both the model and the human subjects produced dysfunctional oscillations, and the subjects' behaviour was qualitatively and quantitatively similar to the model's.",
+    ],
+    validation: "The working paper compares the simple model's behaviour qualitatively with the National Model and tests its sensitivity to the capital/output ratio and the life of capital. Sterman (1987) tested the investment decision rule by direct experiment. The journal paper (Sterman 1985) has no abstract in the indexes checked, so its own validation is not summarised here.",
+    insight:
+      "A sector that supplies its own inputs amplifies its own demand. Locally rational ordering plus long capital lifetimes turn a medium-length investment cycle into a long wave, followed by a long depression while excess capital wears out.",
+    tryThis: [
+      "Open Stock Management. Set a long acquisition delay and a supply-line weight of 0: that is the investment cycle of one sector without self-ordering.",
+      "Sketch how you would add a second stock management structure whose orders come partly from the first sector's own expansion.",
+      "Which parameter would you test first, the life of capital or the capital/output ratio? Compare your answer with Sterman's sensitivity results.",
+    ],
+    data: [
+      ["Capital stock and investment by sector", "BEA fixed assets accounts; OECD national accounts"],
+      ["Service lives of equipment and structures", "National statistical offices' depreciation studies"],
+      ["Long historical series of output and prices", "FRED; long-run historical datasets"],
+    ],
+    practice: [
+      "Long-wave evidence is thin: a few cycles in two centuries. Test the structure through decision rules (experiments, interviews) as much as through fit to history.",
+      "Keep the capital-producing sector separate from the goods sector; self-ordering vanishes if they are merged.",
+    ],
+    refs: ["sterman1985", "sterman1985wp", "forrester1977", "sterman1987ms"],
+    tags: ["long wave", "Kondratiev", "capital", "investment", "self-ordering", "depression", "National Model", "accelerator"],
+  },
+  {
+    id: "expectations",
+    title: "Adaptive expectations of inflation",
+    theme: "Expectations and prices",
+    level: "Intermediate",
+    summary: "People update their view of prices gradually and extrapolate the trend they perceive, so expectations lag a change in inflation.",
+    question: "How far do adaptive expectations fall behind steady inflation, and how quickly do they catch up?",
+    sim: "eco_inflationExpect",
+    presets: [
+      { label: "8% inflation, nowcast", params: { growth: 8, timeToPerceive: 2, trendDuration: 3, forecastHorizon: 0 } },
+      { label: "8% inflation, one-year forecast", params: { growth: 8, timeToPerceive: 2, trendDuration: 3, forecastHorizon: 1 } },
+      { label: "Inflation judged over 10 years", params: { growth: 8, timeToPerceive: 2, trendDuration: 10, forecastHorizon: 0 } },
+      { label: "Falling prices (−3%)", params: { growth: -3, timeToPerceive: 2, trendDuration: 3, forecastHorizon: 1 } },
+    ],
+    map: [
+      ["Stock: Price level", "The actual price index, growing at the inflation rate"],
+      ["Stock: Perceived price level", "Prices as people currently believe them to be (an adaptive, smoothed view)"],
+      ["Stock: Price level a while ago", "The reference people compare against to judge inflation"],
+      ["Expected price level", "Perceived price grown by the perceived inflation rate over the perception lag plus the forecast horizon"],
+    ],
+    molecules: ["extrapolation", "trend", "smooth"],
+    evidence: [
+      "Sterman (1987) modelled expectations of a growth rate as formed adaptively from the recent growth of the variable itself, and tested the model against actual forecasts: short-term expectations of inflation and long-term energy demand forecasts. In both cases it replicated the evolution of the expectations quite well over extended periods.",
+      "The same study found substantial conservatism: forecasters systematically underestimated the growth rate of the input, consistent with research on judgment and decision making.",
+      "Tversky and Kahneman (1974) describe adjustment from an anchor as a heuristic used in numerical prediction; it is usually effective but leads to systematic and predictable errors.",
+    ],
+    validation: "Sterman (1987) tested the expectation model directly against two series of actual forecasts; the abstract reports that it replicates them well but gives no fit statistics. Here, the perceived price level is checked against the exact steady-state result for a first-order smooth of exponential growth.",
+    insight:
+      "An adaptive estimate of a growing quantity always trails it: at steady growth g with perception time τ, the perceived level settles at 1/(1 + gτ) of the actual level. Adding a perceived trend closes the gap, but only after the trend itself has been learned, so changes in inflation are recognised late.",
+    tryThis: [
+      "Run the 8% nowcast. Compare the perceived and the expected price level with the actual one after 30 years.",
+      "Lengthen the period over which inflation is judged to 10 years. How far behind is the expectation after 10 years?",
+      "Switch to falling prices. Does the one-year forecast sit above or below the actual price level?",
+    ],
+    data: [
+      ["Consumer prices", "National statistics offices; FRED"],
+      ["Household inflation expectations", "University of Michigan Surveys of Consumers"],
+      ["Professional inflation forecasts", "Federal Reserve Bank of Philadelphia Survey of Professional Forecasters and Livingston Survey"],
+    ],
+    practice: [
+      "Inflation in this small model is fixed, so it can show how expectations lag but not a wage-price spiral. Feed expected inflation back into wage and price setting to get that loop.",
+      "Estimate the perception time and trend period by fitting the model to survey expectations, as Sterman (1987) did with actual forecasts, rather than assuming a fixed lag.",
+    ],
+    refs: ["sterman1987bs", "tversky1974"],
+    tags: ["expectations", "inflation", "adaptive expectations", "forecasting", "trend", "extrapolation", "anchoring", "smoothing"],
+    checks: [
+      { claim: "At steady 8% inflation with a 2-year perception time, the perceived price level settles at 1/(1 + 0.08 × 2) ≈ 86% of the actual level", test: (run) => { const r = run({ growth: 8, timeToPerceive: 2, trendDuration: 3, forecastHorizon: 0 }).end; return Math.abs(r.perceived / r.actual - 1 / 1.16) < 0.01; } },
+      { claim: "Once inflation has run steadily for 30 years, the trend-corrected nowcast is within 2% of the actual price level", test: (run) => { const r = run({ growth: 8, timeToPerceive: 2, trendDuration: 3, forecastHorizon: 0 }).end; return Math.abs(r.extrapolatedDisp / r.actual - 1) < 0.02; } },
+      { claim: "Judging inflation over a longer window leaves the nowcast further behind after 10 years", test: (run) => run({ growth: 8, trendDuration: 10, forecastHorizon: 0 }, 10).end.extrapolatedDisp < run({ growth: 8, trendDuration: 1, forecastHorizon: 0 }, 10).end.extrapolatedDisp },
+    ],
+  },
+  {
+    id: "debt-snowball",
+    title: "Debt dynamics: interest rate against growth",
+    theme: "Debt, interest and valuation",
+    level: "Starter",
+    summary: "With no new borrowing, the debt-to-GDP ratio grows when the interest rate exceeds the growth rate of the economy and shrinks when it is lower.",
+    question: "Will a country's debt ratio rise or fall on its own, and how fast?",
+    sim: "eco_debtRatio",
+    presets: [
+      { label: "r above g (5% vs 3%)", params: { birth: 5, death: 3 } },
+      { label: "r below g (2% vs 4%)", params: { birth: 2, death: 4 } },
+      { label: "r equals g", params: { birth: 4, death: 4 } },
+      { label: "High-rate stress (9% vs 3%)", params: { birth: 9, death: 3 } },
+    ],
+    map: [
+      ["Stock: Debt-to-GDP ratio", "Government debt as a percentage of a year's output"],
+      ["Flow: interest added", "Ratio × interest rate r: interest paid by issuing more debt"],
+      ["Flow: growth dilution", "Ratio × nominal growth g: the economy growing out of its debt"],
+      ["Loop R (compound interest)", "More debt → more interest → more debt"],
+      ["Missing in this small model", "The primary balance (taxes minus non-interest spending), which adds or removes debt directly"],
+    ],
+    molecules: ["growth", "decay", "bathtub"],
+    evidence: [
+      "Blanchard (2019) shows that the US situation in which safe interest rates are expected to stay below growth rates for a long time is more the historical norm than the exception. If so, debt rollovers without a later rise in taxes may be feasible, although debt may still have welfare costs through lower capital accumulation.",
+      "Blanchard also discusses multiple equilibria: if investors come to believe debt is risky, the risk premium they require raises the fiscal burden and makes the debt effectively more risky.",
+    ],
+    validation: "Blanchard (2019) is an analytical lecture backed by historical data on interest and growth rates, not a simulation model. The small model here is checked against the exact doubling time ln 2 / (r − g).",
+    insight:
+      "The ratio follows d' = (r − g) d: a reinforcing loop whose sign depends on whether r exceeds g. At a 2-point gap the ratio doubles in about 35 years (the rule of 70). A rise in r for a given g can turn a shrinking debt ratio into a growing one.",
+    tryThis: [
+      "Run r above g and find when the ratio reaches 120%. Check it against 70 / (r − g).",
+      "Switch to r below g. How long does it take the ratio to halve?",
+      "Start from r equals g and raise r by half a point. How long before the ratio is clearly growing?",
+    ],
+    data: [
+      ["Government debt and GDP", "IMF World Economic Outlook database; national treasuries"],
+      ["Interest rates on government debt", "FRED; central bank data portals"],
+      ["Nominal GDP growth", "BEA; World Bank World Development Indicators"],
+    ],
+    practice: [
+      "The growth molecule gives the debt equation with a zero primary balance. With a constant deficit added as an inflow (a share of GDP), the ratio instead settles at deficit / (g − r) when g exceeds r.",
+      "Use the effective rate on the whole debt stock, not today's market rate: debt is refinanced gradually, which adds a delay before rate changes bite.",
+    ],
+    refs: ["blanchard2019"],
+    tags: ["debt", "public debt", "interest rate", "compound interest", "r minus g", "fiscal policy", "doubling time", "sovereign debt"],
+    checks: [
+      { claim: "With r 5% and g 3%, the debt ratio doubles from 60% to 120% in ln 2 / 0.02 ≈ 34.7 years", test: (run) => Math.abs(run({ birth: 5, death: 3 }, 34.66).end.pop - 120) < 1.5 },
+      { claim: "With r below g, the debt ratio falls without any repayment", test: (run) => run({ birth: 2, death: 4 }).end.pop < 30 },
+      { claim: "When r equals g, the ratio stays where it started", test: (run) => Math.abs(run({ birth: 4, death: 4 }).end.pop - 60) < 0.01 },
+    ],
+  },
+  {
+    id: "discounting",
+    title: "Discounting: what a future stream is worth today",
+    theme: "Debt, interest and valuation",
+    level: "Starter",
+    summary: "Each future payment counts for less the further away it is, so the present value of a long stream levels off.",
+    question: "How much does the choice of discount rate change the value placed today on benefits that arrive over decades?",
+    sim: "eco_discount",
+    presets: [
+      { label: "8% discount rate", params: { cashFlow: 20, r: 8 } },
+      { label: "4% discount rate", params: { cashFlow: 20, r: 4 } },
+      { label: "2% discount rate", params: { cashFlow: 20, r: 2 } },
+      { label: "16% discount rate", params: { cashFlow: 20, r: 16 } },
+    ],
+    map: [
+      ["Stock: Present value of payments so far", "The running sum of every payment, each discounted back to today"],
+      ["Flow: discounted payments", "Payment × e^(−r·t): the same payment is worth less the later it arrives"],
+      ["Parameter: discount rate", "The rate used in cost-benefit analysis or valuation"],
+    ],
+    molecules: ["presentValue", "decay", "growth"],
+    evidence: [
+      "Weitzman (2001) built a numerical example from a survey of 2,160 economists on the right discount rate. Even if each believes in a constant rate, the wide spread of opinion makes the effective social discount rate decline significantly over time.",
+      "Frederick, Loewenstein and O'Donoghue (2002) review three decades of research on intertemporal choice, discuss the spectacular variation in implicit discount rates across studies, and summarise anomalies that the discounted utility model does not predict.",
+    ],
+    validation: "Weitzman (2001) is a theoretical approach illustrated with survey data; Frederick et al. (2002) is a critical review. The small model is checked against the exact present value of a constant stream, c (1 − e^(−rT)) / r.",
+    insight:
+      "Discounting is exponential decay applied to value. At 8% a payment 50 years away counts for about 2% of its face value, so the present value of a long stream approaches the ceiling c / r. Small changes in r move that ceiling a lot, which is why long-horizon decisions turn on the discount rate.",
+    tryThis: [
+      "Compare 8% and 4% at year 50. By what factor does halving the rate raise the present value?",
+      "At 2%, run for 100 years. How close does the present value get to the ceiling 20 / 0.02 = 1,000?",
+      "At 16%, after how many years does the curve look flat? What does that say about valuing projects with benefits beyond that point?",
+    ],
+    data: [
+      ["Market interest rates", "FRED; central bank data portals"],
+      ["Official discount rates for appraisal", "National government guidance on cost-benefit analysis"],
+      ["Projected costs and benefits", "The project appraisal itself"],
+    ],
+    practice: [
+      "This small model uses a constant cash flow and a constant rate. Weitzman's result means that for very long horizons a rate that declines with time may be more defensible.",
+      "Report results at more than one discount rate: the ranking of projects with different timing can flip.",
+    ],
+    refs: ["weitzman2001", "frederick2002"],
+    tags: ["discounting", "present value", "discount rate", "cost-benefit analysis", "time preference", "valuation", "interest"],
+    checks: [
+      { claim: "At 8% for 50 years, the present value matches 20 (1 − e^(−4)) / 0.08 ≈ 245 within 1%", test: (run) => Math.abs(run({ cashFlow: 20, r: 8 }).end.pv / 245.42 - 1) < 0.01 },
+      { claim: "Halving the discount rate from 8% to 4% raises the 50-year present value by more than 70%", test: (run) => run({ cashFlow: 20, r: 4 }).end.pv > 1.7 * run({ cashFlow: 20, r: 8 }).end.pv },
+      { claim: "At 2% over 100 years, the present value comes within 15% of the ceiling c / r = 1,000 without passing it", test: (run) => { const v = run({ cashFlow: 20, r: 2 }, 100).end.pv; return v > 850 && v < 1000; } },
+    ],
+  },
+  {
+    id: "sticky-prices",
+    title: "Sticky prices",
+    theme: "Expectations and prices",
+    level: "Starter",
+    summary: "Posted prices move toward the level that costs and demand indicate, but gradually, so a shock passes into prices over months.",
+    question: "If costs or demand jump, how long before prices fully reflect it?",
+    sim: "eco_stickyPrice",
+    presets: [
+      { label: "40% cost shock, 6-month adjustment", params: { refPrice: 10, pressure: 1.4, tau: 6 } },
+      { label: "Same shock, 12-month adjustment", params: { refPrice: 10, pressure: 1.4, tau: 12 } },
+      { label: "Same shock, 2-month adjustment", params: { refPrice: 10, pressure: 1.4, tau: 2 } },
+      { label: "Demand slump (pressure 0.7)", params: { refPrice: 10, pressure: 0.7, tau: 6 } },
+    ],
+    map: [
+      ["Stock: Posted price", "The price customers see; it changes only as sellers reprice"],
+      ["Indicated price", "Normal price × cost and demand pressure: where the price would go if repricing were instant"],
+      ["Parameter: price adjustment time", "Average time for posted prices to close a gap; related to, but not the same as, how long prices last between changes"],
+      ["Loop B (repricing)", "A gap between indicated and posted price → repricing → smaller gap"],
+    ],
+    molecules: ["smoothPricing", "smooth", "closegap"],
+    evidence: [
+      "Bils and Klenow (2004) examined the frequency of price changes for 350 categories of goods and services, covering about 70% of US consumer spending, using Bureau of Labor Statistics data for 1995-97. Half of prices lasted less than 4.3 months; excluding temporary sales, half lasted 5.5 months or less.",
+      "They also found that the frequency of price changes differs dramatically across goods, and that inflation for sticky-price goods is far more volatile and transient than popular sticky-price models predict.",
+    ],
+    validation: "Bils and Klenow (2004) is an empirical study of unpublished Bureau of Labor Statistics price data, not a simulation. The small model is checked against the first-order adjustment result: after one adjustment time, the price closes 1 − 1/e ≈ 63% of the gap.",
+    insight:
+      "Price stickiness turns a sudden shift in costs or demand into a gradual, exponential adjustment. The gap between what the price is and what costs and demand indicate keeps prices moving for months after the shock itself.",
+    tryThis: [
+      "Run the 6-month preset. How much of the 4-dollar gap has closed after 6 months, and after 12?",
+      "Compare 2-month and 12-month adjustment. How long does each take to close 95% of the gap (about three adjustment times)?",
+      "Bils and Klenow find that half of prices last about 5.5 months or less. What adjustment time would you choose, and why are the two numbers not the same thing?",
+    ],
+    data: [
+      ["Consumer and producer prices", "US Bureau of Labor Statistics; national statistics offices"],
+      ["Frequency of price changes", "Studies of the micro data behind the consumer price index"],
+      ["Cost indices", "Producer price indices; input-output tables"],
+    ],
+    practice: [
+      "This molecule smooths the price toward a fixed target. In reality the indicated price itself moves with inventories and demand, which can create the cycles shown in the hog and office cases.",
+      "A first-order smooth spreads repricing evenly over time; a firm that reprices on a fixed calendar behaves more like a pipeline delay. Choose the form that matches the data.",
+    ],
+    refs: ["bils2004"],
+    tags: ["prices", "sticky prices", "price adjustment", "inflation", "menu costs", "smoothing", "pricing"],
+    checks: [
+      { claim: "After one adjustment time (6 months), the price has closed about 63% of the gap between 10 and 14", test: (run) => Math.abs((run({ refPrice: 10, pressure: 1.4, tau: 6 }, 6).end.price - 10) / 4 - (1 - Math.exp(-1))) < 0.01 },
+      { claim: "With a 12-month adjustment time, less of the gap is closed after 6 months than with 6 months", test: (run) => run({ pressure: 1.4, tau: 12 }, 6).end.price < run({ pressure: 1.4, tau: 6 }, 6).end.price },
+      { claim: "After three adjustment times the price has closed about 95% of the gap", test: (run) => Math.abs((run({ refPrice: 10, pressure: 1.4, tau: 2 }, 6).end.price - 10) / 4 - 0.95) < 0.01 },
+    ],
+  },
+  {
+    id: "price-anchoring",
+    title: "Price anchoring and drift",
+    theme: "Expectations and prices",
+    level: "Advanced",
+    summary: "Sellers set price as a mark-up or discount on a going price, and the going price then drifts toward whatever they set, so lasting pressure moves prices without limit.",
+    question: "Why can a lasting shortage raise prices steadily rather than to a new level?",
+    sim: "eco_priceAnchor",
+    presets: [
+      { label: "Shortage (inventory 75 of 100)", params: { inventory: 75, targetInventory: 100, relMarketShare: 1, timeToChange: 4 } },
+      { label: "Balanced market", params: { inventory: 100, targetInventory: 100, relMarketShare: 1, timeToChange: 4 } },
+      { label: "Glut (inventory 150 of 100)", params: { inventory: 150, targetInventory: 100, relMarketShare: 1, timeToChange: 4 } },
+      { label: "Shortage, slow-moving anchor (12 years)", params: { inventory: 75, targetInventory: 100, relMarketShare: 1, timeToChange: 12 } },
+    ],
+    map: [
+      ["Stock: Anchor (the going price)", "The price sellers treat as normal, learned from recent prices"],
+      ["Price set", "Anchor × pressure: a mark-up when inventory is short or market share high, a discount when glutted"],
+      ["Flow: anchor drifting", "The going price catching up with the prices actually set"],
+      ["Loop R (anchor drift)", "Price above anchor → anchor rises → price set rises again"],
+    ],
+    molecules: ["seaAnchorPricing", "protSeaAnchorPricing", "seaAnchor", "univariateAnchor"],
+    evidence: [
+      "Tversky and Kahneman (1974) identify adjustment from an anchor as a heuristic people use in numerical prediction. It is economical and usually effective, but leads to systematic and predictable errors.",
+      "Sterman (1989) found that an anchoring-and-adjustment heuristic explained managers' decisions well in a simulated inventory system, and that the managers were insensitive to the feedback from their own decisions.",
+    ],
+    validation: "Tversky and Kahneman (1974) summarise research on judgment under uncertainty. Sterman (1989) tested the anchoring rule econometrically against experimental decisions. The small model is checked against its exact solution: the anchor grows exponentially at (pressure − 1) / time to follow.",
+    insight:
+      "When the anchor follows the price, any lasting pressure becomes a growth rate rather than a new level. A 14% mark-up held against a 4-year anchor raises prices by about 3.6% a year for as long as the shortage lasts. Ending the shortage, or anchoring to costs instead of past prices, stops the drift.",
+    tryThis: [
+      "Run the shortage preset. How long does the price take to double? Check it against ln 2 divided by (pressure − 1) / 4.",
+      "Switch to the slow-moving anchor. Does the price rise less, or just more slowly?",
+      "Open the Protected Sea Anchor Pricing molecule and add a price floor to the glut. What does the floor change?",
+    ],
+    data: [
+      ["Prices and inventories by product", "Producer price indices; Census inventories and sales"],
+      ["Market share", "Industry and trade association data"],
+      ["How firms set prices", "Interviews and pricing surveys of firms"],
+    ],
+    practice: [
+      "Inventory is a fixed slider here, so the shortage never ends. In a market the higher price would cut demand and raise supply, closing the gap and stopping the drift.",
+      "Anchors can be costs, competitors' prices or the firm's own past prices. Only the last creates this self-reinforcing drift, so find out which one firms use.",
+    ],
+    refs: ["tversky1974", "sterman1989"],
+    tags: ["pricing", "anchoring", "price drift", "inflation", "mark-up", "heuristics", "shortage", "behavioural economics"],
+    checks: [
+      { claim: "A shortage (pressure 2/1.75 ≈ 1.14) with a 4-year anchor raises the going price as 10 × e^((0.1429/4)·t): about 20.4 after 20 years", test: (run) => Math.abs(run({ inventory: 75, targetInventory: 100, relMarketShare: 1, timeToChange: 4 }).end.underlyingPrice - 10 * Math.exp(((2 / 1.75 - 1) / 4) * 20)) < 0.2 },
+      { claim: "In a balanced market the going price stays at 10", test: (run) => Math.abs(run({ inventory: 100, targetInventory: 100 }).end.underlyingPrice - 10) < 0.01 },
+      { claim: "A glut drives the going price down, below 4 after 20 years", test: (run) => run({ inventory: 150, targetInventory: 100 }).end.underlyingPrice < 4 },
+      { claim: "A slower-moving anchor slows the drift", test: (run) => run({ inventory: 75, timeToChange: 12 }).end.underlyingPrice < run({ inventory: 75, timeToChange: 4 }).end.underlyingPrice },
+    ],
+  },
+];
+
+const DATA_SOURCES: DataSource[] = [
+  { name: "FRED, Federal Reserve Bank of St. Louis", url: "https://fred.stlouisfed.org/", what: "Economic time series: output, prices, interest rates, inventories and more", scope: "Output, cycles and inventories" },
+  { name: "BEA national accounts (GDP)", url: "https://www.bea.gov/data/gdp/gross-domestic-product", what: "US GDP and its components, including inventory investment", scope: "Output, cycles and inventories" },
+  { name: "US Census Bureau Manufacturing and Trade Inventories and Sales", url: "https://www.census.gov/mtis/index.html", what: "Monthly US inventories, sales and inventory/sales ratios by sector", scope: "Output, cycles and inventories" },
+  { name: "World Bank World Development Indicators", url: "https://databank.worldbank.org/source/world-development-indicators", what: "GDP, growth, inflation, debt and other indicators by country", scope: "Output, cycles and inventories" },
+  { name: "USDA ERS Hogs and Pork", url: "https://www.ers.usda.gov/topics/animal-products/hogs-pork/", what: "US hog inventories, production, trade and prices", scope: "Commodities and property" },
+  { name: "US Census Bureau Construction Spending (C30)", url: "https://www.census.gov/construction/c30/c30index.html", what: "Monthly value of US construction put in place, including office buildings", scope: "Commodities and property" },
+  { name: "BIS residential property prices", url: "https://data.bis.org/topics/RPP", what: "Long-run residential property price series for many countries", scope: "Commodities and property" },
+  { name: "IMF World Economic Outlook database", url: "https://www.imf.org/en/Publications/WEO/weo-database", what: "Government debt, deficits, growth and inflation by country, with projections", scope: "Prices, expectations and debt" },
+  { name: "Philadelphia Fed Survey of Professional Forecasters", url: "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/survey-of-professional-forecasters", what: "Quarterly professional forecasts of inflation, output and unemployment", scope: "Prices, expectations and debt" },
+  { name: "University of Michigan Surveys of Consumers", url: "https://www.sca.isr.umich.edu/", what: "Monthly household expectations of inflation and economic conditions", scope: "Prices, expectations and debt" },
+];
+
+export const ECONOMICS: Domain = {
+  id: "economics",
+  name: "Economics, markets and finance",
+  short: "Economics",
+  blurb: "Commodity and property cycles, business cycles, expectations, sticky prices, debt and discounting.",
+  themes: THEMES,
+  cases: CASES,
+  refs: REFS,
+  models: ECO_MODELS,
+  stop: STOP,
+  dataSources: DATA_SOURCES,
+};

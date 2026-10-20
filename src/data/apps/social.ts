@@ -20,7 +20,7 @@ const REFS: Record<string, Ref> = {
   larson2014: { text: "Larson RC, Ghaffarzadegan N, Xue Y (2014). Too many PhD graduates or too few academic job openings: the basic reproductive number R0 in academia. Systems Research and Behavioral Science 31(6):745-750.", doi: "10.1002/sres.2210" },
   daley1964: { text: "Daley DJ, Kendall DG (1964). Epidemics and rumours. Nature 204(4963):1118.", doi: "10.1038/2041118a0" },
   vosoughi2018: { text: "Vosoughi S, Roy D, Aral S (2018). The spread of true and false news online. Science 359(6380):1146-1151.", doi: "10.1126/science.aap9559" },
-  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 9, S-shaped growth: epidemics, innovation diffusion and the growth of new products." },
+  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill." },
   sterman2006: { text: "Sterman JD (2006). Learning from evidence in a complex world. Am J Public Health 96(3):505-514.", doi: "10.2105/AJPH.2005.066043", pmid: "16449579" },
   fallahfini2010: { text: "Fallah-Fini S, Rahmandad H, Triantis K, de la Garza JM (2010). Optimizing highway maintenance operations: dynamic considerations. System Dynamics Review 26(3):216-238.", doi: "10.1002/sdr.449" },
   rashedi2016: { text: "Rashedi R, Hegazy T (2016). Holistic analysis of infrastructure deterioration and rehabilitation using system dynamics. Journal of Infrastructure Systems 22(1):04015016.", doi: "10.1061/(ASCE)IS.1943-555X.0000273" },

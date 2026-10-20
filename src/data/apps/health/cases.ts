@@ -13,7 +13,7 @@ export const THEMES = [
 ] as const;
 export const REFS: Record<string, Ref> = {
   kermack1927: { text: "Kermack WO, McKendrick AG (1927). A contribution to the mathematical theory of epidemics. Proc R Soc Lond A 115(772):700-721.", doi: "10.1098/rspa.1927.0118" },
-  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 9, S-shaped growth: epidemics, innovation diffusion and the growth of new products." },
+  sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill." },
   rahmandad2021: { text: "Rahmandad H, Lim TY, Sterman J (2021). Behavioral dynamics of COVID-19: estimating underreporting, multiple waves, and adherence fatigue across 92 nations. System Dynamics Review 37(1):5-31.", doi: "10.1002/sdr.1673" },
   struben2020: { text: "Struben J (2020). The coronavirus disease (COVID-19) pandemic: simulation-based assessment of outbreak responses and postpeak strategies. System Dynamics Review 36(3):247-293.", doi: "10.1002/sdr.1660" },
   thompson2007: { text: "Thompson KM, Duintjer Tebbens RJ (2007). Eradication versus control for poliomyelitis: an economic analysis. Lancet 369(9570):1363-1371.", doi: "10.1016/S0140-6736(07)60532-7" },
