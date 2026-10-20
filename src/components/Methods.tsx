@@ -111,7 +111,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
                 </thead>
                 <tbody>
                   {s.table.rows.map((r) => (
-                    <tr key={r[0]} className="border-b border-border align-top">
+                    <tr key={r.join("|")} className="border-b border-border align-top">
                       {r.map((c, j) => (
                         <td key={j} className={cn("py-2.5 pr-4", j === 0 && "font-semibold")}>
                           {c}
@@ -121,6 +121,47 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {s.example && (
+            <div className="mt-5 rounded-card border border-border bg-card px-5 py-4">
+              <p className="heading text-[16px]">Worked example: {s.example.title}</p>
+              <ol className="mt-2 space-y-2 text-[15px] leading-[1.6] list-decimal pl-5 marker:font-bold">
+                {s.example.steps.map((st) => (
+                  <li key={st}>{st}</li>
+                ))}
+              </ol>
+              {s.example.data && (
+                <div className="mt-3 overflow-x-auto">
+                  <table className="text-[13.5px] tabular-nums border-collapse">
+                    <thead>
+                      <tr>
+                        {s.example.data.head.map((h) => (
+                          <th key={h} className="text-left font-semibold py-1 pr-5 border-b border-foreground/60">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {s.example.data.rows.map((r) => (
+                        <tr key={r.join()} className="border-b border-border">
+                          {r.map((c, j) => (
+                            <td key={j} className="py-1 pr-5">
+                              {c}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {s.example.link && (
+                <button onClick={() => onOpen(s.example!.link!.hash)} className="brick brick-w mt-3 h-9 px-4 text-[13px] font-semibold">
+                  {s.example.link.label}
+                </button>
+              )}
             </div>
           )}
           {s.cite && <p className="mt-3 text-[13px] text-muted-foreground">Sources: {s.cite.map((k) => METHOD_REFS[k].short).join("; ")}</p>}
