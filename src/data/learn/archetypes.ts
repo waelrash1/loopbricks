@@ -150,7 +150,7 @@ export const ARCHETYPES: Archetype[] = [
     trap: "The quick fix gives fast, visible relief, while the fundamental solution pays off slowly and out of sight. Each use of the quick fix makes the fundamental solution harder to afford next time, so dependence deepens without anyone choosing it.",
     leverage:
       "Protect time and money for the fundamental solution, even while the symptom hurts. Use the quick fix only as a bridge, and say so openly. Make its long-run cost visible, for example by tracking how much effort goes to firefighting and how much to improvement.",
-    molecules: ["closegap", "weightedSplit", "decay"],
+    molecules: ["shiftingBurden", "closegap", "decay"],
     cases: [
       { label: "Capability traps in process improvement", hash: "/apps/business/capability-trap" },
       { label: "Firefighting in product development", hash: "/apps/projects/firefighting" },
@@ -320,7 +320,7 @@ export const ARCHETYPES: Archetype[] = [
     trap: "For each user, expanding is the rational choice, and the damage shows up slowly and is shared by all. By the time the decline is clear, the fleet or herd has been built, and cutting back hurts everyone at once.",
     leverage:
       "Manage the commons as a whole, through agreed limits, quotas, fees or ownership rules that make each user bear the cost of their own use. Measure the state of the resource directly and act on it before yields fall. Goodwill helps, but rules that change the payoff work more reliably.",
-    molecules: ["logistic", "actionFromResource", "growth"],
+    molecules: ["tragedyCommons", "logistic", "actionFromResource"],
     cases: [
       { label: "Fisheries: overinvestment and overfishing", hash: "/apps/environment/fishery" },
       { label: "Groundwater: pumping faster than recharge", hash: "/apps/environment/groundwater" },

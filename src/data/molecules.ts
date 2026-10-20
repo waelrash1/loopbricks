@@ -2,6 +2,7 @@ import { MODELS_A } from "@/data/extra/batchA";
 import { MODELS_B } from "@/data/extra/batchB";
 import { MODELS_C } from "@/data/extra/batchC";
 import { MODELS_E } from "@/data/extra/batchE";
+import { MODELS_F } from "@/data/extra/batchF";
 import { MODELS_D } from "@/data/extra/batchD";
 import type { Vars } from "@/sim/engine";
 
@@ -2579,6 +2580,7 @@ export const MODELS: Record<string, Model> = {
   ...MODELS_C,
   ...MODELS_D,
   ...MODELS_E,
+  ...MODELS_F,
 };
 
 export const MODEL_KEYS = Object.keys(MODELS);
@@ -2602,4 +2604,5 @@ export const GROUPS: { title: string; keys: string[] }[] = [
       "protByPDY", "buildingInventory", "doingWorkCascade", "cascadeProtByPDY", "reworkCycle", "estRemaining", "estCompletion", "schedulePressure",
     ],
   },
+  { title: "System archetypes", keys: ["tragedyCommons", "shiftingBurden"] },
 ];

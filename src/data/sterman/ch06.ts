@@ -72,109 +72,133 @@ export const CHAPTER: StudyChapter = {
   ],
   diagrams: [
     {
-      kind: "cld",
+      kind: "sf",
       title: "Staff and hours act on the departure rate, not on the queue",
       pages: "204-206",
-      cld: {
-        size: [540, 280],
-        vars: [
-          { id: "arr", label: "Arrival rate", x: 90, y: 45 },
-          { id: "q", label: "Customers waiting", x: 130, y: 140 },
-          { id: "dep", label: "Departure rate", x: 420, y: 140 },
-          { id: "ww", label: "Workweek", x: 275, y: 45 },
-          { id: "st", label: "Service staff", x: 275, y: 240 },
-          { id: "prod", label: "Productivity", x: 460, y: 240 },
-        ],
-        links: [
-          { from: "arr", to: "q", sign: "+" },
-          { from: "q", to: "ww", sign: "+", curve: 18 },
-          { from: "ww", to: "dep", sign: "+", curve: 18 },
-          { from: "dep", to: "q", sign: "−" },
-          { from: "q", to: "st", sign: "+", curve: -18 },
-          { from: "st", to: "dep", sign: "+", curve: -18 },
-          { from: "prod", to: "dep", sign: "+" },
-        ],
-        loops: [
-          { type: "B", label: "B1", x: 275, y: 102 },
-          { type: "B", label: "B2", x: 275, y: 180 },
-        ],
-        caption:
-          'A longer queue stretches the <b>workweek</b> <span class="chip chipB">B</span> and, more slowly, brings in more <b>service staff</b> <span class="chip chipB">B</span>. Both act on the <b>departure rate</b>, the only flow that removes customers. Every information link is positive; the minus sign belongs to the outflow from the stock.',
-      },
+      size: [680, 290],
+      stocks: [{ id: "q", label: "Customers waiting", x: 290, y: 70, w: 160 }],
+      flows: [
+        { id: "arr", label: "Arrival rate", pts: [[60, 70], [210, 70]], to: "q" },
+        { id: "dep", label: "Departure rate", pts: [[370, 70], [610, 70]], from: "q" },
+      ],
+      aux: [
+        { id: "ww", label: "Workweek", x: 390, y: 145 },
+        { id: "st", label: "Service staff", x: 420, y: 235 },
+        { id: "pr", label: "Productivity", x: 600, y: 185 },
+      ],
+      links: [
+        { from: "q", to: "ww", sign: "+" },
+        { from: "ww", to: "dep", sign: "+" },
+        { from: "q", to: "st", sign: "+" },
+        { from: "st", to: "dep", sign: "+" },
+        { from: "pr", to: "dep", sign: "+" },
+      ],
+      loops: [
+        { type: "B", label: "B1", x: 405, y: 98 },
+        { type: "B", label: "B2", x: 412, y: 195 },
+      ],
+      caption:
+        'Customers join the queue through the <b>arrival rate</b> and leave it only through the <b>departure rate</b>. A longer queue stretches the <b>workweek</b> within days <span class="chip chipB">B1</span> and, over months, brings in more <b>service staff</b> <span class="chip chipB">B2</span>. Staff, hours and productivity all act on the departure rate, never on the queue itself, so every information link is positive: the stock falls because the outflow it feeds drains it.',
     },
     {
-      kind: "cld",
+      kind: "sf",
       title: "Auxiliaries separate the loops around population",
       pages: "202-205",
-      cld: {
-        size: [560, 300],
-        vars: [
-          { id: "pop", label: "Population", x: 110, y: 110 },
-          { id: "br", label: "Net birth rate", x: 420, y: 110 },
-          { id: "fpc", label: "Food per capita", x: 210, y: 250 },
-          { id: "fbr", label: "Fractional birth rate", x: 420, y: 250 },
-          { id: "food", label: "Food", x: 55, y: 250 },
-        ],
-        links: [
-          { from: "pop", to: "br", sign: "+", curve: 40 },
-          { from: "br", to: "pop", sign: "+", curve: 40 },
-          { from: "pop", to: "fpc", sign: "−" },
-          { from: "fpc", to: "fbr", sign: "+" },
-          { from: "fbr", to: "br", sign: "+" },
-          { from: "food", to: "fpc", sign: "+" },
-        ],
-        loops: [
-          { type: "R", label: "R", x: 265, y: 110 },
-          { type: "B", label: "B", x: 300, y: 195 },
-        ],
-        caption:
-          'Births add people, and more people give more births <span class="chip chipR">R</span>. More people also share the same food, lowering the <b>fractional birth rate</b> <span class="chip chipB">B</span>. Written as one reduced equation, <code>Births = Population × f(Food ÷ Population)</code>, the two loops merge and the sign of the population-to-births link becomes ambiguous.',
-      },
+      size: [680, 280],
+      stocks: [{ id: "pop", label: "Population", x: 340, y: 70 }],
+      flows: [
+        { id: "b", label: "Births", pts: [[60, 70], [280, 70]], to: "pop" },
+        { id: "d", label: "Deaths", pts: [[400, 70], [620, 70]], from: "pop" },
+      ],
+      aux: [
+        { id: "fbr", label: "Fractional birth rate", x: 120, y: 220 },
+        { id: "fpc", label: "Food per capita", x: 270, y: 220 },
+        { id: "food", label: "Food", x: 400, y: 220 },
+        { id: "life", label: "Average lifetime", x: 600, y: 175 },
+      ],
+      links: [
+        { from: "pop", to: "b", sign: "+", curve: -90 },
+        { from: "pop", to: "fpc", sign: "−" },
+        { from: "food", to: "fpc", sign: "+" },
+        { from: "fpc", to: "fbr", sign: "+" },
+        { from: "fbr", to: "b", sign: "+" },
+        { from: "pop", to: "d", sign: "+", curve: 90 },
+        { from: "life", to: "d", sign: "−" },
+      ],
+      loops: [
+        { type: "R", label: "R", x: 222, y: 90 },
+        { type: "B", label: "B1", x: 205, y: 175 },
+        { type: "B", label: "B2", x: 458, y: 90 },
+      ],
+      caption:
+        'Births add to the population and deaths drain it. More people bring more births <span class="chip chipR">R</span> and more deaths <span class="chip chipB">B2</span>. More people also share the same <b>food</b>, so <b>food per capita</b> falls and pulls the <b>fractional birth rate</b> down <span class="chip chipB">B1</span>. Each auxiliary carries one idea. Substitute them away into <code>Births = Population × f(Food ÷ Population)</code> and R and B1 collapse into a single link whose sign depends on how much food there is.',
     },
     {
-      kind: "cld",
+      kind: "sf",
       title: "A sketch answer to the 1979 gasoline shortage",
       pages: "212-213",
       note: "Our own sketch of one plausible structure; other answers are possible.",
-      cld: {
-        size: [620, 300],
-        vars: [
-          { id: "inv", label: "Gasoline at stations", x: 130, y: 60 },
-          { id: "out", label: "Stations out of gas", x: 470, y: 60 },
-          { id: "fear", label: "Fear of shortage", x: 470, y: 180 },
-          { id: "top", label: "Topping-off purchases", x: 130, y: 180 },
-          { id: "tank", label: "Gasoline in car tanks", x: 360, y: 270 },
-        ],
-        links: [
-          { from: "inv", to: "out", sign: "−" },
-          { from: "out", to: "fear", sign: "+" },
-          { from: "fear", to: "top", sign: "+" },
-          { from: "top", to: "inv", sign: "−" },
-          { from: "top", to: "tank", sign: "+", curve: 50 },
-          { from: "tank", to: "top", sign: "−", curve: 50 },
-        ],
-        loops: [
-          { type: "R", label: "R", x: 300, y: 120 },
-          { type: "B", label: "B", x: 245, y: 225 },
-        ],
-        caption:
-          'Deliveries held steady, but drivers who saw empty stations began topping off, moving gasoline from station tanks into the stock held in car tanks <span class="chip chipR">R</span>. Fuller car tanks eventually limit how much more anyone can buy <span class="chip chipB">B</span>. The gas did not vanish: it sat in millions of tanks. Purchase caps and odd-even days can make drivers fill up more often and so strengthen the hoarding loop.',
-      },
+      size: [740, 250],
+      stocks: [
+        { id: "st", label: "Gasoline at stations", x: 230, y: 70, w: 170 },
+        { id: "ct", label: "Gasoline in car tanks", x: 530, y: 70, w: 170 },
+      ],
+      flows: [
+        { id: "del", label: "Deliveries", pts: [[60, 70], [145, 70]], to: "st" },
+        { id: "pur", label: "Purchases", pts: [[315, 70], [445, 70]], from: "st", to: "ct" },
+        { id: "con", label: "Consumption", pts: [[615, 70], [690, 70]], from: "ct" },
+      ],
+      aux: [
+        { id: "fear", label: "Fear of shortage", x: 300, y: 190 },
+        { id: "drv", label: "Driving", x: 652, y: 175 },
+      ],
+      links: [
+        { from: "st", to: "fear", sign: "−" },
+        { from: "fear", to: "pur", sign: "+" },
+        { from: "ct", to: "pur", sign: "−", curve: -110 },
+        { from: "drv", to: "con", sign: "+" },
+      ],
+      loops: [
+        { type: "R", label: "R", x: 318, y: 120 },
+        { type: "B", label: "B", x: 428, y: 96 },
+      ],
+      caption:
+        'Deliveries held steady, so the shortage was a shift between two stocks. Drivers who saw empty pumps grew afraid and topped off their tanks, so <b>purchases</b> moved gasoline from station tanks into car tanks; emptier stations fed the fear <span class="chip chipR">R</span>. Fuller car tanks eventually limit how much more anyone can buy <span class="chip chipB">B</span>. The gasoline did not vanish: it sat in millions of tanks. Purchase caps and odd-even days made drivers fill up more often and so strengthened the hoarding loop.',
     },
     {
-      kind: "sequence",
+      kind: "sf",
       title: "Mapping the stocks and flows of a system",
       pages: "199-225",
-      steps: [
-        { label: "Find the stocks", detail: "Snapshot test: what could you count if time stopped?" },
-        { label: "Check units", detail: "Flows carry stock units per time period" },
-        { label: "Attach the flows", detail: "Every change to a stock passes through a flow" },
-        { label: "Choose aggregation", detail: "Merge stages with short residence times or similar decision rules" },
-        { label: "Set the boundary", detail: "Cap chains with clouds where supply or absorption is effectively unlimited" },
-        { label: "Challenge the clouds", detail: "Could that source empty or that sink fill?" },
-        { label: "Add information links", detail: "Stocks feed decisions that set the flows, closing the loops" },
+      size: [760, 240],
+      stocks: [
+        { id: "hiv", label: "HIV positive", x: 250, y: 70 },
+        { id: "aids", label: "People with AIDS", x: 520, y: 70, w: 140 },
       ],
-      loopBack: { from: 6, to: 3, label: "revise detail and boundary as the purpose sharpens" },
+      flows: [
+        { id: "inf", label: "New infections", pts: [[60, 70], [190, 70]], to: "hiv" },
+        { id: "onset", label: "Onset of AIDS", pts: [[310, 70], [450, 70]], from: "hiv", to: "aids" },
+        { id: "dth", label: "Deaths", pts: [[590, 70], [700, 70]], from: "aids" },
+      ],
+      aux: [
+        { id: "risk", label: "Infections per carrier", x: 110, y: 180 },
+        { id: "inc", label: "Incubation time", x: 440, y: 180 },
+        { id: "surv", label: "Survival time", x: 690, y: 180 },
+      ],
+      links: [
+        { from: "hiv", to: "inf", sign: "+", curve: -100 },
+        { from: "risk", to: "inf", sign: "+" },
+        { from: "hiv", to: "onset", sign: "+", curve: 100 },
+        { from: "inc", to: "onset", sign: "−" },
+        { from: "aids", to: "dth", sign: "+", curve: 100 },
+        { from: "surv", to: "dth", sign: "−" },
+      ],
+      loops: [
+        { type: "R", label: "R", x: 172, y: 97 },
+        { type: "B", label: "B1", x: 329, y: 97 },
+        { type: "B", label: "B2", x: 608, y: 97 },
+      ],
+      caption:
+        'A small map built with the mapping steps. <b>Stocks</b>: people living with HIV and people with AIDS pass the snapshot test, since you could count both at an instant. <b>Units</b>: both are people, so every flow is people per year. <b>Flows</b>: new infections, onset of AIDS and deaths are the only ways in or out. <b>Boundary</b>: the uninfected population and the dead are clouds; challenge the first, because the pool of people at risk can shrink. <b>Information</b>: carriers drive new infections <span class="chip chipR">R</span>, and each stock drains through an average residence time <span class="chip chipB">B1</span> <span class="chip chipB">B2</span>. Prevalence is a stock; incidence is the flow that fills it.',
     },
   ],
   formulations: [

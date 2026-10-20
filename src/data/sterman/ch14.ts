@@ -90,33 +90,31 @@ export const CHAPTER: StudyChapter = {
       pages: "553",
     },
     {
-      kind: "cld",
+      kind: "sf",
       title: "Capacitated delay",
-      cld: {
-        size: [560, 270],
-        vars: [
-          { id: "ord", label: "Orders", x: 50, y: 50 },
-          { id: "bl", label: "Backlog", x: 170, y: 50 },
-          { id: "dp", label: "Desired production", x: 420, y: 50 },
-          { id: "sp", label: "Schedule pressure", x: 420, y: 140 },
-          { id: "cu", label: "Capacity utilization", x: 420, y: 230 },
-          { id: "sh", label: "Shipments", x: 170, y: 230 },
-          { id: "cap", label: "Capacity", x: 250, y: 140 },
-        ],
-        links: [
-          { from: "ord", to: "bl", sign: "+", curve: 0 },
-          { from: "bl", to: "dp", sign: "+", curve: 0 },
-          { from: "dp", to: "sp", sign: "+", curve: 0 },
-          { from: "sp", to: "cu", sign: "+", curve: 0 },
-          { from: "cu", to: "sh", sign: "+", curve: 0 },
-          { from: "sh", to: "bl", sign: "−", curve: 0 },
-          { from: "cap", to: "sp", sign: "−", curve: 0 },
-          { from: "cap", to: "sh", sign: "+", curve: 0 },
-        ],
-        loops: [{ type: "B", label: "B1", x: 300, y: 195 }],
-        caption:
-          '<span class="chip chipB">B</span> B1: a growing backlog raises desired production and schedule pressure, the plant runs harder and shipments drain the backlog. Utilisation is a table function of <code>Desired production / Capacity</code>, so capacity enters twice: it scales pressure down and output up. Because this loop compensates, the behaviour is much less sensitive to the slope of the utilisation curve than open-loop reasoning predicts.',
-      },
+      size: [700, 300],
+      stocks: [{ id: "bl", label: "Backlog", x: 280, y: 80 }],
+      flows: [
+        { id: "ord", label: "Orders", pts: [[60, 80], [220, 80]], to: "bl" },
+        { id: "sh", label: "Shipments", pts: [[340, 80], [620, 80]], from: "bl" },
+      ],
+      aux: [
+        { id: "dp", label: "Desired production", x: 300, y: 190, labelAt: "left" },
+        { id: "cap", label: "Capacity", x: 430, y: 160, labelAt: "left" },
+        { id: "sp", label: "Schedule pressure", x: 430, y: 250 },
+        { id: "cu", label: "Capacity utilisation", x: 560, y: 190, labelAt: "right" },
+      ],
+      links: [
+        { from: "bl", to: "dp", sign: "+" },
+        { from: "dp", to: "sp", sign: "+" },
+        { from: "cap", to: "sp", sign: "−" },
+        { from: "sp", to: "cu", sign: "+" },
+        { from: "cu", to: "sh", sign: "+" },
+        { from: "cap", to: "sh", sign: "+" },
+      ],
+      loops: [{ type: "B", label: "B", x: 375, y: 122 }],
+      caption:
+        'A growing <b>backlog</b> raises desired production and schedule pressure, the plant runs harder and <b>shipments</b> drain the backlog <span class="chip chipB">B</span>. Utilisation is a table function of <code>Desired production / Capacity</code>, and <code>Shipments = Capacity × Utilisation</code>, so capacity enters twice: it scales pressure down and output up. Because this loop compensates, the behaviour is much less sensitive to the slope of the utilisation curve than open-loop reasoning predicts.',
       pages: "552-562",
     },
     {

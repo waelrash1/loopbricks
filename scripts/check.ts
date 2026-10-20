@@ -5,6 +5,7 @@ import { LESSONS } from "@/data/lessons";
 import { PRESETS } from "@/data/presets";
 import { LINEAGE } from "@/data/catalog";
 import { lintCld } from "@/lib/cldGeometry";
+import { lintSf } from "@/lib/sfLint";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
@@ -149,6 +150,7 @@ for (const t of BOOK_TOC) {
   c.exercises.forEach((x) => { const m = x.link?.hash.match(/^\/m\/(\w+)/); if (m && !MODELS[m[1]]) errs.push(`${id}: exercise links unknown molecule ${m[1]}`); });
   c.diagrams.forEach((d) => {
     if (d.kind === "cld") lintCld(d.cld).forEach((e) => errs.push(`${id} diagram "${d.title}": ${e}`));
+    if (d.kind === "sf") lintSf(d).forEach((e) => errs.push(`${id} diagram "${d.title}": ${e}`));
     if (d.kind === "cycle" && (d.nodes.length < 3 || d.nodes.length > 8)) errs.push(`${id} diagram "${d.title}": a cycle needs 3 to 8 nodes`);
     if (d.kind === "cycle" && d.nodes.some((n) => n.length > 44)) errs.push(`${id} diagram "${d.title}": cycle labels must be 44 characters or fewer`);
     if (d.kind === "sequence" && (d.steps.length < 2 || d.steps.length > 8)) errs.push(`${id} diagram "${d.title}": a sequence needs 2 to 8 steps`);

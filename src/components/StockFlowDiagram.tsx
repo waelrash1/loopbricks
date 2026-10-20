@@ -3,7 +3,7 @@ import type { Model } from "@/data/molecules";
 import { FLOW_META } from "@/data/diagramMeta";
 import type { FrameCb } from "@/hooks/useSimulation";
 import type { Vars } from "@/sim/engine";
-import { flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
+import { endDirs, flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
 
 const NS = "http://www.w3.org/2000/svg";
 const ACC = "#2545ff";
@@ -162,12 +162,12 @@ export default function StockFlowDiagram({
 
         {/* clouds + pipes */}
         {model.diagram.flows.map((fl) => {
-          const a0 = fl.pts[0], aN = fl.pts[fl.pts.length - 1];
+          const a0 = fl.pts[0], aN = fl.pts[fl.pts.length - 1], { u0, uN } = endDirs(fl.pts);
           const col = fl.color ?? ACC, sh = flowShape(fl.pts, 18, 13, fl.to ? 0 : 14);
           return (
             <g key={fl.id}>
-              {!fl.from && <Cloud cx={a0[0] - 8} cy={a0[1]} />}
-              {!fl.to && <Cloud cx={aN[0] + 8} cy={aN[1]} />}
+              {!fl.from && <Cloud cx={a0[0] - u0[0] * 8} cy={a0[1] - u0[1] * 8} />}
+              {!fl.to && <Cloud cx={aN[0] + uN[0] * 8} cy={aN[1] + uN[1] * 8} />}
               {/* a flow is a hollow pipe (two parallel lines) with a solid head, unlike the thin information arrows */}
               <path ref={(el) => (pipes.current[fl.id] = el)} d={sh.pipe} fill="none" stroke={col} strokeWidth={11} strokeLinejoin="round" />
               <path d={sh.pipe} fill="none" stroke="hsl(var(--card))" strokeWidth={6} strokeLinejoin="round" />

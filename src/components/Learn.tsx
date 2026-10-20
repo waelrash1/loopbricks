@@ -9,6 +9,7 @@ import { sampleModel } from "@/data/apps/sim";
 import { initParams } from "@/sim/engine";
 import { markSeen, useSeen } from "@/lib/progress";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
+import SfDiagram from "@/components/SfDiagram";
 import { cn } from "@/lib/utils";
 
 const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
@@ -115,6 +116,12 @@ function DiagramBody({ d }: { d: StudyDiagram }) {
       )}
       {d.kind === "cycle" && <Cycle d={d} />}
       {d.kind === "sequence" && <Sequence d={d} />}
+      {d.kind === "sf" && (
+        <>
+          <SfDiagram d={d} />
+          {d.caption && <p className="mt-3 text-[14px] leading-[1.7] text-foreground/85" dangerouslySetInnerHTML={{ __html: d.caption }} />}
+        </>
+      )}
       {d.note && <p className="mt-3 text-[14px] leading-[1.6] text-foreground/80 max-w-[75ch]">{d.note}</p>}
     </>
   );

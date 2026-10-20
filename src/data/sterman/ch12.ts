@@ -72,37 +72,37 @@ export const CHAPTER: StudyChapter = {
   ],
   diagrams: [
     {
-      kind: "cld",
+      kind: "sf",
       title: "A population aging chain with reproduction",
       pages: "474-481",
-      cld: {
-        size: [600, 300],
-        vars: [
-          { id: "y", label: "Young", x: 120, y: 150 },
-          { id: "a", label: "Adults", x: 300, y: 150 },
-          { id: "e", label: "Elderly", x: 480, y: 150 },
-          { id: "b", label: "Births", x: 210, y: 255 },
-          { id: "f", label: "Fertility", x: 400, y: 255 },
-        ],
-        links: [
-          { from: "y", to: "y", sign: "−", self: true },
-          { from: "a", to: "a", sign: "−", self: true },
-          { from: "e", to: "e", sign: "−", self: true },
-          { from: "y", to: "a", sign: "+", curve: 0 },
-          { from: "a", to: "e", sign: "+", curve: 0 },
-          { from: "a", to: "b", sign: "+", curve: 0 },
-          { from: "b", to: "y", sign: "+", curve: 0 },
-          { from: "f", to: "b", sign: "+", curve: 0 },
-        ],
-        loops: [
-          { type: "B", label: "B1", x: 120, y: 85 },
-          { type: "B", label: "B2", x: 300, y: 85 },
-          { type: "B", label: "B3", x: 480, y: 85 },
-          { type: "R", label: "R1", x: 210, y: 190 },
-        ],
-        caption:
-          'Each cohort drains in proportion to its size <span class="chip chipB">B1-B3</span>: the young mature, adults age into the elderly, the elderly die. Only adults have children, so <span class="chip chipR">R</span> runs through a long delay: today\'s births become parents decades later. A large young cohort is <b>momentum already in the pipe</b>, which is why population keeps growing after <code>Fertility</code> falls to replacement.',
-      },
+      size: [760, 250],
+      stocks: [
+        { id: "y", label: "Young", x: 200, y: 150, w: 100 },
+        { id: "a", label: "Adults", x: 390, y: 150, w: 100 },
+        { id: "e", label: "Elderly", x: 580, y: 150, w: 100 },
+      ],
+      flows: [
+        { id: "b", label: "Births", pts: [[70, 150], [150, 150]], to: "y", labelBelow: true },
+        { id: "mat", label: "Maturing", pts: [[250, 150], [340, 150]], from: "y", to: "a" },
+        { id: "age", label: "Aging", pts: [[440, 150], [530, 150]], from: "a", to: "e" },
+        { id: "d", label: "Deaths", pts: [[630, 150], [705, 150]], from: "e" },
+      ],
+      aux: [{ id: "f", label: "Fertility", x: 55, y: 80, labelAt: "above" }],
+      links: [
+        { from: "a", to: "b", sign: "+", curve: 130 },
+        { from: "f", to: "b", sign: "+" },
+        { from: "y", to: "mat", sign: "+", curve: 80 },
+        { from: "a", to: "age", sign: "+", curve: 80 },
+        { from: "e", to: "d", sign: "+", curve: 70 },
+      ],
+      loops: [
+        { type: "R", label: "R", x: 205, y: 100 },
+        { type: "B", label: "B1", x: 266, y: 175 },
+        { type: "B", label: "B2", x: 456, y: 175 },
+        { type: "B", label: "B3", x: 646, y: 175 },
+      ],
+      caption:
+        'Each cohort is a stock that drains in proportion to its size, <code>outflow = cohort ÷ average time in it</code>: the young mature, adults age into the elderly and the elderly die <span class="chip chipB">B1</span> <span class="chip chipB">B2</span> <span class="chip chipB">B3</span>. Only adults have children, so the reinforcing loop <span class="chip chipR">R</span> runs the length of the chain: today\'s births become parents decades later. A large young cohort is <b>momentum already in the pipe</b>, which is why population keeps growing after <code>Fertility</code> falls to replacement. Deaths among the young and adults also drain those stocks; they are left out to keep the chain readable.',
     },
     {
       kind: "cld",
@@ -138,40 +138,37 @@ export const CHAPTER: StudyChapter = {
       },
     },
     {
-      kind: "cld",
+      kind: "sf",
       title: "Experience coflow: hiring dilutes, tenure rebuilds",
       pages: "497-507",
-      cld: {
-        size: [660, 340],
-        vars: [
-          { id: "h", label: "Hiring", x: 80, y: 60 },
-          { id: "w", label: "Workforce", x: 300, y: 60 },
-          { id: "at", label: "Attrition", x: 540, y: 60 },
-          { id: "oj", label: "On-the-job learning", x: 270, y: 180 },
-          { id: "te", label: "Total experience", x: 130, y: 295 },
-          { id: "ae", label: "Average experience", x: 450, y: 295 },
-          { id: "el", label: "Experience lost", x: 570, y: 185 },
-        ],
-        links: [
-          { from: "h", to: "w", sign: "+", curve: 0 },
-          { from: "w", to: "at", sign: "+", curve: -50 },
-          { from: "at", to: "w", sign: "−", curve: -50 },
-          { from: "h", to: "te", sign: "+", curve: 0 },
-          { from: "w", to: "oj", sign: "+", curve: 0 },
-          { from: "oj", to: "te", sign: "+", curve: 0 },
-          { from: "te", to: "ae", sign: "+", curve: 0 },
-          { from: "w", to: "ae", sign: "−", curve: -40 },
-          { from: "ae", to: "el", sign: "+", curve: 0 },
-          { from: "at", to: "el", sign: "+", curve: 0 },
-          { from: "el", to: "te", sign: "−", curve: 30 },
-        ],
-        loops: [
-          { type: "B", label: "B1", x: 420, y: 60 },
-          { type: "B", label: "B2", x: 400, y: 255 },
-        ],
-        caption:
-          'Leavers take the <b>average</b> experience with them <span class="chip chipB">B2</span>, while hires bring only their own (often little). Experience also accrues to everyone on the job, a nonconserved flow with no counterpart in the workforce stock. A hiring surge raises <code>Workforce</code> at once but <code>Total experience</code> only slowly, so the average falls; time rebuilds it. <span class="chip chipB">B1</span> is ordinary first-order attrition.',
-      },
+      size: [760, 350],
+      stocks: [
+        { id: "w", label: "Workforce", x: 380, y: 70 },
+        { id: "te", label: "Total experience", x: 380, y: 260, w: 150, h: 100 },
+      ],
+      flows: [
+        { id: "hire", label: "Hiring", pts: [[150, 70], [320, 70]], to: "w" },
+        { id: "att", label: "Attrition", pts: [[440, 70], [700, 70]], from: "w" },
+        { id: "eh", label: "Experience from hires", pts: [[60, 230], [305, 230]], to: "te", labelBelow: true },
+        { id: "lrn", label: "Learning on the job", pts: [[170, 290], [305, 290]], to: "te", labelBelow: true },
+        { id: "lost", label: "Experience lost", pts: [[455, 260], [700, 260]], from: "te", labelBelow: true },
+      ],
+      aux: [
+        { id: "nhe", label: "New-hire experience", x: 140, y: 160, labelAt: "left" },
+        { id: "avg", label: "Average experience", x: 500, y: 150, labelAt: "right" },
+      ],
+      links: [
+        { from: "hire", to: "eh", sign: "+" },
+        { from: "nhe", to: "eh", sign: "+" },
+        { from: "w", to: "lrn", sign: "+", curve: -10 },
+        { from: "att", to: "lost", sign: "+", curve: -120 },
+        { from: "te", to: "avg", sign: "+" },
+        { from: "w", to: "avg", sign: "−" },
+        { from: "avg", to: "lost", sign: "+" },
+      ],
+      loops: [{ type: "B", label: "B", x: 490, y: 232 }],
+      caption:
+        'A coflow tracks an attribute of the people in a stock. Each hire adds one person to <b>Workforce</b> and their own <b>new-hire experience</b> to <b>Total experience</b>; everyone on the payroll also gains experience by <b>learning on the job</b>, a flow with no counterpart in the workforce. Each leaver takes the <b>average experience</b> with them <span class="chip chipB">B</span>. A hiring surge raises <code>Workforce</code> at once but <code>Total experience</code> only slowly, so the average falls; time on the job rebuilds it. Attrition itself is ordinary first-order drainage of the workforce (its link is not drawn).',
     },
     {
       kind: "sequence",

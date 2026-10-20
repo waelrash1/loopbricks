@@ -2,6 +2,7 @@ import { FLOW_META_A, DIAGRAM_EXTRA_A } from "@/data/extra/batchA";
 import { FLOW_META_B, DIAGRAM_EXTRA_B } from "@/data/extra/batchB";
 import { FLOW_META_C, DIAGRAM_EXTRA_C } from "@/data/extra/batchC";
 import { FLOW_META_E, DIAGRAM_EXTRA_E } from "@/data/extra/batchE";
+import { FLOW_META_F, DIAGRAM_EXTRA_F } from "@/data/extra/batchF";
 import { FLOW_META_D, DIAGRAM_EXTRA_D } from "@/data/extra/batchD";
 // Presentation metadata for proper Vensim/Stella-style stock-flow diagrams.
 // Kept separate from the validated model core in molecules.ts.
@@ -198,6 +199,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
   ...FLOW_META_C,
   ...FLOW_META_D,
   ...FLOW_META_E,
+  ...FLOW_META_F,
 };
 
 type Eq = [string, string];
@@ -420,4 +422,5 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   ...DIAGRAM_EXTRA_C,
   ...DIAGRAM_EXTRA_D,
   ...DIAGRAM_EXTRA_E,
+  ...DIAGRAM_EXTRA_F,
 };

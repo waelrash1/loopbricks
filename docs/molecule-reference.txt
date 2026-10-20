@@ -424,3 +424,15 @@
  params: scheduled=Scheduled date 15wk (5-40); baseRate=Normal work rate 25/wk (10-50)
  flows: workRate=work rate: normal rate × effect(schedule pressure)
  presets: On schedule{"scheduled":15,"baseRate":25} | Tight deadline (slips){"scheduled":8,"baseRate":25}
+
+## tragedyCommons (yr, y=kt of fish / boats)
+ stocks: res=Fish stock (kt)[90]; fa=Fleet A (boats)[4]; fb=Fleet B (boats)[4]
+ params: r=Regrowth rate 0.4/yr (0.1-1); catchFull=Catch per boat (full stock) 1kt/yr (0.5-3); breakEven=Break-even catch per boat 0.25kt/yr (0.1-1); gA=Fleet A expansion 0.4/yr (0-1); gB=Fleet B expansion 0.4/yr (0-1); quota=Total catch limit (0 = none) 0kt/yr (0-10)
+ flows: regen=regrowth: r × Fish × (1 − Fish/100); harvest=catch: (FleetA + FleetB) × CatchFull × Fish/100, capped by the limit; buildA/scrapA, buildB/scrapB=fleet × growth × ±(catch per boat / BreakEven − 1)
+ presets: Open access{"gA":0.4,"gB":0.4,"quota":0} | One fleet holds back{"gB":0} | Catch limit of 8{"quota":8} | Slow-growing stock{"r":0.2}
+
+## shiftingBurden (wk, y=problems / capability index)
+ stocks: prob=Open problems[73]; patched=Patched problems[292]; cap=Capability (0–100)[53]
+ params: load=New problems at full capability 10/wk (2-20); share=Share of problems patched quickly 0.5 (0-1); tRet=Time until a patch fails 8wk (2-20); capacity=Team capacity 80 fixes/wk (40-160); tBuild=Time to build capability 12wk (4-40)
+ flows: arise=Load × (1.5 − Capability/100); quick=MIN(Share × Open, Capacity); resurface=Patched / tRet; solve=(1 − Share) × Open × Capability/100 / 2; build=(1 − quick/Capacity) × (100 − Capability)/tBuild; erode=Capability/25
+ presets: Balanced{"share":0.5} | Firefighting{"share":0.8} | Invest in the fix{"share":0.2} | Patches fail fast{"tRet":3}

@@ -68,35 +68,37 @@ export const CHAPTER: StudyChapter = {
   ],
   diagrams: [
     {
-      kind: "cld",
+      kind: "sf",
       title: "The labour supply chain",
       pages: "758-760",
-      cld: {
-        size: [640, 300],
-        vars: [
-          { id: "dl", label: "Desired labour", x: 110, y: 50 },
-          { id: "vc", label: "Vacancy creation", x: 360, y: 50 },
-          { id: "vac", label: "Vacancies", x: 560, y: 150 },
-          { id: "hire", label: "Hiring", x: 360, y: 250 },
-          { id: "lab", label: "Labour", x: 110, y: 250 },
-        ],
-        links: [
-          { from: "dl", to: "vc", sign: "+" },
-          { from: "vc", to: "vac", sign: "+", curve: -50 },
-          { from: "vac", to: "vc", sign: "−", curve: -50 },
-          { from: "vac", to: "hire", sign: "+", curve: -50 },
-          { from: "hire", to: "vac", sign: "−", curve: -50 },
-          { from: "hire", to: "lab", sign: "+" },
-          { from: "lab", to: "vc", sign: "−" },
-        ],
-        loops: [
-          { type: "B", label: "B1", x: 300, y: 150 },
-          { type: "B", label: "B2", x: 460, y: 100 },
-          { type: "B", label: "B3", x: 460, y: 200 },
-        ],
-        caption:
-          '<span class="chip chipB">B1</span> labour control: a staffing gap opens vacancies, which are filled after the time to fill them and raise the workforce. <span class="chip chipB">B2</span> vacancy control: vacancies already open reduce new ones. <span class="chip chipB">B3</span> hiring closes vacancies. Replacement of expected attrition is also part of vacancy creation (not drawn).',
-      },
+      size: [720, 270],
+      stocks: [
+        { id: "vac", label: "Vacancies", x: 290, y: 160 },
+        { id: "lab", label: "Labour", x: 540, y: 160 },
+      ],
+      flows: [
+        { id: "vc", label: "Vacancy creation", pts: [[70, 160], [230, 160]], to: "vac", labelBelow: true },
+        { id: "hire", label: "Hiring", pts: [[350, 160], [480, 160]], from: "vac", to: "lab" },
+        { id: "quit", label: "Quits", pts: [[600, 160], [670, 160]], from: "lab" },
+      ],
+      aux: [
+        { id: "dl", label: "Desired labour", x: 80, y: 50, labelAt: "above" },
+        { id: "ttf", label: "Time to fill vacancies", x: 480, y: 240, labelAt: "right" },
+      ],
+      links: [
+        { from: "dl", to: "vc", sign: "+" },
+        { from: "lab", to: "vc", sign: "−", curve: 130 },
+        { from: "vac", to: "vc", sign: "−", curve: 80 },
+        { from: "vac", to: "hire", sign: "+", curve: 80 },
+        { from: "ttf", to: "hire", sign: "−" },
+      ],
+      loops: [
+        { type: "B", label: "B1", x: 464, y: 124 },
+        { type: "B", label: "B2", x: 207, y: 134 },
+        { type: "B", label: "B3", x: 372, y: 184 },
+      ],
+      caption:
+        '<span class="chip chipB">B1</span> labour control: a staffing gap opens vacancies, which are filled after the time to fill them and raise the workforce. <span class="chip chipB">B2</span> vacancy control: vacancies already open reduce the need to create new ones, the supply-line correction of the stock management structure. <span class="chip chipB">B3</span> hiring drains the vacancies it fills. Replacement of expected quits is also part of vacancy creation (not drawn).',
     },
     {
       kind: "cld",

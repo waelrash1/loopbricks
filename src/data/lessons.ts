@@ -2,6 +2,7 @@ import { LESSONS_A } from "@/data/extra/batchA";
 import { LESSONS_B } from "@/data/extra/batchB";
 import { LESSONS_C } from "@/data/extra/batchC";
 import { LESSONS_E } from "@/data/extra/batchE";
+import { LESSONS_F } from "@/data/extra/batchF";
 import { LESSONS_D } from "@/data/extra/batchD";
 // Predict-then-run checkpoints: one per molecule. The tour walks them in GROUPS order.
 // preset is applied (and the sim reset) on "Reveal & run" so the answer is visible.
@@ -294,4 +295,5 @@ export const LESSONS: Record<string, Lesson> = {
   ...LESSONS_C,
   ...LESSONS_D,
   ...LESSONS_E,
+  ...LESSONS_F,
 };

@@ -4,6 +4,7 @@ import { LINEAGE_A } from "@/data/extra/batchA";
 import { LINEAGE_B } from "@/data/extra/batchB";
 import { LINEAGE_C } from "@/data/extra/batchC";
 import { LINEAGE_E } from "@/data/extra/batchE";
+import { LINEAGE_F } from "@/data/extra/batchF";
 import { LINEAGE_D } from "@/data/extra/batchD";
 
 // "builds on" lineage: mirrors Hines' Immediate Parents, used to show the taxonomy.
@@ -53,6 +54,7 @@ export const LINEAGE: Record<string, string[]> = {
   ...LINEAGE_C,
   ...LINEAGE_D,
   ...LINEAGE_E,
+  ...LINEAGE_F,
   // parents the book names that only exist now that the full set is in
   nonlinearSplit: ["propSplit", "univariateAnchor"],
   abilityFromAction: ["actionFromResource"],
@@ -76,6 +78,7 @@ export const GROUP_BLURB: Record<string, string> = {
   "Allocation & competition": "Dividing a flow among destinations; attractiveness that compounds into lock-in.",
   "Resources & actions": "The one-line conversions between what you have and what you do: people into output, output into money, money into people.",
   "Productivity & projects": "Turning resources into work: fatigue, rework, schedule pressure, completion.",
+  "System archetypes": "Recurring feedback stories built from the molecules above, ready to run.",
 };
 
 // Book molecules that live inside a combined page, so a search for the book's name still lands somewhere.

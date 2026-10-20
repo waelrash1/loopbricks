@@ -699,7 +699,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "When the quick fix also drains the fundamental solution, the burden shifts for good.",
       ideas: [],
       archetype: "shifting-the-burden",
-      run: { molecule: "weightedSplit", T: 30, params: { weightA: 0.5 }, look: "With task A (the fundamental work) given half the weight, its backlog grows from 30 to about 44 while the quick tasks B and C shrink to about 23." },
+      run: { molecule: "shiftingBurden", T: 104, params: { share: 0.8 }, look: "Patching 80% of problems quickly cuts open problems from 73 to about 63 within 8 weeks. Then capability fades (53 to about 20 by week 48), firefighting takes the whole team, and open problems pass 750 by week 104. Set the share to 0.2 instead: worse at first (about 84), then down to 32." },
     },
     {
       title: "Accidental adversaries",
@@ -712,7 +712,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Widen the circle from two partners to many users of one shared resource.",
       ideas: [],
       archetype: "tragedy-of-the-commons",
-      run: { molecule: "logistic", T: 40, look: "Left alone, the renewable stock regrows fastest, at 9 a year, when it is near 100, half its capacity of 200, around year 16. Total harvests above that peak regrowth run the resource down, however it is shared." },
+      run: { molecule: "tragedyCommons", T: 60, look: "Both fleets grow while their boats pay, to about 43 boats each, and the fish stock crashes from 90 to about 9 by year 10, far below 50, where the catch could be largest. Set Fleet B's expansion to 0 and the stock still falls to about 9: Fleet A takes up the slack. Only the total catch limit (try 8) keeps it near 72." },
     },
     {
       title: "Growth and underinvestment",

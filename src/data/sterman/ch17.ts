@@ -68,40 +68,41 @@ export const CHAPTER: StudyChapter = {
   ],
   diagrams: [
     {
-      kind: "cld",
+      kind: "sf",
       title: "The stock management structure",
       pages: "675-679",
-      cld: {
-        size: [640, 330],
-        vars: [
-          { id: "dstk", label: "Desired stock", x: 110, y: 50 },
-          { id: "ord", label: "Order rate", x: 330, y: 50 },
-          { id: "el", label: "Expected losses", x: 545, y: 50 },
-          { id: "sl", label: "Supply line", x: 330, y: 170 },
-          { id: "dsl", label: "Desired supply line", x: 545, y: 170 },
-          { id: "acq", label: "Acquisitions", x: 330, y: 290 },
-          { id: "stk", label: "Stock", x: 110, y: 290 },
-        ],
-        links: [
-          { from: "dstk", to: "ord", sign: "+" },
-          { from: "el", to: "ord", sign: "+" },
-          { from: "el", to: "dsl", sign: "+" },
-          { from: "dsl", to: "ord", sign: "+" },
-          { from: "ord", to: "sl", sign: "+", curve: 50 },
-          { from: "sl", to: "ord", sign: "−", curve: 50 },
-          { from: "sl", to: "acq", sign: "+", curve: -50 },
-          { from: "acq", to: "sl", sign: "−", curve: -50 },
-          { from: "acq", to: "stk", sign: "+" },
-          { from: "stk", to: "ord", sign: "−", curve: -40 },
-        ],
-        loops: [
-          { type: "B", label: "B1", x: 235, y: 215 },
-          { type: "B", label: "B2", x: 330, y: 110 },
-          { type: "B", label: "B3", x: 330, y: 230 },
-        ],
-        caption:
-          '<span class="chip chipB">B1</span> stock control: a shortfall raises orders, which arrive after the acquisition delay and refill the stock. <span class="chip chipB">B2</span> supply-line control: orders already on the way reduce further orders. <span class="chip chipB">B3</span> the supply line drains as goods arrive. Orders are anchored on <b>expected losses</b>, and the desired supply line is set by Little\'s law. Weaken B2 and the structure oscillates.',
-      },
+      size: [760, 360],
+      stocks: [
+        { id: "sl", label: "Supply line", x: 310, y: 290 },
+        { id: "stk", label: "Stock", x: 570, y: 290 },
+      ],
+      flows: [
+        { id: "ord", label: "Order rate", pts: [[80, 290], [250, 290]], to: "sl", labelBelow: true },
+        { id: "acq", label: "Acquisition rate", pts: [[370, 290], [510, 290]], from: "sl", to: "stk" },
+        { id: "loss", label: "Loss rate", pts: [[630, 290], [705, 290]], from: "stk", labelBelow: true },
+      ],
+      aux: [
+        { id: "el", label: "Expected losses", x: 100, y: 70, labelAt: "above" },
+        { id: "dsl", label: "Desired supply line", x: 215, y: 150, labelAt: "right" },
+        { id: "ds", label: "Desired stock", x: 55, y: 200, labelAt: "above" },
+      ],
+      links: [
+        { from: "stk", to: "ord", sign: "−", curve: 200 },
+        { from: "sl", to: "ord", sign: "−", curve: 80 },
+        { from: "sl", to: "acq", sign: "+", curve: 80 },
+        { from: "loss", to: "el", sign: "+", curve: 130 },
+        { from: "el", to: "ord", sign: "+" },
+        { from: "el", to: "dsl", sign: "+" },
+        { from: "dsl", to: "ord", sign: "+" },
+        { from: "ds", to: "ord", sign: "+" },
+      ],
+      loops: [
+        { type: "B", label: "B1", x: 400, y: 215 },
+        { type: "B", label: "B2", x: 215, y: 268 },
+        { type: "B", label: "B3", x: 386, y: 312 },
+      ],
+      caption:
+        'Orders flow into the <b>supply line</b> and arrive in the <b>stock</b> after the acquisition delay. <span class="chip chipB">B1</span> stock control: a shortfall below the desired stock raises orders, which later refill the stock. <span class="chip chipB">B2</span> supply-line control: orders already on the way reduce further orders. <span class="chip chipB">B3</span> the supply line drains as goods arrive. Orders are anchored on <b>expected losses</b>, and the <b>desired supply line</b> is expected losses times the acquisition delay (Little\'s law). Weaken B2 and the structure oscillates.',
     },
     {
       kind: "sequence",

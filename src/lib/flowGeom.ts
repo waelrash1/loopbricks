@@ -39,3 +39,12 @@ export function midpoint(pts: [number, number][]): [number, number] {
   return pts[pts.length - 1];
 }
 
+
+// unit directions of a flow's first and last segments, to place source and sink clouds in line with the flow
+export function endDirs(pts: [number, number][]) {
+  const u = (a: P, b: P): P => {
+    const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    return [(b[0] - a[0]) / d, (b[1] - a[1]) / d];
+  };
+  return { u0: u(pts[0], pts[1]), uN: u(pts[pts.length - 2], pts[pts.length - 1]) };
+}
