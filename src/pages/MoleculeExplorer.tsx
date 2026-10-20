@@ -17,6 +17,8 @@ import MoleculeMap from "@/components/MoleculeMap";
 import LessonPanel from "@/components/LessonPanel";
 import { AppsIndex, CasePage, DomainLibrary } from "@/components/Apps";
 import FamilyTree from "@/components/FamilyTree";
+import RunsPanel from "@/components/RunsPanel";
+import { useShelf } from "@/lib/runs";
 import { markSeen } from "@/lib/progress";
 import { caseIn, casesUsing, domainById } from "@/data/apps";
 
@@ -81,6 +83,7 @@ export default function MoleculeExplorer() {
   const key = route.view === "molecule" ? route.key : route.view === "learn" ? TOUR[route.idx] : TOUR[0];
   const model = MODELS[key];
   const sim = useSimulation(model);
+  const shelf = useShelf(key);
   const open = (k: string) => go(`/m/${k}`);
   const showMap = () => go("/");
   const startTour = () => go("/tour/1");
@@ -124,7 +127,7 @@ export default function MoleculeExplorer() {
         <h2 className={h2}>Behaviour over time</h2>
         <span className={hint}>Press play, or Space</span>
       </div>
-      <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} />
+      <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} shelf={shelf} />
     </section>
   );
   const bench = "grid lg:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start";
@@ -287,7 +290,10 @@ export default function MoleculeExplorer() {
                   </div>
                 </section>
 
-                {behavior}
+                <div data-runs-host className="flex flex-col gap-5">
+                  {behavior}
+                  <RunsPanel modelKey={key} model={model} sim={sim} />
+                </div>
 
                 <section className="sheet">
                   <div className="sheet-head">

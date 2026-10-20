@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import type { Model } from "@/data/molecules";
 import type { FrameCb, FrameCtx } from "@/hooks/useSimulation";
 import type { History } from "@/sim/engine";
+import type { Shelf } from "@/lib/runs";
+
+// each saved run gets its own dash, so runs stay apart while colour keeps meaning the stock
+export const RUN_DASH = [[7, 4], [2, 3], [12, 3, 2, 3], [1, 5], [9, 2], [5, 2, 1, 2]];
 
 const niceMax = (v: number) => {
   if (v <= 0) return 1;
@@ -102,7 +106,9 @@ export default function TimeSeriesChart({
   height = 240,
   onClearPrevious,
   minimal = false,
+  shelf,
 }: {
+  shelf?: Shelf; // saved runs (dashed) and reference data (dots) drawn under the live run
   minimal?: boolean; // the looping home-page demo: no comparison, no description
   height?: number;
   model: Model;
@@ -111,6 +117,12 @@ export default function TimeSeriesChart({
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [hasPrevious, setHasPrevious] = useState(false);
+  const shelfRef = useRef(shelf);
+  const redraw = useRef<() => void>(() => {});
+  useEffect(() => {
+    shelfRef.current = shelf;
+    redraw.current();
+  }, [shelf]);
 
   useEffect(() => {
     const c = canvas.current;
@@ -139,9 +151,13 @@ export default function TimeSeriesChart({
       let max = 1e-6;
       history.series.forEach((h) => h.forEach((v) => v > max && (max = v)));
       prev?.series.forEach((h, i) => !model.stocks[i]?.hidden && h.forEach((v) => v > max && (max = v)));
+      const runs = minimal ? [] : (shelfRef.current?.runs ?? []).map((r, k) => ({ r, dash: RUN_DASH[k % RUN_DASH.length] })).filter(({ r }) => r.visible);
+      const refs = minimal ? [] : (shelfRef.current?.refs ?? []).filter((r) => r.visible);
+      runs.forEach(({ r }) => Object.values(r.series).forEach((ys) => ys.forEach((v) => v > max && (max = v))));
+      refs.forEach((r) => r.points.forEach(([, v]) => v > max && (max = v)));
       max = niceMax(max * 1.05);
       // the axis spans both runs, so the comparison lines up in time
-      const ends = [history.times, prev?.times ?? []].filter((t) => t.length);
+      const ends = [history.times, prev?.times ?? [], ...runs.map(({ r }) => r.times), ...refs.map((r) => r.points.map((p) => p[0]))].filter((t) => t.length);
       const tmax = ends.length ? Math.max(...ends.map((t) => t[t.length - 1])) : 10;
       const tmin = ends.length ? Math.min(...ends.map((t) => t[0])) : 0;
       const span = Math.max(tmax - tmin, 1e-6);
@@ -200,6 +216,33 @@ export default function TimeSeriesChart({
 
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
+      // saved runs: each its own dash pattern, in the stocks' colours
+      runs.forEach(({ r, dash }) => {
+        model.stocks.forEach((st) => {
+          const ys = r.series[st.id];
+          if (!ys || st.hidden || st.chartHidden) return;
+          ctx.strokeStyle = hexA(st.color, 0.8);
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash(dash);
+          ctx.beginPath();
+          ys.forEach((v, j) => (j ? ctx.lineTo(X(r.times[j]), Y(v)) : ctx.moveTo(X(r.times[j]), Y(v))));
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      });
+      // reference data: hollow dots in the colour of the stock they describe
+      refs.forEach((r) => {
+        const st = model.stocks.find((x) => x.id === r.stock);
+        ctx.strokeStyle = st?.color ?? muted;
+        ctx.fillStyle = paper;
+        ctx.lineWidth = 1.8;
+        r.points.forEach(([t, v]) => {
+          ctx.beginPath();
+          ctx.arc(X(t), Y(v), 3.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+      });
       // the previous run, dashed and faint, under the current one
       prev?.series.forEach((h, i) => {
         if (h.length < 2 || model.stocks[i]?.hidden || model.stocks[i]?.chartHidden) return;
@@ -258,6 +301,7 @@ export default function TimeSeriesChart({
       if (last) draw(last);
     });
     ro.observe(c);
+    redraw.current = () => last && draw(last);
     const unsubscribe = subscribe(draw);
     return () => {
       ro.disconnect();
@@ -274,6 +318,28 @@ export default function TimeSeriesChart({
             {st.label}
           </span>
         ))}
+        {!minimal &&
+          shelf?.runs.map(
+            (r, k) =>
+              r.visible && (
+                <span key={r.id} className="inline-flex items-center gap-1.5">
+                  <svg width="22" height="6" aria-hidden>
+                    <line x1="0" y1="3" x2="22" y2="3" stroke="currentColor" strokeWidth="2" strokeDasharray={RUN_DASH[k % RUN_DASH.length].join(" ")} />
+                  </svg>
+                  {r.name}
+                </span>
+              )
+          )}
+        {!minimal &&
+          shelf?.refs.map(
+            (r) =>
+              r.visible && (
+                <span key={r.id} className="inline-flex items-center gap-1.5">
+                  <i className="inline-block w-2.5 h-2.5 rounded-full border-2" style={{ borderColor: model.stocks.find((x) => x.id === r.stock)?.color }} />
+                  {r.name}
+                </span>
+              )
+          )}
         {hasPrevious && (
           <span className="inline-flex items-center gap-1.5">
             <i className="inline-block w-4 border-t-2 border-dashed border-muted-foreground" />

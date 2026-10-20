@@ -11,6 +11,8 @@ import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 import EquationsPanel from "@/components/EquationsPanel";
 import Controls from "@/components/Controls";
+import RunsPanel from "@/components/RunsPanel";
+import { useShelf } from "@/lib/runs";
 import { cn } from "@/lib/utils";
 
 type Nav = { onDomain: (d: string) => void; onCase: (d: string, c: string) => void };
@@ -311,6 +313,7 @@ export function DomainLibrary({ domain, onCase }: { domain: Domain; onCase: Nav[
 function CaseSim({ domain, c }: { domain: Domain; c: AppCase & { sim: string } }) {
   const model = domain.models[c.sim];
   const sim = useSimulation(model);
+  const shelf = useShelf(c.sim);
   const { setStopTime } = sim;
   useEffect(() => setStopTime(domain.stop[c.sim] ?? 0), [domain, c.sim, setStopTime]);
   const built = isBuilt(c.sim);
@@ -324,13 +327,16 @@ function CaseSim({ domain, c }: { domain: Domain; c: AppCase & { sim: string } }
           </div>
           <StockFlowDiagram model={model} modelKey={c.sim} subscribe={sim.subscribe} running={sim.running} showInfluences />
         </section>
+        <div data-runs-host className="flex flex-col gap-5">
         <section className="sheet">
           <div className="sheet-head">
             <h2 className={sub}>Behaviour over time</h2>
             <span className={`${hint} print:hidden`}>Pick a scenario, then press play</span>
           </div>
-          <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} />
+          <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} shelf={shelf} />
         </section>
+        <RunsPanel modelKey={c.sim} model={model} sim={sim} />
+        </div>
         {built && (
           <>
             <section className="sheet">

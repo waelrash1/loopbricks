@@ -7,6 +7,7 @@ import { LINEAGE } from "@/data/catalog";
 import { lintCld } from "@/lib/cldGeometry";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
+import { calibrate, fitStats, simulateAt } from "@/lib/fit";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
 const all = Object.keys(MODELS);
@@ -79,6 +80,24 @@ for (const d of DOMAINS) {
   }
 }
 GUIDE.flatMap((p) => p.refs).forEach((r) => !refText[r] && errs.push(`guide: unknown ref ${r}`));
+// fit statistics and calibration: exact cases with known answers
+{
+  const obs = [1, 3, 2, 5, 4, 6];
+  const same = fitStats(obs, obs)!;
+  if (same.rmse !== 0 || Math.abs(same.r2 - 1) > 1e-12) errs.push("fit: identical series should have zero error and R² 1");
+  const shifted = fitStats(obs.map((x) => x + 2), obs)!;
+  if (Math.abs(shifted.rmse - 2) > 1e-12 || Math.abs(shifted.um - 1) > 1e-9) errs.push("fit: a constant offset is all bias (Um = 1)");
+  const any = fitStats([2, 1, 4, 3, 7, 5], obs)!;
+  if (Math.abs(any.um + any.us + any.uc - 1) > 1e-9) errs.push("fit: Theil shares must sum to 1");
+  // recover a decay time of 9 from data made with it, starting the search at 5
+  const m = MODELS.decay;
+  const truth = { id: "t", name: "truth", stock: "q", visible: true, points: [] as [number, number][] };
+  const ts = [0, 2, 4, 6, 8, 10, 15, 20];
+  const made = simulateAt(m, { tau: 9 }, [{ ...truth, points: ts.map((t) => [t, 0] as [number, number]) }]).t;
+  truth.points = ts.map((t, i) => [t, made[i]]);
+  const cal = calibrate(m, { tau: 5 }, ["tau"], [truth]);
+  if (Math.abs(cal.params.tau - 9) > 0.3) errs.push(`calibrate: expected decay time near 9, got ${cal.params.tau}`);
+}
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");
 console.log([...new Set(errs)].join("\n") || "all checks pass");
