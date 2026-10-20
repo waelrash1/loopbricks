@@ -1,8 +1,9 @@
 // Runnable simulations for the healthcare case library.
 // Three are purpose-built health models; the rest reuse a Hines molecule under health names ("skins"),
 // so a learner sees the same structure they met in the catalogue doing a clinical job.
-import { MODELS, type Model, type Param, type Stock } from "@/data/molecules";
-import { DIAGRAM_EXTRA, FLOW_META, type FlowMeta } from "@/data/diagramMeta";
+import type { Model } from "@/data/molecules";
+import type { FlowMeta } from "@/data/diagramMeta";
+import { built, skins, type Skin } from "@/data/apps/sim";
 
 const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c", info: "#6b74a6" };
 const N = 10000; // epidemic population
@@ -206,8 +207,6 @@ const chronic: Model = {
   desc: "",
 };
 
-const BUILT: Record<string, Model> = { sir, patientFlow, chronic };
-
 const flowMeta: Record<string, Record<string, FlowMeta>> = {
   sir: {
     infect: { name: "infection", eq: "R₀ × (1 − reduction) / period × S × I / N", in: ["s", "i", "r0", "dur", "dist"], loop: { s: "B", i: "R" } },
@@ -255,17 +254,6 @@ const extra = {
   },
 };
 
-// A molecule under health names. Flow entries are [name, equation in the case's words].
-type Skin = {
-  base: string;
-  name: string;
-  title?: string;
-  timeUnit?: string;
-  unitY?: string;
-  stocks?: Record<string, Partial<Stock>>;
-  params?: Record<string, Partial<Param>>;
-  flows?: Record<string, [string, string]>;
-};
 const SKINS: Record<string, Skin> = {
   hivCascade: {
     base: "broken",
@@ -274,7 +262,7 @@ const SKINS: Record<string, Skin> = {
     stocks: { l1: { label: "Diagnosed, not yet on treatment" }, l2: { label: "On treatment" } },
     params: {
       inflow: { label: "New diagnoses", value: 10 },
-      tau: { label: "Time to start treatment", unit: "mo" },
+      tau: { label: "Time in each stage", unit: "mo" },
       leak: { label: "Share lost to follow-up", value: 0.3 },
     },
     flows: {
@@ -379,39 +367,15 @@ const SKINS: Record<string, Skin> = {
   },
 };
 
-const skin = (key: string, s: Skin): Model => {
-  const b = MODELS[s.base];
-  const meta = FLOW_META[s.base];
-  // ponytail: registers the renamed flows in the shared tables so the diagram and equations panel work unchanged
-  FLOW_META[key] = Object.fromEntries(Object.entries(meta).map(([id, f]) => [id, s.flows?.[id] ? { ...f, name: s.flows[id][0], eq: s.flows[id][1] } : f]));
-  return {
-    ...b,
-    name: s.name,
-    title: s.title ?? s.name,
-    timeUnit: s.timeUnit ?? b.timeUnit,
-    unitY: s.unitY ?? b.unitY,
-    stocks: b.stocks.map((x) => ({ ...x, ...s.stocks?.[x.id] })),
-    params: b.params.map((x) => ({ ...x, ...s.params?.[x.id] })),
-  };
-};
-
-Object.assign(FLOW_META, flowMeta);
-Object.assign(DIAGRAM_EXTRA, extra);
-
 export const HEALTH_MODELS: Record<string, Model> = {
-  ...BUILT,
-  ...Object.fromEntries(Object.entries(SKINS).map(([k, s]) => [k, skin(k, s)])),
+  sir: built("sir", sir, flowMeta.sir, extra.sir),
+  patientFlow: built("patientFlow", patientFlow, flowMeta.patientFlow, extra.patientFlow),
+  chronic: built("chronic", chronic, flowMeta.chronic, extra.chronic),
+  ...skins(SKINS),
 };
-// which molecule a simulation is built from (for "see the molecule" links); built models list their nearest relatives
-export const SIM_BASE: Record<string, string[]> = {
-  sir: ["diffusion", "cascade"],
-  patientFlow: ["backlogFlow", "protLevel", "residence"],
-  chronic: ["aging", "cascade"],
-  ...Object.fromEntries(Object.entries(SKINS).map(([k, s]) => [k, [s.base]])),
-};
+
 // where each run should stop so the interesting part fills the chart (in the model's own time unit)
 export const SIM_STOP: Record<string, number> = {
   sir: 150, patientFlow: 60, chronic: 30, hivCascade: 36, bodyWeight: 48, ageingCare: 100, waitingList: 60,
   mentalHealthAccess: 36, supplyChain: 60, physicianPipeline: 40, nurseFatigue: 30, outbreakDiffusion: 52,
 };
-export const isBuilt = (k: string) => k in BUILT;

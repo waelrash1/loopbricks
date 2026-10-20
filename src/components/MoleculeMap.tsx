@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { GROUP_BLURB } from "@/data/catalog";
-import { CASES } from "@/data/health/cases";
+import { ALL_CASES, DOMAINS } from "@/data/apps";
 import { PRESETS } from "@/data/presets";
 import { useSimulation } from "@/hooks/useSimulation";
 import MiniDiagram from "@/components/MiniDiagram";
@@ -77,7 +77,7 @@ function LoopTag({ k }: { k: string }) {
   );
 }
 
-export default function MoleculeMap({ onSelect, onStartTour, onHealth }: { onSelect: (k: string) => void; onStartTour: () => void; onHealth: () => void }) {
+export default function MoleculeMap({ onSelect, onStartTour, onApps }: { onSelect: (k: string) => void; onStartTour: () => void; onApps: () => void }) {
   const total = Object.keys(MODELS).length;
   // hash routing owns the URL, so family links scroll instead of using #anchors
   const jump = (title: string) => document.getElementById(slug(title))?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
@@ -137,11 +137,11 @@ export default function MoleculeMap({ onSelect, onStartTour, onHealth }: { onSel
       ))}
 
       <section className="pt-16 md:pt-20">
-        <button onClick={onHealth} className="brick brick-y w-full text-left p-6 md:p-8 grid md:grid-cols-[minmax(0,1fr)_auto] gap-4 items-center">
+        <button onClick={onApps} className="brick brick-y w-full text-left p-6 md:p-8 grid md:grid-cols-[minmax(0,1fr)_auto] gap-4 items-center">
           <span>
-            <span className="heading block text-[24px] md:text-[28px]">Healthcare and population health</span>
+            <span className="heading block text-[24px] md:text-[28px]">The molecules at work</span>
             <span className="block mt-2 text-[15px] leading-[1.55] max-w-[70ch]">
-              {CASES.length} runnable cases from published studies, from outbreaks and diabetes to hospital beds and workforce planning, with the data and methods each one needs.
+              {ALL_CASES.length} cases from published studies in {DOMAINS.length} fields, from {DOMAINS.map((d) => d.short.toLowerCase()).join(", ")}. Each runs in the browser, with the data it needs and checks on what it shows.
             </span>
           </span>
           <span className="text-[15px] font-semibold whitespace-nowrap">Open the library</span>

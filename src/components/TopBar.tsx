@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PanelLeft, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { groupOf, search } from "@/data/catalog";
-import { searchCases } from "@/data/health/cases";
+import { searchApps } from "@/data/apps";
 import { cn } from "@/lib/utils";
 
 // two studs on a brick
@@ -27,19 +27,19 @@ export default function TopBar({
   mapActive,
   startTour,
   tourActive,
-  showHealth,
-  healthActive,
+  showApps,
+  appsActive,
   paneOpen,
   togglePane,
 }: {
   onSelect: (k: string) => void;
-  onCase: (id: string) => void;
+  onCase: (domain: string, id: string) => void;
   showMap: () => void;
   mapActive: boolean;
   startTour: () => void;
   tourActive: boolean;
-  showHealth: () => void;
-  healthActive: boolean;
+  showApps: () => void;
+  appsActive: boolean;
   paneOpen: boolean;
   togglePane: () => void;
 }) {
@@ -50,7 +50,7 @@ export default function TopBar({
   const results = query.trim()
     ? [
         ...search(query).map(({ key, via }) => ({ id: "m:" + key, label: MODELS[key].name, sub: via ? `Covers ${via}` : groupOf(key), go: () => onSelect(key) })),
-        ...searchCases(query).map((c) => ({ id: "c:" + c.id, label: c.title, sub: `Healthcare: ${c.theme}`, go: () => onCase(c.id) })),
+        ...searchApps(query).map(({ domain, c }) => ({ id: `c:${domain.id}/${c.id}`, label: c.title, sub: `${domain.short}: ${c.theme}`, go: () => onCase(domain.id, c.id) })),
       ].slice(0, 9)
     : [];
 
@@ -95,8 +95,8 @@ export default function TopBar({
           <button onClick={startTour} aria-current={tourActive ? "page" : undefined} className={navLink(tourActive)}>
             Guided tour
           </button>
-          <button onClick={showHealth} aria-current={healthActive ? "page" : undefined} className={navLink(healthActive)}>
-            Healthcare
+          <button onClick={showApps} aria-current={appsActive ? "page" : undefined} className={navLink(appsActive)}>
+            Applications
           </button>
         </nav>
 

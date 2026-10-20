@@ -1,0 +1,426 @@
+
+## bathtub (yr, y=units)
+ stocks: level=Level[50]
+ params: inflow=Inflow 10/yr (0-30); outflow=Outflow 8/yr (0-30)
+ flows: in=Inflow: inflow; out=Outflow: outflow
+ presets: Filling{"inflow":14,"outflow":6} | Draining{"inflow":3,"outflow":12} | Steady state{"inflow":8,"outflow":8}
+
+## cascade (mo, y=units)
+ stocks: l1=Stage 1[60]; l2=Stage 2[0]; l3=Stage 3[0]
+ params: inflow=Inflow 0/mo (0-20); tau=Stage delay τ 4mo (1-12)
+ flows: in=inflow: inflow; f12=flow 1→2: Stage1 / τ; f23=flow 2→3: Stage2 / τ; out=outflow: Stage3 / τ
+ presets: Pulse through{"inflow":0,"tau":4} | Steady inflow{"inflow":10,"tau":4} | Fast (low τ){"inflow":10,"tau":1.5}
+
+## conversion (mo, y=qty)
+ stocks: raw=Raw (tons)[100]; fin=Finished (units)[0]
+ params: feed=Feed in 10t/mo (0-30); tau=Process time τ 4mo (1-12); yield=Yield 2 u/t (0.2-5)
+ flows: in=feed: feed; made=production: (Raw / τ) × yield; out=shipments: Finished / 6
+ presets: High yield{"feed":10,"tau":4,"yield":4} | Low yield{"feed":10,"tau":4,"yield":0.6}
+
+## split (mo, y=units)
+ stocks: a=Channel A[0]; b=Channel B[0]
+ params: inflow=Inflow 14/mo (0-30); frac=Fraction → A 0.6 (0-1); tau=Drain τ 5mo (1-12)
+ flows: toA=to A: Inflow × f; toB=to B: Inflow × (1 − f); outA=drain A: A / τ; outB=drain B: B / τ
+ presets: 60 / 40{"inflow":14,"frac":0.6,"tau":5} | Winner takes all{"inflow":14,"frac":1,"tau":5} | Even split{"inflow":14,"frac":0.5,"tau":5}
+
+## broken (mo, y=units)
+ stocks: l1=Stage 1[80]; l2=Stage 2[0]
+ params: inflow=Inflow 0/mo (0-20); tau=Flow τ 4mo (1-12); leak=Leak fraction 0.3 (0-0.9)
+ flows: in=inflow: inflow; fwd=advance: (Stage1 / τ)(1 − L); leak=leak (lost): (Stage1 / τ) · L; out=outflow: Stage2 / τ
+ presets: Low leak{"inflow":0,"tau":4,"leak":0.1} | High leak{"inflow":0,"tau":4,"leak":0.8}
+
+## goToZero (mo, y=widgets)
+ stocks: cur=Current value[100]; plan=If action held constant[100]
+ params: tau=Time to go to zero 5mo (1-20); inflow=Replenishment 0/mo (0-20)
+ flows: in=replenishment: replenishment; action=action to go to zero: Current value / time to go to zero; planOut=constant action: 100 / time to go to zero (initial action, held until empty)
+ presets: Quick (τ = 2){"tau":2,"inflow":0} | Slow (τ = 12){"tau":12,"inflow":0} | With replenishment{"tau":5,"inflow":8}
+
+## decay (yr, y=units)
+ stocks: q=Stock[100]
+ params: tau=Decay time τ 5yr (1-20)
+ flows: out=decay: Stock / τ
+ presets: Fast decay{"tau":2} | Slow decay{"tau":15}
+
+## residence (mo, y=units)
+ stocks: q=In service[0]
+ params: inflow=Inflow 8/mo (0-20); tau=Avg residence τ 5mo (1-12)
+ flows: in=inflow: inflow; out=outflow: Stock / τ
+ presets: Short stay{"inflow":8,"tau":2} | Long stay{"inflow":8,"tau":10}
+
+## material (wk, y=units)
+ stocks: l1=In transit ①[0]; l2=In transit ②[0]; l3=In transit ③[0]
+ params: inflow=Inflow 8/wk (0-16); delay=Transit delay 9wk (2-18)
+ flows: in=inflow: inflow; f1=flow 1→2: Transit1 / (delay/3); f2=flow 2→3: Transit2 / (delay/3); out=arrivals: Transit3 / (delay/3)
+ presets: Pulse through{"inflow":0,"delay":9} | Steady pipeline{"inflow":8,"delay":9} | Long transit{"inflow":8,"delay":16}
+
+## aging (yr, y=people)
+ stocks: young=Youth (0-18)[300]; adult=Working (18-65)[800]; old=Elderly (65+)[200]
+ params: births=Births 20/yr (0-40); tY=Youth duration 18yr (5-25); tA=Adult duration 45yr (20-50); tO=Elder lifespan 15yr (5-30)
+ flows: in=births: births; aYA=maturation: Youth / τ_youth; aAO=retirement: Working / τ_adult; deaths=deaths: Elderly / τ_elder
+ presets: Baby boom{"births":35,"tY":18,"tA":45,"tO":15} | Birth decline{"births":8,"tY":18,"tA":45,"tO":15} | Longer lives{"births":20,"tY":18,"tA":45,"tO":28}
+
+## smooth (wk, y=level)
+ stocks: input=Input signal[30]; s1=1st-order smooth[30]; m1=[30,hidden]; m2=[30,hidden]; s3=3rd-order smooth[30]
+ params: target=Input level 70 (0-100); tau=Smoothing time τ 6wk (1-20)
+ flows: adj1=adjust (1st): (Input − Perceived₁) / τ; adj3=adjust (3rd): (stage₂ − Perceived₃) / (τ/3)
+ presets: Step up{"target":80,"tau":6} | Slow (τ=15){"target":80,"tau":15} | Snappy (τ=2){"target":80,"tau":2}
+
+## smoothHigher (yr, y=stuff)
+ stocks: smooth1=Smooth1[20]; smooth2=Smooth2[20]; smooth3=Smooth3[20]
+ params: goal=Goal 80stuff (0-100); time1=Smoothing time 1 2yr (0.5-8); time2=Smoothing time 2 2yr (0.5-8); time3=Smoothing time 3 2yr (0.5-8)
+ flows: updating1=updating smooth1: (goal − Smooth1) / smoothing time 1; updating2=updating smooth2: (Smooth1 − Smooth2) / smoothing time 2; updating3=updating smooth3: (Smooth2 − Smooth3) / smoothing time 3
+ presets: Equal stages (2, 2, 2){"goal":80,"time1":2,"time2":2,"time3":2} | One long stage (5, 0.5, 0.5){"goal":80,"time1":5,"time2":0.5,"time3":0.5} | Slow to catch on (4, 4, 4){"goal":80,"time1":4,"time2":4,"time3":4}
+
+## closegap (wk, y=level)
+ stocks: actual=Actual[20]
+ params: goal=Goal 60 (0-100); at=Adjustment time 5wk (1-20)
+ flows: adj=adjustment: (Goal − Actual) / AT
+ presets: Reach goal{"goal":60,"at":5} | Aggressive{"goal":60,"at":1.5} | Sluggish{"goal":60,"at":15}
+
+## stockAdjust (mo, y=widgets)
+ stocks: level=Level[40]
+ params: out=outFlow 10/mo (0-30); desired=Desired level 100 (20-200); adj=Adjustment time 4mo (1-12); repl=Replacement fraction 1 (0-1)
+ flows: stocking=stocking: MAX(0, (Desired level − Level) / adjustment time + replacement fraction × outFlow); outflow=outFlow: outFlow
+ presets: Replace + correct{"out":10,"desired":100,"adj":4,"repl":1} | No replacement ordering{"out":10,"desired":100,"adj":4,"repl":0} | Slow adjustment{"out":10,"desired":100,"adj":10,"repl":1}
+
+## stockmgmt (wk, y=units)
+ stocks: sl=Supply line[60]; inv=Inventory[60]
+ params: demand=Demand 10/wk (2-20); desInv=Desired inventory 100 (40-200); adj=Inventory adj time 4wk (1-12); acq=Acquisition delay 6wk (1-12); slw=Supply-line weight 1 (0-1)
+ flows: orders=order rate: MAX(0, demand + (desInv − Inventory)/τ + (desiredSL − w·SupplyLine)/τ); acquisition=acquisition: SupplyLine / acquisition delay; sales=sales: demand
+ presets: Stable (sees pipeline){"demand":10,"desInv":100,"adj":4,"acq":6,"slw":1} | Oscillation (ignores it){"demand":10,"desInv":100,"adj":4,"acq":6,"slw":0} | Long lead time{"demand":10,"desInv":100,"adj":4,"acq":12,"slw":0.3}
+
+## lowVisPipeline (wk, y=cases)
+ stocks: onr=Orders not received[60]; s1=[30,hidden]; inv=Inventory[60]
+ params: ship=Shipping 10/wk (2-20); tInv=Time to correct inventory 4wk (1-12); tPipe=Time to correct pipeline 4wk (1-12); delay=Supplier delay 6wk (2-12); aware=Awareness of pipeline 1 (0-1)
+ flows: ordering=ordering: MAX(0, shipping + (100 − Inventory)/t_inv + (shipping × calc. delay − OrdersNotReceived) × awareness / t_pipe); receiving=receiving product: supplier's last stage / (supplier delay / 2); shipping=shipping: shipping
+ presets: Tracks the pipeline{"ship":10,"tInv":4,"tPipe":4,"delay":6,"aware":1} | Ignores the pipeline{"ship":10,"tInv":4,"tPipe":4,"delay":6,"aware":0} | Boom and bust (slow supplier){"ship":10,"tInv":2,"tPipe":4,"delay":12,"aware":0}
+
+## workforce (yr, y=people)
+ stocks: workforce=Workforce[40]
+ params: desired=Desired workforce 60 (0-100); tHire=Time to hire/fire 4yr (0.5-12)
+ flows: hiring=hiring: MAX(0, (desired − Workforce) / time to hire); firing=firing: MAX(0, (Workforce − desired) / time to hire)
+ presets: Ramp up{"desired":80,"tHire":4} | Downsize{"desired":20,"tHire":4}
+
+## trend (mo, y=level)
+ stocks: input=Actual[100]; ppv=Perceived[100]
+ params: g=True growth 6%/mo (-5-15); tp=Perception time 4mo (1-12)
+ flows: grow=growth: Actual × g; perceive=perception: (Actual − Perceived) / τ_p
+ presets: Steady growth{"g":6,"tp":4} | Turning point{"g":-4,"tp":4}
+
+## extrapolation (yr, y=quantity)
+ stocks: actual=Actual quantity[100]; perceived=Perceived quantity[100]; historical=Historical quantity[100]; extrapolatedDisp=Extrapolated quantity[100]
+ params: growth=Growth of actual quantity 3%/yr (-5-8); timeToPerceive=Time to perceive quantity 2yr (0.5-6); trendDuration=Duration over which to calculate trend 3yr (1-10); forecastHorizon=Forecast horizon 5yr (0-10)
+ flows: changeInActual=change in actual quantity: Actual quantity × growth / 100; perceiving=change in perceived quantity: (Actual quantity − Perceived quantity) / time to perceive quantity; changeInHistorical=change in historical quantity: (Perceived quantity − Historical quantity) / duration over which to calculate trend
+ presets: 5-year forecast{"growth":3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":5} | Nowcast (horizon 0){"growth":3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":0} | Decline (−3%/yr){"growth":-3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":5}
+
+## weightedAvg (wk, y=level)
+ stocks: estimate=Estimate[50]
+ params: srcA=Source A 70 (0-100); srcB=Source B 30 (0-100); weightA=Weight on A 0.6 (0-1); tau=Adjust time 4wk (1-12)
+ flows: adjust=adjust to blend: (w·A + (1−w)·B − estimate) / τ
+ presets: Favor A{"srcA":70,"srcB":30,"weightA":0.8,"tau":4} | Even blend{"srcA":70,"srcB":30,"weightA":0.5,"tau":4}
+
+## presentValue (yr, y=$)
+ stocks: pv=Present value[0]; clock=elapsed[0,hidden]
+ params: cashFlow=Cash flow 20$/yr (0-50); r=Discount rate 8%/yr (1-20)
+ flows: discounting=discounting: cash flow × e^(−r·t)
+ presets: 8% discount{"cashFlow":20,"r":8} | Low (4%){"cashFlow":20,"r":4} | High (16%){"cashFlow":20,"r":16}
+
+## coflow (yr, y=yrs experience)
+ stocks: people=Headcount[50]; totExp=Total experience[100]; avgExp=Avg experience[2]
+ params: hire=Hiring 8/yr (0-20); tenure=Avg tenure 6yr (2-20); hireExp=Hire experience 0yr (0-8)
+ flows: hireFlow=hiring: hire; quitFlow=attrition: Headcount / tenure
+ presets: Steady team{"hire":8,"tenure":6,"hireExp":0} | Rapid hiring (dilution){"hire":18,"tenure":6,"hireExp":0} | Hire veterans{"hire":8,"tenure":6,"hireExp":5}
+
+## coflowExperience (yr, y=yrs experience)
+ stocks: wf=Workforce[80]; avg=Average experience[8]
+ params: hire=Hiring 20/yr (0-30); ttq=Time to quit or retire 8yr (2-20); newExp=Avg experience of new hire 0yr (0-10)
+ flows: hiring=hiring: hiring; attrition=attrition: Workforce / time to quit or retire; gain=experience gain: rate of experience gain = 1 yr/yr; dilute=dilution by new hires: (Average experience − new-hire experience) × hiring / Workforce
+ presets: Steady team{"hire":10,"ttq":8,"newExp":0} | Hiring surge (dilution){"hire":20,"ttq":8,"newExp":0} | Hire veterans{"hire":20,"ttq":8,"newExp":5}
+
+## agingPDY (yr, y=people)
+ stocks: rookies=Rookies[100]; experienced=Experienced[200]; gray=Veterans[50]
+ params: hiring=Hiring 20/yr (0-40); tMature=Time to mature 3yr (1-10); tExp=Experienced tenure 25yr (10-40); tGray=Veteran tenure 8yr (3-15)
+ flows: hire=hiring: hiring; mature=maturing: Rookies / time to mature; senior=becoming senior: Experienced / experienced tenure; retire=retiring: Veterans / veteran tenure
+ presets: Steady{"hiring":20,"tMature":3,"tExp":25,"tGray":8} | Rapid hiring (dilution){"hiring":40,"tMature":3,"tExp":25,"tGray":8}
+
+## cascadedCoflow (wk, y=$/unit)
+ stocks: wip1=WIP stage 1[32]; wip2=WIP stage 2[0]; attr1=cost in 1[32,hidden]; attr2=cost in 2[0,hidden]; avg1=Avg cost · stage 1[1]; avg2=Avg cost · stage 2[1]
+ params: input=Input 8/wk (0-20); tau=Stage time 4wk (1-10); inCost=Input cost 1$/u (0.5-3); valueAdd=Value added 0.5$/u·wk (0-2)
+ flows: in=input: input; f12=stage 1→2: WIP1 / stage time; f23=completion: WIP2 / stage time
+ presets: Value added{"input":8,"tau":4,"inCost":1,"valueAdd":0.5} | No value added{"input":8,"tau":4,"inCost":1,"valueAdd":0}
+
+## growth (yr, y=population)
+ stocks: pop=Population[100]
+ params: birth=Birth rate 5%/yr (0-12); death=Death rate 2%/yr (0-12)
+ flows: births=births: Population × b; deaths=deaths: Population × d
+ presets: Growing{"birth":5,"death":2} | Declining{"birth":2,"death":5} | Stable{"birth":3,"death":3}
+
+## logistic (yr, y=population)
+ stocks: pop=Population[10]
+ params: r=Growth rate 18%/yr (1-40); K=Carrying capacity 200 (50-400)
+ flows: births=growth: r × Population; crowding=crowding deaths: r × Population × (Population / K)
+ presets: S-curve{"r":18,"K":200} | Fast to cap{"r":35,"K":200} | Higher capacity{"r":18,"K":350}
+
+## diffusion (wk, y=people)
+ stocks: pot=Potential[1000]; adopt=Adopters[0]
+ params: p=Innovation p 1% (0-5); q=Imitation q 18% (0-40)
+ flows: adoption=adoption: (p + q · Adopters/N) × Potential
+ presets: Word-of-mouth{"p":1,"q":18} | Ad-driven{"p":4,"q":5} | Viral{"p":0.5,"q":35}
+
+## ceiling (wk, y=units)
+ stocks: q=Stock[10]
+ params: base=Desired inflow 14/wk (0-30); ceil=Ceiling 100 (20-120); at=Approach time 2wk (0.5-8)
+ flows: in=inflow: MIN(desired, (ceiling − Stock) / approach time)
+ presets: Approach cap{"base":14,"ceil":100,"at":2} | Hard clip{"base":14,"ceil":100,"at":0.5}
+
+## floor (wk, y=units)
+ stocks: q=Stock[100]
+ params: base=Desired outflow 14/wk (0-30); floor=Floor 30 (0-90); at=Approach time 2wk (0.5-8)
+ flows: out=drain: MAX(0, MIN(desired, (Stock − floor)/approach time))
+ presets: Settle on floor{"base":14,"ceil":100,"floor":30,"at":2} | Hard floor{"base":14,"floor":30,"at":0.5}
+
+## capacityUtil (wk, y=units)
+ stocks: inventory=Inventory[50]
+ params: capacity=Capacity 20/wk (10-40); demand=Demand 18/wk (0-40); targetInv=Target inventory 100 (50-200); adj=Restock time 3wk (1-8)
+ flows: prod=production: capacity × utilization(desired / capacity); sales=sales: demand
+ presets: Demand < capacity{"capacity":25,"demand":15,"targetInv":100,"adj":3} | Demand > capacity{"capacity":15,"demand":25,"targetInv":100,"adj":3}
+
+## effectFunction (wk, y=level)
+ stocks: result=Result[50]
+ params: input=Input 100 (0-200); reference=Reference 100 (10-200); normalFlow=Normal flow 15/wk (0-30); drainTau=Drain time 8wk (2-20)
+ flows: inflow=modulated flow: normal flow × effect(Input / Reference); outflow=drain: Result / drain time
+ presets: At reference (1×){"input":100,"reference":100,"normalFlow":15,"drainTau":8} | Input high (2×){"input":200,"reference":100,"normalFlow":15,"drainTau":8} | Input low{"input":40,"reference":100,"normalFlow":15,"drainTau":8}
+
+## protLevel (wk, y=units)
+ stocks: level=Inventory[100]
+ params: inflow=Replenishment 4/wk (0-15); desiredOut=Desired draining 12/wk (0-25); protectBelow=Protect below 25 (5-60)
+ flows: in=replenish: replenishment; out=draining: desired × MIN(1, Level / protect-below)
+ presets: Demand > supply{"inflow":4,"desiredOut":12,"protectBelow":25} | Supply > demand{"inflow":12,"desiredOut":6,"protectBelow":25}
+
+## protFlow (wk, y=units)
+ stocks: level=On hand[80]
+ params: inflow=Replenishment 3/wk (0-15); desiredOut=Desired draining 10/wk (0-25); fastest=Fastest draining time 2wk (0.5-6)
+ flows: in=replenish: replenishment; out=draining: MIN(desired, Level / fastest draining time)
+ presets: Drain to limit{"inflow":3,"desiredOut":10,"fastest":2} | Slow extraction{"inflow":3,"desiredOut":10,"fastest":5}
+
+## backlogFlow (mo, y=orders)
+ stocks: backlog=Backlog[60]
+ params: orders=Order rate 12/mo (0-25); shipTime=Desired ship time 3mo (1-10); capacity=Shipping capacity 10/mo (0-30)
+ flows: in=orders: order rate; ship=shipping: MIN(Backlog / desired ship time, capacity)
+ presets: Capacity-bound (grows){"orders":12,"shipTime":3,"capacity":10} | Service-bound (settles){"orders":12,"shipTime":3,"capacity":20}
+
+## backlogLevel (mo, y=units)
+ stocks: backlog=Backlog[30]; inventory=Inventory[100]
+ params: orders=Order rate 12/mo (0-25); shipTime=Desired ship time 2mo (1-8); producing=Production 12/mo (0-25); protectInv=Full-service inventory 60 (20-120)
+ flows: orders=orders: order rate; fulfilling=fulfilling: (Backlog/ship time) × MIN(1, Inventory/full-service); producing=producing: production; shipping=shipping: (Backlog/ship time) × MIN(1, Inventory/full-service)
+ presets: Healthy stock{"orders":12,"shipTime":2,"producing":12,"protectInv":60} | Starve production{"orders":12,"shipTime":2,"producing":5,"protectInv":60}
+
+## univariateAnchor (wk, y=value)
+ stocks: judged=Value in use[100]; ind=value = Adjustment × anchor[122.5]
+ params: anchor=Anchor 100 (20-200); current=Current value of variable 150 (20-200); normal=Normal value of variable 100 (50-200); strength=Adjustment strength 0.5 (-1-1)
+ flows: adjusting=adopting the value: (anchor × (current / normal)^strength − Value in use) / 2
+ presets: Under-adjust (√){"anchor":100,"current":150,"normal":100,"strength":0.5} | Proportional{"anchor":100,"current":150,"normal":100,"strength":1} | Inverse effect{"anchor":100,"current":150,"normal":100,"strength":-1}
+
+## multivariateAnchor (wk, y=value)
+ stocks: judged=Value in use[100]; ind=value = anchor × adjustments[180]
+ params: anchor=Anchor 100 (20-200); p1=Pressure #1 2.25× (0.25-4); p2=Pressure #2 1× (0.25-4); p3=Pressure #3 1.2× (0.25-2)
+ flows: adjusting=adopting the value: (anchor × √p₁ × 1/√p₂ × p₃ − Value in use) / 2
+ presets: All normal{"anchor":100,"p1":1,"p2":1,"p3":1} | Offsetting pressures{"anchor":100,"p1":4,"p2":4,"p3":1} | Compounding pressures{"anchor":100,"p1":2.25,"p2":0.45,"p3":1.2}
+
+## seaAnchor (mo, y=level)
+ stocks: anchor=Anchor[100]; valueDisp=Value[100]
+ params: pressure=Adjustment pressure 1× (0.5-2); timeToChange=Anchor lag 6mo (1-24)
+ flows: changeAnchor=change anchor: (value − Anchor) / anchor lag
+ presets: Stable{"pressure":1,"timeToChange":6} | Runaway drift{"pressure":1.2,"timeToChange":6}
+
+## protectedSeaAnchor (mo, y=level)
+ stocks: anchor=Anchor[100]; valueDisp=Value[100]
+ params: pressure=Adjustment pressure 1.2× (0.5-2); fundamental=Fundamental 100 (50-150); protection=Protection 0.5 (0-1); timeToChange=Anchor lag 6mo (1-24)
+ flows: changeAnchor=change anchor: (target − Anchor) / lag,  target = (1−p)·value + p·fundamental
+ presets: Unprotected (drifts){"pressure":1.2,"fundamental":100,"protection":0,"timeToChange":6} | Protected (stable){"pressure":1.2,"fundamental":100,"protection":0.5,"timeToChange":6} | Strong anchor{"pressure":1.4,"fundamental":100,"protection":0.9,"timeToChange":6}
+
+## seaAnchorPricing (yr, y=$/widget)
+ stocks: underlyingPrice=Underlying price[10]; priceDisp=Price[11.43]
+ params: inventory=Inventory 75widgets (0-200); targetInventory=Target inventory 100widgets (20-200); relMarketShare=Relative market share 1× (0.5-1.5); timeToChange=Time to change underlying price 4yr (1-20)
+ flows: changeInUnderlyingPrice=change in underlying price: (Price − Underlying price) / time to change,  Price = Underlying price × pressure
+ presets: Shortage (price climbs){"inventory":75,"targetInventory":100,"relMarketShare":1,"timeToChange":4} | Neutral (pressure = 1){"inventory":100,"targetInventory":100,"relMarketShare":1,"timeToChange":4} | Glut (decays toward 0){"inventory":150,"targetInventory":100,"relMarketShare":1,"timeToChange":4}
+
+## protSeaAnchorPricing (yr, y=$/widget)
+ stocks: underlyingPrice=Underlying price[10]; priceDisp=Price[8]
+ params: inventory=Inventory 150widgets (0-200); targetInventory=Target inventory 100widgets (20-200); relMarketShare=Relative market share 1× (0.5-1.5); minPrice=Minimum underlying price 6$ (0-12); timeToChange=Time to change underlying price 5yr (1-20)
+ flows: changeInUnderlyingPrice=change in underlying price: (MAX(Price, minimum underlying price) − Underlying price) / time to change
+ presets: Glut with $6 floor{"inventory":150,"targetInventory":100,"relMarketShare":1,"minPrice":6,"timeToChange":5} | Glut, no floor{"inventory":150,"targetInventory":100,"relMarketShare":1,"minPrice":0,"timeToChange":5} | Shortage (floor idle){"inventory":75,"targetInventory":100,"relMarketShare":1,"minPrice":6,"timeToChange":5}
+
+## smoothPricing (yr, y=$/unit)
+ stocks: price=Price[10]; indicatedDisp=Indicated price[10]
+ params: refPrice=Reference price 10$ (5-20); pressure=Market pressure 1× (0.5-2); tau=Price adj time 4yr (0.5-12)
+ flows: changing=changing price: (indicated price − Price) / adj time
+ presets: Demand shock{"refPrice":10,"pressure":1.4,"tau":4} | Sticky (slow){"refPrice":10,"pressure":1.4,"tau":10}
+
+## propSplit (wk, y=tasks)
+ stocks: tasksA=Tasks A[20]; tasksB=Tasks B[60]; tasksC=Tasks C[20]
+ params: resources=Resources 10people (2-20); productivity=Productivity 1tasks/person/wk (0.5-2); arrA=New tasks A 5/wk (0-10); arrB=New tasks B 3/wk (0-10); arrC=New tasks C 2/wk (0-10)
+ flows: inA=new tasks A: new tasks A; inB=new tasks B: new tasks B; inC=new tasks C: new tasks C; doneA=completing A: MIN(resources × (A / total tasks) × productivity, A / 0.5); doneB=completing B: MIN(resources × (B / total tasks) × productivity, B / 0.5); doneC=completing C: MIN(resources × (C / total tasks) × productivity, C / 0.5)
+ presets: Capacity = arrivals{"resources":10,"productivity":1,"arrA":5,"arrB":3,"arrC":2} | Overloaded{"resources":7,"productivity":1,"arrA":5,"arrB":3,"arrC":2} | Surplus capacity{"resources":14,"productivity":1,"arrA":5,"arrB":3,"arrC":2}
+
+## weightedSplit (wk, y=tasks)
+ stocks: tasksA=Tasks A[30]; tasksB=Tasks B[30]; tasksC=Tasks C[30]
+ params: resources=Resources 12people (2-24); newTasks=New tasks (each type) 4/wk (0-8); weightA=Weight for A 2dmnl (0-4); weightB=Weight for B 1dmnl (0-4); weightC=Weight for C 1dmnl (0-4)
+ flows: inA=new tasks A: new tasks; inB=new tasks B: new tasks; inC=new tasks C: new tasks; doneA=completing A: MIN(resources × (A × weight A / total weighted claim), A / 0.5); doneB=completing B: MIN(resources × (B × weight B / total weighted claim), B / 0.5); doneC=completing C: MIN(resources × (C × weight C / total weighted claim), C / 0.5)
+ presets: A favoured (weight 2){"resources":12,"newTasks":4,"weightA":2,"weightB":1,"weightC":1} | Equal weights (proportional){"resources":12,"newTasks":4,"weightA":1,"weightB":1,"weightC":1} | A neglected (weight 0.5){"resources":12,"newTasks":4,"weightA":0.5,"weightB":1,"weightC":1}
+
+## multiSplit (mo, y=units)
+ stocks: chA=Channel A[0]; chB=Channel B[0]; chC=Channel C[0]
+ params: inflow=Inflow 15/mo (0-30); wA=Weight A 5 (0-10); wB=Weight B 3 (0-10); wC=Weight C 2 (0-10); tau=Drain τ 5mo (1-12)
+ flows: toA=to A: inflow × wA / Σw; toB=to B: inflow × wB / Σw; toC=to C: inflow × wC / Σw; outA=drain A: A / τ; outB=drain B: B / τ; outC=drain C: C / τ
+ presets: 5 : 3 : 2{"inflow":15,"wA":5,"wB":3,"wC":2,"tau":5} | Even{"inflow":15,"wA":1,"wB":1,"wC":1,"tau":5} | A dominant{"inflow":15,"wA":8,"wB":1,"wC":1,"tau":5}
+
+## nonlinearSplit (wk, y=units)
+ stocks: a=Held by A[0]; b=Held by B[0]
+ params: totalQuantity=Total quantity 20/wk (0-40); strengthA=Strength of A's claim 9 (0-10); strengthB=Strength of B's claim 1 (0-10); minFraction=Minimum fraction 0.2 (0-0.5); tau=Holding time 5wk (1-12)
+ flows: toA=quantity to A: total quantity × fraction to A; toB=quantity to B: total quantity − quantity to A; outA=use by A: Held by A / holding time; outB=use by B: Held by B / holding time
+ presets: Minimum share binds{"totalQuantity":20,"strengthA":9,"strengthB":1,"minFraction":0.2,"tau":5} | Plain proportional{"totalQuantity":20,"strengthA":9,"strengthB":1,"minFraction":0,"tau":5} | Forced 50 / 50{"totalQuantity":20,"strengthA":9,"strengthB":1,"minFraction":0.5,"tau":5}
+
+## marketshare (mo, y=customers)
+ stocks: a=Product A[105]; b=Product B[95]
+ params: inflow=New customers 20/mo (5-40); network=Network effect 0.7 (0-1); churn=Churn time 18mo (4-36)
+ flows: toA=wins → A: new × share_A; toB=wins → B: new × (1 − share_A); outA=churn A: A / churn time; outB=churn B: B / churn time
+ presets: Lock-in{"inflow":20,"network":0.7,"churn":18} | No network effect{"inflow":20,"network":0,"churn":18} | Winner takes all{"inflow":20,"network":1,"churn":18}
+
+## actionFromResource (mo, y=gallons)
+ stocks: tank=Tank[0]
+ params: resources=Resources 10resources (0-30); ability=Resource ability to create flow 3gal/mo/resource (0-6); drainTau=Drain time 4mo (1-12)
+ flows: flow=flow: resources × resource ability to create flow; outflow=drain: Tank / drain time
+ presets: 10 pumps × 3{"resources":10,"ability":3,"drainTau":4} | Double the resources{"resources":20,"ability":3,"drainTau":4} | Half the ability{"resources":10,"ability":1.5,"drainTau":4}
+
+## financialFlow (mo, y=$k)
+ stocks: cash=Cash[500]
+ params: workers=Workers 20people (0-50); wage=Wage 5$k/person/mo (2-12); revenue=Revenue 80$k/mo (0-200)
+ flows: revenue=revenue: revenue; spending=spending: workers × wage
+ presets: Burning cash{"workers":20,"wage":5,"revenue":80} | Break-even{"workers":16,"wage":5,"revenue":80} | Building cash{"workers":12,"wage":5,"revenue":80}
+
+## resourcesFromAction (mo, y=resources)
+ stocks: resources=Resources[5]; requiredDisp=Resources required[20]
+ params: desiredFlow=Desired flow 60gal/mo (0-120); ability=Resource ability to create flow 3gal/mo/resource (0.5-6); adjTime=Time to acquire resources 4mo (1-12)
+ flows: acquiring=acquiring resources: (desired flow / ability − Resources) / time to acquire
+ presets: Need 20{"desiredFlow":60,"ability":3,"adjTime":4} | Abler resources{"desiredFlow":60,"ability":6,"adjTime":4} | Double the target{"desiredFlow":120,"ability":3,"adjTime":4}
+
+## workforceFromBudget (yr, y=people)
+ stocks: workforce=Workforce[20]; desiredDisp=Desired people[50]
+ params: budget=Workforce budget 3000$k/yr (500-6000); avgWage=Average wage 60$k/person/yr (30-150); tHire=Time to adjust workforce 2yr (0.5-6)
+ flows: hiring=net hiring: (budget / average wage − Workforce) / time to adjust
+ presets: Can afford 50{"budget":3000,"avgWage":60,"tHire":2} | Pay rise{"budget":3000,"avgWage":75,"tHire":2} | Budget cut{"budget":900,"avgWage":60,"tHire":2}
+
+## abilityFromAction (mo, y=units / resource / mo)
+ stocks: ability=Measured ability[2]
+ params: flow=Flow 60/mo (0-120); resource=Resource 10 (1-30); measureTime=Measuring time 2mo (0.5-8)
+ flows: up=revising up: MAX(0, (Flow / Resource − Measured ability) / measuring time); down=revising down: MAX(0, (Measured ability − Flow / Resource) / measuring time)
+ presets: 10 resources{"flow":60,"resource":10,"measureTime":2} | Same flow, 20 resources{"flow":60,"resource":20,"measureTime":2} | Double the flow{"flow":120,"resource":10,"measureTime":2}
+
+## prodFatigue (wk, y=× normal)
+ stocks: fatigue=Fatigue[1]; relOutput=Output (× normal)[1]
+ params: overtime=Overtime 1× (1-1.6); timeToFatigue=Time to fatigue 4wk (1-12); workforce=Workforce 20ppl (0-50); normalPDY=Normal productivity 5u/p (1-10)
+ flows: gettingFatigued=getting fatigued: (overtime − Fatigue) / time to fatigue
+ presets: Normal hours{"overtime":1,"timeToFatigue":4,"workforce":20,"normalPDY":5} | Crunch (backfires){"overtime":1.4,"timeToFatigue":4,"workforce":20,"normalPDY":5}
+
+## productivity (mo, y=widgets (one worker))
+ stocks: made=Made by one worker[0]; ref=At normal PDY[0]; pdy=Productivity (/p·mo)[4.0392]
+ params: normalPDY=Normal productivity 5/p·mo (1-10); fatigue=Fatigue 1.3× (0.5-2); sched=Schedule pressure 1.2× (0.5-2); adequacy=Work adequacy 1× (0-1.5); skill=Average skill 0.8× (0.2-1.5)
+ flows: producing=producing (one worker): NormalProductivity × EffectOfFatigue × EffectOfSchedulePressure × EffectOfWorkAdequacy × EffectAverageSkill
+ presets: Tired, pushed, less skilled{"normalPDY":5,"fatigue":1.3,"sched":1.2,"adequacy":1,"skill":0.8} | All normal{"normalPDY":5,"fatigue":1,"sched":1,"adequacy":1,"skill":1} | Short of work{"normalPDY":5,"fatigue":1,"sched":1,"adequacy":0.4,"skill":1}
+
+## effectFatigue (mo, y=fraction)
+ stocks: fatigue=Fatigue[1]; effect=Effect on PDY[1]
+ params: overtime=Overtime 1.5× (0.5-2); timeToFatigue=Time to get fatigued 3mo (0.5-12); slope=Strength of effect 0.6 (0-1)
+ flows: gettingFatigued=getting fatigued: MAX(0, (Overtime − Fatigue) / TimeToGetFatigued); recovering=recovering: MAX(0, (Fatigue − Overtime) / TimeToGetFatigued)
+ presets: Sustained crunch{"overtime":1.5,"timeToFatigue":3,"slope":0.6} | Slow to tire{"overtime":1.5,"timeToFatigue":10,"slope":0.6} | Short weeks (rested){"overtime":0.7,"timeToFatigue":3,"slope":0.6}
+
+## quality (wk, y=tasks)
+ stocks: todo=Work to do[400]; okWork=Done correctly[0]; flawed=Done with flaws[0]; qPct=Quality (%)[68.9]
+ params: normalQ=Normal quality 0.9 (0.5-1); fatigue=Fatigue 1.25× (0.5-2); sched=Schedule pressure 1.5× (0.5-2); adequacy=Work adequacy 1× (0-1.5); skill=Average skill 1× (0.2-1.5)
+ flows: correct=doing work correctly: work rate × Quality; flaws=doing work with flaws: work rate × (1 − Quality)
+ presets: Normal conditions{"normalQ":0.9,"fatigue":1,"sched":1,"adequacy":1,"skill":1} | Deadline crunch{"normalQ":0.9,"fatigue":1.5,"sched":2,"adequacy":1,"skill":1} | Green team{"normalQ":0.9,"fatigue":1,"sched":1,"adequacy":1,"skill":0.4}
+
+## doingWork (wk, y=tasks)
+ stocks: backlog=Backlog[600]; output=Completed[0]
+ params: workforce=Workforce 20ppl (0-50); productivity=Productivity 4/p·wk (1-10); newWork=New work 0/wk (0-30)
+ flows: in=new work: new work; accomplishing=doing work: workforce × productivity (capped by backlog)
+ presets: Clear backlog{"workforce":20,"productivity":4,"newWork":0} | Backlog grows{"workforce":10,"productivity":4,"newWork":60}
+
+## producing (mo, y=drawings)
+ stocks: produced=Drawings produced[0]; rate=Producing (/mo)[20]
+ params: workers=Workers 10ppl (0-30); productivity=Productivity 2/p·mo (0.5-10)
+ flows: producing=producing: workers × productivity
+ presets: 10 workers × 2{"workers":10,"productivity":2} | 5 workers × 4 (same output){"workers":5,"productivity":4} | Double the team{"workers":20,"productivity":2}
+
+## reducingBacklog (mo, y=tasks)
+ stocks: workToDo=Work to do[1200]; overdrawn=Overdrawn (below zero)[0]
+ params: workers=Workers 10ppl (0-30); productivity=Productivity 4/p·mo (0.5-10)
+ flows: producing=producing: workers × productivity
+ presets: Straight-line decline{"workers":10,"productivity":4} | Double the workers{"workers":20,"productivity":4} | Small team (unfinished at month 60){"workers":4,"productivity":4}
+
+## estProductivity (mo, y=widgets / person / mo)
+ stocks: workToDo=Work to do[1500]; perceived=Perceived PDY[2]
+ params: workforce=Workforce 10ppl (1-30); actualPDY=Actual productivity 5/p·mo (1-10); perceptionTime=Perception time 3mo (0.5-8)
+ flows: accomplishing=work being accomplished: MIN(workforce × actual productivity, Work to do / 0.5); up=revising up: MAX(0, (EstimatedPDY − Perceived PDY) / perception time); down=revising down: MAX(0, (Perceived PDY − EstimatedPDY) / perception time)
+ presets: Baseline{"workforce":10,"actualPDY":5,"perceptionTime":3} | Double the workforce{"workforce":20,"actualPDY":5,"perceptionTime":3} | Slow to perceive{"workforce":10,"actualPDY":8,"perceptionTime":8}
+
+## desiredWorkforce (wk, y=people)
+ stocks: workforce=Workforce[10]
+ params: desiredRate=Desired accomplishing rate 120/wk (0-200); productivity=Productivity 4/p·wk (1-10); adjTime=Time to adjust workforce 4wk (1-12)
+ flows: hiring=hiring: MAX(0, (DesiredPeople − Workforce) / time to adjust); releasing=releasing: MAX(0, (Workforce − DesiredPeople) / time to adjust)
+ presets: Staff up{"desiredRate":120,"productivity":4,"adjTime":4} | Higher productivity{"desiredRate":120,"productivity":6,"adjTime":4} | Workload falls{"desiredRate":20,"productivity":4,"adjTime":4}
+
+## overtime (wk, y=tasks)
+ stocks: done=Work accomplished[0]; shortfall=Work fallen behind[0]; ot=Overtime (×)[1.3]
+ params: desiredRate=Desired accomplishing rate 60/wk (0-150); productivity=Productivity 4/p·wk (1-10); workers=Workers 10ppl (0-30); maxOvertime=Overtime limit 1.3× (1-2)
+ flows: accomplishing=accomplishing: Workers × productivity × Overtime; fallingBehind=falling behind: MAX(0, DesiredAccomplishingRate − accomplishing)
+ presets: Capped by the limit{"desiredRate":60,"productivity":4,"workers":10,"maxOvertime":1.3} | Enough people{"desiredRate":60,"productivity":4,"workers":15,"maxOvertime":1.3} | Productivity slips{"desiredRate":60,"productivity":3,"workers":10,"maxOvertime":1.3}
+
+## protByPDY (mo, y=tasks)
+ stocks: remaining=Remaining work[300]
+ params: workers=Workers 10ppl (0-20); normalPDY=Normal PDY 5/p·mo (1-10); required=Work for full PDY 60tasks (20-150); newWork=New work 0/mo (0-60)
+ flows: in=new work: new work; producing=producing: workers × normalPDY × MIN(1, Remaining work / work for full PDY)
+ presets: Run the backlog down{"workers":10,"normalPDY":5,"required":60,"newWork":0} | Steady new work{"workers":10,"normalPDY":5,"required":60,"newWork":20} | Early taper{"workers":10,"normalPDY":5,"required":150,"newWork":0}
+
+## buildingInventory (mo, y=widgets)
+ stocks: inventory=Inventory[100]
+ params: workers=Workers 10ppl (0-30); productivity=Productivity 2/p·mo (0.5-10); shipments=Shipments 0/mo (0-60)
+ flows: producing=producing: workers × productivity; shipping=shipping: MIN(shipments, Inventory / 0.5)
+ presets: Pure build-up{"workers":10,"productivity":2,"shipments":0} | Shipments = production{"workers":10,"productivity":2,"shipments":20} | Shipments outrun production{"workers":5,"productivity":2,"shipments":30}
+
+## doingWorkCascade (mo, y=widgets)
+ stocks: invA=Inventory A[100]; invB=Inventory B[20]; invC=Inventory C[60]
+ params: workersA=Workers A 5ppl (0-15); workersB=Workers B 6ppl (0-15); workersC=Workers C 4ppl (0-15); workersD=Workers D 4ppl (0-15); productivity=Productivity 2/p·mo (0.5-5)
+ flows: pA=producingA: workersA × productivity; pB=producingB: workersB × productivity; pC=producingC: workersC × productivity; pD=producingD: workersD × productivity
+ presets: Unbalanced crews{"workersA":5,"workersB":6,"workersC":4,"workersD":4,"productivity":2} | Balanced line{"workersA":5,"workersB":5,"workersC":5,"workersD":5,"productivity":2} | Starve stage A (the flaw){"workersA":2,"workersB":8,"workersC":4,"workersD":4,"productivity":2}
+
+## cascadeProtByPDY (mo, y=widgets)
+ stocks: invB=Inventory B[150]; invC=Inventory C[60]; invD=Inventory D[60]
+ params: workersA=Workers A 10ppl (0-30); workersB=Workers B 14ppl (0-30); workersC=Workers C 12ppl (0-30); workersD=Workers D 16ppl (0-30); required=Work for full PDY 60 (10-200)
+ flows: pA=producingA: workersA × productivityA  (productivityA = 2); pB=producingB: workersB × normalPDY × MIN(1, InventoryB / work for full PDY); pC=producingC: workersC × normalPDY × MIN(1, InventoryC / work for full PDY); pD=producingD: workersD × normalPDY × MIN(1, InventoryD / work for full PDY)
+ presets: Settling chain{"workersA":10,"workersB":14,"workersC":12,"workersD":16,"required":60} | Feed stops{"workersA":0,"workersB":14,"workersC":12,"workersD":16,"required":60} | Bottleneck at C{"workersA":10,"workersB":14,"workersC":8,"workersD":16,"required":60}
+
+## reworkCycle (wk, y=tasks)
+ stocks: workToDo=Work to do[1000]; undiscovered=Undiscovered rework[0]; workDone=Work done[0]
+ params: capacity=Work capacity 90/wk (20-200); quality=Quality 0.8 (0.5-1); discoverTime=Rework discovery time 5wk (1-16)
+ flows: correct=correct work: accomplishing × quality; rework=creating rework: accomplishing × (1 − quality); discovering=discovering rework: Undiscovered / discovery time
+ presets: High quality{"capacity":90,"quality":0.95,"discoverTime":5} | Low quality (long tail){"capacity":90,"quality":0.6,"discoverTime":5}
+
+## estRemaining (wk, y=weeks)
+ stocks: workToDo=Work to do (sq ft)[6000]; durationDisp=Duration till complete[24]
+ params: anticipatedRate=Anticipated rate of accomplishing work 250sq ft/wk (50-400); actualRate=Actual rate of accomplishing work 200sq ft/wk (0-400)
+ flows: accomplishing=accomplishing work: actual rate of accomplishing work (0 once Work to do is empty)
+ presets: Slower than anticipated{"anticipatedRate":250,"actualRate":200} | As anticipated{"anticipatedRate":200,"actualRate":200} | Faster than anticipated{"anticipatedRate":150,"actualRate":200}
+
+## estCompletion (wk, y=tasks)
+ stocks: workRemaining=Work remaining[500]
+ params: workRate=Work rate 30/wk (10-80); scopeCreep=Scope creep 0/wk (0-40)
+ flows: in=scope creep: scope creep; accomplishing=accomplishing: MIN(work rate, Work remaining / 0.5)
+ presets: Fixed scope (finishes){"workRate":30,"scopeCreep":0} | Scope creep (recedes){"workRate":30,"scopeCreep":28}
+
+## schedulePressure (wk, y=tasks)
+ stocks: workRemaining=Work remaining[400]; clock=elapsed[0,hidden]
+ params: scheduled=Scheduled date 15wk (5-40); baseRate=Normal work rate 25/wk (10-50)
+ flows: workRate=work rate: normal rate × effect(schedule pressure)
+ presets: On schedule{"scheduled":15,"baseRate":25} | Tight deadline (slips){"scheduled":8,"baseRate":25}

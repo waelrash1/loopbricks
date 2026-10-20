@@ -1,7 +1,7 @@
 // Healthcare and population-health case library.
 // Every reference below was checked against PubMed or Crossref (Oct 2026); findings quote the abstract or full text.
-import type { Preset } from "@/data/presets";
-import { MODELS } from "@/data/molecules";
+import type { AppCase, DataSource, Domain, Practice, Ref } from "@/data/apps/types";
+import { HEALTH_MODELS, SIM_STOP } from "@/data/apps/health/models";
 
 export const THEMES = [
   "Infectious disease",
@@ -11,30 +11,6 @@ export const THEMES = [
   "Workforce and supply",
   "Mental health and substance use",
 ] as const;
-export type Theme = (typeof THEMES)[number];
-export type Level = "Starter" | "Intermediate" | "Advanced";
-
-export type HealthCase = {
-  id: string;
-  title: string;
-  theme: Theme;
-  level: Level;
-  summary: string;
-  question: string; // the policy question a model answers
-  sim?: string; // HEALTH_MODELS key; absent when no small model does the case justice
-  presets?: Preset[];
-  map: [string, string][]; // model element → what it is in this case
-  molecules: string[]; // catalogue molecules the structure is built from
-  evidence: string[]; // what published models found
-  insight: string; // the dynamic lesson
-  tryThis: string[];
-  data: [string, string][]; // what you need → where it usually comes from
-  practice: string[]; // case-specific modelling advice and pitfalls
-  refs: string[]; // REFS keys
-  tags: string[];
-};
-
-export type Ref = { text: string; doi?: string; pmid?: string; url?: string };
 export const REFS: Record<string, Ref> = {
   kermack1927: { text: "Kermack WO, McKendrick AG (1927). A contribution to the mathematical theory of epidemics. Proc R Soc Lond A 115(772):700-721.", doi: "10.1098/rspa.1927.0118" },
   sterman2000: { text: "Sterman JD (2000). Business Dynamics: Systems Thinking and Modeling for a Complex World. Irwin/McGraw-Hill. Ch. 9, S-shaped growth: epidemics, innovation diffusion and the growth of new products." },
@@ -90,7 +66,7 @@ export const REFS: Record<string, Ref> = {
   brailsford2009: { text: "Brailsford SC, Harper PR, Patel B, Pitt M (2009). An analysis of the academic literature on simulation and modelling in health care. Journal of Simulation 3(3):130-140.", doi: "10.1057/jos.2009.10" },
 };
 
-export const CASES: HealthCase[] = [
+export const CASES: AppCase[] = [
   {
     id: "epidemic",
     title: "An outbreak: who gets infected, and when it turns",
@@ -136,6 +112,12 @@ export const CASES: HealthCase[] = [
       "Fit to deaths or hospital admissions as well as cases: testing changes case counts more than it changes deaths.",
       "Keep the population closed (no births or deaths) only when the outbreak is short compared with a lifetime.",
       "Report R₀ together with the infectious period: the same R₀ with a shorter period gives a faster, sharper outbreak.",
+    ],
+    validation: "Kermack and McKendrick (1927) is a theoretical model, not a fitted one. Real applications fit it to case, hospital or death series; the COVID-19 case shows how. The small model here is checked against the SIR final-size equation, an exact analytical result.",
+    checks: [
+      { claim: "An uncontrolled outbreak (R₀ 3) ends with about 6% never infected, matching the SIR final-size equation ln s = R₀(s − 1)", test: (run) => Math.abs(run({ r0: 3, dur: 7, dist: 0, vacc: 0 }).end.s / 10000 - 0.0595) < 0.01 },
+      { claim: "With R₀ below 1 the infection never grows", test: (run) => run({ r0: 0.9, dist: 0, vacc: 0 }).max.i <= 10.01 },
+      { claim: "Cutting contacts by 40% lowers the peak and delays it", test: (run) => { const a = run({ r0: 3, dist: 0 }), b = run({ r0: 3, dist: 40 }); return b.max.i < a.max.i && b.tMax.i > a.tMax.i; } },
     ],
     refs: ["kermack1927", "sterman2000"],
     tags: ["SIR", "epidemic", "outbreak", "R0", "contagion", "infection", "herd immunity", "flatten the curve"],
@@ -183,6 +165,11 @@ export const CASES: HealthCase[] = [
       "Make behaviour endogenous (perceived risk from recent deaths) rather than fixing contact reduction by date: that is what generates waves.",
       "Calibrate across many places at once. A behavioural parameter fitted to one country is poorly identified.",
     ],
+    validation: "Rahmandad, Lim and Sterman (2021) calibrated their model to data from 92 nations, estimating under-reporting, behavioural response and adherence fatigue together. Struben (2020) calibrated to six countries from 31 December 2019 to 15 May 2020.",
+    checks: [
+      { claim: "Holding contacts 60% lower cuts the peak by more than 80%", test: (run) => run({ r0: 2.8, dur: 8, dist: 60 }, 300).max.i < 0.2 * run({ r0: 2.8, dur: 8, dist: 0 }, 300).max.i },
+      { claim: "Adding vaccination to moderate distancing lowers the peak further", test: (run) => run({ r0: 2.8, dur: 8, dist: 30, vacc: 0.5 }).max.i < run({ r0: 2.8, dur: 8, dist: 30, vacc: 0 }).max.i },
+    ],
     refs: ["rahmandad2021", "struben2020"],
     tags: ["COVID-19", "pandemic", "behaviour", "waves", "fatigue", "distancing", "lockdown", "under-reporting"],
   },
@@ -213,7 +200,7 @@ export const CASES: HealthCase[] = [
       "Immunity is a stock that births and waning drain away. A programme that succeeds lowers cases, which lowers perceived need, which tempts funders to ease off just as the susceptible stock refills.",
     tryThis: [
       "Compare the three presets. How much does a fast campaign shrink the peak compared with a slow one?",
-      "With R₀ 4, find the slowest vaccination rate that keeps peak infections below 500.",
+      "With R₀ 4, find the slowest vaccination rate that keeps peak infections below 2,000. Why does vaccinating during an outbreak help less than vaccinating before it?",
       "Raise R₀ to 6. How much faster must vaccination go?",
     ],
     data: [
@@ -226,6 +213,11 @@ export const CASES: HealthCase[] = [
       "Add births and waning before drawing long-term conclusions: they decide whether immunity gaps rebuild.",
       "Separate eligible from vaccinated cohorts with an aging chain when the vaccine is given at a set age.",
       "Show decision makers the cost of easing off, not just the cost of continuing.",
+    ],
+    validation: "The abstracts do not report fit statistics. The 2008 paper describes how the polio model was used with decision makers, which is its own kind of test: whether the model changed a decision.",
+    checks: [
+      { claim: "The faster the campaign, the lower the peak", test: (run) => { const [a, b, c] = [0, 0.5, 3].map((v) => run({ r0: 4, dur: 7, dist: 0, vacc: v }).max.i); return c < b && b < a; } },
+      { claim: "A fast campaign (3%/day) cuts the peak by about two-thirds", test: (run) => { const r = run({ r0: 4, dur: 7, dist: 0, vacc: 3 }).max.i / run({ r0: 4, dur: 7, dist: 0, vacc: 0 }).max.i; return r > 0.25 && r < 0.4; } },
     ],
     refs: ["thompson2007", "thompson2008", "sterman2000"],
     tags: ["vaccine", "vaccination", "immunisation", "herd immunity", "polio", "eradication", "measles", "coverage"],
@@ -241,7 +233,6 @@ export const CASES: HealthCase[] = [
     presets: [
       { label: "30% lost before treatment", params: { inflow: 10, tau: 4, leak: 0.3 } },
       { label: "Better linkage (10% lost)", params: { inflow: 10, tau: 4, leak: 0.1 } },
-      { label: "Faster start (τ 1.5 months)", params: { inflow: 10, tau: 1.5, leak: 0.3 } },
     ],
     map: [
       ["Stock: Diagnosed, not yet on treatment", "People who know their status but are not on treatment"],
@@ -258,7 +249,7 @@ export const CASES: HealthCase[] = [
       "Losses multiply along a cascade: four steps that each keep 80% deliver only about 41% to the end. Plugging the biggest early leak often helps more than perfecting the last step.",
     tryThis: [
       "Compare 30% and 10% lost. How much larger does the treated stock get at steady state?",
-      "Keep the leak at 30% but start treatment faster. Does speed fix the loss?",
+      "Set the share lost to 0. What now limits the size of the treated stock?",
       "Explain why the treated stock keeps rising long after you change the policy.",
     ],
     data: [
@@ -269,8 +260,13 @@ export const CASES: HealthCase[] = [
     ],
     practice: [
       "Gardner's figures are conditional rates multiplied along the chain. Say whether you use conditional or cumulative shares.",
-      "Add re-engagement (a return flow from lost to follow-up to care): many 'lost' people come back.",
+      "Add re-engagement (a return flow from lost to follow-up to care): many 'lost' people come back. Give each stage its own time constant: this small model uses one for both.",
       "Couple the cascade to transmission: viral suppression lowers new infections, which closes a loop.",
+    ],
+    validation: "Dangerfield, Fang and Roberts (2001) fitted their baseline model to UK data on the epidemic among homosexual men from 1981 to 1998 before running treatment scenarios. Gardner et al. (2011) is an estimate assembled from published surveillance and cohort data, not a simulation.",
+    checks: [
+      { claim: "Cutting losses from 30% to 10% makes the treated stock about 29% larger at steady state (0.9 ÷ 0.7)", test: (run) => { const r = run({ inflow: 10, tau: 4, leak: 0.1 }, 120).end.l2 / run({ inflow: 10, tau: 4, leak: 0.3 }, 120).end.l2; return r > 1.25 && r < 1.33; } },
+      { claim: "With no losses, everyone diagnosed reaches treatment: the treated stock settles at diagnoses × time in stage", test: (run) => Math.abs(run({ inflow: 10, tau: 4, leak: 0 }, 120).end.l2 - 40) < 1 },
     ],
     refs: ["gardner2011", "dangerfield2001"],
     tags: ["HIV", "AIDS", "care cascade", "antiretroviral", "ART", "linkage", "retention", "viral suppression", "lost to follow-up"],
@@ -315,6 +311,11 @@ export const CASES: HealthCase[] = [
       "Model the prescriber's decision explicitly; Kianmehr et al. show habit and expectations matter as much as clinical risk.",
       "Include a fitness cost so resistance can decline without drug pressure, and test how slowly it does.",
       "Stated plainly: this case uses a diffusion skin for the rise of resistance. It is a teaching simplification, not Austin's model.",
+    ],
+    validation: "Kianmehr et al. (2020) validated their prescribing model against about 53,000 visits for acute respiratory infection in the US National Ambulatory Medical Care Survey, 1993–2015. Austin et al. (1999) related consumption to resistance in human communities; see the paper for the data used.",
+    checks: [
+      { claim: "Heavy prescribing pressure makes resistance the majority sooner", test: (run) => run({ p: 3, q: 18 }, 15).end.adopt > run({ p: 0.5, q: 18 }, 15).end.adopt },
+      { claim: "A weak advantage for resistance spreads it far more slowly", test: (run) => run({ p: 0.5, q: 5 }, 26).end.adopt < 0.5 * run({ p: 0.5, q: 18 }, 26).end.adopt },
     ],
     refs: ["austin1999", "kianmehr2020"],
     tags: ["antibiotic", "antimicrobial resistance", "AMR", "prescribing", "stewardship", "resistance"],
@@ -363,6 +364,12 @@ export const CASES: HealthCase[] = [
       "Drive onset from obesity prevalence when you can (link to the body-weight case) rather than fixing it.",
       "Present results over several horizons. Homer and Hirsch (2006) recommend an ecological scope: outcomes, behaviours, environment and delivery resources.",
     ],
+    validation: "Jones et al. (2006) built the CDC model to reproduce US diabetes trends since 1980 before projecting to 2050; the abstract does not give fit statistics. The 58% effect comes from a randomised controlled trial (Knowler et al. 2002).",
+    checks: [
+      { claim: "Better management alone grows the number living with uncomplicated diabetes, as Jones et al. found", test: (run) => run({ reach: 0, care: 90 }).end.dis > run({ reach: 0, care: 40 }).end.dis },
+      { claim: "Prevention shrinks the disease stock, and the gap widens with time", test: (run) => { const g = (T: number) => 1 - run({ reach: 60, care: 40 }, T).end.dis / run({ reach: 0, care: 40 }, T).end.dis; return g(30) > 0 && g(30) > g(5); } },
+      { claim: "Better management cuts the number with complications", test: (run) => run({ reach: 0, care: 90 }).end.comp < run({ reach: 0, care: 40 }).end.comp },
+    ],
     refs: ["jones2006", "knowler2002", "homer2004", "homerHirsch2006"],
     tags: ["diabetes", "prediabetes", "chronic disease", "prevention", "DPP", "lifestyle", "complications", "prevalence"],
   },
@@ -406,6 +413,11 @@ export const CASES: HealthCase[] = [
       "Track each risk factor as its own stock with its own inflows (starting) and outflows (quitting, control).",
       "Represent recurrent events separately: survivors of a first event carry much higher risk.",
       "Tobacco is a classic sub-model: Tengs et al. (2001) and Tobias et al. (2010) built SD tobacco-policy models used for investment decisions.",
+    ],
+    validation: "The abstracts of Homer et al. (2010) and Hirsch et al. (2010) do not report fit statistics; the national model simulates risk factors from 1990, so its early decades can be compared with observed trends. Read the full papers for calibration details.",
+    checks: [
+      { claim: "Upstream prevention cuts the disease stock more at year 30 than at year 5", test: (run) => { const g = (T: number) => run({ onset: 3, reach: 0 }, T).end.dis - run({ onset: 1.5, reach: 30 }, T).end.dis; return g(30) > g(5) && g(5) > 0; } },
+      { claim: "Better treatment lowers complications within 5 years", test: (run) => run({ care: 85 }, 5).end.comp < run({ care: 40 }, 5).end.comp },
     ],
     refs: ["homer2010", "hirsch2010", "tengs2001", "tobias2010"],
     tags: ["cardiovascular", "heart disease", "stroke", "blood pressure", "cholesterol", "smoking", "tobacco", "prevention", "PRISM"],
@@ -451,6 +463,12 @@ export const CASES: HealthCase[] = [
       "At population scale, link the intake goal to the food environment rather than fixing it.",
       "Never extrapolate a 3-month weight trend linearly.",
     ],
+    validation: "Hall et al. (2011) tested their model against data: its predicted slope of 100 kJ/day per kg of weight change matches the 94 ± 6 kJ/day per kg found by regression on observed data. Abdel-Hamid (2002) checked his model against published exercise studies.",
+    checks: [
+      { claim: "Half the weight change happens in about a year (Hall et al.)", test: (run) => { const lost = 95 - run({ goal: 85, at: 17 }, 12).end.actual; return lost > 4.5 && lost < 5.5; } },
+      { claim: "About 95% of the change is done by about 4 years", test: (run) => 95 - run({ goal: 85, at: 17 }, 51).end.actual > 9.4 },
+      { claim: "Weight approaches the new level but never overshoots it", test: (run) => run({ goal: 85, at: 17 }, 120).min.actual >= 85 },
+    ],
     refs: ["hall2011", "abdelhamid2002"],
     tags: ["obesity", "body weight", "BMI", "diet", "energy balance", "calories", "nutrition", "weight loss"],
   },
@@ -493,6 +511,11 @@ export const CASES: HealthCase[] = [
       "Separate prescription and illicit pathways: they respond to policies in opposite directions.",
       "Report several outcomes (use disorder, overdoses, deaths) side by side; one measure hides trade-offs.",
       "Stated plainly: the simulator shows initiation only. Use Cascade and Broken Cascade to build progression and treatment.",
+    ],
+    validation: "Homer and Wakeland (2021) fitted 12 historical series, with an average error of 9% across 201 data points. Lim et al. (2022) calibrated the SOURCE model to US data from 1999 to 2020.",
+    checks: [
+      { claim: "Supply-driven exposure affects more people early on", test: (run) => run({ p: 3, q: 8 }, 8).end.adopt > run({ p: 0.5, q: 20 }, 8).end.adopt },
+      { claim: "Social spread starts slowly, then accelerates: the second ten weeks add more than the first ten", test: (run) => { const a = run({ p: 0.5, q: 20 }, 10).end.adopt, b = run({ p: 0.5, q: 20 }, 20).end.adopt; return b - a > a; } },
     ],
     refs: ["homerWakeland2021", "lim2022"],
     tags: ["opioid", "overdose", "fentanyl", "naloxone", "addiction", "substance use", "OUD", "drug policy"],
@@ -537,6 +560,12 @@ export const CASES: HealthCase[] = [
       "Model drop-out from waiting lists: long waits lose people, which hides unmet need.",
       "Test combinations, not single interventions; Occhipinti et al. found more is not necessarily better.",
     ],
+    validation: "Occhipinti et al. (2021) built their model with local stakeholders and report uncertainty intervals for every outcome (for example 26.3–30.8% around the 28.5% fall in self-harm hospitalisations).",
+    checks: [
+      { claim: "When demand exceeds capacity, the waiting list keeps growing", test: (run) => run({ orders: 12, shipTime: 3, capacity: 10 }).end.backlog > 100 },
+      { claim: "When capacity covers demand, the list settles at demand × target wait (Little's law)", test: (run) => Math.abs(run({ orders: 12, shipTime: 3, capacity: 14 }, 60).end.backlog - 36) < 1 },
+      { claim: "Lowering demand below capacity clears the backlog too", test: (run) => run({ orders: 9, shipTime: 3, capacity: 10 }, 60).end.backlog < 30 },
+    ],
     refs: ["occhipinti2021", "atkinson2015", "hovmand2014"],
     tags: ["mental health", "suicide", "self-harm", "youth", "waiting list", "access", "depression", "anxiety", "services"],
   },
@@ -578,6 +607,12 @@ export const CASES: HealthCase[] = [
       "Use finer age bands where care need changes quickly (75–84, 85+).",
       "Link care need to capacity with a protected level, so unmet need spills into hospitals as Ansah et al. found.",
       "Check the chain against a published projection before adding policy.",
+    ],
+    validation: "Ansah et al. (2014) used a stylised model started in steady state, to compare policies rather than to forecast; the abstract reports no historical fit.",
+    checks: [
+      { claim: "Each stock settles at inflow × time spent in it: 20 a year × 25 years ≈ 500 older people", test: (run) => Math.abs(run({ births: 20, tY: 18, tA: 47, tO: 25 }, 200).end.old - 500) < 15 },
+      { claim: "Longer lives after 65 grow the oldest stock", test: (run) => run({ tO: 25 }).end.old > run({ tO: 15 }).end.old },
+      { claim: "Falling births shrink the children first; over 20 years the working-age group falls far less", test: (run) => { const r = run({ births: 10 }, 20).end; return 1 - r.young / 300 > 2 * (1 - r.adult / 800); } },
     ],
     refs: ["ansah2014"],
     tags: ["ageing", "aging", "older people", "long-term care", "social care", "demography", "dependency ratio", "elderly"],
@@ -626,6 +661,13 @@ export const CASES: HealthCase[] = [
       "Use daily or weekly data; monthly averages hide the peaks that cause crises.",
       "Use discrete-event simulation for the variability at a single ward; SD is for the whole-system flow question.",
     ],
+    validation: "Wolstenholme (1999) built a whole-system model of NHS patient flow to compare policies; the abstract does not report calibration statistics. Bagust et al. (1999) used a stochastic simulation of bed use, a different method, to derive the occupancy thresholds.",
+    checks: [
+      { claim: "With enough community placements the system is stable", test: (run) => run({ arrivals: 90, beds: 500, los: 4.5, outCap: 95 }).max.wait < 30 },
+      { claim: "A discharge shortfall of 5 a day backs up into the ED", test: (run) => run({ arrivals: 90, beds: 500, los: 4.5, outCap: 85 }).end.wait > 200 },
+      { claim: "100 extra beds only delay the crisis: the queue still grows, later", test: (run) => { const r = run({ arrivals: 90, beds: 600, los: 4.5, outCap: 85 }, 90); return r.end.wait > 100 && run({ arrivals: 90, beds: 600, los: 4.5, outCap: 85 }, 20).end.wait < 30; } },
+      { claim: "Balanced occupancy is about 90%, above the 85% warning level", test: (run) => { const e = run({ arrivals: 90, beds: 500, los: 4.5, outCap: 95 }).end; const o = (e.ward + e.fit) / 500; return o > 0.85 && o < 0.95; } },
+    ],
     refs: ["wolstenholme1999", "bagust1999", "lane2000"],
     tags: ["hospital", "beds", "bed occupancy", "delayed discharge", "patient flow", "intermediate care", "social care", "DTOC", "bed blocking"],
   },
@@ -640,7 +682,7 @@ export const CASES: HealthCase[] = [
     presets: [
       { label: "Winter surge (110/day)", params: { arrivals: 110, beds: 500, los: 4.5, outCap: 95 } },
       { label: "Surge plus shorter stays (3.8 days)", params: { arrivals: 110, beds: 500, los: 3.8, outCap: 115 } },
-      { label: "Avoid 6% of admissions", params: { arrivals: 103, beds: 500, los: 4.5, outCap: 110 } },
+      { label: "Surge minus 6% avoided admissions", params: { arrivals: 103, beds: 500, los: 4.5, outCap: 110 } },
     ],
     map: [
       ["Stock: Waiting in ED for a bed", "Patients 'boarding' in the ED after the decision to admit"],
@@ -656,7 +698,7 @@ export const CASES: HealthCase[] = [
       "Hospitals protect emergency patients by cancelling planned ones, so the ED can look fine while the true cost shows up as elective cancellations. Judge any policy on several measures at once.",
     tryThis: [
       "Run Winter surge. How fast does the ED queue grow?",
-      "Compare shortening stays with avoiding admissions. Which brings the queue back under control sooner?",
+      "Compare shortening stays with avoiding 6% of admissions. Why does one work and the other not? (Hint: work out occupancy = admissions × length of stay ÷ beds.)",
     ],
     data: [
       ["ED attendances, admissions, 4-hour performance", "NHS England A&E attendances and emergency admissions statistics; HCUP NEDS"],
@@ -666,6 +708,12 @@ export const CASES: HealthCase[] = [
     practice: [
       "Include elective activity in the same bed pool, or you will miss where the shortfall goes.",
       "Model seasonality in arrivals explicitly; winter peaks drive most crises.",
+    ],
+    validation: "The abstract of Lane et al. (2000) reports no fit statistics. Lattimer et al. (2004) drew on local emergency-admission trends from 1998 to 2001.",
+    checks: [
+      { claim: "A winter surge of 110 admissions a day overwhelms 500 beds", test: (run) => run({ arrivals: 110, beds: 500, los: 4.5, outCap: 95 }).end.wait > 300 },
+      { claim: "Shorter stays (3.8 days) bring the winter surge back under control", test: (run) => run({ arrivals: 110, beds: 500, los: 3.8, outCap: 115 }).max.wait < 40 },
+      { claim: "Avoiding 6% of admissions alone is not enough at 4.5-day stays: the beds still overflow", test: (run) => run({ arrivals: 103, beds: 500, los: 4.5, outCap: 110 }).end.wait > 100 },
     ],
     refs: ["lane2000", "lattimer2004", "bagust1999"],
     tags: ["emergency department", "A&E", "ED", "crowding", "boarding", "4-hour target", "winter pressures", "admissions"],
@@ -710,6 +758,11 @@ export const CASES: HealthCase[] = [
       "Model the waiting-time effect on referrals; without it, capacity looks more effective than it is.",
       "Track wait distribution, not only list size: long waiters are what targets measure.",
     ],
+    validation: "van Ackere and Smith (1999) built an economics-based model of supply and demand; the abstract reports no calibration statistics.",
+    checks: [
+      { claim: "A gap of 2 a month between referrals and capacity grows the list by about 120 in 60 months", test: (run) => Math.abs(run({ orders: 12, shipTime: 3, capacity: 10 }).end.backlog - 180) < 10 },
+      { claim: "When capacity matches demand, the list settles at referrals × target wait", test: (run) => Math.abs(run({ orders: 12, shipTime: 3, capacity: 14 }).end.backlog - 36) < 1 },
+    ],
     refs: ["vanackere1999", "lane2000"],
     tags: ["waiting list", "elective surgery", "waiting times", "RTT", "backlog", "planned care", "capacity"],
   },
@@ -746,6 +799,11 @@ export const CASES: HealthCase[] = [
     practice: [
       "Show who pays and who saves: Homer et al. found that dealing with financial winners and losers decided whether partners took part.",
       "Report results at several horizons and say which one the decision uses.",
+    ],
+    validation: "The abstracts of the HealthBound papers do not report fit statistics; read the full papers for calibration details. Homer et al. (2004) built their models with community leaders, who used them to plan a real programme.",
+    checks: [
+      { claim: "Adding protection to care shrinks the disease stock by year 25", test: (run) => run({ onset: 2, reach: 40, care: 85 }, 25).end.dis < run({ onset: 3, reach: 0, care: 85 }, 25).end.dis },
+      { claim: "It also lowers complications within 10 years, through fewer people reaching disease", test: (run) => run({ onset: 2, reach: 40, care: 85 }, 10).end.comp < run({ onset: 3, reach: 0, care: 85 }, 10).end.comp },
     ],
     refs: ["milstein2010", "milstein2011", "homer2004"],
     tags: ["health reform", "health policy", "coverage", "primary care", "prevention", "health protection", "cost", "inequity", "HealthBound"],
@@ -791,6 +849,11 @@ export const CASES: HealthCase[] = [
       "Model international recruitment as a separate inflow; it can mask domestic under-supply.",
       "Express need from population and service models, not from a fixed ratio.",
     ],
+    validation: "Barber and López-Valcárcel (2010) set need ratios with a Delphi panel of experts; the abstract reports no historical fit. Hynes et al. (2025) projected from Irish workforce and education data.",
+    checks: [
+      { claim: "Planners who ignore trainees overshoot the target by more", test: (run) => run({ slw: 0 }).max.inv > run({ slw: 1 }).max.inv },
+      { claim: "Counting trainees brings the workforce close to the target without a big overshoot", test: (run) => run({ slw: 1 }).max.inv < 115 },
+    ],
     refs: ["barber2010", "hynes2025", "sterman2000"],
     tags: ["workforce", "doctors", "physicians", "nurses", "training", "medical school", "shortage", "HRH", "planning", "midwives"],
   },
@@ -830,6 +893,11 @@ export const CASES: HealthCase[] = [
       "Add turnover driven by burnout before using the model for policy: that loop makes overtime self-defeating.",
       "Link staffing to patient outcomes with published effect sizes, and state their uncertainty.",
     ],
+    validation: "Aiken et al. (2002) is an observational study of 168 hospitals, 232,342 surgical patients and 10,184 nurses, not a simulation; its odds ratios come from risk-adjusted regression.",
+    checks: [
+      { claim: "Sustained overtime first raises output, then fatigue pulls it back down", test: (run) => { const r = run({ overtime: 1.4, timeToFatigue: 4 }); return r.max.relOutput > 1 && r.end.relOutput < r.max.relOutput; } },
+      { claim: "At normal hours nothing changes", test: (run) => Math.abs(run({ overtime: 1 }).end.relOutput - 1) < 0.01 },
+    ],
     refs: ["aiken2002"],
     tags: ["nurses", "staffing", "overtime", "burnout", "fatigue", "patient safety", "turnover", "ratios"],
   },
@@ -864,6 +932,11 @@ export const CASES: HealthCase[] = [
       ["Shelf life and wastage", "Programme reports"],
     ],
     practice: ["Model expiry as an outflow from inventory with a delay equal to the shelf life.", "Count each tier separately: clinics, districts and national stores each add delay."],
+    validation: "Sterman (1989) ran a laboratory experiment with human players and fitted an anchoring-and-adjustment ordering rule to their decisions; the fitted rule tracks players' orders closely and shows they under-weight the supply line.",
+    checks: [
+      { claim: "Ignoring doses on order overshoots the target stock by more", test: (run) => run({ slw: 0 }).max.inv > run({ slw: 1 }).max.inv },
+      { claim: "A longer lead time with a partial pipeline view gives a bigger swing", test: (run) => run({ acq: 12, slw: 0.3 }).max.inv > run({ acq: 6, slw: 1 }).max.inv },
+    ],
     refs: ["sterman1989", "sterman2000"],
     tags: ["supply chain", "vaccine", "medicines", "stock-out", "inventory", "ordering", "bullwhip", "logistics", "pharmacy"],
   },
@@ -895,13 +968,14 @@ export const CASES: HealthCase[] = [
       ["Relative risks of disease and death", "Epidemiological studies; GBD"],
     ],
     practice: ["Separate former smokers by years since quitting: risk falls with time.", "Calibrate prevalence by age before testing policy."],
+    validation: "Tobias et al. (2010) and Tengs et al. (2001) report policy scenarios over 50 years; their abstracts do not report calibration statistics.",
     refs: ["tengs2001", "tobias2010"],
     tags: ["tobacco", "smoking", "cessation", "nicotine", "prevention", "QALY", "cost-effectiveness"],
   },
 ];
 
 // Best practice for building health models, step by step, each grounded in a source.
-export const PRACTICE: { step: string; detail: string; refs: string[] }[] = [
+export const PRACTICE: Practice[] = [
   { step: "Start from the problem, not the model", detail: "Write the policy question and sketch the behaviour over time you want to explain (the reference mode) before drawing any structure. A model is useful for a purpose, not in general.", refs: ["homerHirsch2006", "sterman2000"] },
   { step: "Check that system dynamics fits", detail: "Use the SIMULATE checklist: System, Interactions, Multilevel, Understanding, Loops, Agents, Time, Emergence. Choose SD for aggregate stocks, feedback and long delays; discrete-event or agent-based simulation for individual variability and queues at one site.", refs: ["marshall2015", "pitt2016"] },
   { step: "Build it with the people who own the problem", detail: "Group model building brings clinicians, managers, patients and communities into the modelling, which improves both the structure and the chance of use. A 2015 review found only 3 of 8 SD health-policy studies did this.", refs: ["vennix1996", "hovmand2014", "atkinson2015"] },
@@ -916,7 +990,7 @@ export const PRACTICE: { step: string; detail: string; refs: string[] }[] = [
   { step: "Stay humble", detail: "All models are wrong. The point is to test and improve mental models, not to forecast precisely.", refs: ["sterman2002"] },
 ];
 
-export const DATA_SOURCES: { name: string; url: string; what: string; scope: "Population health" | "Health services" }[] = [
+export const DATA_SOURCES: DataSource[] = [
   { name: "WHO Global Health Observatory", url: "https://www.who.int/data/gho", what: "Country indicators on mortality, disease, risk factors and health systems", scope: "Population health" },
   { name: "IHME Global Burden of Disease results", url: "https://vizhub.healthdata.org/gbd-results/", what: "Incidence, prevalence, deaths and DALYs by cause, age, sex and location", scope: "Population health" },
   { name: "UN World Population Prospects", url: "https://population.un.org/wpp/", what: "Population by age and sex; fertility, mortality and migration; projections", scope: "Population health" },
@@ -937,23 +1011,16 @@ export const DATA_SOURCES: { name: string; url: string; what: string; scope: "Po
   { name: "CMS Data", url: "https://data.cms.gov/", what: "US Medicare and Medicaid use, spending, providers and hospitals", scope: "Health services" },
 ];
 
-// "Homer and Hirsch 2006", "Sterman 2000", "Jones et al. 2006"
-export function shortCite(k: string) {
-  const [authors, rest] = REFS[k].text.split(" (");
-  const names = authors.split(", ").filter((a) => a !== "et al.").map((a) => a.replace(/ [A-Z-]+$/, ""));
-  const many = names.length > 2 || authors.includes("et al.");
-  return `${many ? names[0] + " et al." : names.join(" and ")} ${rest.slice(0, 4)}`;
-}
-
-export const caseById = (id: string) => CASES.find((c) => c.id === id);
-export const casesUsing = (moleculeKey: string) => CASES.filter((c) => c.molecules.includes(moleculeKey));
-
-// Case-insensitive match on everything a learner might type: condition, setting, method or molecule.
-export function searchCases(query: string, theme?: Theme): HealthCase[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  return CASES.filter((c) => {
-    if (theme && c.theme !== theme) return false;
-    const hay = [c.title, c.summary, c.question, c.theme, c.level, ...c.tags, ...c.molecules.map((k) => MODELS[k]?.name ?? "")].join(" ").toLowerCase();
-    return words.every((w) => hay.includes(w));
-  });
-}
+export const HEALTH: Domain = {
+  id: "health",
+  name: "Healthcare and population health",
+  short: "Healthcare",
+  blurb: "Outbreaks, chronic disease, hospital beds, waiting lists and the health workforce.",
+  themes: THEMES,
+  cases: CASES,
+  refs: REFS,
+  models: HEALTH_MODELS,
+  stop: SIM_STOP,
+  dataSources: DATA_SOURCES,
+  practice: PRACTICE,
+};

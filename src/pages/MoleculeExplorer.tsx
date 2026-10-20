@@ -14,20 +14,23 @@ import EquationsPanel from "@/components/EquationsPanel";
 import Controls from "@/components/Controls";
 import MoleculeMap from "@/components/MoleculeMap";
 import LessonPanel from "@/components/LessonPanel";
-import { HealthCasePage, HealthLibrary } from "@/components/Health";
-import { caseById, casesUsing } from "@/data/health/cases";
+import { AppsIndex, CasePage, DomainLibrary } from "@/components/Apps";
+import { caseIn, casesUsing, domainById } from "@/data/apps";
 
 // The address bar is the source of truth, so Back/Forward and shared links work:
 //   #/            overview map
 //   #/m/<key>     one molecule
 //   #/tour/<n>    guided tour, lesson n (1-based)
-//   #/health      healthcare case library; #/health/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "health"; id?: string };
+//   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
+type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string };
 function parseRoute(): Route {
-  const [, a, b] = window.location.hash.split("/");
+  const [, a, b, c] = window.location.hash.split("/");
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
-  if (a === "health") return { view: "health", id: caseById(b) ? b : undefined };
+  if (a === "apps") {
+    const d = domainById(b);
+    return { view: "apps", domain: d?.id, id: caseIn(d, c) ? c : undefined };
+  }
   // a link to a molecule that doesn't exist lands on the catalogue with a note, not silently
   return { view: "map", missing: a === "m" && b ? b : undefined };
 }
@@ -72,8 +75,9 @@ export default function MoleculeExplorer() {
   const open = (k: string) => go(`/m/${k}`);
   const showMap = () => go("/");
   const startTour = () => go("/tour/1");
-  const showHealth = () => go("/health");
-  const openCase = (id: string) => go(`/health/${id}`);
+  const showApps = () => go("/apps");
+  const openDomain = (d: string) => go(`/apps/${d}`);
+  const openCase = (d: string, c: string) => go(`/apps/${d}/${c}`);
   const gotoLesson = (i: number) => go(`/tour/${Math.max(0, Math.min(TOUR.length - 1, i)) + 1}`);
 
   const pos = TOUR.indexOf(key);
@@ -85,7 +89,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "health") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -123,14 +127,15 @@ export default function MoleculeExplorer() {
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showHealth={showHealth} healthActive={view === "health"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} paneOpen={paneOpen} togglePane={() => togglePane()} />
 
       <div className="flex">
         {paneOpen && (
           <SidePane
-            health={view === "health"}
-            current={route.view === "health" ? route.id : view === "map" ? undefined : key}
-            onSelect={view === "health" ? openCase : open}
+            apps={view === "apps"}
+            appDomain={route.view === "apps" ? route.domain : undefined}
+            current={route.view === "apps" ? `${route.domain}/${route.id}` : view === "map" ? undefined : key}
+            onSelect={view === "apps" ? (k) => go(`/apps/${k}`) : open}
             onClose={() => togglePane(false)}
           />
         )}
@@ -144,10 +149,16 @@ export default function MoleculeExplorer() {
                 </span>
               </p>
             )}
-            <MoleculeMap onSelect={open} onStartTour={startTour} onHealth={showHealth} />
+            <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} />
           </>
-        ) : route.view === "health" ? (
-          route.id ? <HealthCasePage key={route.id} id={route.id} onOpen={open} onCase={openCase} onLibrary={showHealth} /> : <HealthLibrary onOpen={openCase} />
+        ) : route.view === "apps" ? (
+          !route.domain ? (
+            <AppsIndex onDomain={openDomain} onCase={openCase} />
+          ) : route.id ? (
+            <CasePage key={route.domain + route.id} domain={domainById(route.domain)!} id={route.id} onOpen={open} onCase={openCase} onDomain={openDomain} />
+          ) : (
+            <DomainLibrary key={route.domain} domain={domainById(route.domain)!} onCase={openCase} />
+          )
         ) : view === "learn" ? (
           <div className={`${wrap} pt-8 md:pt-10`}>
             <LessonPanel
@@ -283,11 +294,12 @@ export default function MoleculeExplorer() {
 
             {casesUsing(key).length > 0 && (
               <section className="mt-16">
-                <h2 className="heading text-[20px] mb-1">In healthcare</h2>
-                <p className="text-[14px] text-muted-foreground mb-4">Cases in the healthcare library that use this molecule.</p>
+                <h2 className="heading text-[20px] mb-1">At work in the applications</h2>
+                <p className="text-[14px] text-muted-foreground mb-4">Published cases whose structure uses this molecule.</p>
                 <div className="flex flex-wrap gap-2">
-                  {casesUsing(key).map((c) => (
-                    <button key={c.id} onClick={() => openCase(c.id)} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
+                  {casesUsing(key).map(({ domain, c }) => (
+                    <button key={domain.id + c.id} onClick={() => openCase(domain.id, c.id)} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
+                      <span className="block text-[11.5px] font-normal text-muted-foreground">{domain.short}</span>
                       {c.title}
                     </button>
                   ))}
