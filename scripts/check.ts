@@ -16,7 +16,7 @@ import { OBJECTIVES, QUIZ } from "@/data/learn/quiz";
 import { STEPS } from "@/data/learn/steps";
 import { MODULE_CONTENT } from "@/data/learn";
 import { sampleModel } from "@/data/apps/sim";
-import { CAL_DATA, CAL_FIXED, CAL_HOLDOUT, CAL_MODEL, CAL_TRUTH, calFit, calRef, monteCarlo, overshoots } from "@/lib/labs";
+import { CAL_DATA, CAL_FIXED, CAL_MODEL, CAL_TRUTH, calHoldout, calRef, monteCarlo, overshoots, policyTest } from "@/lib/labs";
 const errs: string[] = [];
 const keys = GROUPS.flatMap((g) => g.keys);
 const all = Object.keys(MODELS);
@@ -116,17 +116,18 @@ for (const p of METHOD_PAGES) {
   const cal = calibrate(CAL_MODEL, { ...CAL_FIXED, adj: 9, slw: 0.9 }, ["adj", "slw"], [calRef(CAL_DATA)]);
   if (Math.abs(cal.params.adj - CAL_TRUTH.adj) > 0.5 || Math.abs(cal.params.slw - CAL_TRUTH.slw) > 0.051) errs.push(`calibration lab: search ends at ${cal.params.adj}, ${cal.params.slw}, not near the hidden ${CAL_TRUTH.adj}, ${CAL_TRUTH.slw}`);
   if (cal.trace.length !== cal.evals) errs.push("calibration lab: the trace must record every evaluation");
-  const half = calibrate(CAL_MODEL, { ...CAL_FIXED, adj: 9, slw: 0.9 }, ["adj", "slw"], [calRef(CAL_DATA.filter(([t]) => t <= CAL_HOLDOUT))]);
-  const g = { adj: half.params.adj, slw: half.params.slw };
-  // right structure: held-back error stays near the noise; wrong structure (supply line ignored): it jumps
-  if (calFit(g, CAL_HOLDOUT + 0.01, 40).rmse > 1.5 * calFit(g, 0, CAL_HOLDOUT).rmse) errs.push("calibration lab: with the right structure, held-back error should stay near in-sample error");
-  const wrong = calibrate(CAL_MODEL, { ...CAL_FIXED, adj: 9, slw: 0 }, ["adj"], [calRef(CAL_DATA.filter(([t]) => t <= CAL_HOLDOUT))]);
-  const gw = { adj: wrong.params.adj, slw: 0 };
-  if (!(calFit(gw, CAL_HOLDOUT + 0.01, 40).rmse > 3 * calFit(gw, 0, CAL_HOLDOUT).rmse)) errs.push("calibration lab: the wrong structure should fail badly on held-back data");
-  const pol = monteCarlo("stockmgmt", { slw: 0.5, acq: 6 }, ["slw", "acq"], 1, "inv", 80, 100, 5).runs;
-  const cost = (ys: number[]) => ys.reduce((t, y) => t + Math.abs(y - 100), 0) / ys.length;
-  const one = (p: Record<string, number>) => monteCarlo("stockmgmt", p, [], 0, "inv", 80, 1).runs[0].ys;
-  if (!pol.every((w) => cost(one({ ...w.params, slw: 1 })) <= cost(one({ ...w.params, slw: 0 })))) errs.push("sensitivity lab: counting the supply line should never hurt");
+  // hold-out test: the right structure keeps fitting the held-back weeks; the wrong one (weight on the
+  // supply line it sees but not on the pipeline it wants) fits the early weeks nearly as well, then fails
+  const right = calHoldout(), wrong = calHoldout(true);
+  if (right.outErr > 1.5 * right.inErr) errs.push("calibration lab: with the right structure, held-back error should stay near in-sample error");
+  if (!(wrong.inErr < 1.5 * right.inErr)) errs.push("calibration lab: the wrong structure should fit the early weeks nearly as well as the right one");
+  if (!(wrong.outErr > 3 * wrong.inErr && wrong.outErr > 5 * right.outErr)) errs.push("calibration lab: the wrong structure should fail badly on held-back data");
+  // policy sensitivity, scored by the glut: counting the supply line never adds overshoot; reacting faster
+  // helps far more often where managers count at least half of it
+  const pol = policyTest(100);
+  if (pol.pipeline !== 1) errs.push("sensitivity lab: counting the supply line should never add to the glut");
+  if (!(pol.fasterHi > 2 * pol.fasterLo && pol.fasterHi - pol.fasterLo > 0.2)) errs.push("sensitivity lab: whether reacting faster helps should depend on the weight on the supply line");
+  if (!(pol.fasterGap > 0.9 && pol.pipelineGap < 0.9)) errs.push("sensitivity lab: on the average-gap score the ranking of the two policies should flip, as the lab says");
   const shares = monteCarlo("stockmgmt", { slw: 0.5, acq: 6, adj: 4 }, ["slw", "acq", "adj"], 1, "inv", 80, 200, 13).runs.filter((r) => overshoots(r.ys)).length / 200;
   if (shares < 0.05 || shares > 0.95) errs.push(`sensitivity lab: behaviour-mode experiment should mix modes, got ${shares}`);
 }

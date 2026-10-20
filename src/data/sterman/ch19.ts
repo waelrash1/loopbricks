@@ -17,7 +17,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Small changes in staffing targets put large loads on recruiting",
-      text: "With a 100-week average tenure, 8 weeks to fill a post and 1,000 staff, the firm loses 10 people a week and keeps 80 vacancies open in equilibrium. A 50% step in desired labour sends vacancy creation from 10 to a peak of 125 a week, then the workforce settles smoothly within about a year. The response is identical in form to the capital investment example of the stock management structure (see the module Oscillation: stock management and supply chains); only the time constants differ. If the recruiting function cannot handle that peak, time to fill rises and hire quality may fall.",
+      text: "With a 100-week average tenure, 8 weeks to fill a post and 1,000 staff, the firm loses 10 people a week and keeps 80 vacancies open in equilibrium. A 50% step in desired labour sends vacancy creation from 10 to a peak of 125 a week, then the workforce settles smoothly, within 2% of the new target after about 32 weeks. The response is identical in form to the capital investment example of the stock management structure (see the module Oscillation: stock management and supply chains); only the time constants differ. If the recruiting function cannot handle that peak, time to fill rises and hire quality may fall.",
       pages: "760-762",
     },
     {
@@ -33,7 +33,7 @@ export const CHAPTER: StudyChapter = {
     {
       title: "Coupling labour to inventory makes the firm oscillate",
       text: "Production starts now equal labour × workweek × productivity, and desired labour is desired starts divided by the standard workweek and expected productivity. After a 20% rise in orders, inventory falls further than before because starts can only rise as people are hired; amplification of starts rises from 1.61 to 2.07, and the system rings with a period of about a year, taking roughly 3.5 years to settle. Vacancy creation peaks at nearly seven times its initial rate.",
-      pages: "764-767",
+      pages: "764-771",
     },
     {
       title: "The hidden supply line: capacity being recruited",
@@ -140,7 +140,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Weeks 15-23", detail: "New hires lift starts to the order rate, then production catches up; inventory bottoms." },
         { label: "Week 27", detail: "Labour peaks after desired labour has already turned down." },
         { label: "Week 36", detail: "Inventory reaches its target for the first time but output is near its peak, so it overshoots." },
-        { label: "Cutbacks", detail: "Vacancies are cancelled and layoffs begin; labour bottoms around week 53." },
+        { label: "Cutbacks", detail: "Layoffs, under way since about week 28, continue and open vacancies are cancelled as excess stock builds; labour bottoms around week 53." },
         { label: "Week 63", detail: "Inventory is below target and falling fast with too few workers: the next cycle starts." },
       ],
       loopBack: { from: 6, to: 1, label: "period of about one year" },
@@ -231,7 +231,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Inventory-workforce cycles in one firm",
-      text: "Using the manufacturing supply chain inventory parameters (see the module Oscillation: stock management and supply chains) (with inventory and WIP adjustment times of 12 and 6 weeks) and the labour parameters above, a 20% step in orders produces a lightly damped cycle with a period of about one year, an amplification of starts of 2.07 and a minimum fill rate of 88%. Layoffs begin around week 28 even though demand never fell. The natural period of about a year means such a firm could easily mistake its own cycle for seasonal demand, as Forrester showed a firm can learn spurious seasonality.",
+      text: "Using the manufacturing supply chain inventory parameters (see the module Oscillation: stock management and supply chains), with inventory and WIP adjustment times of 12 and 6 weeks, and the labour parameters above, a 20% step in orders produces a lightly damped cycle with a period of about one year, an amplification of starts of 2.07 and a minimum fill rate of 88%. Layoffs begin around week 28 even though demand never fell. The natural period of about a year means such a firm could easily mistake its own cycle for seasonal demand, as Forrester showed a firm can learn spurious seasonality.",
       pages: "766-773, 782",
     },
     {

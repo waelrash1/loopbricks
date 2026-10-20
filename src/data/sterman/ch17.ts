@@ -22,7 +22,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Leaving out loss replacement creates a steady-state error",
-      text: "If a firm produces only in proportion to its inventory shortfall, production is zero whenever inventory equals the target, so shipments drain inventory and open a gap. The gap grows until it is just large enough to call forth production equal to shipments. In equilibrium the stock therefore sits below its goal by shipments times the adjustment time, even though a balancing loop is working the whole time. Adding expected losses to the rule removes the error, and the evidence shows people do replace losses when loss information is available.",
+      text: "If a firm produces only in proportion to its inventory shortfall, production is zero whenever inventory equals the target, so shipments drain inventory and open a gap. The shortfall widens until it is big enough to make production match shipments. In equilibrium the stock therefore sits below its goal by shipments times the adjustment time, even though a balancing loop is working the whole time. Adding expected losses to the rule removes the error, and the evidence shows people do replace losses when loss information is available.",
       pages: "671-672",
     },
     {
@@ -63,7 +63,7 @@ export const CHAPTER: StudyChapter = {
     {
       title: "Stock management is a general structure, far beyond business",
       text: "The same structure describes hiring through vacancies, capital through construction, loans through applications, livestock through breeding, crops through planting, and even blood sugar through digestion. Wherever someone sets an inflow to keep a stock near a target and the inflow arrives through a pipeline, the analysis applies, and most of these systems show cycles of some kind. Cancellations and returns should be modelled as separate outflows with their own rules, never as negative orders.",
-      pages: "677-678",
+      pages: "669, 677-678",
     },
   ],
   diagrams: [
@@ -175,7 +175,7 @@ export const CHAPTER: StudyChapter = {
       equations: [
         "S(t) = S(0) + ∫(AR − LR) dt",
         "AR = MAX(0, DAR)",
-        "DAR = MAX(0, EL + AS)",
+        "DAR = EL + AS",
         "AS = (S* − S) / SAT",
       ],
       explain:
@@ -260,20 +260,21 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "In Stock Management, run <b>Stable (sees pipeline)</b> (weight 1), then <b>Oscillation (ignores it)</b> (weight 0). Compare the supply line peaks (about 78 against 134) and the inventory peaks. Explain the difference in terms of loop B2.",
-      hint: "This molecule sets the desired supply line to demand × delay without the weight, so with a weight below 1 inventory also settles above 100. Read the overshoot and the ringing, not the final level.",
+        "In Stock Management, run <b>Stable (sees pipeline)</b> (weight 1), then <b>Oscillation (ignores it)</b> (weight 0). Compare the supply line peaks (about 78 against 90) and the inventory peaks (100 against about 110). Explain the difference in terms of loop B2.",
+      hint: "Without B2 the rule keeps ordering for a gap that orders already in the pipeline will close, so the supply line overfills, inventory overshoots and the supply line then drops below its normal 60 as orders are cut. Both runs end at 100; only the path differs.",
       link: { label: "Open stock management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Still in Stock Management with weight 0, change only the inventory adjustment time: 2 weeks, then 8 weeks. Which setting gives the larger overshoot and more ringing, and why does reacting faster make things worse when the pipeline is ignored?",
-      hint: "At 2 weeks inventory peaks above 200 with several swings; at 8 weeks it creeps up with one gentle overshoot.",
+      hint: "At 2 weeks inventory peaks near 116 at week 11 and swings several times; at 8 weeks it creeps up to a gentle peak of about 104 near week 27.",
       link: { label: "Open stock management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
-        "Set the supply-line weight to 0.34, the Beer Game average, keeping the other defaults. Then try 0.34 with a 12-week acquisition delay. How much does the longer delay raise the peak inventory? Relate this to the claim that longer delays strengthen amplification.",
-      link: { label: "Open stock management", hash: "/m/stockmgmt" },
+        "In Low-Visibility Pipeline Correction, set the awareness of the pipeline to 0.34, the Beer Game average, keeping the other defaults. Then keep 0.34 and slow the supplier to 12 weeks. How much does the longer delay raise the peak inventory? Relate this to the claim that longer delays strengthen amplification.",
+      hint: "With a 6-week supplier inventory peaks at about 106; with 12 weeks at about 118, and orders not received overshoot to about 200. This molecule weights the desired pipeline too, as in the effective total stock formulation, so inventory still settles at 100.",
+      link: { label: "Open low-visibility pipeline", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:

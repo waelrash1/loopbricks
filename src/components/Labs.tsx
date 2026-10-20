@@ -13,10 +13,12 @@ import {
   band,
   calFit,
   calGrid,
+  calHoldout,
   calRef,
   calRun,
   monteCarlo,
   overshoots,
+  policyTest,
 } from "@/lib/labs";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -121,10 +123,12 @@ export function CalibrationLab() {
   const [searchNote, setSearchNote] = useState("");
   const [holdout, setHoldout] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [wrong, setWrong] = useState(false); // showing the wrong-structure model from step 5
   const grid = useMemo(calGrid, []);
-  const sim = calRun(guess);
-  const fitAll = calFit(guess);
-  const fitIn = calFit(guess, 0, CAL_HOLDOUT), fitOut = calFit(guess, CAL_HOLDOUT + 0.01, 40);
+  const wrongFit = useMemo(() => calHoldout(true), []);
+  const sim = calRun(guess, wrong);
+  const fitAll = calFit(guess, 0, 40, wrong);
+  const fitIn = calFit(guess, 0, CAL_HOLDOUT, wrong), fitOut = calFit(guess, CAL_HOLDOUT + 0.01, 40, wrong);
   const timer = useRef<number>();
 
   // draw the search path a step at a time, so learners can watch it move
@@ -140,6 +144,7 @@ export function CalibrationLab() {
     const path = res.trace.map((t) => ({ adj: t.params.adj, slw: t.params.slw }));
     setTrace(path);
     setShown(reduced() ? path.length : 1);
+    setWrong(false);
     setGuess({ adj: res.params.adj, slw: res.params.slw });
     setSearchNote(`The search tried ${res.evals} settings, starting from your guess, and settled on adjustment time ${res.params.adj} weeks and weight ${res.params.slw.toFixed(2)}.`);
   };
@@ -178,7 +183,7 @@ export function CalibrationLab() {
           />
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <i className="inline-block w-3 h-[3px]" style={{ background: BLUE }} /> Model with your guess
+              <i className="inline-block w-3 h-[3px]" style={{ background: BLUE }} /> {wrong ? "Wrong-structure model, fitted" : "Model with your guess"}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <i className="inline-block w-2.5 h-2.5 rounded-full border-2" style={{ borderColor: ORANGE }} /> Observed inventory
@@ -199,7 +204,7 @@ export function CalibrationLab() {
                     {id === "slw" ? guess.slw.toFixed(2) : guess.adj} {unit}
                   </b>
                 </div>
-                <Slider aria-label={label} min={min} max={max} step={step} value={[guess[id]]} onValueChange={([v]) => setGuess((g) => ({ ...g, [id]: v }))} />
+                <Slider aria-label={label} min={min} max={max} step={step} value={[guess[id]]} onValueChange={([v]) => (setWrong(false), setGuess((g) => ({ ...g, [id]: v })))} />
               </div>
             ))}
           </div>
@@ -275,6 +280,7 @@ export function CalibrationLab() {
             variant="secondary"
             onClick={() => {
               setGuess({ adj: 9, slw: 0.9 });
+              setWrong(false);
               setTrace([]);
               setShown(0);
               setSearchNote("");
@@ -308,26 +314,30 @@ export function CalibrationLab() {
         </div>
         <Para>
           With the right structure, both errors stay close to the size of the measurement noise (about 1.7 here): the model has learned the structure, so it carries on fitting. Now try a
-          model with the wrong structure: one that assumes the manager ignores orders already on the way.
+          model with the wrong structure. It has the same two unknowns, but its ordering rule applies the weight only to the supply line the manager sees, not to the pipeline they
+          want: (desired supply line − weight × supply line) / adjustment time. With any weight below 1 that rule keeps asking for pipeline it never counts.
         </Para>
         <div className="mt-3">
           <Button
             variant="secondary"
             onClick={() => {
-              const res = calibrate(CAL_MODEL, { ...CAL_FIXED, adj: 9, slw: 0 }, ["adj"], [calRef(CAL_DATA.filter(([t]) => t <= CAL_HOLDOUT))]);
               setHoldout(true);
               setTrace([]);
               setShown(0);
-              setGuess({ adj: res.params.adj, slw: 0 });
-              setSearchNote(`Fitted the wrong model (weight fixed at 0) to weeks 0 to ${CAL_HOLDOUT}: best adjustment time ${res.params.adj} weeks. Compare the two errors above, and look at the shaded weeks in the chart.`);
+              setWrong(true);
+              setGuess(wrongFit.guess);
+              setSearchNote(
+                `Fitted the wrong model to weeks 0 to ${CAL_HOLDOUT}: best adjustment time ${wrongFit.guess.adj} weeks and weight ${wrongFit.guess.slw.toFixed(2)}. Compare the two errors above, and look at the shaded weeks in the chart. Moving a slider switches back to the right structure.`
+              );
             }}
           >
             Fit a model with the wrong structure
           </Button>
         </div>
         <Para>
-          It fits the early weeks tolerably but misses the later ones badly, because it has the wrong reason for the early rise. A hold-out test does not prove the structure right, but a
-          large jump in error on unseen data is a strong sign it is wrong.
+          It fits the early weeks almost as well as the right model (error {f1(wrongFit.inErr)}), but on the held-back weeks its error jumps to {f1(wrongFit.outErr)}: it keeps inventory
+          rising past the target to {f1(calRun(wrongFit.guess, true)[CAL_TIMES.length - 1])} by week 40, while the real manager settled near 100. The early rise looked right for the wrong reason. A hold-out test does not prove a structure right, but a large
+          jump in error on unseen data is a strong sign it is wrong.
         </Para>
       </Step>
 
@@ -378,20 +388,8 @@ export function SensitivityLab() {
   const over = stock.runs.filter((r) => overshoots(r.ys));
   const smooth = stock.runs.filter((r) => !overshoots(r.ys));
 
-  // policy sensitivity: is reacting faster better? depends on the weight on the supply line
-  const policy = useMemo(() => {
-    const worlds = monteCarlo("stockmgmt", { slw: 0.5, acq: 6 }, ["slw", "acq"], 1, "inv", 80, runs, 5).runs;
-    const cost = (ys: number[]) => ys.reduce((t, y) => t + Math.abs(y - 100), 0) / ys.length;
-    const one = (p: Record<string, number>) => monteCarlo("stockmgmt", p, [], 0, "inv", 80, 1).runs[0].ys;
-    const rows = worlds.map((w) => ({
-      slw: w.params.slw,
-      fasterWins: cost(one({ ...w.params, adj: 2 })) < cost(one({ ...w.params, adj: 8 })),
-      pipelineWins: cost(one({ ...w.params, slw: 1 })) <= cost(one({ ...w.params, slw: 0 })),
-    }));
-    const share = (xs: typeof rows, k: "fasterWins" | "pipelineWins") => (xs.length ? xs.filter((x) => x[k]).length / xs.length : 0);
-    const hi = rows.filter((r) => r.slw >= 0.5), lo = rows.filter((r) => r.slw < 0.5);
-    return { faster: share(rows, "fasterWins"), fasterHi: share(hi, "fasterWins"), fasterLo: share(lo, "fasterWins"), pipeline: share(rows, "pipelineWins"), n: rows.length };
-  }, [runs]);
+  // policy sensitivity: does reacting faster cut the glut? depends on the weight on the supply line
+  const policy = useMemo(() => policyTest(runs), [runs]);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 
   return (
@@ -464,7 +462,8 @@ export function SensitivityLab() {
 
       <Step n={3} title="Policy sensitivity: the best policy depends on what you do not know">
         <Para>
-          Two policies tested in {policy.n} plausible worlds, scored by how far inventory strays from its target of 100 on average.
+          Two policies tested in {policy.n} plausible worlds, with the weight on the supply line and the delivery delay drawn across their ranges. Each is scored by the glut: how far
+          inventory rises above its target of 100 at worst. Excess stock ties up money and, for perishable goods, ends up thrown away.
         </Para>
         <div className="mt-4 grid sm:grid-cols-2 gap-4 max-w-[760px]">
           <div className="sheet">
@@ -481,12 +480,17 @@ export function SensitivityLab() {
             <p className="mt-1 text-[14px] text-muted-foreground">Weight on the supply line 1 instead of 0</p>
             <p className="mt-3 text-[28px] font-bold tabular-nums">{pct(policy.pipeline)}</p>
             <p className="text-[14px]">of worlds where it helps or does no harm</p>
-            <p className="mt-2 text-[14px] leading-[1.55]">A robust policy: it works whatever the delays and adjustment times turn out to be.</p>
+            <p className="mt-2 text-[14px] leading-[1.55]">A robust policy: inventory never overshoots, whatever the delivery delay and the managers' own weight turn out to be.</p>
           </div>
         </div>
         <Para>
-          The first policy reverses with an assumption we are unsure of; the second does not. For most policy work, that difference is what sensitivity analysis is for: behaviour mode
+          Whether the first policy helps depends on an assumption we are unsure of; the second does not. For most policy work, that difference is what sensitivity analysis is for: behaviour mode
           and especially policy sensitivity are what count (Sterman 2000, pp. 883–884).
+        </Para>
+        <Para>
+          The score is an assumption too. Judged by the average distance from the target over the 80 weeks instead, reacting faster helps in {pct(policy.fasterGap)} of worlds and
+          counting orders on the way in only {pct(policy.pipelineGap)}, because a manager who counts the pipeline recovers more slowly even though they never overshoot. Say which cost
+          matters before you rank policies.
         </Para>
       </Step>
 

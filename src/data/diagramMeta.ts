@@ -71,7 +71,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
   stockmgmt: {
     orders: {
       name: "order rate",
-      eq: "MAX(0, demand + (desInv − Inventory)/τ + (desiredSL − w·SupplyLine)/τ)",
+      eq: "MAX(0, demand + (desInv − Inventory)/τ + w·(desiredSL − SupplyLine)/τ)",
       in: ["demand", "desInv", "inv", "sl", "adj", "acq", "slw"],
       loop: "B",
     },

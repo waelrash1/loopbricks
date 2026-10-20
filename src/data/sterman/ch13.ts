@@ -37,7 +37,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Robust in extreme conditions, and no assumed equilibrium",
-      text: "Policies are meant to push systems into regimes never seen before, so every rule must give physically possible results for any input: shipments must be zero when the warehouse is empty, however many orders arrive. Robustness therefore forces nonlinearity, as with the effect of cash on layoffs, which is nil normally and dominant near zero cash. Equally, a model should not presume the system has a particular equilibrium or that it is stable. Equilibrium and stability are behaviours that may or may not emerge from the interaction of the decision rules with the physical structure.",
+      text: "Policies are meant to push systems into regimes never seen before, so every rule must give physically possible results for any input: shipments must be zero when the warehouse is empty, however many orders arrive. Robustness therefore forces nonlinearity, as with the effect of cash on layoffs, which is nil normally and dominant near zero cash. Equally, a model should not presume the system has a particular equilibrium or that it is stable. Equilibrium and stability are outcomes, which the decision rules and the physical structure produce together, or fail to produce.",
       pages: "519-520",
     },
     {

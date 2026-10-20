@@ -186,7 +186,7 @@ export const CHAPTER: StudyChapter = {
         "Desired supply line = Expected acquisition delay × Desired acquisition",
       ],
       explain:
-        "The stock management structure (see the module Oscillation: stock management and supply chains) applied to mills, mines or ships. Discards are first order with the average life of capacity. Cancellations can be added as a separate outflow, as in the labour model (see the module Cycles in business, labour and commodity markets).",
+        "The stock management structure (see the module Oscillation: stock management and supply chains) applied to mills, mines or ships. Discards are first order with the average life of capacity. Cancellations can be added as a separate outflow, as in the labour model earlier in this module.",
       molecule: "stockmgmt",
       pages: "805-807",
     },

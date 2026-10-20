@@ -26,7 +26,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Population momentum comes from the age structure",
-      text: "A population that has been growing has many more young people than old. If fertility fell to replacement overnight, the large young cohorts would still move into the childbearing years, births would keep exceeding deaths, and population would keep rising for decades. The UN instant-replacement scenario took a world of 6 billion in 1999 to 8.4 billion by 2050. China grew more than 25% between 1980 and 1998 although fertility was below replacement. The long delay between birth and reproduction and long lifetimes make a population very slow to respond.",
+      text: "A population that has been growing has many more young people than old. If fertility fell to replacement overnight, the large young cohorts would still move into the childbearing years, births would keep exceeding deaths, and population would keep rising for decades. The UN instant-replacement scenario took a world of 6 billion in 1999 to 8.4 billion by 2050. China grew more than 25% between 1980 and 1998 although fertility was below replacement. Because people live a long time and reproduce only decades after birth, a population takes generations to settle after fertility or mortality changes.",
       pages: "480-481",
     },
     {
@@ -61,7 +61,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Nonconserved coflows: attributes that change on their own",
-      text: "Some attributes change without any unit entering or leaving: experience accrues week by week on the job, knowledge decays or becomes obsolete, inventory is written down, machines are retrofitted. These need extra flows into or out of the attribute stock with no counterpart in the main stock. Equilibrium average experience is then (attrition rate × new-hire experience + weeks worked per year) / (attrition rate + decay rate), which no longer equals the experience of new hires.",
+      text: "Some attributes change without any unit entering or leaving: experience accrues week by week on the job, knowledge decays or becomes obsolete, inventory is written down, machines are retrofitted. These need extra flows into or out of the attribute stock with no counterpart in the main stock. Equilibrium average experience is then (fractional attrition rate × new-hire experience + weeks worked per year) / (fractional attrition rate + fractional decay rate), which no longer equals the experience of new hires.",
       pages: "504-507",
     },
     {
@@ -236,7 +236,7 @@ export const CHAPTER: StudyChapter = {
         "e.g. Labour requirements += acquisitions × labour per new machine; −= discards × average labour per machine",
       ],
       explain:
-        "The attribute stock moves only when units move. In equilibrium with a constant marginal attribute, it behaves like a first-order adjustment with time constant equal to the stock's residence time; when the main stock grows or shrinks, the adjustment speeds up or stalls, which a delay formulation cannot reproduce.",
+        "The attribute stock moves only when units move. When the main stock is in equilibrium, a change in the marginal attribute works through like a first-order adjustment with time constant equal to the stock's residence time; when the main stock grows or shrinks, the adjustment speeds up or stalls, which a delay formulation cannot reproduce.",
       molecule: "coflow",
       pages: "498-503",
     },
@@ -269,7 +269,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "Urban Dynamics: three aging chains in one city",
-      text: "Forrester's urban model divides business structures into new, mature and declining, housing into premium, worker and underemployed, and people into three socio-economic classes. Structures age down the chain; old business buildings are demolished from the last stage, and housing filters down to poorer occupants as it ages. Forrester left out flows such as loft conversions, gentrification and rehabilitation for simplicity; later extensions added them and generally found the policy conclusions held.",
+      text: "Forrester's urban model divides business structures into new, mature and declining, housing into premium, worker and underemployed, and people into three socio-economic classes. Structures age down the chain; old business buildings are demolished from the last stage, and housing filters down to poorer occupants as it ages. Forrester left out flows such as loft conversions, gentrification and rehabilitation for simplicity. Later work added some of them (Homer's study of insurance redlining included gentrification and rehabilitation), and extensions of the model generally found its policy conclusions robust to changes in boundary and aggregation.",
       pages: "472-474",
     },
     {
@@ -291,8 +291,8 @@ export const CHAPTER: StudyChapter = {
   exercises: [
     {
       prompt:
-        "Open the aging chain and load the <b>Baby boom</b> preset (births 35/yr). Watch the three cohorts: in what order do they rise, and roughly how many years apart are the peaks of their rates of change? Relate the gap to the youth duration (18 yr) and adult duration (45 yr).",
-      hint: "The equilibrium of each cohort is births × its duration: with 35 births/yr that is 630 young, 1575 adults and 525 elderly.",
+        "Open the aging chain, load the <b>Baby boom</b> preset (births 35/yr) and run it for 200 years. In what order do the cohorts approach their new equilibria, and roughly how long does each take to get within 10% of it? Relate the times to the youth duration (18 yr) and adult duration (45 yr).",
+      hint: "The equilibrium of each cohort is births × its duration: 630 young, 1575 adults and 525 elderly. The young get within 10% in about 30 years; the adults and elderly need about a century, because they wait on the youth stage and then drain through the 45-year adult stage.",
       link: { label: "Aging chain", hash: "/m/aging" },
     },
     {
@@ -303,8 +303,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Open Aging Chain with PDY, start from <b>Steady</b>, then switch to <b>Rapid hiring</b> (40/yr). Read the rookie, experienced and veteran stocks after 2, 5 and 20 years and compute the rookie share each time. Why does the share rise first and then fall back even though hiring stays high?",
-      hint: "In the new equilibrium every stock doubles (120, 1000, 320), so the long-run mix is the same; the dilution is a transient of the growth phase.",
+        "Open Aging Chain with PDY and load <b>Rapid hiring</b> (40/yr). Read the rookie, experienced and veteran stocks after 2, 5 and 20 years and compute the rookie share each time. Repeat with <b>Steady</b> (20/yr, which starts in equilibrium). Why is the rookie share higher under rapid hiring at every reading, and why does the gap close in the long run?",
+      hint: "At year 5 rookies are about 13% of staff under rapid hiring against a constant 8% under Steady. In equilibrium every stock is hiring × its residence time (60, 500, 160 or 120, 1000, 320), so the long-run mix is the same; the extra dilution lasts only while the experienced ranks catch up with the larger intake.",
       link: { label: "Aging Chain with PDY", hash: "/m/agingPDY" },
     },
     {

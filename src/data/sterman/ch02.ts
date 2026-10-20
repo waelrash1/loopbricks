@@ -285,7 +285,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "General Motors: leasing and the used car superstores (1995-1998)",
-      text: "Superstore sales grew from nothing in 1992 to more than $13 billion in 1998, and leasing rose from 4.1% of new car sales in 1990 to over 22% in 1997. A model built overnight, then refined over 20 days into a flight simulator, showed that short leases were creating the supply of nearly new cars and that their full effect took up to 5 years to play out. GM moved to 36-48 month terms, dropped two-year leases and did not raise residuals. When off-lease cars flooded the market in 1997, the share of returned leases rose from 29% to 39% in 1998 and the average loss per returned car reached $1878. Ford Credit's profit fell $410 million (28%) in 1997, while GMAC's automotive financing income fell only $36 million.",
+      text: "Superstores went from no sales in 1992 to over $13 billion in 1998, and leasing rose from 4.1% of new car sales in 1990 to over 22% in 1997. A model built overnight, then refined over 20 days into a flight simulator, showed that short leases were creating the supply of nearly new cars and that their full effect took up to 5 years to play out. GM moved to 36-48 month terms, dropped two-year leases and did not raise residuals. When off-lease cars flooded the market in 1997, the share of returned leases rose from 29% to 39% in 1998 and the average loss per returned car reached $1878. Ford Credit's profit fell $410 million (28%) in 1997, while GMAC's automotive financing income fell only $36 million.",
       pages: "42-55",
     },
     {
@@ -295,12 +295,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Du Pont: spending more on maintenance and getting less",
-      text: "Benchmarking in 1991 showed Du Pont spent 10-30% more on maintenance per dollar of plant than industry leaders while uptime was 10-15% lower. A typical plant was worth $400 million, employed about 90 mechanics and ran at 83.5% uptime. Simulations showed that better scheduling alone kept uptime with 82 mechanics, and a full proactive suite kept it with 61, but the same suite without downsizing raised uptime above 93% and added about $9 million a year in profit. Plants adopting the programme saw pump MTBF improve 12% per doubling of experience and costs fall 20%, against 5% and a 7% cost rise in 23 comparison plants.",
+      text: "Benchmarking in 1991 showed Du Pont spent 10-30% more on maintenance, relative to plant value, than industry leaders while uptime was 10-15% lower. A typical plant was worth $400 million, employed about 90 mechanics and ran at 83.5% uptime. Simulations showed that better scheduling alone kept uptime with 82 mechanics, and a full proactive suite kept it with 61, but the same suite without downsizing raised uptime above 93% and added about $9 million a year in profit. Plants adopting the programme saw pump MTBF improve 12% per doubling of experience and costs fall 20%, against 5% and a 7% cost rise in 23 comparison plants.",
       pages: "66-76",
     },
     {
       title: "BP's Lima refinery",
-      text: "A run-down refinery that BP planned to sell or close adopted the maintenance game in 1994 and put 80% of its staff through it. Maintenance costs rose about 30% in the first six months, as expected. Pump MTBF rose from 12 to 58 months and pump failures fell from over 640 (1991) to 131 (1998); new value was put at $43 million a year against a cost of $320,000. The refinery was sold in 1998 for $215 million and kept running. One team eliminated butane flaring in two weeks for $5000, saving $1.5 million a year, a fix they had known about for 8 years.",
+      text: "A run-down refinery that BP planned to sell or close adopted the maintenance game in 1994 and put 80% of its staff through it. Maintenance costs rose about 30% in the first six months, as expected. Pump MTBF rose from 12 to 58 months and pump failures fell from over 640 (1991) to 131 (1998); new value was put at $43 million a year against a cost of $320,000 a year. The refinery was sold in 1998 for $215 million and kept running. One team eliminated butane flaring in two weeks for $5000, saving $1.5 million a year, a fix they had known about for 8 years.",
       pages: "77-79",
     },
   ],
@@ -334,7 +334,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Lease returns as a delayed echo. In Material Delay run Pulse through with a transit delay of 9 weeks, treating the inflow as leases written in a boom and the arrivals as cars coming back. Then set the delay to 16. Note when arrivals peak in each case and explain why returns keep arriving after demand has fallen.",
+        "Lease returns as a delayed echo. In Material Delay run Steady pipeline, treating the inflow as leases written each week and the arrivals as cars coming back. When do arrivals reach half the inflow, and when nearly all of it? Then run Long transit (delay 16). How many cars are in the pipeline once it has filled, and why can those returns not be cut when demand falls?",
+      hint: "Once filled, the pipeline holds inflow × delay: 72 cars with a 9-week delay and 128 with 16. Every one of them comes back even if no new leases are written.",
       link: { label: "Material Delay", hash: "/m/material" },
     },
     {

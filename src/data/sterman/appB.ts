@@ -220,7 +220,7 @@ export const CHAPTER: StudyChapter = {
   cases: [
     {
       title: "White versus pink noise in the inventory and workforce model",
-      text: "Sterman (2000) drove the inventory and workforce model (see the module Cycles in business, labour and commodity markets) (with expected productivity smoothed over 13 weeks) with productivity noise of the same 5% standard deviation and the same distribution, once as white noise and once as pink noise with a 4-week correlation time, time step 0.125 weeks. Under white noise the system damped nearly everything: inventory varied by less than 2% of its mean, and production, inventory and labour all varied far less than productivity; only the hiring rate amplified the input. Under pink noise, inventory, labour and other key variables all varied by more than productivity did, production starts by 7.6%, and the standard deviation of hiring was about six times that under white noise and 13 times that of productivity. The noise had power near the system's natural period of about a year, so the system resonated.",
+      text: "Sterman (2000) drove the inventory and workforce model from the module Cycles in business, labour and commodity markets, with expected productivity smoothed over 13 weeks, using productivity noise of the same 5% standard deviation and the same distribution, once as white noise and once as pink noise with a 4-week correlation time, time step 0.125 weeks. Under white noise the system damped nearly everything: inventory varied by less than 2% of its mean, and production, inventory and labour all varied far less than productivity; only the hiring rate amplified the input. Under pink noise, inventory, labour and other key variables all varied by more than productivity did, production starts by 7.6%, and the standard deviation of hiring was about six times that under white noise and 13 times that of productivity. The noise had power near the system's natural period of about a year, so the system resonated.",
       pages: "919-921",
     },
     {
@@ -248,7 +248,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Find the mode noise would excite. Open Stock Management with the Oscillation preset (supply-line weight 0) and measure the time between inventory peaks: about 33 weeks. Set the acquisition delay to 12 weeks and measure again (about 47 weeks). Then switch to the Stable preset (weight 1). For each case, say whether pink noise with a correlation time of 4 weeks would be likely to produce visible cycles, and why white noise with the app's step of 0.1 weeks would not.",
+        "Find the mode noise would excite. Open Stock Management with the Oscillation preset (supply-line weight 0) and measure the time between inventory peaks: about 33 weeks. Set the acquisition delay to 12 weeks and measure again (about 45 weeks). Then switch to the Stable preset (weight 1). For each case, say whether pink noise with a correlation time of 4 weeks would be likely to produce visible cycles, and why white noise with the app's step of 0.1 weeks would not.",
       hint: "Noise can only amplify a mode that exists. With weight 1 the system has no strong oscillatory mode to resonate.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },

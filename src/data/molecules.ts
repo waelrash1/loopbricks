@@ -783,7 +783,8 @@ export const MODELS: Record<string, Model> = {
     rates: (s, p) => {
       const acquisition = s.sl / p.acq;
       const desiredSL = p.demand * p.acq;
-      const orders = Math.max(0, p.demand + (p.desInv - s.inv) / p.adj + (desiredSL - p.slw * s.sl) / p.adj);
+      // the weight scales the whole supply-line gap (Sterman 2000, ch. 17), so inventory reaches its goal for any weight
+      const orders = Math.max(0, p.demand + (p.desInv - s.inv) / p.adj + (p.slw * (desiredSL - s.sl)) / p.adj);
       return { orders, acquisition, sales: p.demand };
     },
     derivs: (_s, _p, r) => ({ sl: r.orders - r.acquisition, inv: r.acquisition - r.sales }),
@@ -815,7 +816,7 @@ export const MODELS: Record<string, Model> = {
         '<span class="chip chipB">B1</span> inventory control + <span class="chip chipB">B2</span> supply-line control, and <span class="chip chipB">B3</span> the supply line draining as orders arrive. Low inventory → more orders → more on order → more arrivals → inventory recovers. The second loop matters, if managers under-weight the <b>supply line</b> (orders already placed), they keep ordering for stock that is already coming → overshoot and oscillation.',
     },
     desc: `<p>You refill an inventory by placing orders that arrive only after an <b>acquisition delay</b>. Good control needs two corrections: one for the inventory gap, and one for the <b>supply line</b> (orders in the pipeline). The classic error, and the engine of the Beer Game bullwhip, is to discount the supply line: you keep ordering for stock that is already on its way, overshoot, then have to dump the excess.</p>
-    <div class="eq">orders = demand + (desired inv − inventory)/τ + (desired SL − w·supply line)/τ</div>
+    <div class="eq">orders = demand + (desired inv − inventory)/τ + w·(desired SL − supply line)/τ</div>
     <div class="whenbox"><h4>When to use it</h4>
     Use this whenever there is a <b>delay between deciding and receiving</b> and you manage a buffer against demand: purchasing, hiring (with a recruiting/training pipeline), capacity expansion, cash management. Set <b>supply-line weight</b> below 1 to reproduce the instability: the lower the weight and the longer the acquisition delay, the bigger the overshoot and the longer the oscillation.</div>
     <h4>Real-world examples</h4>
@@ -2044,9 +2045,10 @@ export const MODELS: Record<string, Model> = {
     unitY: "people",
     lede: "An aging chain carrying a productivity coflow: rookies, experienced and veterans each produce differently, so rapid hiring can raise headcount yet cut output per person.",
     stocks: [
-      { id: "rookies", label: "Rookies", init: 100, scale: 400, color: C.acc },
-      { id: "experienced", label: "Experienced", init: 200, scale: 600, color: C.acc2 },
-      { id: "gray", label: "Veterans", init: 50, scale: 300, color: C.good },
+      // start in equilibrium for the default parameters (hiring 20/yr: 20×3, 20×25, 20×8), so any change seen is caused by a slider
+      { id: "rookies", label: "Rookies", init: 60, scale: 400, color: C.acc },
+      { id: "experienced", label: "Experienced", init: 500, scale: 800, color: C.acc2 },
+      { id: "gray", label: "Veterans", init: 160, scale: 300, color: C.good },
     ],
     params: [
       { id: "hiring", label: "Hiring", min: 0, max: 40, step: 1, value: 20, unit: "/yr" },

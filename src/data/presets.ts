@@ -39,7 +39,7 @@ export const PRESETS: Record<string, Preset[]> = {
     { label: "Long stay", params: { inflow: 8, tau: 10 } },
   ],
   material: [
-    { label: "Pulse through", params: { inflow: 0, delay: 9 } },
+    { label: "Short transit", params: { inflow: 8, delay: 4 } },
     { label: "Steady pipeline", params: { inflow: 8, delay: 9 } },
     { label: "Long transit", params: { inflow: 8, delay: 16 } },
   ],

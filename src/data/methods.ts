@@ -431,9 +431,9 @@ const PAGES: MethodPage[] = [
           rows: [
             ["Extreme conditions", "Bathtub with no inflow and the drain at 30 per year", "The level stops at 0 and never goes negative"],
             ["Extreme conditions", "Stock Management with demand at its minimum", "Inventory settles at the target of 100, not above or below"],
-            ["Integration error", "Stock Management ignoring the supply line, time step 0.5, 0.25, 0.1 and 0.05", "Peak inventory 189.4, 186.8, 185.4 and 185.0: the app's step of 0.1 is within 0.3% of the finest"],
-            ["Behaviour anomaly", "Set the supply-line weight from 1 to 0", "Peak inventory rises from 100 to 185 and oscillation appears, as theory predicts"],
-            ["Surprise behaviour", "Let the weight-0 run settle", "Inventory settles at 160, not the target of 100: ignoring orders in transit over-stocks for good, a finding the first draft never stated"],
+            ["Integration error", "Stock Management ignoring the supply line, time step 0.5, 0.25, 0.1 and 0.05", "Peak inventory 111.7, 110.7, 110.2 and 110.0: the app's step of 0.1 is within 0.2% of the finest"],
+            ["Behaviour anomaly", "Set the supply-line weight from 1 to 0", "Peak inventory rises from 100 to 110 and oscillation appears, as theory predicts"],
+            ["Surprise behaviour", "Weight 0, a 12-week delay and desired inventory 60, where inventory starts", "Inventory falls to about 36 and rings for years although it starts on target and demand never changes. The supply line starts at 60 when a 12-week delay needs 120: a start-up error to fix, not a finding"],
           ],
         },
         cite: ["sterman2000", "barlas1996"],
@@ -493,7 +493,7 @@ const PAGES: MethodPage[] = [
           steps: [
             "Open Stock Management and run it with the supply-line weight at 1: inventory rises smoothly to its target of 100.",
             "Set the weight to 0, which cuts the loop that accounts for orders already on the way, and run again.",
-            "Inventory now overshoots to about 185 and settles at 160. The loop is doing real work, and its strength is worth estimating carefully.",
+            "Inventory now overshoots to about 110, dips below 100 and rings for several cycles before it settles. The loop is doing real work, and its strength is worth estimating carefully.",
           ],
           link: { label: "Try it on Stock Management", hash: "/m/stockmgmt" },
         },
@@ -673,7 +673,7 @@ const PAGES: MethodPage[] = [
           title: "calibration, scenario discovery and equation discovery",
           steps: [
             "Calibration. Data from a decay with time constant 9; starting from 5, the optimiser in the Runs and data panel finds 9 in 12 runs and the error falls from 33% to under 1%.",
-            "Scenario discovery. Run Stock Management 483 times across acquisition delays from 1 to 12 and supply-line weights from 0 to 1, and flag every run whose inventory overshoots the target by more than 20%. 289 runs overshoot. A box rule finds where: with weight below 0.5 and delay above 6, all 132 runs overshoot; with weight 0.5 or more and delay 6 or less, only 9 of 110 do. That is the kind of rule PRIM-style methods find automatically in larger ensembles.",
+            "Scenario discovery. Run Stock Management 483 times across acquisition delays from 1 to 12 and supply-line weights from 0 to 1, and flag every run whose inventory overshoots the target by more than 5%. 152 runs overshoot. A box rule finds where: with weight below 0.25 and delay above 4, 79 of 80 runs overshoot; with weight 0.5 or more and delay 6 or less, only 8 of 121 do. That is the kind of rule PRIM-style methods find automatically in larger ensembles.",
             "Equation discovery. Take ten yearly values of the decaying stock, compute the change each year, and regress change on level. The slope is −0.112, which recovers a time constant of 8.96 against the true 9. With noisy real data, sparse regression over a library of candidate terms does the same job and keeps only the terms that matter.",
           ],
           link: { label: "Try calibration on Decay", hash: "/m/decay" },

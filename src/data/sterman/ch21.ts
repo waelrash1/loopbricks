@@ -21,7 +21,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Testing is social and judged against a purpose",
-      text: "Because evidence never forces acceptance or rejection, model evaluation is a process of communication and persuasion among modellers, clients and other stakeholders, each judging by their own criteria. That does not make every test equally good, nor excuse ignoring evidence. A leader never chooses whether to use a model, only which one, and delaying action in search of a perfect model is itself a decision with consequences. Good modellers seek many tests across many data sources, treat building and testing as one iterative loop, and point clients to the model's limitations so it is improved and not misused.",
+      text: "Because evidence never forces acceptance or rejection, model evaluation is a process of communication and persuasion among modellers, clients and other stakeholders, each judging by their own criteria. That does not make every test equally good, nor excuse ignoring evidence. Every decision rests on some model, mental if not formal, so the real choice is which model to rely on; waiting for a perfect one is itself a decision with consequences. Good modellers seek many tests across many data sources, treat building and testing as one iterative loop, and point clients to the model's limitations so it is improved and not misused.",
       pages: "850",
     },
     {
@@ -31,7 +31,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Boundary first: narrow models breed policy resistance",
-      text: "The boundary decides which variables are endogenous, which are exogenous and which are excluded. Making a concept exogenous, or omitting it, cuts every feedback that runs through it, so the model cannot show how the system will respond to a policy and the client discovers those responses later as side effects. Narrow boundaries are the single largest source of policy resistance. Practical matters also shape reliability: if a model is expensive or slow to run, adequate sensitivity analysis has almost certainly not been done, and modellers who cannot revise quickly tend to become defensive about flaws.",
+      text: "The boundary decides which variables are endogenous, which are exogenous and which are excluded. Making a concept exogenous, or omitting it, cuts every feedback that runs through it, so the model cannot show how the system will respond to a policy and the client discovers those responses later as side effects. No other cause produces as much policy resistance as a boundary drawn too tightly. Practical matters also shape reliability: a model that is costly or slow to run will rarely have had enough sensitivity analysis, and modellers who cannot revise quickly tend to defend its flaws instead of fixing them.",
       pages: "851-853",
     },
     {
@@ -111,12 +111,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Test 10. Surprise behaviour",
-      text: "When a model behaves unexpectedly, either the formal model or the mental model is wrong. The test is passed when the model shows a behaviour no one had recognised and it then turns out to be present in the real system. How to run it: examine every variable, not only the headline ones; track every anomaly to its source; keep a dated laboratory notebook; and record the client team's mental models before modelling begins, so hindsight cannot later make the lessons look obvious. Example: Forrester's model of an automotive components maker showed market share falling faster in recessions than booms, the reverse of what managers believed. The firm cut production so hard in downturns that its product was scarcer then; the data confirmed it, and production policy changed.",
+      text: "When a model behaves unexpectedly, either the formal model or the mental model is wrong. The test is passed when the model points to a pattern nobody had noticed and a look at the real system finds it there. How to run it: examine every variable, not only the headline ones; track every anomaly to its source; keep a dated laboratory notebook; and record the client team's mental models before modelling begins, so hindsight cannot later make the lessons look obvious. Example: Forrester's model of an automotive components maker showed market share falling faster in recessions than booms, the reverse of what managers believed. The firm cut production so hard in downturns that its product was scarcer then; the data confirmed it, and production policy changed.",
       pages: "882-883",
     },
     {
       title: "Test 11. Sensitivity analysis",
-      text: "Ask whether conclusions change in ways that matter when assumptions vary over their plausible range. Numerical sensitivity (the numbers change) is universal; behaviour mode sensitivity (the pattern changes, say from smooth adjustment to oscillation) and policy sensitivity (a policy's impact or desirability reverses) are what usually matter. Vary not only parameters but the boundary, the aggregation and the decision rules, to which results are often more sensitive. Test over a range at least twice as wide as judgement or regression confidence bounds suggest, because people are overconfident and standard errors ignore measurement and specification error. Tools include univariate and multivariate tests, best and worst case scenarios, Monte Carlo runs giving dynamic confidence bands, and automated searches for parameters that break the model or reverse a policy. Example: in a diffusion model, Monte Carlo bands were widest during growth, where word of mouth compounds small parameter differences, and narrowed once the market saturated.",
+      text: "Ask whether conclusions change in ways that matter when assumptions vary over their plausible range. Numerical sensitivity (the numbers change) is universal; behaviour mode sensitivity (the pattern changes, say from smooth adjustment to oscillation) and policy sensitivity (a policy's impact or desirability reverses) are what usually matter. Vary not only parameters but the boundary, the aggregation and the decision rules, to which results are often more sensitive. Vary each assumption across at least double the range that judgement or statistical confidence intervals would suggest, because people are overconfident and standard errors ignore measurement and specification error. Tools include univariate and multivariate tests, best and worst case scenarios, Monte Carlo runs giving dynamic confidence bands, and automated searches for parameters that break the model or reverse a policy. Example: in a diffusion model, Monte Carlo bands were widest during growth, where word of mouth compounds small parameter differences, and narrowed once the market saturated.",
       pages: "883-887",
     },
     {
@@ -126,7 +126,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Test early, test often, and test with clients",
-      text: "Models rarely fail because of the wrong regression technique or a slightly poor fit. They fail because basic questions about purpose are not asked, physical laws are violated, a narrow boundary cuts critical feedbacks, assumptions are hidden, or stakeholders are excluded. Testing is iterative and multidimensional and starts on day one: units and extreme conditions as each equation is written, integration error before the first serious run, sensitivity throughout. Open the process to as many people as possible, because implementation depends on changing the clients' mental models, and that happens when clients help find the model's limitations themselves.",
+      text: "Models seldom come to grief over a choice of estimation method or a slightly weak fit. The usual causes are more basic: nobody asked whether the model suits its purpose, it breaks physical laws such as conservation, its boundary cuts feedbacks that matter, its assumptions are kept from clients, or the people affected are left out. Testing is iterative and multidimensional and starts on day one: units and extreme conditions as each equation is written, integration error before the first serious run, sensitivity throughout. Open the process to as many people as possible, because implementation depends on changing the clients' mental models, and that happens when clients help find the model's limitations themselves.",
       pages: "890-891",
     },
   ],
@@ -371,7 +371,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Test 1, boundary adequacy. Run Population Growth with the Growing preset (births 5%, deaths 2%) for 60 years and note the conclusion it gives about long-run population. Then open Constrained Growth with growth rate 3% and carrying capacity 200, where crowding is inside the boundary. Write one sentence on how moving crowding from outside to inside the boundary changes the answer to 'how large will the population be?'.",
+        "Test 1, boundary adequacy. Run Population Growth with the Growing preset (births 5%, deaths 2%) for 60 years and note the conclusion it gives about long-run population. Then open Constrained Growth with the S-curve preset (growth rate 18%, carrying capacity 200), where crowding is inside the boundary and the population levels off at 200. Write one sentence on how moving crowding from outside to inside the boundary changes the answer to 'how large will the population be?'.",
       hint: "In the first model the only limit is outside the boundary, so it never acts. In the second the limit is endogenous.",
       link: { label: "Open Population Growth", hash: "/m/growth" },
     },
@@ -383,7 +383,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Test 3, dimensional consistency. Open Stock Management and write the units of every term in the order rate: demand, (desired inventory − inventory) / adjustment time, and (desired supply line − weight × supply line) / adjustment time. Check that each is in units per week, and say what unit the supply-line weight must have for the equation to balance.",
+        "Test 3, dimensional consistency. Open Stock Management and write the units of every term in the order rate: demand, (desired inventory − inventory) / adjustment time, and weight × (desired supply line − supply line) / adjustment time. Check that each is in units per week, and say what unit the supply-line weight must have for the equation to balance.",
       hint: "Inventory is in units and the adjustment time in weeks, so the gap term is units per week. The weight must be dimensionless.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
@@ -413,33 +413,33 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Test 8, behaviour anomaly. Open Stock Management with the Stable preset (supply-line weight 1) and run it: inventory rises smoothly to 100. Knock out the supply-line loop by setting the weight to 0: inventory peaks near 185 around week 17 and oscillates. Then restore the weight to 0 but also weaken the inventory loop by setting the adjustment time to 12 weeks. What do the two knockouts tell you about which loops matter for stability?",
-      hint: "With adjustment time 12 the peak falls to about 164 but arrives much later, around week 37.",
+        "Test 8, behaviour anomaly. Open Stock Management with the Stable preset (supply-line weight 1) and run it: inventory rises smoothly to 100. Knock out the supply-line loop by setting the weight to 0: inventory now overshoots to about 110 around week 17, dips below 100 and rings for several cycles. Then keep the weight at 0 but also weaken the inventory loop by setting the adjustment time to 12 weeks. What do the two knockouts tell you about which loops matter for stability?",
+      hint: "With adjustment time 12 the peak falls to about 102 but arrives much later, around week 37.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
-        "Test 9, family member. Using the Oscillation preset of Stock Management (weight 0), note the time between inventory peaks (about 33 weeks). Now set the acquisition delay to 12 weeks, as a slower industry might have: the peak rises to about 290 and peaks come roughly every 47 weeks. Then open the hog cycle case and identify which parameter there plays the role of the acquisition delay.",
+        "Test 9, family member. Using the Oscillation preset of Stock Management (weight 0), note the time between inventory peaks (about 33 weeks). Now set the acquisition delay to 12 weeks, as a slower industry might have: the peak rises to about 120 and peaks come roughly every 45 weeks. Then open the hog cycle case and identify which parameter there plays the role of the acquisition delay.",
       hint: "One structure, re-parameterised, produces a family of cycles. In livestock the delay is gestation and growing time.",
       link: { label: "Open the hog cycle case", hash: "/apps/economics/hog-cycle" },
     },
     {
       prompt:
-        "Test 10, surprise behaviour. Before running anything, write down where you expect inventory to settle in Stock Management if managers ignore the supply line (weight 0) with target inventory 100, demand 10 and acquisition delay 6. Then run the Oscillation preset for 100 weeks. It settles at 160, not 100. Use the order equation to explain why, and say whether you would trust this as a real-world finding or treat it as a formulation flaw.",
-      hint: "In equilibrium orders equal demand, so the two correction terms must cancel. With weight 0, the desired supply line of 60 units is never offset by the actual supply line.",
+        "Test 10, surprise behaviour. In Stock Management, set desired inventory to 60 (where inventory starts), keep demand at 10, set the supply-line weight to 0 and double the acquisition delay to 12 weeks. Before running anything, write down what you expect: inventory starts on target and demand never changes. Then run 100 weeks. Inventory falls to about 36 by week 9, overshoots to about 69 near week 32 and is still ringing at week 100. Use the equations to explain why anything happens at all, and say whether you would report it as a real-world finding or fix the model.",
+      hint: "The supply line starts at 60, but a 12-week delay needs 10 × 12 = 120 in the pipeline to deliver 10 a week. Deliveries drop to 60 ÷ 12 = 5 a week at once: the model did not start in equilibrium. Initialise the supply line at demand × delay before trusting a run.",
       link: { label: "Open Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:
         "Test 11, sensitivity analysis. In the sensitivity lab, set the uncertainty to ±25% and then ±50%, and note how the diffusion bands widen during growth and narrow as the market saturates. Then read the behaviour mode experiment (the share of runs that overshoot) and the policy experiment. Classify each result as numerical, behaviour mode or policy sensitivity, and say which policy you would recommend and why.",
-      hint: "Counting the supply line helps whatever the delays turn out to be; reacting faster depends on an assumption we are unsure of.",
+      hint: "Counting the supply line never adds to the glut, whatever the delays turn out to be; whether reacting faster helps depends on how much of the supply line managers count. On the average-gap score the ranking changes, so say which cost matters.",
       link: { label: "Open the sensitivity lab", hash: "/methods/sensitivity" },
     },
     {
       prompt:
-        "Best and worst cases. On New-Product Diffusion, run a cautious case (innovation 0.8%, imitation 13%) and a hot case (innovation 2%, imitation 27%). Adoption peaks at about 37 a week near week 20 in the first and about 78 a week near week 9 in the second. If you were sizing production capacity, how would these bounds change your plan, and what would a Monte Carlo run add?",
+        "Best and worst cases. On Diffusion, run a cautious case (innovation 0.8%, imitation 13%) and a hot case (innovation 2%, imitation 27%). Adoption peaks at about 37 a week near week 20 in the first and about 78 a week near week 9 in the second. If you were sizing production capacity, how would these bounds change your plan, and what would a Monte Carlo run add?",
       hint: "Best and worst cases bound the outcome but are not likely outcomes themselves; Monte Carlo bands show how likely each region is.",
-      link: { label: "Open New-Product Diffusion", hash: "/m/diffusion" },
+      link: { label: "Open Diffusion", hash: "/m/diffusion" },
     },
     {
       prompt:

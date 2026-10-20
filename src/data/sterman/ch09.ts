@@ -42,7 +42,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Herd immunity and eradication do not need everyone to be immune",
-      text: "Because the threshold is a ratio, eradication only requires holding the reproduction rate below 1 so that cases resolve faster than they arise. Vaccinating a fraction of the population lowers S/N and can push the whole community below the tipping point, protecting the unvaccinated too: this is herd immunity. The condition can be lost if contact rates rise, or if new susceptibles accumulate through births, migration or waning immunity. Sterman (2000) simulates a population challenged by one infected arrival every 50 days while its contact rate creeps up: no epidemic for 500 days, then successive and smaller waves as the system crosses the threshold, depletes susceptibles, and crosses again. Measles cycled roughly every two years before mass vaccination for the same reason, with births refilling the susceptible pool.",
+      text: "Because the threshold is a ratio, eradication only requires holding the reproduction rate below 1 so that cases resolve faster than they arise. Vaccinating a fraction of the population lowers S/N and can push the whole community below the tipping point, protecting the unvaccinated too: this is herd immunity. The condition can be lost if contact rates rise, or if new susceptibles accumulate through births, migration or waning immunity. Sterman (2000) simulates a population challenged by one infected arrival every 50 days while its contact rate creeps up: no epidemic for 500 days, then successive and smaller waves as the system crosses the threshold, depletes susceptibles, and crosses again. Measles cycled roughly every two years before mass vaccination for a different reason: its contact rate stayed fairly constant, but births refilled the susceptible pool until the population crossed the threshold again.",
       pages: "309-314",
     },
     {
@@ -62,7 +62,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "A good historical fit does not validate a model",
-      text: "Logistic and Bass curves fit an enormous range of data. But different growth models can fit the same history equally well and still forecast very different futures, and by the time enough data exist to tell them apart the forecast is no longer useful. Worse, fit says nothing about whether the model will respond correctly to policies. If the real growth is driven partly by loops the model omits (such as third-party software for a computer platform), the estimated word-of-mouth strength silently absorbs them, and the model recommends the wrong lever. A model can fit the data perfectly for the wrong reasons (Sterman 2000, p. 331). Use data to find flaws, not to defend a model.",
+      text: "Logistic and Bass curves fit an enormous range of data. But different growth models can fit the same history equally well and still forecast very different futures, and by the time enough data exist to tell them apart the forecast is no longer useful. Worse, fit says nothing about whether the model will respond correctly to policies. If the real growth is driven partly by loops the model omits (such as third-party software for a computer platform), the estimated word-of-mouth strength silently absorbs them, and the model recommends the wrong lever. As Sterman (2000, p. 331) puts it, a model 'may fit the data perfectly for the wrong reasons'. Use data to find flaws, not to defend a model.",
       pages: "328-331",
     },
     {
@@ -328,20 +328,20 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Compare the Ad-driven (p 4%, q 5%) and Viral (p 0.5%, q 35%) presets of the diffusion molecule. Sketch the adoption flow for each. Which one has an inflection point in the adopter curve, and when should the adoption rate peak according to t* = ln(q/p)/(p + q)? Check the formula against the Word-of-mouth preset (p 1%, q 18%).",
-      hint: "For p = 1%, q = 18% per week, t* = ln(18)/0.19 ≈ 15 weeks. If p ≥ q the formula gives zero or a negative time: adoption is highest at launch.",
+        "Compare the Ad-driven (p 4%, q 5%) and Viral (p 0.5%, q 35%) presets of the diffusion molecule. Sketch the adoption flow for each. Which one shows a clear S in the adopter curve, and when should the adoption rate peak according to t* = ln(q/p)/(p + q)? Check the formula against the Word-of-mouth preset (p 1%, q 18%).",
+      hint: "For p = 1%, q = 18% per week, t* = ln(18)/0.19 ≈ 15 weeks; for Viral, ln(70)/0.355 ≈ 12 weeks. For Ad-driven, ln(1.25)/0.09 ≈ 2.5 weeks and the peak is barely above the launch rate, so there is almost no S. If p ≥ q the formula gives zero or a negative time: adoption is highest at launch.",
       link: { label: "Diffusion", hash: "/m/diffusion" },
     },
     {
       prompt:
-        "Open the Bass case and run the Typical durable preset (p 3%, q 38%), then Strong word of mouth (p 1%, q 40%). Which reaches half the market first? A product manager proposes doubling the advertising budget to triple p. Use the model to say when that would matter most, and what it cannot tell you about whether word of mouth is really the driver.",
+        "Open the Bass case and run the Typical durable preset (p 3%, q 38%), then Strong word of mouth (p 1%, q 40%). Which reaches half the market first? A product manager proposes an advertising push that would triple p. Use the model to say when that would matter most, and what it cannot tell you about whether word of mouth is really the driver.",
       hint: "Think about the warning on fit: if growth is partly driven by loops the model omits, the fitted q absorbs them.",
       link: { label: "Bass diffusion case", hash: "/apps/business/new-product-diffusion" },
     },
     {
       prompt:
-        "Pen and paper: a new app has active users who each make 40 conversations a year with non-users, 5% of which persuade the other person to install it, and the average person stays active for 6 months. Is the app above or below its tipping point at launch? How much longer would people need to stay active for word of mouth alone to sustain growth? Then compare the word-of-mouth and fact-checking presets of the rumour case, which share the same structure.",
-      hint: "c·i·d = 40 × 0.05 × 0.5 = 1.0 when nearly everyone is a potential adopter: exactly at the threshold.",
+        "Pen and paper: a new app has active users who each make 40 conversations a year with non-users, 5% of which persuade the other person to install it, and the average person stays active for 6 months. Is the app above or below its tipping point at launch? How much longer would people need to stay active for word of mouth alone to sustain growth? Then compare the Word of mouth and Fact-checking presets of the rumour case. That model has word of mouth but nobody ever stops sharing, so what does it leave out, and why does it have no tipping point?",
+      hint: "c·i·d = 40 × 0.05 × 0.5 = 1.0 when nearly everyone is a potential adopter: exactly at the threshold, so any longer period of active use tips it into growth. Without a stock of people who stop sharing, the rumour model behaves like the SI model: any word of mouth at all eventually reaches almost everyone.",
       link: { label: "Rumour case", hash: "/apps/social/rumours" },
     },
   ],

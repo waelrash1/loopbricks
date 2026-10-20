@@ -36,12 +36,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Accumulation creates delay: a quarter-cycle lag",
-      text: "If the net flow oscillates, the stock oscillates with the same period but peaks a quarter cycle later, because the stock keeps rising until the net flow falls to zero. For a net flow of amplitude A and period T, the stock swings with amplitude A·T/2π. In an example from Sterman (2000), a 12-month cycle of ±50 units/month, gives stock swings of about ±96 units, peaking three months after the flow. Integration alone, with no feedback at all, is enough to create lags.",
+      text: "If the net flow oscillates, the stock oscillates with the same period but peaks a quarter cycle later, because the stock keeps rising until the net flow falls to zero. For a net flow of amplitude A and period T, the stock swings with amplitude A·T/2π. In an example from Sterman (2000), a 12-month cycle of ±50 units/month gives stock swings of about ±96 units, peaking three months after the flow. Integration alone, with no feedback at all, is enough to create lags.",
       pages: "237-238",
     },
     {
       title: "Net flow hides the individual flows",
-      text: "Differentiating a stock reveals only its net rate of change. A firm's cash is flat whether revenue and spending are both $1 million a year or both $1 billion. To separate the inflows from the outflows you need more information than the stock's history provides, which is why models often need independent data on the flows themselves.",
+      text: "The slope of a stock's path gives only the net flow. A firm's cash is flat whether revenue and spending are both $1 million a year or both $1 billion. To separate the inflows from the outflows you need more information than the stock's history provides, which is why models often need independent data on the flows themselves.",
       pages: "240-241",
     },
     {
@@ -290,7 +290,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Carbon dioxide bathtub. Before running, sketch the concentration under each preset: Today (emissions double removal), Emissions cut by 30%, Emissions equal removal, Emissions below removal. Then run them. Which preset first stops the rise, and what does that tell you about policies that merely stabilise emissions?",
+        "Carbon dioxide bathtub. Before running, sketch the concentration under each preset: Today: emissions double removal, Emissions cut by 30%, Emissions equal removal, Emissions below removal. Then run them. Which preset first stops the rise, and what does that tell you about policies that merely stabilise emissions?",
       hint: "The stock rises until emissions fall to the removal rate; cutting by 30% only slows the rise.",
       link: { label: "CO₂ as a bathtub", hash: "/apps/environment/co2-bathtub" },
     },
@@ -306,8 +306,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Cocaine case. Run New use stops and note when casual and compulsive users peak. Then compare Steady new use with More users escalate. Use graphical integration to explain why compulsive use keeps rising after initiation has stopped.",
-      hint: "Compulsive users rise as long as escalation (an inflow fed by casual users) exceeds their own exits.",
+        "Cocaine case. Run New use stops: casual users can only fall, so note when compulsive users peak. Then compare Steady new use with More users escalate. Use graphical integration to explain why compulsive use keeps rising after initiation has stopped.",
+      hint: "Compulsive users rise as long as escalation (an inflow fed by casual users) exceeds their own exits; with New use stops they peak about one stage time (4 years) in.",
       link: { label: "Cocaine prevalence", hash: "/apps/social/cocaine" },
     },
   ],

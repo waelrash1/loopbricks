@@ -251,7 +251,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Precedence relationships in chip development (Ford and Sterman)",
-      text: "For a product development model of an application-specific chip, seven 45-minute workshops with two to five experts each (on average over ten years of experience) elicited how much work a phase can do given what another phase has released. Design engineers' curve for their own phase showed a flat start, because about 20% of the code blocks had to be nearly finished before others could begin; the agreed curve came from discussion, not averaging. For the link from product definition to design, marketers thought design could start on vague specifications while designers thought about half the specifications were needed, a gap of more than half the design scope that explained years of conflict and rework.",
+      text: "For a product development model of an application-specific chip, seven workshops of about 45 minutes, each with a different set of experts (who averaged over ten years of chip development experience) elicited how much work a phase can do given what another phase has released. Design engineers' curve for their own phase showed a flat start, because about 20% of the code blocks had to be nearly finished before others could begin; the agreed curve came from discussion, not averaging. For the link from product definition to design, marketers thought design could start on vague specifications while designers thought about half the specifications were needed, a gap of more than half the design scope that explained long-running conflict, iteration and delay.",
       pages: "587-594",
     },
   ],

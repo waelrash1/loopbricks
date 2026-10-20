@@ -252,7 +252,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Simple rules versus experts",
-      text: "Studies reviewed by Sterman (2000) found that simple decision rules using a few inputs often beat expert judgment at predicting outcomes as varied as student performance, cancer patients' survival, business failures and stock returns. The point is not that rules are clever but that holistic expert judgment combines many cues poorly, which supports modelling decisions as simple, cue-limited rules.",
+      text: "Studies cited by Sterman (2000, p. 599) found that simple decision rules using a few inputs often beat expert judgment at predicting outcomes as varied as student performance, cancer patients' survival, business failures and stock returns. The point is not that rules are clever but that holistic expert judgment combines many cues poorly, which supports modelling decisions as simple, cue-limited rules.",
       pages: "599",
     },
   ],

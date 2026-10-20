@@ -51,7 +51,7 @@
  stocks: l1=In transit ①[0]; l2=In transit ②[0]; l3=In transit ③[0]
  params: inflow=Inflow 8/wk (0-16); delay=Transit delay 9wk (2-18)
  flows: in=inflow: inflow; f1=flow 1→2: Transit1 / (delay/3); f2=flow 2→3: Transit2 / (delay/3); out=arrivals: Transit3 / (delay/3)
- presets: Pulse through{"inflow":0,"delay":9} | Steady pipeline{"inflow":8,"delay":9} | Long transit{"inflow":8,"delay":16}
+ presets: Short transit{"inflow":8,"delay":4} | Steady pipeline{"inflow":8,"delay":9} | Long transit{"inflow":8,"delay":16}
 
 ## aging (yr, y=people)
  stocks: young=Youth (0-18)[300]; adult=Working (18-65)[800]; old=Elderly (65+)[200]
@@ -86,7 +86,7 @@
 ## stockmgmt (wk, y=units)
  stocks: sl=Supply line[60]; inv=Inventory[60]
  params: demand=Demand 10/wk (2-20); desInv=Desired inventory 100 (40-200); adj=Inventory adj time 4wk (1-12); acq=Acquisition delay 6wk (1-12); slw=Supply-line weight 1 (0-1)
- flows: orders=order rate: MAX(0, demand + (desInv − Inventory)/τ + (desiredSL − w·SupplyLine)/τ); acquisition=acquisition: SupplyLine / acquisition delay; sales=sales: demand
+ flows: orders=order rate: MAX(0, demand + (desInv − Inventory)/τ + w·(desiredSL − SupplyLine)/τ); acquisition=acquisition: SupplyLine / acquisition delay; sales=sales: demand
  presets: Stable (sees pipeline){"demand":10,"desInv":100,"adj":4,"acq":6,"slw":1} | Oscillation (ignores it){"demand":10,"desInv":100,"adj":4,"acq":6,"slw":0} | Long lead time{"demand":10,"desInv":100,"adj":4,"acq":12,"slw":0.3}
 
 ## lowVisPipeline (wk, y=cases)
@@ -138,7 +138,7 @@
  presets: Steady team{"hire":10,"ttq":8,"newExp":0} | Hiring surge (dilution){"hire":20,"ttq":8,"newExp":0} | Hire veterans{"hire":20,"ttq":8,"newExp":5}
 
 ## agingPDY (yr, y=people)
- stocks: rookies=Rookies[100]; experienced=Experienced[200]; gray=Veterans[50]
+ stocks: rookies=Rookies[60]; experienced=Experienced[500]; gray=Veterans[160]
  params: hiring=Hiring 20/yr (0-40); tMature=Time to mature 3yr (1-10); tExp=Experienced tenure 25yr (10-40); tGray=Veteran tenure 8yr (3-15)
  flows: hire=hiring: hiring; mature=maturing: Rookies / time to mature; senior=becoming senior: Experienced / experienced tenure; retire=retiring: Veterans / veteran tenure
  presets: Steady{"hiring":20,"tMature":3,"tExp":25,"tGray":8} | Rapid hiring (dilution){"hiring":40,"tMature":3,"tExp":25,"tGray":8}

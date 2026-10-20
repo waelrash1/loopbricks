@@ -46,7 +46,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "A dynamic hypothesis is a provisional, feedback-based theory",
-      text: "It is dynamic because it explains the problem behaviour through the system's feedback and stock and flow structure, and it is a hypothesis because it is always open to revision. Early on, client team members bring competing theories; the modeller's job is to capture them all as a facilitator, without filtering, and help the group towards an endogenous explanation that can then be tested.",
+      text: "It is dynamic because it explains the problem behaviour through the system's feedback and stock and flow structure, and it is a hypothesis because it can always be revised. Early on, client team members bring competing theories; the modeller's job is to capture them all as a facilitator, without filtering, and help the group towards an endogenous explanation that can then be tested.",
       pages: "94-95",
     },
     {
@@ -185,7 +185,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "PIES: detail inside a boundary that was too narrow",
-      text: "The Project Independence Evaluation System, used by US energy agencies in the 1970s, combined linear programming, econometrics and input-output analysis and reported dozens of fuels by region. It treated the economy as exogenous, so even a full import embargo or doubled oil price left growth untouched. In 1974 it projected 1985 imports of only 3.3 million barrels a day, 250,000 barrels a day of shale oil and prices near $22 per barrel. Actual imports in the late 1980s were about 5.5 million barrels a day and shale oil never appeared.",
+      text: "The Project Independence Evaluation System, used by US energy agencies in the 1970s, combined linear programming, econometrics and input-output analysis and reported dozens of fuels by region. It treated the economy as exogenous, so even a full import embargo or doubled oil price left growth untouched. In 1974 it projected 1985 imports of only 3.3 million barrels a day, 250,000 barrels a day of shale oil and prices near $22 per barrel. Imports actually ran at about 5.5 million barrels a day in the late 1980s and shale oil never appeared.",
       pages: "96",
     },
     {

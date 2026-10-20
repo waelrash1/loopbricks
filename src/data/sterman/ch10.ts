@@ -262,7 +262,7 @@ export const CHAPTER: StudyChapter = {
         "MS_1 = exp(s·B_2·R/(1 − R)) / [exp(s·B_2·R/(1 − R)) + exp(s·B_2)]",
       ],
       explain:
-        "Market share of firm 1 as a function of its share of the total base R, for a given competitor base B_2. For B_2 = 0.1 the 50% point is stable and firm 1 would need about 90% of the base to tip the market; around B_2 = 0.5 the slope at 50% reaches 1; for B_2 = 1 the 50% point is unstable, with stable equilibria near 20% and at 100%. The growing total base shifts loop dominance from balancing to reinforcing.",
+        "How firm 1's share of new sales depends on its share R of the installed base, for a given competitor base B_2. For B_2 = 0.1 the 50% point is stable and firm 1 would need about 90% of the base to tip the market; around B_2 = 0.5 the slope at 50% reaches 1; for B_2 = 1 the 50% point is unstable, with stable equilibria near 20% and at 100%. The growing total base shifts loop dominance from balancing to reinforcing.",
       pages: "399-402",
     },
     {
@@ -289,7 +289,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Growth tigers and Microsoft",
-      text: "A study of more than 1200 US firms found 97 growth tigers: firms growing sales at three times the S&P 500 average over 10 years and beating it on shareholder return over 5. Only 8% of the sample, they produced 15% of sales growth, 28% of job growth and 47% of profit growth, and they combined many reinforcing loops rather than relying on one. Microsoft is the paradigm: up-front development costs, scope, learning, acquisitions, market power, workforce and cost-of-capital loops, and above all network and complementary-goods effects. Its sales grew about 37% a year from $140 million in 1985 to $11.36 billion in 1997; extrapolating that against 5.5% a year nominal GDP growth, the curves would cross in about 21 years, which shows that balancing loops must eventually take over.",
+      text: "A study of more than 1200 US firms found 97 growth tigers: firms growing sales at three times the S&P 500 average over 10 years and beating it on shareholder return over 5. Only 8% of the sample, they produced 15% of sales growth, 28% of job growth and 47% of profit growth, and they combined many reinforcing loops rather than relying on one. Microsoft is the paradigm: up-front development costs, scope, learning, acquisitions, market power, workforce and cost-of-capital loops, and above all network and complementary-goods effects. Its sales grew from $140 million in 1985 to $11.36 billion in 1997, a continuously compounded rate of about 37% a year (about 44% a year compounded annually); extrapolating that against nominal US GDP growth of about 5.5% a year on the same basis, Microsoft's sales would overtake GDP in about 21 years, which shows that balancing loops must eventually take over.",
       pages: "382-385",
     },
     {
@@ -319,13 +319,13 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "In the Market Share molecule, attractiveness depends only on the ratio of the two bases. Change new customers from 5 to 40 (network effect 0.7). Does the outcome change? Then explain, in a few sentences, why the standards model of Sterman (2000) would behave differently when the whole market is small, and what that implies for a late entrant.",
-      hint: "In the molecule A still wins; only the speed changes, because the starting bases are large or small relative to the market's eventual size. In the standards model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
+        "In the Market Share molecule, attractiveness depends only on the ratio of the two bases. Compare new customers of 5 and 40 a month (default 20, network effect 0.7). Does the outcome change? Then explain, in a few sentences, why the standards model of Sterman (2000) would behave differently when the whole market is small, and what that implies for a late entrant.",
+      hint: "In the molecule A still wins; only the speed changes (A passes 90% of the base after about 68 months with 5 new customers a month and about 34 with 40), because the starting bases are large or small relative to the market's eventual size. In the standards model attractiveness depends on each base relative to a fixed threshold, so when the total base is small compatibility hardly matters and the 50% split is stable. A late entrant can win only before the market grows.",
       link: { label: "Market Share molecule", hash: "/m/marketshare" },
     },
     {
       prompt:
-        "Work through the competing standards case. Run Strong increasing returns, then Users switch often (6 months). Answer the case's question about when B's user base peaks, and say what a firm in B's position would need to do, and by when, to reverse the outcome.",
+        "Work through the competing standards case. Run Strong increasing returns, then Users switch often (6 months). Answer the case's first try-this question (when does B's user base peak and start to shrink?), and say what a firm in B's position would need to do, and by when, to reverse the outcome.",
       link: { label: "Competing standards and lock-in", hash: "/apps/business/lock-in" },
     },
     {

@@ -218,9 +218,9 @@ export const CHAPTER: StudyChapter = {
         "Desired inventory = Desired coverage × Expected orders;  Desired coverage = Minimum processing time + Safety stock coverage",
       ],
       explain:
-        "This is the stock management rule (see the module Oscillation: stock management and supply chains) with inventory as the stock and WIP as the supply line. Base case values: minimum processing 2 weeks, safety stock 2 weeks, cycle time 8 weeks, inventory adjustment 8 weeks.",
+        "This is the stock management rule from earlier in this module, with inventory as the stock and WIP as the supply line. Base case values: minimum processing 2 weeks, safety stock 2 weeks, cycle time 8 weeks, inventory adjustment 8 weeks, WIP adjustment 2 weeks.",
       molecule: "stockmgmt",
-      pages: "714-716",
+      pages: "714-716, 721",
     },
     {
       name: "Demand forecast and order backlog",

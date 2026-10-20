@@ -42,7 +42,7 @@ const boomBust: Model = {
     const adopt = (p.p / 100 + (p.q / 100) * (s.own / N)) * s.pot;
     const sales = adopt + s.own / PRODUCT_LIFE;
     const retire = s.cap / CAP_LIFE;
-    const order = Math.max(0, retire + (s.dem - s.cap) / CAP_ADJ + ((s.dem / CAP_LIFE) * p.acq - p.slw * s.onOrder) / CAP_ADJ);
+    const order = Math.max(0, retire + (s.dem - s.cap) / CAP_ADJ + (p.slw * ((s.dem / CAP_LIFE) * p.acq - s.onOrder)) / CAP_ADJ);
     return { adopt, sales, order, arrive: s.onOrder / p.acq, retire };
   },
   derivs: (s, _p, r) => ({ pot: -r.adopt, own: r.adopt, onOrder: r.order - r.arrive, cap: r.arrive - r.retire, dem: (r.sales - s.dem) / FCST }),
@@ -97,7 +97,7 @@ const boomBust: Model = {
 const flowMeta: Record<string, Record<string, FlowMeta>> = {
   biz_boomBust: {
     adopt: { name: "adoption", eq: "(p + q × Owners / N) × Potential buyers", in: ["pot", "own", "p", "q"], loop: { pot: "B", own: "R" } },
-    order: { name: "capacity orders", eq: "MAX(0, retirements + (forecast − Capacity) / 1 yr + (forecast / 15 yr × lead time − w × On order) / 1 yr)", in: ["cap", "onOrder", "acq", "slw"], loop: "B" },
+    order: { name: "capacity orders", eq: "MAX(0, retirements + (forecast − Capacity) / 1 yr + w × (forecast / 15 yr × lead time − On order) / 1 yr)", in: ["cap", "onOrder", "acq", "slw"], loop: "B" },
     arrive: { name: "capacity arriving", eq: "Capacity on order / lead time", in: ["onOrder", "acq"], loop: "B" },
     retire: { name: "retirements", eq: "Capacity / 15 yr", in: ["cap"], loop: "B" },
   },
@@ -307,11 +307,11 @@ const CASES: AppCase[] = [
     ],
     validation: "Sterman (1989) ran a laboratory experiment and estimated the ordering rule econometrically; the rule explained subjects' behaviour well. Lee et al. (1997) is an analytical study of the four causes; the abstract reports no empirical test.",
     insight:
-      "Ignoring what is already on order is the same as counting each shortfall twice, so the retailer over-orders, overshoots and then cuts orders sharply. The supplier sees a swing several times larger than the retailer's own problem, even though customer demand never changed.",
+      "Ignoring what is already on order is the same as counting each shortfall twice, so the retailer over-orders, overshoots and then cuts orders below normal. The supplier sees orders rise well above demand and then fall below it, even though customer demand never changed. Stock does return to target in the end; the damage is the swing on the way.",
     tryThis: [
       "Compare the first two presets. How far above the target of 100 does stock go when orders in transit are ignored?",
-      "With orders in transit ignored, raise the stock adjustment time from 4 to 10 weeks. The peak is lower, but where does stock end up, and why?",
-      "Try the long lead time preset. Then move the weight on orders in transit up to 1 and watch the swing disappear.",
+      "With orders in transit ignored, raise the stock adjustment time from 4 to 10 weeks. How much smaller is the overshoot, and what do you give up in return?",
+      "Try the long lead time preset. Then move the weight on orders in transit up to 1 and watch the overshoot disappear.",
     ],
     data: [
       ["Point-of-sale demand", "Retail scanner data; company sales records"],
@@ -323,13 +323,14 @@ const CASES: AppCase[] = [
       "Model each tier as its own stock management structure, with its own supply line. The bullwhip grows tier by tier.",
       "This small model starts the retailer 40 cases below target with steady demand. Lee et al. stress other causes too, such as batching and price promotions, which this model leaves out.",
       "Measure amplification as the ratio of the variance of orders to the variance of sales at each tier.",
-      "In this molecule the weight scales only the supply line the rule sees, not the pipeline it wants. With the weight at 0 the rule keeps asking for a full pipeline that it never sees arrive, so stock settles above target by the normal pipeline (demand × lead time = 60 cases), on top of the overshoot.",
+      "The weight multiplies the whole supply-line gap, desired minus actual, as in Sterman's rule. So stock always ends at target, and the weight only shapes the path. If you write it as (desired − weight × actual) instead, the rule keeps asking for pipeline it never counts and stock settles too high, a formulation error that looks like behaviour.",
     ],
     checks: [
-      { claim: "Ignoring orders in transit drives stock more than 50% above target, while counting them never overshoots by more than 1%", test: (run) => run({ slw: 0 }).max.inv > 150 && run({ slw: 1 }).max.inv < 101 },
+      { claim: "Ignoring orders in transit drives stock more than 5% above target, while counting them never overshoots by more than 1%", test: (run) => run({ slw: 0 }).max.inv > 105 && run({ slw: 1 }).max.inv < 101 },
       { claim: "When the rule counts orders in transit, stock settles on the target of 100", test: (run) => Math.abs(run({ slw: 1 }).end.inv - 100) < 1 },
-      { claim: "Ignoring orders in transit leaves stock settled at target + demand × lead time = 160 cases", test: (run) => Math.abs(run({ slw: 0 }, 200).end.inv - 160) < 1 },
-      { claim: "Ignoring orders in transit makes the supply line rise more than three times as far above its normal level of 60", test: (run) => run({ slw: 0 }).max.sl - 60 > 3 * (run({ slw: 1 }).max.sl - 60) },
+      { claim: "Ignoring orders in transit also ends at the target of 100 in the long run: the cost is the swing, not a lasting offset", test: (run) => Math.abs(run({ slw: 0 }, 200).end.inv - 100) < 1 },
+      { claim: "Ignoring orders in transit makes the supply line rise more than 1.5 times as far above its normal level of 60 and then drop below it, which counting them never does", test: (run) => { const a = run({ slw: 0 }), b = run({ slw: 1 }); return a.max.sl - 60 > 1.5 * (b.max.sl - 60) && a.min.sl < 55 && b.min.sl > 59.9; } },
+      { claim: "A slower stock adjustment shrinks the overshoot when orders in transit are ignored", test: (run) => run({ slw: 0, adj: 10 }).max.inv < run({ slw: 0, adj: 4 }).max.inv },
     ],
     refs: ["sterman1989", "lee1997"],
     tags: ["bullwhip", "supply chain", "beer game", "inventory", "ordering", "supply line", "oscillation", "retail", "distribution"],
@@ -365,7 +366,7 @@ const CASES: AppCase[] = [
     insight:
       "Sales of a durable peak when about half the market owns one and then fall to replacement demand. A firm that orders capacity to match current sales, through a delay, is still adding lines when sales turn down. The faster the market, the bigger the overshoot, because the peak arrives within the construction delay.",
     tryThis: [
-      "Run the fast market preset. When does capacity peak compared with forecast sales, and how much of it is idle at year 25?",
+      "Run the fast market preset. When does capacity peak compared with forecast sales, and how much of it is idle at year 15?",
       "Set Counts capacity on order to 1. The peak falls, but is there still excess capacity after the boom?",
       "Run the slow market preset. Why is the overshoot smaller in proportion, even though the investment rule is the same?",
     ],
@@ -381,7 +382,8 @@ const CASES: AppCase[] = [
       "Even with the supply line counted, a rule that chases current sales will overbuild for a product whose sales are about to fall. Test investment rules that look at the remaining market, not only at current sales.",
     ],
     checks: [
-      { claim: "In a fast market, ignoring capacity on order builds peak capacity more than 25% above peak forecast sales", test: (run) => { const r = run({ q: 60, acq: 2, slw: 0 }); return r.max.cap > 1.25 * r.max.dem; } },
+      { claim: "In a fast market, ignoring capacity on order builds peak capacity more than 10% above peak forecast sales", test: (run) => { const r = run({ q: 60, acq: 2, slw: 0 }); return r.max.cap > 1.1 * r.max.dem; } },
+      { claim: "At year 15, when sales have fallen back to replacement demand, more than 40% of that capacity is idle", test: (run) => { const r = run({ q: 60, acq: 2, slw: 0 }, 15); return r.end.cap > r.end.dem / 0.6; } },
       { claim: "Capacity peaks more than two years after forecast sales do", test: (run) => { const r = run({ q: 60, acq: 2, slw: 0 }); return r.tMax.cap > r.tMax.dem + 2; } },
       {
         claim: "A slower market overshoots less in proportion with the same investment rule",

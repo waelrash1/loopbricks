@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Appendices",
   pages: "903-911",
   summary:
-    "System dynamics models are sets of nonlinear differential equations that almost never have analytic solutions, so they are solved step by step on a computer. Euler's method assumes each flow stays constant over a short interval dt and adds flow × dt to each stock; it is the default in DYNAMO, ithink, Powersim and Vensim and is the only difference between a simulation and the exact continuous solution. Integration error depends on dt and on the stability of the system. Choosing dt well (a quarter to a tenth of the shortest time constant, a power of 2, dividing evenly into the data interval) matters, as do the limits round-off places on accuracy and knowing when Runge-Kutta or variable step methods are worth using. The practical test is simple: halve dt, or switch method, and see whether anything that matters changes.",
+    "System dynamics models are sets of nonlinear differential equations that almost never have analytic solutions, so they are solved step by step on a computer. Euler's method assumes each flow stays constant over a short interval dt and adds flow × dt to each stock. It is the default in DYNAMO, ithink, Powersim and Vensim, and the finite size of dt is all that separates its result from the exact continuous solution. Integration error depends on dt and on the stability of the system. Choosing dt well (a quarter to a tenth of the shortest time constant, a power of 2, dividing evenly into the data interval) matters, as do the limits round-off places on accuracy and knowing when Runge-Kutta or variable step methods are worth using. The practical test is simple: halve dt, or switch method, and see whether anything that matters changes.",
   bigIdeas: [
     {
       title: "Simulation is numerical integration",
@@ -21,7 +21,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Integration error grows with dt and with the speed of the dynamics",
-      text: "Because the flows actually change during each step, every step adds a small error. In a population example (Sterman 2000) (4% births, 80-year lifetime, net 2.75% a year), the exact population after 100 years is 15.643 million; Euler with dt = 0.25 years is about 1% low, dt = 1 year about 3.7% low and dt = 5 years about 16% low. For pure growth Euler always undershoots, just as less frequent compounding earns less interest.",
+      text: "Because the flows actually change during each step, every step adds a small error. In a population example from Sterman (2000), with 4% births a year, an 80-year lifetime and so net growth of 2.75% a year, the exact population after 100 years is 15.643 million; Euler with dt = 0.25 years is about 1% low, dt = 1 year about 3.7% low and dt = 5 years about 16% low. For pure growth Euler always undershoots, just as less frequent compounding earns less interest.",
       pages: "905-906",
     },
     {
@@ -31,7 +31,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Choose dt from the shortest time constant",
-      text: "A widely used rule is a time step between one-quarter and one-tenth of the smallest time constant in the model. In large models the time constants are hard to list, so the rule is a starting point, not a guarantee. The time step must also divide evenly into the reporting interval of any data you compare against: a quarterly series and dt = 0.2 years do not mix.",
+      text: "A common rule of thumb puts dt at a quarter to a tenth of the shortest time constant in the model. In large models the time constants are hard to list, so the rule is a starting point, not a guarantee. The time step must also divide evenly into the reporting interval of any data you compare against: a quarterly series and dt = 0.2 years do not mix.",
       pages: "907",
     },
     {
@@ -203,7 +203,7 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Choose a time step. List the time constants in the Cascaded Levels molecule at its Fast (τ = 1.5 months) preset. What range of dt would the quarter-to-tenth rule recommend, which power of 2 would you pick, and is the app's dt = 0.1 month inside the range?",
-      hint: "Each stage has τ = 1.5, so dt between about 0.15 and 0.375; 0.25 or 0.125 fit. The app's 0.1 is even smaller, so it is safe.",
+      hint: "Each stage has τ = 1.5, so dt between about 0.15 and 0.375; 0.25 is the power of 2 inside that range. The app's 0.1 is a little smaller still, which costs only run time.",
       link: { label: "Cascaded Levels", hash: "/m/cascade" },
     },
     {

@@ -187,7 +187,7 @@ export const CHAPTER: StudyChapter = {
         { label: "Feedlot", detail: "about 2 months to market weight" },
         { label: "Slaughter and supply", detail: "total from price change to supply: roughly 22 months" },
       ],
-      note: "Estimating each operational stage separately is far more reliable than guessing the total. The biological stages are near pipeline delays; expectations and herd building are closer to first-order.",
+      note: "Estimating each operational stage separately is far more reliable than guessing the total. Gestation varies so little that it is close to a pipeline delay, maturation and feedlot behave like third- to sixth-order delays, and expectations and herd building are closer to first-order.",
     },
     {
       kind: "sequence",
@@ -300,13 +300,13 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Open Material Delay and pick Steady pipeline (inflow 8/wk, delay 9 wk). Add up the three in-transit stocks once arrivals have caught up with the inflow. Check your total against Little's law. Then switch to Long transit (delay 16 wk) and predict the new total before you run it.",
-      hint: "8 × 9 = 72 units; 8 × 16 = 128 units. Note how long it takes before arrivals even start to rise.",
+      hint: "8 × 9 = 72 units; 8 × 16 = 128 units. Note how slowly arrivals build up at first: the third stage holds almost nothing for the first few weeks.",
       link: { label: "Material Delay", hash: "/m/material" },
     },
     {
       prompt:
         "Open Smooth with the Step up preset (input jumps from 30 to 80, τ = 6 weeks). Compare the first- and third-order perceptions at week 2 and again at week 12. Which responds first, and which arrives first? Repeat with τ = 15 and describe what a manager using each forecast would experience.",
-      hint: "At week 2 the first-order smooth has closed about 28% of the gap, the third-order only about 8%. Later the third-order catches up steeply.",
+      hint: "At week 2 the first-order smooth has closed about 28% of the gap, the third-order only about 7%. Later the third-order catches up steeply.",
       link: { label: "Smooth", hash: "/m/smooth" },
     },
     {
@@ -316,13 +316,13 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Open Trend with Steady growth (6%/month, perception time 4 months). Once the run settles, compute Actual ÷ Perceived and compare with 1 + 0.06 × 4. Then choose Turning point (−4%/month) and note how long the perception keeps overstating reality. What does this imply for anyone smoothing a growing series?",
-      hint: "Under steady exponential growth a first-order smooth falls permanently behind by a factor of about 1 + g × D.",
+        "Open Trend with Steady growth (6%/month, perception time 4 months). Once the run settles, compute Actual ÷ Perceived and compare with 1 + 0.06 × 4. Then choose Turning point (−4%/month), where the quantity declines from the start, and measure how far the perception overstates reality once the run settles (compare with 1 ÷ (1 − 0.04 × 4)). What does this imply for anyone smoothing a growing or shrinking series?",
+      hint: "Under steady exponential growth a first-order smooth falls permanently behind by a factor of 1 + g × D; in a steady decline it stays above the actual value by a factor of 1 ÷ (1 − |g| × D), about 1.19 here.",
       link: { label: "Trend", hash: "/m/trend" },
     },
     {
       prompt:
-        "In the adaptive expectations of inflation case, compare 8% inflation, nowcast with Inflation judged over 10 years. How much further behind the actual price level does the slower perception run, and how would that affect wage or interest-rate decisions?",
+        "In the adaptive expectations of inflation case, compare 8% inflation, nowcast with Inflation judged over 10 years. The perceived price level is the same in both, because only the period used to judge inflation changes. How much further behind the actual price level does the expected price level run in the first 10 years when inflation is judged over 10 years instead of 3, and how would that affect wage or interest-rate decisions?",
       link: { label: "Adaptive expectations of inflation", hash: "/apps/economics/expectations" },
     },
     {

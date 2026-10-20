@@ -71,7 +71,7 @@ export const ARCHETYPES: Archetype[] = [
     trap: "Each decision looks sensible against what you can see today, because the gap really is still open. The cause of the swings is the delay between action and result, which is invisible in the moment, so people blame outside shocks or someone else's mistakes.",
     leverage:
       "Count the corrections already in the pipeline before adding more. Respond more gently to the gap, or shorten the delay if you can. Reacting faster without counting the pipeline usually makes the swings worse.",
-    molecules: ["stockmgmt", "closegap", "material"],
+    molecules: ["lowVisPipeline", "stockmgmt", "material"],
     cases: [
       { label: "The bullwhip effect in supply chains", hash: "/apps/business/bullwhip" },
       { label: "The hog cycle: why commodity supply swings", hash: "/apps/economics/hog-cycle" },
@@ -108,11 +108,11 @@ export const ARCHETYPES: Archetype[] = [
     trap: "The fix works in the short run, so the first evidence people see rewards it. The side effect arrives later and from a different direction, so few people connect it to the fix.",
     leverage:
       "Trace the side effects of the fix and look beyond the first few weeks. Use the fix sparingly, or pair it with action against the side effect, such as capping overtime and protecting rest. Above all, ask what keeps creating the problem in the first place.",
-    molecules: ["prodFatigue", "overtime", "reworkCycle"],
+    molecules: ["prodFatigue", "effectFatigue", "overtime"],
     cases: [
       { label: "Crunch: overtime that backfires", hash: "/apps/projects/crunch" },
+      { label: "Nurse staffing, overtime and burnout", hash: "/apps/health/nurse-staffing" },
       { label: "Antibiotic prescribing and resistance", hash: "/apps/health/amr" },
-      { label: "Capability traps in process improvement", hash: "/apps/business/capability-trap" },
     ],
     sources: ["Senge 1990", "Sterman 2000, pp. 59-60"],
   },
@@ -234,7 +234,6 @@ export const ARCHETYPES: Archetype[] = [
       "Look for a way for both sides to win, or for one side to step back on purpose and break the cycle. Judge your position against your own needs rather than against the rival. Agreements that cap the activity on both sides can stop the spiral.",
     molecules: ["closegap", "seaAnchorPricing", "protSeaAnchorPricing"],
     cases: [
-      { label: "Protected sea anchor pricing", hash: "/m/protSeaAnchorPricing" },
       { label: "Bounded rationality module: an unintended price war", hash: "/learn/behaviour" },
     ],
     sources: ["Senge 1990", "Sterman 2000, p. 12", "Sterman 2000, pp. 603-604"],
@@ -276,7 +275,6 @@ export const ARCHETYPES: Archetype[] = [
     molecules: ["marketshare", "propSplit", "nonlinearSplit"],
     cases: [
       { label: "Competing standards and lock-in", hash: "/apps/business/lock-in" },
-      { label: "Alternative-fuel vehicles: getting adoption to take off", hash: "/apps/environment/alt-fuel-vehicles" },
     ],
     sources: ["Senge 1990", "Sterman 2000, pp. 349-358"],
   },
@@ -373,7 +371,6 @@ export const ARCHETYPES: Archetype[] = [
     molecules: ["capacityUtil", "backlogFlow", "seaAnchor"],
     cases: [
       { label: "Growth stalled by capacity investment", hash: "/apps/business/market-growth" },
-      { label: "Boom and bust when capacity lags demand", hash: "/apps/business/boom-bust" },
     ],
     sources: ["Senge 1990", "Sterman 2000, pp. 605-628"],
   },
@@ -405,13 +402,13 @@ export const ARCHETYPES: Archetype[] = [
       loops: [
         { type: "R", label: "R1", x: 335, y: 200 },
         { type: "R", label: "R4", x: 425, y: 200 },
-        { type: "B", label: "B2", x: 200, y: 125 },
-        { type: "B", label: "B3", x: 560, y: 275 },
-        { type: "R", label: "R5", x: 300, y: 115 },
-        { type: "R", label: "R6", x: 460, y: 285 },
+        { type: "B", label: "B1", x: 200, y: 125 },
+        { type: "B", label: "B2", x: 560, y: 275 },
+        { type: "R", label: "R2", x: 300, y: 115 },
+        { type: "R", label: "R3", x: 460, y: 285 },
       ],
       caption:
-        '<span class="chip chipR">R1</span> <b>Partnership</b>: each partner\'s success feeds the other\'s. <span class="chip chipB">B2</span> <span class="chip chipB">B3</span> <b>Local fixes</b>: when its own success slips, each partner applies a <code>local fix</code> that restores it. <span class="chip chipR">R5</span> <span class="chip chipR">R6</span> <b>Collateral damage</b>: each fix hurts the other partner, whose weaker results then help the fixer less. <span class="chip chipR">R4</span> <b>Adversaries</b>: the two fixes feed each other through both partners, so each side\'s fix provokes the other\'s.',
+        '<span class="chip chipR">R1</span> <b>Partnership</b>: each partner\'s success feeds the other\'s. <span class="chip chipB">B1</span> <span class="chip chipB">B2</span> <b>Local fixes</b>: when its own success slips, each partner applies a <code>local fix</code> that restores it. <span class="chip chipR">R2</span> <span class="chip chipR">R3</span> <b>Collateral damage</b>: each fix hurts the other partner, whose weaker results then help the fixer less. <span class="chip chipR">R4</span> <b>Adversaries</b>: the two fixes feed each other through both partners, so each side\'s fix provokes the other\'s.',
     },
     trap: "Each partner sees the benefit of its own fix and the harm done by the other's. The damage from one's own fix comes back through the partner, so it looks like the partner's fault rather than a result of one's own action.",
     leverage:
@@ -419,7 +416,6 @@ export const ARCHETYPES: Archetype[] = [
     molecules: ["growth", "closegap"],
     cases: [
       { label: "Evictions, arrears and the low-income rental market", hash: "/apps/social/rental-housing" },
-      { label: "Health reform: coverage, care and protection", hash: "/apps/health/chronic-care-reform" },
     ],
     sources: ["Senge 1990"],
   },

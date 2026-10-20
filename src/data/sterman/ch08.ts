@@ -259,7 +259,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "The lily pond and the chessboard",
-      text: "Two old stories show how fast doubling meets a limit. The lily covers half the pond the day before it covers all of it, and is still microscopic for most of the month. One grain of rice on the first square of a chessboard, doubled on every square, needs more than a million grains by the 21st square and a million million by the 40th; the whole board would bury modern Iran more than five feet deep. In real systems, nonlinear limits halt the growth long before.",
+      text: "Two old stories show how fast doubling meets a limit. The lily covers half the pond the day before it covers all of it, and is still microscopic for most of the month. One grain of rice on the first square of a chessboard, doubled on every square, needs more than a million grains on the 21st square and over a million million in all by the 40th; the whole board would bury modern Iran more than five feet deep. In real systems, nonlinear limits halt the growth long before.",
       pages: "270-272",
     },
     {
@@ -295,8 +295,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Goal seeking. Open Close Gap with Reach goal (actual 20, goal 60, AT 5 weeks). Predict the initial adjustment rate and the level after 5, 10 and 15 weeks. Run and check. Then compare Aggressive (AT 1.5) and Sluggish (AT 15): which settles within 5% of the goal first, and roughly when?",
-      hint: "Initial rate 40/5 = 8 per week; levels about 45, 55 and 58. Within 5% takes about 3·AT: about 4.5 weeks versus 45 weeks.",
+        "Goal seeking. Open Close Gap with Reach goal (actual 20, goal 60, AT 5 weeks). Predict the initial adjustment rate and the level after 5, 10 and 15 weeks. Run and check. Then compare Aggressive (AT 1.5) and Sluggish (AT 15): which closes 95% of the gap first, and roughly when?",
+      hint: "Initial rate 40/5 = 8 per week; levels about 45, 55 and 58. Closing 95% takes about 3·AT: about 4.5 weeks versus 45 weeks.",
       link: { label: "Close Gap", hash: "/m/closegap" },
     },
     {

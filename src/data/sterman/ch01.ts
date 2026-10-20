@@ -28,7 +28,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "All dynamics come from two kinds of loop",
-      text: "Complex behaviour usually arises from the interactions among components rather than from the complexity of the components. Positive (reinforcing) loops amplify whatever is happening: arms races, price wars, the lock-in of a dominant standard. Negative (balancing) loops oppose change and seek a goal: smokers of low-nicotine cigarettes smoke more, attractive cities attract migrants until they are no longer attractive. In system dynamics 'positive' and 'negative' describe polarity, not praise or criticism, and either kind can be good or bad depending on which way it is running.",
+      text: "Complex behaviour usually arises from the interactions among components rather than from the complexity of the components. Positive (reinforcing) loops amplify whatever is happening: arms races, price wars, the lock-in of a dominant standard. Negative (balancing) loops oppose change and seek a goal: smokers of low-nicotine cigarettes smoke more, attractive cities attract migrants until they are no longer attractive. In system dynamics 'positive' and 'negative' describe polarity, not praise or criticism, and a loop of either kind helps or harms according to the direction it is pushing.",
       pages: "12-14",
     },
     {
@@ -221,7 +221,7 @@ export const CHAPTER: StudyChapter = {
       equations: ["Orders = Expected demand + (Desired stock − Stock) / Adjustment time", "Arrivals = Orders delayed by the acquisition lag", "Stock(t) = Stock(0) + ∫(Arrivals − Usage) dt"],
       explain:
         "When the correction takes time to arrive and the decision maker ignores what is already on its way, they keep ordering after the gap has effectively been closed. The stock then overshoots and oscillates. Technically, the delay adds state variables to the loop, which allows the oscillatory (complex) roots that a first-order loop cannot have.",
-      molecule: "stockmgmt",
+      molecule: "lowVisPipeline",
       pages: "23",
     },
   ],
@@ -238,7 +238,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Scurvy: 264 years from evidence to policy",
-      text: "In 1601 Lancaster gave one East India Company ship three teaspoons of lemon juice a day; by the Cape of Good Hope 110 of 278 sailors on the untreated ships had died, mostly of scurvy, while the treated crew stayed largely healthy. Lind's controlled trial in 1747 confirmed citrus as a cure. The Royal Navy adopted citrus only in 1795 and the merchant marine in 1865. The case shows how slowly the learning loop can turn even with decisive experiments and an enormous problem.",
+      text: "In 1601 Lancaster gave one East India Company ship three teaspoons of lemon juice a day; by the time the fleet reached the Cape of Good Hope 110 of 278 sailors had died, most of them from scurvy, while the crew given lemon juice stayed largely healthy. Lind's controlled trial in 1747 confirmed citrus as a cure. The Royal Navy adopted citrus only in 1795 and the merchant marine in 1865. The case shows how slowly the learning loop can turn even with decisive experiments and an enormous problem.",
       pages: "19-20",
     },
     {
@@ -262,8 +262,9 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "See how a delay inside a balancing loop creates oscillation. In Stock Management run the Stable preset (supply-line weight 1), then the Oscillation preset (weight 0). Finally keep weight 0 and raise the acquisition delay from 6 to 12 weeks. Record the peak inventory in each run and relate the result to the point about drivers, drinkers and hog farmers who keep correcting after enough correction is already on the way.",
-      link: { label: "Stock Management", hash: "/m/stockmgmt" },
+        "See how a delay inside a balancing loop creates oscillation. In Low-Visibility Pipeline Correction run the Tracks the pipeline preset, then Ignores the pipeline (awareness 0). Finally keep awareness at 0 and raise the supplier delay from 6 to 12 weeks. Record the peak inventory in each run and relate the result to the point about drivers, drinkers and hog farmers who keep correcting after enough correction is already on the way.",
+      hint: "Tracking the pipeline, inventory rises to the goal of 100 without overshooting. Ignoring it, inventory peaks near 117; with the 12-week delay it peaks near 150 and keeps swinging.",
+      link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
@@ -273,8 +274,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Avoid the video game syndrome. In Stock Management choose the Long lead time preset. Before each run, write a one-line hypothesis and a numerical prediction (for example the peak inventory). Run, record the discrepancy and propose one change to a single slider that would test your explanation. Do at least three cycles and keep the notes as a lab notebook.",
-      link: { label: "Stock Management", hash: "/m/stockmgmt" },
+        "Avoid the video game syndrome. In Low-Visibility Pipeline Correction choose the Boom and bust (slow supplier) preset. Before each run, write a one-line hypothesis and a numerical prediction (for example the peak inventory). Run, record the discrepancy and propose one change to a single slider that would test your explanation. Do at least three cycles and keep the notes as a lab notebook.",
+      link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
@@ -303,5 +304,5 @@ export const CHAPTER: StudyChapter = {
     "Running a simulation over and over without stating hypotheses or reflecting on surprises (the video game syndrome).",
     "Believing that a causal map, once drawn, is understood. Without simulation, even a correct map does not tell you how the system will behave.",
   ],
-  molecules: ["closegap", "growth", "logistic", "smooth", "stockmgmt", "decay"],
+  molecules: ["closegap", "growth", "logistic", "smooth", "lowVisPipeline", "stockmgmt", "decay"],
 };

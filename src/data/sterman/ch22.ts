@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   number: "22",
   title: "Challenges for the future",
   part: "Part VII: Commencement",
-  pages: "895-902",
+  pages: "895-901",
   summary:
     "This topic is a short research agenda rather than a new method. Sterman (2000) names five areas where system dynamics must develop: theory (nonlinear dynamics, agent-based models, how people decide and learn, organisational evolution), technology (software that automates sensitivity analysis, testing, calibration and loop dominance, and links behaviour back to structure), implementation (communicating insight, group modelling, speed, integration with other methods, practice fields and honest assessment), education (systems thinking from school onwards and sustained learning inside organisations) and applications (the many fields still dominated by event-oriented, static theories). Its recurring warning is that more computer power is only useful if it produces more understanding.",
   bigIdeas: [
@@ -43,12 +43,12 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "More computer power must not mean bigger, less useful models",
-      text: "Computing power grows exponentially, but human capacity to absorb information does not. The temptation is to use the extra power to build ever larger and more detailed models in the belief that more detail is better. The likely result is less understanding, fewer insights and less implementation. The aim of new technology should be faster learning about the dynamics, not larger models.",
+      text: "Computing power grows exponentially, but human capacity to absorb information does not. The temptation is to use the extra power to build ever larger and more detailed models in the belief that more detail is better. Bigger models are likely to be understood less, to yield fewer insights and to be acted on less often. The aim of new technology should be faster learning about the dynamics, not larger models.",
       pages: "898",
     },
     {
       title: "Implementation remains an art",
-      text: "Better theory and software do not by themselves get clients to act; they still need deep understanding and confidence. Open issues include communicating insight when models are complex and when the client is a whole society reached through the media, running group model building with large groups and in adversarial settings, deciding whether faster modelling is desirable at all (reflection has value), integrating system dynamics with decision analysis, market research and other methods, and building managerial practice fields. Research shows people learn poorly from games and simulators unless the setting is designed for reflection.",
+      text: "Better theory and software do not by themselves get clients to act; they still need deep understanding and confidence. Open issues include communicating insight when models are complex and when the client is a whole society reached through the media, running group model building with large groups and in adversarial settings, deciding whether faster modelling is desirable at all (reflection has value), integrating system dynamics with decision analysis, market research and other methods, and building managerial practice fields. Research also shows how hard it is to learn from games and simulators, so an effective practice field needs much more than a realistic simulator.",
       pages: "899",
     },
     {
@@ -69,14 +69,14 @@ export const CHAPTER: StudyChapter = {
     {
       title: "Applications: many fields still use event-oriented, static theories",
       text: "Despite applications from physiology to climate, many important problems are still explained with theories that are exogenous, event-oriented and static rather than endogenous, structural and dynamic. Sterman links this to continued policy resistance and to a widespread sense of helplessness. The invitation is to bring the feedback view, and simulation, to those problems.",
-      pages: "901-902",
+      pages: "901",
     },
   ],
   diagrams: [
     {
       kind: "cycle",
       title: "Five areas of future development",
-      pages: "895-902",
+      pages: "895-901",
       nodes: ["Theory", "Technology", "Implementation", "Education", "Applications"],
       center: "Each area raises questions for the next",
       note: "Our framing as a cycle: applications expose gaps in theory, theory guides tools, tools support implementation, implementation depends on education, and educated practitioners take the method to new applications.",
@@ -167,8 +167,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "The model tutor that catches a negative stock",
-      text: "An illustration of automated help (Sterman 2000): while you build a marketing model, the software notices that your outflow of customers defecting to rivals does not depend on the current customer stock, so the stock can go below zero. It proposes a first-order formulation instead and helps you choose parameters and nonlinear relationships, then suggests tests to run. The same check is exactly what the 'protected level' molecules teach.",
-      pages: "897-898",
+      text: "An illustration of automated help (Sterman 2000): while you build a marketing model, the software notices that your outflow of customers defecting to rivals does not depend on the current customer stock, so the stock can go below zero. It proposes a better formulation, such as an outflow proportional to the customer stock, and helps you choose parameters and nonlinear relationships, then suggests tests to run. The same check is exactly what the 'protected level' molecules teach.",
+      pages: "898",
     },
   ],
   exercises: [
@@ -185,7 +185,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Try an automated sensitivity analysis. Work through the sensitivity lab's behaviour-mode experiment and record what share of runs oscillate. Then state which kind of sensitivity (numerical, behaviour mode or policy) would matter most to a manager deciding whether to count the supply line.",
+        "Try an automated sensitivity analysis. Work through the sensitivity lab's behaviour mode experiment and record what share of runs overshoot their final level. Then state which kind of sensitivity (numerical, behaviour mode or policy) would matter most to a manager deciding whether to count the supply line.",
       link: { label: "Sensitivity lab", hash: "/methods/sensitivity" },
     },
     {
@@ -195,8 +195,8 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Generic structures across domains. In the family tree pick one molecule (for example Stock Management or Rework Cycle) and find two application cases from different fields that use it. Write a paragraph on what the shared structure predicts about both, which is the open theory question about similar dynamics in different domains.",
-      link: { label: "Family tree", hash: "/tree" },
+        "Generic structures across domains. Open the Stock Management molecule (or Rework Cycle) and, under At work in the applications, find two cases from different fields that use it. Write a paragraph on what the shared structure predicts about both, which is the open theory question about similar dynamics in different domains.",
+      link: { label: "Stock Management", hash: "/m/stockmgmt" },
     },
     {
       prompt:

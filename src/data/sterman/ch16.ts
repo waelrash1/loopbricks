@@ -8,7 +8,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part IV Tools for modeling dynamic systems",
   pages: "631-660",
   summary:
-    "Decisions run on expectations, so models must represent how people actually form them. The evidence shows that most forecasts, however elaborate their methods, behave like adaptive expectations: smooth the recent past and extrapolate its trend. The TREND function is a boundedly rational model of growth expectations built from three first-order smooths. It is unbiased in steady state, and Sterman (2000) fits it to forecasts of US energy use, cattle prices and inflation, where it explains nearly all the variation in professional forecasts. Anchoring on a slowly moving belief improves the fit further. Because sophisticated models have exogenous inputs that forecasters tune until the answer looks reasonable, those inputs work as fudge factors. The lessons for forecast users: expect missed turning points and overconfidence, and design policies that are robust to forecast error.",
+    "Decisions run on expectations, so models must represent how people actually form them. The evidence shows that most forecasts, however elaborate their methods, behave like adaptive expectations: smooth the recent past and extrapolate its trend. The TREND function is a boundedly rational model of growth expectations built from three first-order smooths. It is unbiased in steady state, and Sterman (2000) fits it to forecasts of US energy use, cattle prices and inflation, where it reproduces the professional forecasts closely. Anchoring on a slowly moving belief improves the fit further. Because sophisticated models have exogenous inputs that forecasters tune until the answer looks reasonable, those inputs work as fudge factors. The lessons for forecast users: expect missed turning points and overconfidence, and design policies that are robust to forecast error.",
   bigIdeas: [
     {
       title: "Expectations must be modelled, not assumed",
@@ -17,7 +17,7 @@ export const CHAPTER: StudyChapter = {
     },
     {
       title: "Forecasting is a social and political activity",
-      text: "Surveys of US corporations found that judgmental methods (managers' opinion, executive juries, sales force composites) dominate, and that quantitative forecasts are routinely adjusted by judgment. In a survey of corporate forecasting staff, nearly half reported that management asked for revisions toward more favourable outcomes, and many reported forecasts ignored, backcasts produced to justify chosen answers, or information withheld between departments. Heuristics, incentives and politics therefore shape forecasts and can make their errors systematic.",
+      text: "Surveys of US corporations found that judgmental methods (managers' opinion, executive juries, sales force composites) dominate, and that quantitative forecasts are routinely adjusted by judgment. In a survey of corporate forecasting staff, nearly half reported that management asked for revisions toward more favourable outcomes, over a third reported backcasts produced to justify answers chosen in advance, and others reported information withheld between departments or forecasts simply ignored. Heuristics, incentives and politics therefore shape forecasts and can make their errors systematic.",
       pages: "632-633",
     },
     {

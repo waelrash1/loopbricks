@@ -851,9 +851,9 @@ export const CASES: AppCase[] = [
     ],
     validation: "Barber and López-Valcárcel (2010) set need ratios with a Delphi panel of experts; the abstract reports no historical fit. Hynes et al. (2025) projected from Irish workforce and education data.",
     checks: [
-      { claim: "Planners who ignore trainees overshoot the target by more", test: (run) => run({ slw: 0 }).max.inv > run({ slw: 1 }).max.inv },
-      { claim: "Ignoring trainees also over-supplies for good: half weight settles at 130 against a need of 100", test: (run) => Math.abs(run({ slw: 0.5 }, 400).end.inv - 130) < 1 },
-      { claim: "Counting trainees brings the workforce close to the target without a big overshoot", test: (run) => run({ slw: 1 }).max.inv < 115 },
+      { claim: "Planners who ignore trainees push the workforce more than 5% past the need of 100; counting them never overshoots by more than 1%", test: (run) => run({ slw: 0 }).max.inv > 105 && run({ slw: 1 }).max.inv < 101 },
+      { claim: "Ignoring trainees also cuts training below its normal level of 60 in the bust that follows; counting them never does", test: (run) => run({ slw: 0 }).min.sl < 55 && run({ slw: 1 }).min.sl > 59.9 },
+      { claim: "Whatever the weight, the workforce ends at the need of 100: ignoring trainees costs a boom and bust, not a lasting surplus", test: (run) => [0, 0.5, 1].every((slw) => Math.abs(run({ slw }, 200).end.inv - 100) < 1) },
     ],
     refs: ["barber2010", "hynes2025", "sterman2000"],
     tags: ["workforce", "doctors", "physicians", "nurses", "training", "medical school", "shortage", "HRH", "planning", "midwives"],
@@ -924,7 +924,7 @@ export const CASES: AppCase[] = [
     evidence: [
       "Sterman (1989), the Beer Game: decision makers systematically under-weight the supply line, which produces oscillation and amplification even when demand is steady.",
     ],
-    insight: "Ignoring the pipeline makes a steady system oscillate, and it keeps stock permanently above target, because the orderer keeps refilling a pipeline they think is empty. For medicines with a shelf life, that surplus turns into expired stock.",
+    insight: "Ignoring the pipeline makes a steady system overshoot and oscillate: the orderer keeps ordering for doses that are already on their way, then has to cut orders sharply when they all arrive. Stock does return to target in the end, but for medicines with a shelf life the surplus at the peak can turn into expired stock first, and the cut that follows risks a stock-out.",
     tryThis: ["Compare the first two presets. How big is the overshoot when orders already on their way are ignored?", "Make the lead time 12 weeks. Why does the swing get worse?"],
     data: [
       ["Consumption by facility", "Logistics management information systems"],
@@ -936,7 +936,8 @@ export const CASES: AppCase[] = [
     validation: "Sterman (1989) ran a laboratory experiment with human players and fitted an anchoring-and-adjustment ordering rule to their decisions; the fitted rule tracks players' orders closely and shows they under-weight the supply line.",
     checks: [
       { claim: "Ignoring doses on order overshoots the target stock by more", test: (run) => run({ slw: 0 }).max.inv > run({ slw: 1 }).max.inv },
-      { claim: "It also leaves stock permanently too high: target + (1 − weight) × use × lead time, 160 instead of 100", test: (run) => Math.abs(run({ slw: 0 }, 400).end.inv - 160) < 1 && Math.abs(run({ slw: 1 }, 400).end.inv - 100) < 1 },
+      { claim: "Ignoring doses on order makes stock swing: it rises more than 5% above target, then falls back below it, while orders dip under normal use", test: (run) => run({ slw: 0 }).max.inv > 105 && run({ slw: 0 }, 33).end.inv < 99 && run({ slw: 0 }).min.sl < 55 },
+      { claim: "Both rules end at the target of 100: the cost of ignoring the pipeline is the swing, not the final level", test: (run) => Math.abs(run({ slw: 0 }, 400).end.inv - 100) < 1 && Math.abs(run({ slw: 1 }, 400).end.inv - 100) < 1 },
       { claim: "A longer lead time with a partial pipeline view gives a bigger swing", test: (run) => run({ acq: 12, slw: 0.3 }).max.inv > run({ acq: 6, slw: 1 }).max.inv },
     ],
     refs: ["sterman1989", "sterman2000"],

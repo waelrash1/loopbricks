@@ -79,7 +79,7 @@ export const OBJECTIVES: Record<string, string[]> = {
     "Write a model purpose that names the problem behaviour and the decision it should inform.",
     "Sketch reference modes and choose a time horizon from the delays in the system.",
     "Formulate an endogenous dynamic hypothesis and record the model boundary in a boundary chart.",
-    "Explain why a broad boundary matters more than fine detail, using the leasing and maintenance cases.",
+    "Explain why a broad boundary matters more than fine detail, using the PIES energy model and the leasing case.",
     "Describe how involving clients and anticipating worse-before-better behaviour affect implementation.",
   ],
   formulation: [
@@ -288,7 +288,7 @@ export const QUIZ: Record<string, Quiz[]> = {
         "Random shocks push the system past its limit.",
       ],
       answer: 0,
-      why: "When growth erodes the carrying capacity itself, a second balancing loop removes the limit and the population must fall. A stronger reinforcing loop only speeds the approach; with a fixed, fast limit the result is still an S.",
+      why: "When growth erodes the carrying capacity itself, a second balancing loop shrinks the limit as the population grows, so the population cannot settle at it and must fall. A stronger reinforcing loop only speeds the approach; with a fixed, fast limit the result is still an S.",
     },
     {
       q: "A firm's sales look like a straight line over the past four years. What is the soundest interpretation?",
@@ -844,15 +844,15 @@ export const QUIZ: Record<string, Quiz[]> = {
       why: "A large UC means the model tracks the mean and the variation and differs only point by point, which is what noise produces. A large UM would point to bias, and no fit statistic validates a model.",
     },
     {
-      q: "A stock management model orders demand + (100 − inventory) ÷ 4 + (60 − weight × supply line) ÷ 4, with demand 10 and a 6-week delay. With the supply-line weight set to 0, inventory settles at 160 instead of 100. What explains it?",
+      q: "A modeller writes orders = demand + (desired inventory − inventory) + (desired supply line − supply line) ÷ 4 weeks, with inventory in units and time in weeks. What does a units check reveal?",
       options: [
-        "Integration error from too large a time step.",
-        "A real effect: ignoring the pipeline always raises inventory by 60%.",
-        "Random noise in demand.",
-        "The supply-line term stays at 60 ÷ 4 = 15 a week, so equilibrium needs an inventory gap of -60; the desired supply line should be weighted too.",
+        "Nothing is wrong: every term counts units of stock.",
+        "The supply-line term is wrong: it should not be divided by 4 weeks.",
+        "Demand must be multiplied by a week before it can be added.",
+        "The inventory gap is in units while the other terms are in units per week, so it needs dividing by an adjustment time.",
       ],
       answer: 3,
-      why: "In equilibrium orders equal demand, so (100 − inventory) ÷ 4 must cancel the constant 15, giving 160. It is a formulation artefact to fix, not a behavioural finding, which is what tracing surprise behaviour is meant to catch.",
+      why: "Orders are a flow in units per week. Demand is already a rate, and the supply-line gap divided by 4 weeks is one too, but the inventory gap on its own is a stock in units. Adding a stock to flows is a dimensional error; dividing the gap by an adjustment time turns it into the rate at which to close it.",
     },
     {
       q: "A published model sets Shipments = Customers × Average purchase per customer. Which test exposes its flaw most directly?",
@@ -884,7 +884,7 @@ export const QUIZ: Record<string, Quiz[]> = {
       options: [
         "0, 60, 85, 95: a smooth approach",
         "0, 100, 100, 100: the goal in one step",
-        "0, 150, 0, 150: a constant oscillation",
+        "0, 200, 0, 200: a constant oscillation",
         "0, 150, 75, 112.5: an oscillation that shrinks",
       ],
       answer: 3,

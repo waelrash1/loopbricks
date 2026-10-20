@@ -15,7 +15,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["The logistic model: a fractional growth rate that falls in a straight line"],
       diagram: "One structure, many models: how the family builds up",
       formulation: "Logistic growth",
-      run: { molecule: "logistic", T: 40, look: "The curve is steepest as it passes 100, half the capacity of 200, at about year 16.5; after that each year adds less than the one before." },
+      run: { molecule: "logistic", T: 40, look: "The curve is steepest as it passes 100, half the capacity of 200, at about year 16.4; after that each year adds less than the one before." },
       exercises: [0],
     },
     {
@@ -24,7 +24,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["The SI epidemic is logistic growth in disguise"],
       diagram: "The SIR epidemic: contagion against depletion and recovery",
       formulation: "SI and SIR epidemic models",
-      run: { molecule: "diffusion", T: 40, params: { p: 0.5, q: 35 }, look: "With strong contagion the infected count passes half of the 1,000 people around week 12 and nearly everyone is infected by week 24." },
+      run: { molecule: "diffusion", T: 40, params: { p: 0.5, q: 35 }, look: "Read adopters as infected people. A tiny outside push (p 0.5%) seeds the first cases, then strong contagion takes over: half of the 1,000 people are infected around week 12 and nearly everyone by week 24." },
     },
     {
       title: "Recovery drains the infected stock",
@@ -64,7 +64,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "So far everyone infectious is visible. Add a hidden stage and responses that wait for symptoms come too late.",
       ideas: ["Incubation delays blunt quarantine and just-in-time responses"],
       formulation: "Adding an incubation stage (SEIR-type chain)",
-      run: { molecule: "cascade", T: 30, look: "The 60 people in the first stage drain away at once, but the last stage only peaks at about 16 around month 8: what you see lags what is spreading." },
+      run: { molecule: "cascade", T: 30, look: "The 60 people in the first stage start draining immediately, but the last stage only peaks at about 16 around month 8: what you see lags what is spreading." },
     },
     {
       title: "Ideas and products spread like infections",
@@ -80,7 +80,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "These curves are easy to fit to sales data, which makes them easy to over-trust.",
       ideas: ["A good historical fit does not validate a model"],
       example: "VAX minicomputers and cable television: fitting, and over-trusting, diffusion curves",
-      run: { molecule: "diffusion", T: 60, params: { p: 4, q: 5 }, look: "Driven mostly by advertising, adoption is fastest at the start with no S at all, yet it still ends near 1,000: different structures can reach the same total." },
+      run: { molecule: "diffusion", T: 60, params: { p: 4, q: 5 }, look: "Driven mostly by advertising, adoption runs near its top speed from launch and then slows, with almost no S, yet by week 60 it has also reached about 990 of 1,000: the end point alone cannot tell you which loop drove adoption." },
     },
     {
       title: "Fads, discards and repeat sales",
@@ -112,7 +112,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["Lock-in: early choices are cheap, later reversals are very expensive"],
       diagram: "Network and complementary-goods effects lock in a standard",
       example: "Railway gauge, driving side and the Swedish switch",
-      run: { molecule: "marketshare", T: 120, params: { churn: 36 }, look: "When customers stay 36 months the installed bases turn over slowly: B still holds about 15 customers at month 120, against 0.5 with the default 18-month churn." },
+      run: { molecule: "marketshare", T: 120, params: { churn: 36 }, look: "When customers stay 36 months the installed bases turn over slowly: B still holds about 15 customers at month 120, against 0.5 with the default 18-month churn. The bigger and longer-lived the stocks, the more it takes to move the outcome either way." },
       exercises: [2, 6],
     },
     {
@@ -194,7 +194,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "When age decides who leaves",
       lead: "Why bother with stages? Because a single stock assumes the newest item is as likely to leave as the oldest.",
       ideas: ["Use an aging chain when the exit rate depends on age"],
-      run: { molecule: "cascade", T: 30, params: { inflow: 10 }, look: "Items leave by age, not at random: the third stage holds only about 10 at month 3 and reaches the steady 40 around month 18." },
+      run: { molecule: "cascade", T: 30, params: { inflow: 10 }, look: "Every item must pass through all three stages, so almost nothing leaves young: the third stage holds only about 10 at month 3 and nears its steady 40 only around month 18." },
     },
     {
       title: "Two ways out of a cohort",
@@ -208,20 +208,20 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["Population momentum comes from the age structure"],
       diagram: "A population aging chain with reproduction",
       example: "Population momentum and the demographic transition",
-      run: { molecule: "aging", T: 100, params: { births: 8 }, look: "Births fall by 60%, yet the elderly keep rising for about 20 years, from 200 to about 239, as earlier cohorts age through." },
+      run: { molecule: "aging", T: 100, params: { births: 8 }, look: "Births fall by 60% and the young shrink at once, yet the elderly keep rising for about 20 years, from 200 to about 239, as the large adult cohorts already in the chain age through." },
     },
     {
       title: "The intake rate sets the age mix",
       lead: "The same memory means the shape of a population tells you how fast it has been growing.",
       ideas: ["The steady-state age mix is set by the growth rate"],
-      run: { molecule: "aging", T: 100, params: { births: 35 }, look: "A baby boom shows up in the youth stock first: the young share climbs from 23% to about 29% within 10 years, while the elderly respond decades later." },
+      run: { molecule: "aging", T: 100, params: { births: 35 }, look: "A baby boom shows up in the youth stock first: the young share climbs from 23% to about 31% by year 20 while the elderly share barely moves. Then, with births steady at the new level, the boom ages through and the young share drifts back to about 25% by year 100: the mix depends on the change in intake, not its level." },
     },
     {
       title: "Promotion chains go top-heavy",
       lead: "Organisations age too. When intake slows, the senior ranks fill up.",
       ideas: ["Up-or-out promotion chains turn top-heavy when growth stops"],
       example: "The aging of a university faculty",
-      run: { molecule: "agingPDY", T: 40, params: { hiring: 5 }, look: "Cut hiring to 5 a year and rookies drop from 100 to 15, while veterans rise to about 71 by year 14: their share grows from 14% to about 24%." },
+      run: { molecule: "agingPDY", T: 40, params: { hiring: 5 }, look: "Cut hiring to 5 a year and rookies fall from 60 to 15 within 10 years, while veterans, still fed by the large experienced cohort, shrink slowly: by year 20 they are 27% of staff against 22% in the steady state. Drag hiring to 40 and at year 20 they are about 20%: the slower the intake, the more top-heavy the chain." },
       exercises: [6],
     },
     {
@@ -230,7 +230,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["Growth dilutes productivity through the rookie fraction"],
       diagram: "Growth, the rookie fraction and lost talent",
       formulation: "Two-level promotion chain with training",
-      run: { molecule: "agingPDY", T: 30, params: { hiring: 40 }, look: "Rookies settle at 120 within about 10 years while the experienced stock is still climbing, so at year 6 rookies are about 21% of staff, against about 11% by year 30." },
+      run: { molecule: "agingPDY", T: 30, params: { hiring: 40 }, look: "Doubling hiring to 40 a year lifts rookies from 60 to about 120 within 10 years, and at year 6 they are about 13% of staff, against a steady 8% at the default 20 a year. Drag hiring down to 5 and the rookie share falls to about 3%. The faster the intake, the larger the share of newcomers." },
       exercises: [2],
     },
     {
@@ -246,13 +246,13 @@ export const STEPS_B: Record<string, Step[]> = {
       diagram: "Building a coflow, step by step",
       formulation: "Conserved coflow",
       example: "Labour-saving machines and the coflow",
-      run: { molecule: "coflow", T: 30, look: "Average experience climbs from 2 to about 6 years, matching the 6-year average tenure, as total experience and headcount settle together." },
+      run: { molecule: "coflow", T: 30, look: "New hires bring no experience and leavers take the average with them. Average experience climbs from 2 to about 6 years, matching the 6-year average tenure (experience also accrues on the job, a nonconserved flow covered below)." },
     },
     {
       title: "A smooth is not a coflow",
       lead: "It is tempting to model the attribute with a simple delay instead. An extreme test shows why that is wrong.",
       ideas: ["Modelling an attribute as a delay is a structural error"],
-      run: { molecule: "coflow", T: 20, params: { hire: 0 }, look: "Stop hiring and average experience keeps rising by about a year every year, from 2 to about 22 by year 20, which a delay toward new-hire experience could never do." },
+      run: { molecule: "coflow", T: 20, params: { hire: 0 }, look: "Stop hiring and leavers still remove only the average, so turnover no longer moves it; the only change left is on-the-job accrual, about a year every year, from 2 to about 22 by year 20. A smooth towards new-hire experience would instead drift to 0 as if nobody had stopped hiring." },
       exercises: [4],
     },
     {
@@ -279,7 +279,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "What supply chains do",
       ideas: ["Supply chains show oscillation, amplification and phase lag"],
       example: "Amplification in industry data",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "A manager who ignores the pipeline drives inventory past its target to about 185 at week 17, down to about 154 around week 33, and only then does it settle." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0 }, look: "One stage with a 12-week supplier, ignoring what is on order: inventory dips to about 40, booms to about 150 at week 28, sinks to about 61 at week 50 and climbs again, while orders not received swing even harder, from about 226 down to 37 and back to 190." },
     },
     {
       title: "Replace losses, then close the gap",
@@ -314,14 +314,14 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Longer delays, bigger swings in orders",
       lead: "A longer delay means more on order, and so bigger order swings, but not by itself a cycle.",
       ideas: ["Delays raise amplification; they do not by themselves cause oscillation"],
-      run: { molecule: "stockmgmt", T: 60, params: { acq: 12 }, look: "With a 12-week delay the supply line has to swell from 60 to about 147, yet inventory still rises to 100 without overshooting because the pipeline is counted." },
+      run: { molecule: "stockmgmt", T: 60, params: { acq: 12 }, look: "With a 12-week delay the supply line swells from 60 to about 147 by week 10 (its new target is 120, against a peak of about 78 with the 6-week default), yet inventory, after a dip to about 54, still rises to 100 without overshooting because the pipeline is counted." },
     },
     {
       title: "The cause of the cycle",
       lead: "Oscillation needs one more ingredient: a manager who keeps ordering while the earlier orders are still on their way.",
       ideas: ["Oscillation needs a delay and a decision maker who ignores it"],
       diagram: "How ignoring the supply line produces a cycle",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "Ignoring the pipeline, the supply line balloons to about 134 by week 6 and inventory overshoots to about 185, far past the target of 100." },
+      run: { molecule: "lowVisPipeline", T: 60, params: { aware: 0 }, look: "Ignoring the pipeline, the manager keeps ordering until orders not received reach about 98, and inventory overshoots to about 117 at week 16, dips to about 92 near week 30 and swings back toward 100. With awareness 1 the same start gives no overshoot at all." },
       exercises: [1, 2],
     },
     {
@@ -329,7 +329,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Ignoring the supply line is a matter of degree, which one number captures.",
       ideas: ["The weight on the supply line turns a delayed loop into a first-order one"],
       formulation: "Weight on the supply line and effective total stock",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0.34 }, look: "Giving the pipeline a third of its weight cuts the overshoot from about 185 to about 147 at week 19, but inventory still settles near 140, not 100." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0.34 }, look: "With a 12-week supplier and a third of the pipeline counted, inventory peaks at about 118 at week 26 and settles at 100 after a smaller second swing. Set awareness to 0 and the peak is about 150; set it to 1 and there is no overshoot." },
       exercises: [3],
     },
     {
@@ -339,7 +339,6 @@ export const STEPS_B: Record<string, Step[]> = {
       diagram: "The characteristic Beer Game pattern",
       formulation: "The rule estimated from Beer Game decisions",
       example: "The Beer Distribution Game",
-      run: { molecule: "lowVisPipeline", T: 60, params: { aware: 0 }, look: "With no awareness of the pipeline, inventory overshoots to about 117 at week 16 and dips to about 92 near week 32 before swinging back toward 100." },
       exercises: [4, 5],
     },
     {
@@ -401,7 +400,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Chain two such firms together and the swings grow at every step upstream.",
       ideas: ["Every extra stock and delay adds amplification"],
       example: "A two-stage chain whipsaws its supplier",
-      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12 }, look: "A slower 12-week supplier lifts orders not received from 60 to about 192 by week 6, even though the manager tracks the pipeline." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12 }, look: "Doubling the supplier delay to 12 weeks doubles the pipeline needed, to 120, and orders not received overshoot to about 192 by week 6 while inventory only dips to about 47: the orders this stage passes upstream swing far more than its own stock, even though it tracks the pipeline." },
       exercises: [10],
     },
     {
@@ -422,7 +421,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Fixing the chain",
       lead: "If delays and distorted signals cause the trouble, the remedies attack those.",
       ideas: ["Integration policies attack delays and distorted signals"],
-      run: { molecule: "stockmgmt", T: 80, params: { acq: 12, slw: 0.3 }, look: "A long 12-week lead time with only partial pipeline weight sends inventory to about 201 at week 28; shorter delays or a full weight are the levers." },
+      run: { molecule: "lowVisPipeline", T: 60, params: { tInv: 2, delay: 6, aware: 1 }, look: "Take the boom-and-bust manager, halve the supplier delay to 6 weeks and give the pipeline full weight: inventory now peaks at only about 105 and has settled by week 20, instead of swinging between about 45 and 184." },
       exercises: [11, 14],
     },
     {
@@ -472,7 +471,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["Choose dt from the shortest time constant"],
       diagram: "Choosing and testing the time step",
       formulation: "Time-step guidelines",
-      run: { molecule: "cascade", T: 20, params: { inflow: 10, tau: 1.5 }, look: "Each stage has a 1.5-month time constant and settles at 15 within about 12 months, so a time step of 0.15 to 0.4 months would suit this chain." },
+      run: { molecule: "cascade", T: 20, params: { inflow: 10, tau: 1.5 }, look: "Each stage has a 1.5-month time constant and settles at 15 within about 12 months, so a time step of 0.15 to 0.375 months would suit this chain." },
       exercises: [4],
     },
     {
@@ -509,7 +508,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "First learn the model without noise",
       lead: "Before adding randomness, see what the model does on its own.",
       ideas: ["Understand the deterministic model first"],
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "With no noise at all, a step reveals the model's mode: inventory overshoots to about 185 at week 17 and swings back to about 154 near week 33." },
+      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "With no noise at all, starting below its goal is enough to reveal the model's mode: inventory overshoots to about 110 at week 17, dips to about 97 near week 33 and peaks again just above 100 near week 50, a damped cycle of about 33 weeks." },
       exercises: [8],
     },
     {
@@ -517,7 +516,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "When you do add noise, keep the average and the variation apart.",
       ideas: ["Formulate random effects multiplicatively, and keep them physical"],
       formulation: "Multiplicative random effect",
-      run: { molecule: "productivity", T: 12, look: "Fatigue, schedule pressure and lower skill each multiply the normal 5, leaving productivity at about 4.04, so one worker makes about 48.5 in 12 months instead of 60." },
+      run: { molecule: "productivity", T: 12, look: "Here the multipliers are fixed effects of fatigue, schedule pressure and skill rather than random draws, but the form is the same: together they scale the normal 5 down to about 4.04, so one worker makes about 48.5 in 12 months instead of 60. A random effect with mean 1 would be one more multiplier." },
     },
     {
       title: "White noise has no memory",
@@ -580,14 +579,14 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Problems still explained by events",
       ideas: ["Applications: many fields still use event-oriented, static theories"],
       diagram: "Five areas of future development",
-      run: { molecule: "reworkCycle", T: 40, params: { quality: 0.6 }, look: "With 60% quality, undiscovered rework builds to about 170 tasks by week 15, so work done is still short of 990 at week 40 though work to do looked nearly gone by week 16: lateness comes from structure, not bad luck." },
-      exercises: [4],
+      run: { molecule: "reworkCycle", T: 40, params: { quality: 0.6 }, look: "With 60% quality, work to do looks nearly gone by week 16, but undiscovered rework has built up to about 170 tasks, so work done is still short of 990 at week 40: the lateness comes from structure, not bad luck." },
     },
     {
       title: "Open questions in theory",
       lead: "Applications expose gaps that theory has yet to fill.",
       ideas: ["Open questions in the theory of nonlinear dynamics"],
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "Even two stocks and one misperception produce a cycle: inventory peaks near 185 at week 17 and dips to about 154 around week 33." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { aware: 0 }, look: "The same stock management structure recurs in supply chains, hog farming and hiring. Ignore the pipeline and inventory peaks near 117 at week 16, dips to about 92 at week 31 and rings around its target of 100 with a period of about 29 weeks." },
+      exercises: [4],
     },
     {
       title: "Individuals or aggregates",
@@ -609,7 +608,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Theory guides the tools. The next generation could map a model's behaviour at the press of a button.",
       ideas: ["Software that explores the model for you"],
       diagram: "An automated testing toolkit",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0, demand: 2, desInv: 200 }, look: "An extreme test of the kind software could run for you: with demand at 2 and target 200, inventory overshoots to about 269 around week 21 and the supply line drains to almost nothing." },
+      run: { molecule: "stockmgmt", T: 80, params: { slw: 0, demand: 2, desInv: 200 }, look: "An extreme test of the kind software could run for you: with demand at 2 and target 200, orders are held at zero rather than going negative, the supply line drains to almost nothing, and inventory still overshoots to about 252 around week 21." },
       exercises: [1, 2, 3, 5],
     },
     {
@@ -665,7 +664,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Limits to growth needs the balancing loop to act fast. Delay that loop and the stock overshoots.",
       ideas: [],
       archetype: "balancing-delay",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0 }, look: "Ordering without counting what is on the way drives inventory to about 185 at week 17, far past the target of 100, before it swings back." },
+      run: { molecule: "lowVisPipeline", T: 60, params: { aware: 0 }, look: "Ordering without counting what is already on order carries inventory from 60 past its target of 100 to about 117 at week 16, then down to about 92 at week 31, before it settles near 100." },
     },
     {
       title: "Success to the successful",
@@ -676,10 +675,10 @@ export const STEPS_B: Record<string, Step[]> = {
     },
     {
       title: "Escalation",
-      lead: "Two parties again, but now each reacts to the other's position, so the loops push both upward.",
+      lead: "Two parties again, but now each reacts to the other's position, so each response provokes the next.",
       ideas: [],
       archetype: "escalation",
-      run: { molecule: "seaAnchorPricing", T: 20, look: "Each round of price builds on the last: the underlying price climbs from 10 to about 20 in 20 years and keeps going." },
+      run: { molecule: "seaAnchorPricing", T: 20, params: { inventory: 100, relMarketShare: 0.8 }, look: "One side of a price war: trailing its rival's share, the firm prices below its sense of a fair price, and that sense then drifts down to the price it set. Price slides from about 8.9 to about 5.1 in 20 years. A rival running the same rule would cut in turn." },
     },
     {
       title: "Eroding goals",
@@ -707,14 +706,13 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Shifting the burden happens inside one actor. Between two partners, each local fix can undermine the other.",
       ideas: [],
       archetype: "accidental-adversaries",
-      run: { molecule: "growth", T: 30, params: { birth: 2, death: 5 }, look: "When local fixes outweigh the help each partner gives, the shared reinforcing loop runs in reverse and joint success shrinks from 100 to about 41 in 30 years." },
     },
     {
       title: "Tragedy of the commons",
       lead: "Widen the circle from two partners to many users of one shared resource.",
       ideas: [],
       archetype: "tragedy-of-the-commons",
-      run: { molecule: "logistic", T: 40, look: "A renewable stock regrows fastest near 100, half its capacity of 200, around year 16; total harvests above that peak regrowth run the resource down." },
+      run: { molecule: "logistic", T: 40, look: "Left alone, the renewable stock regrows fastest, at 9 a year, when it is near 100, half its capacity of 200, around year 16. Total harvests above that peak regrowth run the resource down, however it is shared." },
     },
     {
       title: "Growth and underinvestment",

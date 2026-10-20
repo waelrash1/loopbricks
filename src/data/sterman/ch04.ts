@@ -7,7 +7,7 @@ export const CHAPTER: StudyChapter = {
   part: "Part I Perspective and process",
   pages: "107-133",
   summary:
-    "Behaviour comes from structure. Most of the dynamics we observe are variations on a handful of modes, and each mode has a recognisable feedback structure behind it: reinforcing loops produce exponential growth, balancing loops produce goal seeking, and balancing loops with delays produce oscillation. S-shaped growth, growth with overshoot and overshoot and collapse arise when these basic structures interact nonlinearly. It is also useful to separate stasis, random variation and the family of oscillations (damped, limit cycle, chaos), and turns the link between structure and behaviour into a practical heuristic: the shape of a reference mode tells you which kind of loop must have been dominant, and which latent loops you still need to look for.",
+    "Behaviour comes from structure. Most of the dynamics we observe are variations on a handful of modes, and each mode has a recognisable feedback structure behind it: reinforcing loops produce exponential growth, balancing loops produce goal seeking, and balancing loops with delays produce oscillation. S-shaped growth, growth with overshoot and overshoot and collapse arise when these basic structures interact nonlinearly. The topic also separates stasis, random variation and the family of oscillations (damped, limit cycle, chaos), and turns the link between structure and behaviour into a practical heuristic: the shape of a reference mode tells you which kind of loop must have been dominant, and which latent loops you still need to look for.",
   bigIdeas: [
     {
       title: "A small set of modes covers most dynamics",
@@ -275,7 +275,7 @@ export const CHAPTER: StudyChapter = {
       equations: ["Orders = Demand + (Desired inventory − Inventory) / AT", "Inventory gains orders only after an acquisition delay"],
       explain:
         "A balancing loop corrects the inventory gap, but the correction arrives late. If the rule ignores what is already on order, orders keep coming after the gap has closed and inventory overshoots: the same oscillation seen in the Beer Distribution Game supply chain.",
-      molecule: "stockmgmt",
+      molecule: "lowVisPipeline",
       pages: "114-115, 129-130",
     },
   ],
@@ -322,9 +322,9 @@ export const CHAPTER: StudyChapter = {
     },
     {
       prompt:
-        "Turn goal seeking into oscillation. In Stock Management run Stable (sees pipeline), then Oscillation (ignores it). Then raise the acquisition delay from 6 to 12 weeks with the supply-line weight at 0. Where is the delay in the balancing loop, and what happens to the amplitude and period of the swings?",
-      hint: "The delay sits between ordering and arrival. Ignoring orders already placed means corrections keep going after the gap is closed.",
-      link: { label: "Stock Management", hash: "/m/stockmgmt" },
+        "Turn goal seeking into oscillation. In Low-Visibility Pipeline Correction run Tracks the pipeline, then Ignores the pipeline. Then raise the supplier delay from 6 to 12 weeks with awareness of the pipeline still at 0. Where is the delay in the balancing loop, and what happens to the amplitude and period of the swings?",
+      hint: "The delay sits between ordering and arrival. Ignoring orders already placed means corrections keep going after the gap is closed. Doubling the delay raises the first peak from about 117 to about 150 and stretches the cycle from roughly 29 to roughly 43 weeks.",
+      link: { label: "Low-Visibility Pipeline Correction", hash: "/m/lowVisPipeline" },
     },
     {
       prompt:
@@ -358,5 +358,5 @@ export const CHAPTER: StudyChapter = {
     "Calling variation random and stopping there; randomness mostly measures what we do not yet know about decision rules and conditions.",
     "Using chaos as a buzzword; it has a precise meaning (bounded, deterministic, non-repeating oscillation with sensitive dependence on initial conditions).",
   ],
-  molecules: ["growth", "bathtub", "closegap", "stockmgmt", "logistic", "diffusion", "decay"],
+  molecules: ["growth", "bathtub", "closegap", "lowVisPipeline", "logistic", "diffusion", "decay"],
 };
