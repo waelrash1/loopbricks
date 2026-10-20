@@ -27,6 +27,8 @@ Built with the help of Claude Code.
 
 ## Contact
 
+LoopBricks is part of the **3S Research Group**.
+
 **Dr Wael Rashwan**, Lecturer in Business Analytics, School of Business, Maynooth University
 
 - Co-lead, Data Science and Digital Transformation Research Beacon

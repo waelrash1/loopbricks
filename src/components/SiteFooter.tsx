@@ -11,6 +11,7 @@ export default function SiteFooter() {
           <div>
             <p className="heading text-[18px]">Dr Wael Rashwan</p>
             <p className="text-foreground/85">Lecturer in Business Analytics, School of Business, Maynooth University</p>
+            <p className="mt-3 font-semibold">LoopBricks is part of the 3S Research Group.</p>
             <ul className="mt-3 space-y-0.5 text-muted-foreground">
               <li>Co-lead, Data Science and Digital Transformation Research Beacon</li>
               <li>Principal investigator, Rinn-AI funded project</li>
