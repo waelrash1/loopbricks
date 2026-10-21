@@ -71,7 +71,7 @@ export const STEPS_A: Record<string, Step[]> = {
       lead: "If the real loop is too slow and noisy to learn from, build a model where it can be cycled many times, and simulate it.",
       ideas: ["Virtual worlds speed learning, but only if used reflectively", "Why simulation is essential"],
       diagram: "Learning through a virtual world",
-      run: { molecule: "lowVisPipeline", T: 120, params: { delay: 12, tInv: 2, aware: 0 }, look: "With a 12-week supplier delay, fast correction and the pipeline ignored, inventory swings from about 184 at week 24 to about 55 at week 48 and is still cycling at week 120: write your prediction down before you run." },
+      run: { molecule: "lowVisPipeline", T: 120, params: { delay: 12, tInv: 2, aware: 0 }, look: "With a 12-week supplier delay, fast correction and the pipeline ignored, inventory swings from about 151 at week 20 to about 60 at week 40 and is still cycling at week 120, each boom a little larger than the last: write your prediction down before you run." },
       exercises: [4],
     },
   ],
@@ -265,7 +265,7 @@ export const STEPS_A: Record<string, Step[]> = {
       title: "Mark the delays",
       lead: "Price moved slowly in that market. Delays like that change behaviour so much that they belong on the diagram.",
       ideas: ["Show the delays that matter"],
-      run: { molecule: "lowVisPipeline", T: 120, params: { aware: 0, delay: 12 }, look: "With a 12-week supplier delay and the pipeline ignored, inventory dips to about 40, overshoots the goal of 100 to about 150 by week 28, falls to about 61 by week 50 and is still swinging at week 120. The same rule with a 6-week delay peaks at only about 117." },
+      run: { molecule: "lowVisPipeline", T: 120, params: { aware: 0, delay: 12 }, look: "With a 12-week supplier delay and the pipeline ignored, inventory overshoots the goal of 100 to about 130 by week 24, falls to about 74 by week 46 and is still swinging at week 120. The same rule with a 6-week delay peaks at only about 117." },
       exercises: [5],
     },
     {
@@ -356,7 +356,7 @@ export const STEPS_A: Record<string, Step[]> = {
       title: "Stillness, noise and cycles",
       lead: "Constancy, randomness and the many kinds of cycle are also explained by structure.",
       ideas: ["Stasis and randomness are also explained by structure, or by ignorance", "Damped oscillations, limit cycles and chaos share one structure"],
-      run: { molecule: "lowVisPipeline", T: 100, params: { aware: 0.3, delay: 12 }, look: "With a 12-week delay and the pipeline only partly counted, inventory overshoots to about 120 by week 26, undershoots to about 92 by week 45, peaks again near 103 and settles at 100: a damped cycle." },
+      run: { molecule: "lowVisPipeline", T: 100, params: { aware: 0.3, delay: 12 }, look: "With a 12-week delay and the pipeline only partly counted, inventory overshoots to about 112 by week 24, undershoots to about 95 by week 43, peaks again near 102 and settles at 100: a damped cycle." },
       example: "Damped cycle, limit cycle and chaos in one supply chain model",
     },
     {

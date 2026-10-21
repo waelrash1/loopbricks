@@ -4,10 +4,10 @@ export const DT = 0.1;
 export type Vars = Record<string, number>;
 export type History = { times: number[]; series: number[][] };
 
-export function freshState(m: Model): Vars {
+export function freshState(m: Model, p: Vars = initParams(m)): Vars {
   const s: Vars = {};
   m.stocks.forEach((x) => (s[x.id] = x.init));
-  return s;
+  return m.initFrom ? { ...s, ...m.initFrom(p, s, m.rates(s, p)) } : s;
 }
 export function initParams(m: Model): Vars {
   const p: Vars = {};

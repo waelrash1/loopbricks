@@ -21,12 +21,17 @@ export function verifySpec(spec: Spec): string[] {
     const s = stocks.get(st.id);
     if (!s) e.push(`missing stock "${st.id}"`);
     else {
-      if (Number(s.init) !== st.init) e.push(`stock "${st.id}" starts at ${s.init}, the app at ${st.init}`);
+      // a start worked out from the parameters is an expression in the spec; the trajectory checks below compare it
+      const fromParams = !!m.initFrom && st.id in m.initFrom(initParams(m), {}, {});
+      if (!fromParams && Number(s.init) !== st.init) e.push(`stock "${st.id}" starts at ${s.init}, the app at ${st.init}`);
+      if (fromParams && /^[\d.]+$/.test(s.init)) e.push(`stock "${st.id}" starts from the parameters in the app, so the spec needs an expression, not ${s.init}`);
       if (!s.nonNegative) e.push(`stock "${st.id}" needs "nonNegative": true (the app floors every stock at zero)`);
     }
   }
   for (const id of stocks.keys()) if (!m.stocks.some((s) => s.id === id)) e.push(`stock "${id}" is not in the app molecule`);
 
+  // the app always steps at DT = 0.1, so a literal "/ 0.1" matches it there but goes wrong at any other dt
+  for (const x of [...spec.model.flows, ...spec.model.vars]) if (/\/\s*0?\.1(?![0-9])/.test(x.eq)) e.push(`"${x.name}" divides by 0.1: write DT so it holds at any time step`);
   const vars = new Map(spec.model.vars.map((v) => [v.id, v]));
   for (const p of m.params) {
     const v = vars.get(p.id);
@@ -54,7 +59,7 @@ export function verifySpec(spec: Spec): string[] {
       continue;
     }
     const p = { ...initParams(m), ...params };
-    let s = freshState(m);
+    let s = freshState(m, p);
     for (let i = 0; i < run.times.length; i++) {
       const bad = m.stocks.find((st) => Math.abs(run.stocks[st.id][i] - s[st.id]) > TOL * Math.max(1, Math.abs(s[st.id])));
       if (bad) {

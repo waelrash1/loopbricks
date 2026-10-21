@@ -35,6 +35,7 @@ export const MODELS_E: Record<string, Model> = {
       { id: "ref", label: "At normal PDY", init: 0, scale: 300, color: GREY },
       { id: "pdy", label: "Productivity (/p·mo)", init: 4.0392, scale: 10, color: C.good, chartHidden: true },
     ],
+    initFrom: (_p, _s, r) => ({ pdy: r.producing }), // the display stock starts at the value it shows
     params: [
       { id: "normalPDY", label: "Normal productivity", min: 1, max: 10, step: 0.5, value: 5, unit: "/p·mo" },
       { id: "fatigue", label: "Fatigue", min: 0.5, max: 2, step: 0.05, value: 1.3, unit: "×" },
@@ -103,6 +104,7 @@ export const MODELS_E: Record<string, Model> = {
       { id: "fatigue", label: "Fatigue", init: 1, scale: 2, color: C.pink },
       { id: "effect", label: "Effect on PDY", init: 1, scale: 1.2, color: C.good },
     ],
+    initFrom: (_p, _s, r) => ({ effect: r.effect }), // the display stock starts at the value it shows
     params: [
       { id: "overtime", label: "Overtime", min: 0.5, max: 2, step: 0.05, value: 1.5, unit: "×" },
       { id: "timeToFatigue", label: "Time to get fatigued", min: 0.5, max: 12, step: 0.5, value: 3, unit: "mo" },
@@ -168,6 +170,7 @@ export const MODELS_E: Record<string, Model> = {
       { id: "shortfall", label: "Work fallen behind", init: 0, scale: 600, color: C.pink },
       { id: "ot", label: "Overtime (×)", init: 1.3, scale: 2, color: C.acc, chartHidden: true },
     ],
+    initFrom: (_p, _s, r) => ({ ot: r.overtime }), // the display stock starts at the value it shows
     params: [
       { id: "desiredRate", label: "Desired accomplishing rate", min: 0, max: 150, step: 5, value: 60, unit: "/wk" },
       { id: "productivity", label: "Productivity", min: 1, max: 10, step: 0.5, value: 4, unit: "/p·wk" },
@@ -244,6 +247,7 @@ export const MODELS_E: Record<string, Model> = {
       { id: "produced", label: "Drawings produced", init: 0, scale: 1200, color: C.good },
       { id: "rate", label: "Producing (/mo)", init: 20, scale: 60, color: C.acc, chartHidden: true },
     ],
+    initFrom: (_p, _s, r) => ({ rate: r.producing }), // the display stock starts at the value it shows
     params: [
       { id: "workers", label: "Workers", min: 0, max: 30, step: 1, value: 10, unit: "ppl" },
       { id: "productivity", label: "Productivity", min: 0.5, max: 10, step: 0.5, value: 2, unit: "/p·mo" },

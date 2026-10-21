@@ -21,7 +21,7 @@
       {
         "id": "ind",
         "name": "Algebraic value",
-        "init": "180",
+        "init": "Value",
         "x": 260,
         "y": 320,
         "nonNegative": true

@@ -37,7 +37,7 @@
       {
         "id": "qPct",
         "name": "Quality percent",
-        "init": "68.9",
+        "init": "Quality * 100",
         "x": 260,
         "y": 365,
         "nonNegative": true

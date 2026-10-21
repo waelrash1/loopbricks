@@ -21,7 +21,7 @@
       {
         "id": "priceDisp",
         "name": "Price",
-        "init": "8",
+        "init": "Current_price",
         "x": 260,
         "y": 320,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "priceTrack",
         "name": "Price tracking",
         "to": "priceDisp",
-        "eq": "(Current_price - Price) / 0.1",
+        "eq": "(Current_price - Price) / DT",
         "x": 110,
         "y": 320
       }

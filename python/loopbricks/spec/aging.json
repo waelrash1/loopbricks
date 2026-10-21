@@ -10,9 +10,9 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      { "id": "young", "name": "Youth", "init": "300", "x": 157.5, "y": 145, "nonNegative": true },
-      { "id": "adult", "name": "Working age", "init": "800", "x": 402.5, "y": 145, "nonNegative": true },
-      { "id": "old", "name": "Elderly", "init": "200", "x": 647.5, "y": 145, "nonNegative": true }
+      { "id": "young", "name": "Youth", "init": "360", "x": 157.5, "y": 145, "nonNegative": true },
+      { "id": "adult", "name": "Working age", "init": "900", "x": 402.5, "y": 145, "nonNegative": true },
+      { "id": "old", "name": "Elderly", "init": "300", "x": 647.5, "y": 145, "nonNegative": true }
     ],
     "flows": [
       { "id": "in", "name": "Being born", "to": "young", "eq": "Births", "x": 65, "y": 145 },

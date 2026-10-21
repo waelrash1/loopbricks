@@ -274,7 +274,7 @@ export const CHAPTER: StudyChapter = {
       prompt:
         "Open the inventory and business cycle case. Run <b>Firms ignore work in progress</b> and <b>Firms track work in progress</b>, then <b>Long lead time (12 months)</b>. Treat the lead time as the combined production and hiring delay: how does lengthening it change the period and size of the swings?",
       answer:
-        "Firms ignore work in progress: inventory overshoots to about 117 at month 16 and rings with a period of about 29 months, damping out over the 120 months. Firms track work in progress: inventory rises smoothly to 100, no cycle. Long lead time (12 months): inventory first drops to about 40, then peaks at about 150 at month 28, and the cycle lengthens to about 43 months and damps much more slowly (peaks near 133 and 124 follow). A longer combined production and hiring delay lengthens the period (roughly in proportion to the delay) and enlarges the swings, because more orders are hidden in the pipeline that firms do not count.",
+        "Firms ignore work in progress: inventory overshoots to about 117 at month 16 and rings with a period of about 29 months, damping out over the 120 months. Firms track work in progress: inventory rises smoothly to 100, no cycle. Long lead time (12 months): inventory peaks at about 130 at month 24, and the cycle lengthens to about 42 months and damps much more slowly (peaks near 122 and 116 follow). A longer combined production and hiring delay lengthens the period (roughly in proportion to the delay) and enlarges the swings, because more orders are hidden in the pipeline that firms do not count.",
       link: { label: "Inventory cycle case", hash: "/apps/economics/inventory-cycle" },
     },
     {

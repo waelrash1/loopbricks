@@ -11,11 +11,11 @@
     "dt": 0.1,
     "stocks": [
       {"id":"workToDo","name":"Work to do","init":"6000","x":395,"y":150,"units":"sq ft","nonNegative":true},
-      {"id":"durationDisp","name":"Duration till complete","init":"24","x":560,"y":330,"nonNegative":true}
+      {"id":"durationDisp","name":"Duration till complete","init":"Estimated_remaining_duration","x":560,"y":330,"nonNegative":true}
     ],
     "flows": [
       {"id":"accomplishing","name":"Accomplishing work","from":"workToDo","eq":"IF(Work_to_do > 0, Actual_rate_of_accomplishing_work, 0)","x":623,"y":150},
-      {"id":"track_durationDisp","name":"Tracking duration","to":"durationDisp","eq":"(Estimated_remaining_duration - Duration_till_complete) / 0.1","x":450,"y":330}
+      {"id":"track_durationDisp","name":"Tracking duration","to":"durationDisp","eq":"(Estimated_remaining_duration - Duration_till_complete) / DT","x":450,"y":330}
     ],
     "vars": [
       {"id":"anticipatedRate","name":"Anticipated rate of accomplishing work","eq":"250","units":"sq ft/week","x":80,"y":420},

@@ -2,7 +2,7 @@
   "format": "loopbricks-model",
   "version": 1,
   "key": "trend",
-  "title": "Trend & Extrapolation",
+  "title": "Trend Perception",
   "description": "Perception lags a moving signal, and the gap between the two reveals its growth rate, which forecasters then extrapolate forward.",
   "model": {
     "name": "Trend",

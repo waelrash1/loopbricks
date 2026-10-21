@@ -595,7 +595,7 @@ export const CASES: AppCase[] = [
       "Demographic change is slow but certain: the people who will be over 65 in 30 years are already alive. Each stock settles at inflow × time spent in it, so longer lives grow the oldest stock directly.",
     tryThis: [
       "Raise life expectancy at 65 from 15 to 25 years. How much does the oldest stock grow, and how long does it take?",
-      "Halve births. When does the working-age stock start to shrink, and why so late?",
+      "Halve births. The children fall at once; how fast does the working-age stock follow, and why so slowly?",
     ],
     data: [
       ["Population by single year of age", "Census; UN World Population Prospects"],
@@ -612,7 +612,7 @@ export const CASES: AppCase[] = [
     checks: [
       { claim: "Each stock settles at inflow × time spent in it: 20 a year × 25 years ≈ 500 older people", test: (run) => Math.abs(run({ births: 20, tY: 18, tA: 47, tO: 25 }, 200).end.old - 500) < 15 },
       { claim: "Longer lives after 65 grow the oldest stock", test: (run) => run({ tO: 25 }).end.old > run({ tO: 15 }).end.old },
-      { claim: "Falling births shrink the children first; over 20 years the working-age group falls far less", test: (run) => { const r = run({ births: 10 }, 20).end; return 1 - r.young / 300 > 2 * (1 - r.adult / 800); } },
+      { claim: "Falling births shrink the children first; over 20 years the working-age group falls far less", test: (run) => { const r = run({ births: 10 }, 20).end; return 1 - r.young / 360 > 2 * (1 - r.adult / 940); } }, // 360 and 940 are the starting values
     ],
     refs: ["ansah2014"],
     tags: ["ageing", "aging", "older people", "long-term care", "social care", "demography", "dependency ratio", "elderly"],

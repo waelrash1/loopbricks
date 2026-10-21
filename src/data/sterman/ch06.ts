@@ -292,7 +292,7 @@ export const CHAPTER: StudyChapter = {
         "Bathtub: choose the Filling preset (inflow 14, outflow 6, level 50). Before running, write down the level you expect at year 10. Set Stop at to 10 and run. Then choose Draining (inflow 3, outflow 12) and predict when the tub empties and what the outflow does afterwards.",
       hint: "Filling: 50 + (14 − 6) × 10 = 130. Draining: 50 ÷ 9 ≈ 5.6 years; once empty the outflow can only equal what flows in.",
       answer:
-        "Filling: the level rises by 14 − 6 = 8 units a year, so at year 10 it is 50 + 8 × 10 = 130, which the run confirms. Draining: the level falls by 12 − 3 = 9 a year and reaches zero at about 50 ÷ 9 ≈ 5.6 years. After that the tub cannot hold a negative amount, so the outflow can remove only what flows in: on average it drops to the inflow of 3 a year (on the chart it flickers between 0 and 12 as each small step of inflow is drained). The lesson: a stock changes at the rate of net flow, and an outflow drawn from a stock is limited by what the stock contains.",
+        "Filling: the level rises by 14 − 6 = 8 units a year, so at year 10 it is 50 + 8 × 10 = 130, which the run confirms. Draining: the level falls by 12 − 3 = 9 a year and reaches zero at about 50 ÷ 9 ≈ 5.6 years. After that the tub cannot hold a negative amount, so the outflow can remove only what flows in: it drops to the inflow of 3 a year and the level stays at exactly zero. The lesson: a stock changes at the rate of net flow, and an outflow drawn from a stock is limited by what the stock contains.",
       link: { label: "Bathtub", hash: "/m/bathtub" },
     },
     {

@@ -85,7 +85,7 @@ export function monteCarlo(key: string, base: Record<string, number>, vary: stri
       const v = p[id] * (1 + spread * (2 * rnd() - 1));
       p[id] = Math.min(d.max, Math.max(d.min, v));
     });
-    let s = freshState(m);
+    let s = freshState(m, p);
     const ys = [s[stock]];
     for (let i = 1; i <= every * (samples - 1); i++) {
       s = stepOnce(m, s, p, DT).state;

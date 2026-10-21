@@ -12,7 +12,7 @@
     "stocks": [{ "id": "level", "name": "Level", "init": "50", "x": 380, "y": 200, "units": "units", "nonNegative": true }],
     "flows": [
       { "id": "in", "name": "Filling", "to": "level", "eq": "Inflow", "x": 220, "y": 200, "units": "units/year" },
-      { "id": "out", "name": "Draining", "from": "level", "eq": "IF(Level > 0, Outflow, 0)", "x": 540, "y": 200, "units": "units/year" }
+      { "id": "out", "name": "Draining", "from": "level", "eq": "MIN(Outflow, Level / DT + Inflow)", "x": 540, "y": 200, "units": "units/year" }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "10", "x": 220, "y": 90, "units": "units/year" },

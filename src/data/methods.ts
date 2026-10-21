@@ -433,7 +433,7 @@ const PAGES: MethodPage[] = [
             ["Extreme conditions", "Stock Management with demand at its minimum", "Inventory settles at the target of 100, not above or below"],
             ["Integration error", "Stock Management ignoring the supply line, time step 0.5, 0.25, 0.1 and 0.05", "Peak inventory 111.7, 110.7, 110.2 and 110.0: the app's step of 0.1 is within 0.2% of the finest"],
             ["Behaviour anomaly", "Set the supply-line weight from 1 to 0", "Peak inventory rises from 100 to 110 and oscillation appears, as theory predicts"],
-            ["Surprise behaviour", "Weight 0, a 12-week delay and desired inventory 60, where inventory starts", "Inventory falls to about 36 and rings for years although it starts on target and demand never changes. The supply line starts at 60 when a 12-week delay needs 120: a start-up error to fix, not a finding"],
+            ["Surprise behaviour", "Weight 0, a 12-week delay and desired inventory 60, where inventory starts", "Nothing moves, because the supply line starts at demand × delay = 120, the balance a 12-week delay needs. An earlier version started it at a fixed 60, and inventory fell to about 36 and rang for years although it started on target: a start-up error, fixed rather than reported as a finding"],
           ],
         },
         cite: ["sterman2000", "barlas1996"],

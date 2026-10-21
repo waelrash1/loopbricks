@@ -21,7 +21,7 @@
       {
         "id": "desiredDisp",
         "name": "Desired people",
-        "init": "50",
+        "init": "Affordable_workforce",
         "x": 260,
         "y": 320,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "desiredTrack",
         "name": "Desired people tracking",
         "to": "desiredDisp",
-        "eq": "(Affordable_workforce - Desired_people) / 0.1",
+        "eq": "(Affordable_workforce - Desired_people) / DT",
         "x": 110,
         "y": 320
       }

@@ -34,6 +34,7 @@ export const MODELS_B: Record<string, Model> = {
       { id: "underlyingPrice", label: "Underlying price", init: 10, scale: 90, color: C.acc2 },
       { id: "priceDisp", label: "Price", init: 11.43, scale: 90, color: C.good, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ priceDisp: r.price }), // the display stock starts at the value it shows
     params: [
       { id: "inventory", label: "Inventory", min: 0, max: 200, step: 5, value: 75, unit: "widgets" },
       { id: "targetInventory", label: "Target inventory", min: 20, max: 200, step: 5, value: 100, unit: "widgets" },
@@ -78,7 +79,7 @@ export const MODELS_B: Record<string, Model> = {
       <li><b>Healthcare</b>: agency staffing rates ratcheting up for as long as shifts stay unfilled.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Inventory 75 against a target of 100 gives relative inventory 0.75 and an inventory effect of <code>2 / 1.75 ≈ 1.14</code>; market share is at target (effect 1), so pressure ≈ 1.14. Price jumps at once from $10 to about $11.43, and the underlying price then grows at <code>(1.14 − 1) / 4 ≈ 3.6%</code> per year: doubling roughly every 19-20 years, to about $29 after 30 years with the price about 14% above it throughout. Set inventory back to 100 and the price drops to the underlying price and both freeze at the new, higher level.</div>
+    Inventory 75 against a target of 100 gives relative inventory 0.75 and an inventory effect of <code>2 / 1.75 ≈ 1.14</code>; market share is at target (effect 1), so pressure ≈ 1.14. Price therefore starts about 14% above the $10 underlying price, at about $11.43, and the underlying price then grows at <code>(1.14 − 1) / 4 ≈ 3.6%</code> per year: doubling roughly every 19-20 years, to about $29 after 30 years with the price about 14% above it throughout. Set inventory back to 100 and the price drops to the underlying price and both freeze at the new, higher level.</div>
     <h4>Caveats</h4>
     <p>Aggressive policies (a short time constant, a steep effect) can produce price explosions. And if the underlying price ever reaches zero it is stuck there, because every bump is a multiple of zero: the reason for Protected Sea Anchor Pricing.</p>
     <h4>References</h4>
@@ -98,6 +99,7 @@ export const MODELS_B: Record<string, Model> = {
       { id: "underlyingPrice", label: "Underlying price", init: 10, scale: 20, color: C.acc2 },
       { id: "priceDisp", label: "Price", init: 8, scale: 20, color: C.good, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ priceDisp: r.price }), // the display stock starts at the value it shows
     params: [
       { id: "inventory", label: "Inventory", min: 0, max: 200, step: 5, value: 150, unit: "widgets" },
       { id: "targetInventory", label: "Target inventory", min: 20, max: 200, step: 5, value: 100, unit: "widgets" },
@@ -442,6 +444,7 @@ export const MODELS_B: Record<string, Model> = {
       { id: "resources", label: "Resources", init: 5, scale: 40, color: C.acc },
       { id: "requiredDisp", label: "Resources required", init: 20, scale: 40, color: C.acc2, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ requiredDisp: r.required }), // the display stock starts at the value it shows
     params: [
       { id: "desiredFlow", label: "Desired flow", min: 0, max: 120, step: 5, value: 60, unit: "gal/mo" },
       { id: "ability", label: "Resource ability to create flow", min: 0.5, max: 6, step: 0.25, value: 3, unit: "gal/mo/resource" },
@@ -501,6 +504,7 @@ export const MODELS_B: Record<string, Model> = {
       { id: "workforce", label: "Workforce", init: 20, scale: 100, color: C.acc },
       { id: "desiredDisp", label: "Desired people", init: 50, scale: 100, color: C.acc2, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ desiredDisp: r.desired }), // the display stock starts at the value it shows
     params: [
       { id: "budget", label: "Workforce budget", min: 500, max: 6000, step: 100, value: 3000, unit: "$k/yr" },
       { id: "avgWage", label: "Average wage", min: 30, max: 150, step: 5, value: 60, unit: "$k/person/yr" },

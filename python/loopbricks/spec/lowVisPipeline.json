@@ -13,7 +13,7 @@
       {
         "id": "onr",
         "name": "Orders not received",
-        "init": "60",
+        "init": "Shipping * Supplier_delay",
         "x": 290,
         "y": 150,
         "nonNegative": true
@@ -21,7 +21,7 @@
       {
         "id": "s1",
         "name": "Supplier first stage",
-        "init": "30",
+        "init": "Shipping * Supplier_delay / 2",
         "x": 260,
         "y": 315,
         "nonNegative": true

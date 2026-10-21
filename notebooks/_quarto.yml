@@ -1,5 +1,6 @@
 # The LoopBricks book. Each chapter is one of the notebooks in this folder, so the book, Colab and the app's
-# "Open in Colab" links all use the same files. Build with `quarto render notebooks` (or `quarto preview notebooks`).
+# "Open in Colab" links all use the same files. Build with `npm run book`, which renders and then clears the outputs
+# that rendering saves into the notebooks (or `quarto preview notebooks` while writing).
 project:
   type: book
   output-dir: _book

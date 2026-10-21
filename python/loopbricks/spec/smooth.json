@@ -17,7 +17,7 @@
       { "id": "s3", "name": "Third order smooth", "init": "30", "x": 550, "y": 220, "nonNegative": true }
     ],
     "flows": [
-      { "id": "inAdj", "name": "Input adjustment", "to": "input", "eq": "(Input_level - Input_signal) / 0.1", "x": 60, "y": 150 },
+      { "id": "inAdj", "name": "Input adjustment", "to": "input", "eq": "(Input_level - Input_signal) / DT", "x": 60, "y": 150 },
       { "id": "adj1", "name": "Adjust first order", "to": "s1", "eq": "(Input_signal - First_order_smooth) / Smoothing_time", "x": 360, "y": 125 },
       { "id": "adjM1", "name": "Adjust stage 1", "to": "m1", "eq": "(Input_signal - Smoothing_stage_1) / Stage_smoothing_time", "x": 170, "y": 340 },
       { "id": "adjM2", "name": "Adjust stage 2", "to": "m2", "eq": "(Smoothing_stage_1 - Smoothing_stage_2) / Stage_smoothing_time", "x": 325, "y": 400 },

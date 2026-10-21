@@ -277,7 +277,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
       const url = URL.createObjectURL(new Blob([notebookFor(model)], { type: "application/x-ipynb+json" }));
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${(model.name || "model").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ipynb`;
+      a.download = `${(model.name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "model"}.ipynb`;
       a.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       setNote("Downloaded a Python notebook. Open it in Colab (File, Upload notebook) or Jupyter.");

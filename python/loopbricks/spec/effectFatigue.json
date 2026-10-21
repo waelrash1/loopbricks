@@ -11,12 +11,12 @@
     "dt": 0.1,
     "stocks": [
       {"id":"fatigue","name":"Fatigue","init":"1","x":410,"y":150,"nonNegative":true},
-      {"id":"effect","name":"Effect on PDY","init":"1","x":560,"y":330,"nonNegative":true}
+      {"id":"effect","name":"Effect on PDY","init":"Effect_of_fatigue_on_PDY","x":560,"y":330,"nonNegative":true}
     ],
     "flows": [
       {"id":"gettingFatigued","name":"Getting fatigued","to":"fatigue","eq":"MAX(0, Net_fatigue_change)","x":193,"y":150},
       {"id":"recovering","name":"Recovering","from":"fatigue","eq":"MAX(0, -Net_fatigue_change)","x":630,"y":150},
-      {"id":"track_effect","name":"Tracking effect","to":"effect","eq":"(Effect_of_fatigue_on_PDY - Effect_on_PDY) / 0.1","x":450,"y":330}
+      {"id":"track_effect","name":"Tracking effect","to":"effect","eq":"(Effect_of_fatigue_on_PDY - Effect_on_PDY) / DT","x":450,"y":330}
     ],
     "vars": [
       {"id":"overtime","name":"Overtime","eq":"1.5","x":80,"y":420},

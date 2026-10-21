@@ -6,6 +6,22 @@ import { moduleById } from "@/data/learn/modules";
 
 const moduleTitle = (id: string) => `${moduleById(id)?.title ?? id} in Python`;
 
+// Browsers ignore `download` on another site's link, so fetch the file and save it; if that fails, the link opens it.
+async function download(e: React.MouseEvent, file: string) {
+  e.preventDefault();
+  try {
+    const res = await fetch(rawUrl(file));
+    if (!res.ok) throw new Error(String(res.status));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(await res.blob());
+    a.download = file;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch {
+    window.open(rawUrl(file), "_blank", "noopener");
+  }
+}
+
 // A notebook's title with its two ways in: Colab, or download and run locally.
 export function NotebookLinks({ file, title }: { file: string; title: string }) {
   return (
@@ -14,7 +30,7 @@ export function NotebookLinks({ file, title }: { file: string; title: string }) 
       <a href={colabUrl(file)} target="_blank" rel="noreferrer" className="brick brick-y h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
         <ExternalLink size={13} aria-hidden /> Open in Colab
       </a>
-      <a href={rawUrl(file)} download={file} className="brick brick-w h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
+      <a href={rawUrl(file)} download={file} onClick={(e) => download(e, file)} className="brick brick-w h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
         <Download size={13} aria-hidden /> Download
       </a>
     </div>

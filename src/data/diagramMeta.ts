@@ -18,7 +18,7 @@ export type FlowMeta = { name: string; eq: string; in: string[]; loop?: "B" | "R
 export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
   bathtub: {
     in: { name: "Inflow", eq: "inflow", in: ["inflow"] },
-    out: { name: "Outflow", eq: "outflow", in: ["outflow"] },
+    out: { name: "Outflow", eq: "MIN(outflow, Level / DT + inflow)", in: ["outflow", "level", "inflow"] },
   },
   cascade: {
     in: { name: "inflow", eq: "inflow", in: ["inflow"] },
@@ -77,7 +77,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
       loop: "B",
     },
     acquisition: { name: "acquisition", eq: "SupplyLine / acquisition delay", in: ["sl", "acq"], loop: "B" },
-    sales: { name: "sales", eq: "demand", in: ["demand"] },
+    sales: { name: "sales", eq: "MIN(demand, Inventory / DT)", in: ["demand", "inv"] },
   },
   trend: {
     grow: { name: "growth", eq: "Actual × g", in: ["input", "g"], loop: "R" },
@@ -243,9 +243,9 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   },
   aging: {
     stocks: [
-      ["Youth", "INTEG(births − maturation, 300)"],
-      ["Working", "INTEG(maturation − retirement, 800)"],
-      ["Elderly", "INTEG(retirement − deaths, 200)"],
+      ["Youth", "INTEG(births − maturation, 360)"],
+      ["Working", "INTEG(maturation − retirement, 900)"],
+      ["Elderly", "INTEG(retirement − deaths, 300)"],
     ],
     aux: [["cohort (eq.)", "flow-in × bracket duration"]],
   },
@@ -259,7 +259,7 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   closegap: { stocks: [["Actual", "INTEG(adjustment, 20)"]], aux: [["gap", "Goal − Actual"]] },
   stockmgmt: {
     stocks: [
-      ["Supply line", "INTEG(order rate − acquisition, 60)"],
+      ["Supply line", "INTEG(order rate − acquisition, demand × acquisition delay)"],
       ["Inventory", "INTEG(acquisition − sales, 60)"],
     ],
     aux: [["desired supply line", "demand × acquisition delay"]],
@@ -271,13 +271,13 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
     ],
     aux: [
       ["perceived trend", "(Actual − Perceived) / (Perceived · τ_p)"],
-      ["forecast", "Actual × (1 + trend × horizon)"],
+      ["forecast (done in Extrapolation)", "Actual × (1 + trend × horizon)"],
     ],
   },
   coflow: {
     stocks: [
-      ["Headcount", "INTEG(hiring − attrition, 50)"],
-      ["Total experience", "INTEG(hire·hireExp + Headcount·1 − attrition·avg, 100)"],
+      ["Headcount", "INTEG(hiring − attrition, 48)"],
+      ["Total experience", "INTEG(hire·hireExp + Headcount·1 − attrition·avg, 288)"],
       ["Avg experience", "Total experience / Headcount"],
     ],
     aux: [["average", "Total experience ÷ Headcount (intensive attribute)"]],

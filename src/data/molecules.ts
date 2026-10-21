@@ -4,7 +4,7 @@ import { MODELS_C } from "@/data/extra/batchC";
 import { MODELS_E } from "@/data/extra/batchE";
 import { MODELS_F } from "@/data/extra/batchF";
 import { MODELS_D } from "@/data/extra/batchD";
-import type { Vars } from "@/sim/engine";
+import { DT, type Vars } from "@/sim/engine";
 
 export type Stock = { id: string; label: string; init: number; scale: number; color: string; hidden?: boolean; chartHidden?: boolean };
 export type Param = { id: string; label: string; min: number; max: number; step: number; value: number; unit: string };
@@ -21,6 +21,9 @@ export type Model = {
   unitY: string;
   lede: string;
   stocks: Stock[];
+  // starting values worked out from the parameters (p), the fixed starting values (s) and the rates at those (r):
+  // a supply line that starts full, or a display stock that starts at the value it shows
+  initFrom?: (p: Vars, s: Vars, r: Vars) => Vars;
   params: Param[];
   rates: (s: Vars, p: Vars) => Vars;
   derivs: (s: Vars, p: Vars, r: Vars) => Vars;
@@ -43,7 +46,8 @@ export const MODELS: Record<string, Model> = {
       { id: "inflow", label: "Inflow", min: 0, max: 30, step: 0.5, value: 10, unit: "/yr" },
       { id: "outflow", label: "Outflow", min: 0, max: 30, step: 0.5, value: 8, unit: "/yr" },
     ],
-    rates: (s, p) => ({ in: p.inflow, out: s.level > 0 ? p.outflow : 0 }),
+    // the tub can only drain what is in it plus what is pouring in, so an empty tub stays empty instead of flickering
+    rates: (s, p) => ({ in: p.inflow, out: Math.min(p.outflow, s.level / DT + p.inflow) }),
     derivs: (_s, _p, r) => ({ level: r.in - r.out }),
     diagram: {
       stocks: { level: { x: 350, y: 95, w: 120, h: 120 } },
@@ -562,9 +566,10 @@ export const MODELS: Record<string, Model> = {
     unitY: "people",
     lede: "A cascade through age or maturity classes: cohorts ageing into the next bracket while some leave. The structure behind every population pyramid.",
     stocks: [
-      { id: "young", label: "Youth (0-18)", init: 300, scale: 600, color: C.acc },
-      { id: "adult", label: "Working (18-65)", init: 800, scale: 1200, color: C.acc2 },
-      { id: "old", label: "Elderly (65+)", init: 200, scale: 400, color: C.good },
+      // in balance for the default 20 births a year (births × time in each class), so presets show a change from rest
+      { id: "young", label: "Youth (0-18)", init: 360, scale: 600, color: C.acc },
+      { id: "adult", label: "Working (18-65)", init: 900, scale: 1200, color: C.acc2 },
+      { id: "old", label: "Elderly (65+)", init: 300, scale: 400, color: C.good },
     ],
     params: [
       { id: "births", label: "Births", min: 0, max: 40, step: 1, value: 20, unit: "/yr" },
@@ -620,7 +625,7 @@ export const MODELS: Record<string, Model> = {
       <li><b>Business</b>: workforce by tenure (with an experience coflow); installed equipment by vintage and depreciation.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    With 20 births/yr, youth lasting 18 yr, working life 45 yr and 15 yr in the elder bracket, equilibrium cohorts are <code>20×18 = 360</code> youth, <code>20×45 = 900</code> working, <code>20×15 = 300</code> elderly. Drop births to 10/yr and every bracket eventually halves, but the elderly bracket keeps growing for decades first, because today's elderly were born under the old, higher birth rate. That lag is <b>demographic momentum</b>.</div>
+    With 20 births/yr, youth lasting 18 yr, working life 45 yr and 15 yr in the elder bracket, equilibrium cohorts are <code>20×18 = 360</code> youth, <code>20×45 = 900</code> working, <code>20×15 = 300</code> elderly. The chain starts at exactly these values. Drop births to 10/yr and every bracket eventually halves, but the elderly bracket barely moves for the first decade and is still about 265 after 40 years, because today's working adults were born under the old, higher birth rate and keep ageing in. That lag is <b>demographic momentum</b>.</div>
     <h4>References</h4>
     <ul class="refs">
       <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 12 "Coflows and Aging Chains".</li>
@@ -774,6 +779,7 @@ export const MODELS: Record<string, Model> = {
       { id: "sl", label: "Supply line", init: 60, scale: 160, color: C.acc2 },
       { id: "inv", label: "Inventory", init: 60, scale: 200, color: C.acc },
     ],
+    initFrom: (p) => ({ sl: p.demand * p.acq }), // the supply line starts full for current demand, whatever the delay
     params: [
       { id: "demand", label: "Demand", min: 2, max: 20, step: 0.5, value: 10, unit: "/wk" },
       { id: "desInv", label: "Desired inventory", min: 40, max: 200, step: 5, value: 100, unit: "" },
@@ -786,7 +792,7 @@ export const MODELS: Record<string, Model> = {
       const desiredSL = p.demand * p.acq;
       // the weight scales the whole supply-line gap (Sterman 2000, ch. 17), so inventory reaches its goal for any weight
       const orders = Math.max(0, p.demand + (p.desInv - s.inv) / p.adj + (p.slw * (desiredSL - s.sl)) / p.adj);
-      return { orders, acquisition, sales: p.demand };
+      return { orders, acquisition, sales: Math.min(p.demand, s.inv / DT) }; // cannot sell what is not in stock
     },
     derivs: (_s, _p, r) => ({ sl: r.orders - r.acquisition, inv: r.acquisition - r.sales }),
     diagram: {
@@ -839,10 +845,10 @@ export const MODELS: Record<string, Model> = {
   // ============================ EXPECTATIONS ============================
   trend: {
     name: "Trend",
-    title: "Trend & Extrapolation",
+    title: "Trend Perception",
     timeUnit: "mo",
     unitY: "level",
-    lede: "Perception lags a moving signal, and the gap between the two reveals its growth rate, which forecasters then extrapolate forward.",
+    lede: "Perception lags a growing signal, and once growth is steady the gap between the two settles at a fixed ratio that reveals the growth rate. Extrapolation turns that rate into a forecast.",
     stocks: [
       { id: "input", label: "Actual", init: 100, scale: 400, color: C.acc },
       { id: "ppv", label: "Perceived", init: 100, scale: 400, color: C.acc2 },
@@ -874,10 +880,10 @@ export const MODELS: Record<string, Model> = {
       ],
       loops: [{ type: "B", label: "B1", x: 455, y: 45 }],
       caption:
-        '<span class="chip chipB">B1</span> The perceived value chases the actual (a smooth). The <b>gap</b> between them is information: divide it by the perceived level and the perception time and you recover the signal\'s fractional <b>growth rate</b>, which a forecast extrapolates into the future.',
+        '<span class="chip chipB">B1</span> The perceived value chases the actual (a smooth). The <b>gap</b> between them is information: divide it by the perceived level and the perception time and you recover the signal\'s fractional <b>growth rate</b>. Turning that rate into a forecast is a separate step, the Extrapolation molecule.',
     },
-    desc: `<p>To act on a changing variable you first have to perceive its <b>rate of change</b>. The Trend structure smooths the actual value into a perceived value; the persistent gap between them encodes the growth rate. Extrapolating that rate forward gives a forecast: useful, but note it <b>always lags</b> and, when the trend turns, it overshoots in the wrong direction.</p>
-    <div class="eq">perceived trend = (Actual − Perceived) / (Perceived × perception time)&nbsp;·&nbsp; forecast = Actual × (1 + trend × horizon)</div>
+    desc: `<p>To act on a changing variable you first have to perceive its <b>rate of change</b>. The Trend structure smooths the actual value into a perceived value; the persistent gap between them encodes the growth rate. This molecule stops at perceiving that rate. Extrapolating it forward into a forecast is the job of the Extrapolation molecule; such a forecast is useful, but it <b>always lags</b> and, when the trend turns, it overshoots in the wrong direction.</p>
+    <div class="eq">perceived trend = (Actual − Perceived) / (Perceived × perception time)&nbsp;·&nbsp; forecast (Extrapolation molecule) = Actual × (1 + trend × horizon)</div>
     <div class="whenbox"><h4>When to use it</h4>
     Use Trend whenever decisions depend on a <b>growth rate or forecast</b> rather than a level: demand planning, capacity expansion, budgeting, investment. Its built-in lag is also a <i>warning</i> structure: trend-following amplifies cycles and turns late, which is why extrapolative expectations destabilize markets and supply chains.</div>
     <h4>Real-world examples</h4>
@@ -903,10 +909,12 @@ export const MODELS: Record<string, Model> = {
     unitY: "yrs experience",
     lede: "An attribute, skill, quality, age, cost, rides along with material as it flows. Track the total and divide to get the average.",
     stocks: [
-      { id: "people", label: "Headcount", init: 50, scale: 120, color: C.acc, chartHidden: true },
-      { id: "totExp", label: "Total experience", init: 100, scale: 2000, color: C.acc2, chartHidden: true },
-      { id: "avgExp", label: "Avg experience", init: 2, scale: 12, color: C.good },
+      // in balance at the defaults: 8 hires a year staying 6 years on average is 48 people averaging 6 years
+      { id: "people", label: "Headcount", init: 48, scale: 120, color: C.acc, chartHidden: true },
+      { id: "totExp", label: "Total experience", init: 288, scale: 2000, color: C.acc2, chartHidden: true },
+      { id: "avgExp", label: "Avg experience", init: 6, scale: 12, color: C.good },
     ],
+    initFrom: (_p, s) => ({ avgExp: s.totExp / Math.max(s.people, 1e-6) }), // the display stock starts at the value it shows
     params: [
       { id: "hire", label: "Hiring", min: 0, max: 20, step: 0.5, value: 8, unit: "/yr" },
       { id: "tenure", label: "Avg tenure", min: 2, max: 20, step: 0.5, value: 6, unit: "yr" },
@@ -958,7 +966,7 @@ export const MODELS: Record<string, Model> = {
       <li><b>Business</b>: average unit cost of inventory (FIFO/average costing); average skill of a growing workforce.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    50 staff hold 100 person-years of experience → average 2 yr. Everyone gains 1 yr/yr (+50/yr), hiring adds 8 rookies/yr at 0 yr, and leavers (≈8/yr at the 6-yr tenure) carry out the average. The average climbs toward the equilibrium set by tenure and accrual; <b>hire faster and the average falls</b> even though total experience keeps rising: the dilution effect that surprises growing teams.</div>
+    48 staff hold 288 person-years of experience → average 6 yr. Everyone gains 1 yr/yr (+48/yr), hiring adds 8 rookies/yr at 0 yr, and leavers (48 ÷ 6 = 8/yr) carry out 8 × 6 = 48 person-years, so the team sits in balance at the average set by tenure and accrual. <b>Hire faster and the average falls</b> even though total experience keeps rising: at 18 hires a year it drops to about 4.4 yr within 4 years and takes about 30 years to climb back to 6 as the bigger team settles. That is the dilution effect that surprises growing teams.</div>
     <h4>References</h4>
     <ul class="refs">
       <li>Sterman, J. D. (2000). <i>Business Dynamics</i>, ch. 12 "Coflows and Aging Chains".</li>
@@ -1740,6 +1748,7 @@ export const MODELS: Record<string, Model> = {
       { id: "anchor", label: "Anchor", init: 100, scale: 260, color: C.acc2 },
       { id: "valueDisp", label: "Value", init: 100, scale: 260, color: C.acc, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ valueDisp: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "pressure", label: "Adjustment pressure", min: 0.5, max: 2, step: 0.05, value: 1, unit: "×" },
       { id: "timeToChange", label: "Anchor lag", min: 1, max: 24, step: 1, value: 6, unit: "mo" },
@@ -1798,6 +1807,7 @@ export const MODELS: Record<string, Model> = {
       { id: "price", label: "Price", init: 10, scale: 26, color: C.good },
       { id: "indicatedDisp", label: "Indicated price", init: 10, scale: 26, color: C.acc2, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ indicatedDisp: r.indicated }), // the display stock starts at the value it shows
     params: [
       { id: "refPrice", label: "Reference price", min: 5, max: 20, step: 0.5, value: 10, unit: "$" },
       { id: "pressure", label: "Market pressure", min: 0.5, max: 2, step: 0.05, value: 1, unit: "×" },
@@ -1857,6 +1867,7 @@ export const MODELS: Record<string, Model> = {
       { id: "fatigue", label: "Fatigue", init: 1, scale: 2, color: C.pink },
       { id: "relOutput", label: "Output (× normal)", init: 1, scale: 1.6, color: C.good, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ relOutput: r.relOut }), // the display stock starts at the value it shows
     params: [
       { id: "overtime", label: "Overtime", min: 1, max: 1.6, step: 0.05, value: 1, unit: "×" },
       { id: "timeToFatigue", label: "Time to fatigue", min: 1, max: 12, step: 0.5, value: 4, unit: "wk" },
@@ -2250,6 +2261,7 @@ export const MODELS: Record<string, Model> = {
       { id: "avg1", label: "Avg cost · stage 1", init: 1, scale: 8, color: C.acc },
       { id: "avg2", label: "Avg cost · stage 2", init: 1, scale: 8, color: C.good },
     ],
+    initFrom: (_p, _s, r) => ({ avg1: r.a1, avg2: r.a2 }), // the display stock starts at the value it shows
     params: [
       { id: "input", label: "Input", min: 0, max: 20, step: 0.5, value: 8, unit: "/wk" },
       { id: "tau", label: "Stage time", min: 1, max: 10, step: 0.5, value: 4, unit: "wk" },
@@ -2524,6 +2536,7 @@ export const MODELS: Record<string, Model> = {
       { id: "anchor", label: "Anchor", init: 100, scale: 280, color: C.acc2 },
       { id: "valueDisp", label: "Value", init: 100, scale: 280, color: C.acc, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ valueDisp: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "pressure", label: "Adjustment pressure", min: 0.5, max: 2, step: 0.05, value: 1.2, unit: "×" },
       { id: "fundamental", label: "Fundamental", min: 50, max: 150, step: 5, value: 100, unit: "" },

@@ -118,10 +118,22 @@ export function useSimulation(model: Model) {
     return () => cancelAnimationFrame(raf);
   }, [emit]);
 
-  const setParam = useCallback((id: string, v: number) => {
-    setParams((prev) => ({ ...prev, [id]: v }));
-  }, []);
-  const applyParams = useCallback((obj: Vars) => setParams((prev) => ({ ...prev, ...obj })), []);
+  const applyParams = useCallback(
+    (obj: Vars) => {
+      paramsRef.current = { ...paramsRef.current, ...obj }; // so a reset() straight after starts from these settings
+      setParams((prev) => ({ ...prev, ...obj }));
+      // before the run starts, starting values that depend on the settings follow them (e.g. a supply line that starts full)
+      const m = modelRef.current;
+      if (m.initFrom && tRef.current === 0 && !runningRef.current) {
+        stateRef.current = freshState(m, paramsRef.current);
+        histRef.current = freshHistory(m);
+        pushHistory(histRef.current, m, stateRef.current, 0);
+        emit();
+      }
+    },
+    [emit]
+  );
+  const setParam = useCallback((id: string, v: number) => applyParams({ [id]: v }), [applyParams]);
   const pulse = useCallback(() => {
     const m = modelRef.current;
     const id = m.stocks[0].id;
@@ -142,7 +154,7 @@ export function useSimulation(model: Model) {
   const reset = useCallback(() => {
     const m = modelRef.current;
     if (histRef.current.times.length > 2) prevRef.current = histRef.current;
-    stateRef.current = freshState(m);
+    stateRef.current = freshState(m, paramsRef.current);
     histRef.current = freshHistory(m);
     tRef.current = 0;
     pushHistory(histRef.current, m, stateRef.current, 0);

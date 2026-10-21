@@ -20,7 +20,7 @@
     "vars": [
       {"id":"workers","name":"Workers","eq":"10","units":"people","x":80,"y":420},
       {"id":"productivity","name":"Productivity","eq":"4","units":"/p·month","x":220,"y":420},
-      {"id":"covered","name":"Covered producing","eq":"MIN(Producing, Work_to_do / 0.1)","x":360,"y":420}
+      {"id":"covered","name":"Covered producing","eq":"MIN(Producing, Work_to_do / DT)","x":360,"y":420}
     ]
   },
   "params": {

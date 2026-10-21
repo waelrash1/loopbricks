@@ -187,7 +187,7 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["An aging chain is a material delay with side doors"],
       formulation: "General aging chain",
       example: "Urban Dynamics: three aging chains in one city",
-      run: { molecule: "aging", T: 100, look: "With 20 births a year the youth stock heads for 360 (20 × 18 years) while the working and elderly cohorts fill more slowly, still rising at year 100." },
+      run: { molecule: "aging", T: 100, look: "With 20 births a year the chain starts in balance: 360 young (20 × 18 years), 900 working (20 × 45) and 300 elderly (20 × 15), and every cohort holds still for the full 100 years. Change births or a duration to see how slowly the chain moves to a new balance." },
       exercises: [0, 1],
     },
     {
@@ -208,13 +208,13 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["Population momentum comes from the age structure"],
       diagram: "A population aging chain with reproduction",
       example: "Population momentum and the demographic transition",
-      run: { molecule: "aging", T: 100, params: { births: 8 }, look: "Births fall by 60% and the young shrink at once, yet the elderly keep rising for about 20 years, from 200 to about 239, as the large adult cohorts already in the chain age through." },
+      run: { molecule: "aging", T: 100, params: { births: 8 }, look: "Births fall by 60% and the young shrink at once, yet the elderly hardly move for a decade (still about 298 at year 10) and only then decline, to about 239 by year 50, because the large adult cohorts already in the chain keep ageing through." },
     },
     {
       title: "The intake rate sets the age mix",
       lead: "The same memory means the shape of a population tells you how fast it has been growing.",
       ideas: ["The steady-state age mix is set by the growth rate"],
-      run: { molecule: "aging", T: 100, params: { births: 35 }, look: "A baby boom shows up in the youth stock first: the young share climbs from 23% to about 31% by year 20 while the elderly share barely moves. Then, with births steady at the new level, the boom ages through and the young share drifts back to about 25% by year 100: the mix depends on the change in intake, not its level." },
+      run: { molecule: "aging", T: 100, params: { births: 35 }, look: "A baby boom shows up in the youth stock first: the young share climbs from 23% to about 29% by year 20 while the elderly share slips only from 19% to 17%. Then, with births steady at the new level, the boom ages through and the young share drifts back toward 23%, reaching about 25% by year 100: the mix depends on the change in intake, not its level." },
     },
     {
       title: "Promotion chains go top-heavy",
@@ -246,13 +246,13 @@ export const STEPS_B: Record<string, Step[]> = {
       diagram: "Building a coflow, step by step",
       formulation: "Conserved coflow",
       example: "Labour-saving machines and the coflow",
-      run: { molecule: "coflow", T: 30, look: "New hires bring no experience and leavers take the average with them. Average experience climbs from 2 to about 6 years, matching the 6-year average tenure (experience also accrues on the job, a nonconserved flow covered below)." },
+      run: { molecule: "coflow", T: 30, look: "New hires bring no experience and leavers take the average with them. The team starts in balance, 48 people averaging 6 years, and stays there: the average matches the 6-year average tenure (experience also accrues on the job, a nonconserved flow covered below)." },
     },
     {
       title: "A smooth is not a coflow",
       lead: "It is tempting to model the attribute with a simple delay instead. An extreme test shows why that is wrong.",
       ideas: ["Modelling an attribute as a delay is a structural error"],
-      run: { molecule: "coflow", T: 20, params: { hire: 0 }, look: "Stop hiring and leavers still remove only the average, so turnover no longer moves it; the only change left is on-the-job accrual, about a year every year, from 2 to about 22 by year 20. A smooth towards new-hire experience would instead drift to 0 as if nobody had stopped hiring." },
+      run: { molecule: "coflow", T: 20, params: { hire: 0 }, look: "Stop hiring and leavers still remove only the average, so turnover no longer moves it; the only change left is on-the-job accrual, about a year every year, from 6 to about 26 by year 20. A smooth towards new-hire experience would instead drift to 0 as if nobody had stopped hiring." },
       exercises: [4],
     },
     {
@@ -279,7 +279,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "What supply chains do",
       ideas: ["Supply chains show oscillation, amplification and phase lag"],
       example: "Amplification in industry data",
-      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0 }, look: "One stage with a 12-week supplier, ignoring what is on order: inventory dips to about 40, booms to about 150 at week 28, sinks to about 61 at week 50 and climbs again, while orders not received swing even harder, from about 226 down to 37 and back to 190." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0 }, look: "One stage with a 12-week supplier, ignoring what is on order: inventory booms from 60 to about 130 at week 24, sinks to about 74 at week 46 and climbs again, while orders not received swing even harder, from about 185 down to 65 and back to 166." },
     },
     {
       title: "Replace losses, then close the gap",
@@ -314,7 +314,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Longer delays, bigger swings in orders",
       lead: "A longer delay means more on order, and so bigger order swings, but not by itself a cycle.",
       ideas: ["Delays raise amplification; they do not by themselves cause oscillation"],
-      run: { molecule: "stockmgmt", T: 60, params: { acq: 12 }, look: "With a 12-week delay the supply line swells from 60 to about 147 by week 10 (its new target is 120, against a peak of about 78 with the 6-week default), yet inventory, after a dip to about 54, still rises to 100 without overshooting because the pipeline is counted." },
+      run: { molecule: "stockmgmt", T: 60, params: { acq: 12 }, look: "With a 12-week delay the supply line starts full at 120 (12 weeks × 10) and is pushed up to about 143 by week 7, a bigger rise than the 6-week default's 60 to about 78, yet inventory still rises from 60 to 100 without overshooting because the pipeline is counted." },
     },
     {
       title: "The cause of the cycle",
@@ -329,7 +329,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Ignoring the supply line is a matter of degree, which one number captures.",
       ideas: ["The weight on the supply line turns a delayed loop into a first-order one"],
       formulation: "Weight on the supply line and effective total stock",
-      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0.34 }, look: "With a 12-week supplier and a third of the pipeline counted, inventory peaks at about 118 at week 26 and settles at 100 after a smaller second swing. Set awareness to 0 and the peak is about 150; set it to 1 and there is no overshoot." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12, aware: 0.34 }, look: "With a 12-week supplier and a third of the pipeline counted, inventory peaks at about 110 at week 24 and settles at 100 after a smaller second swing. Set awareness to 0 and the peak is about 130; set it to 1 and there is no overshoot." },
       exercises: [3],
     },
     {
@@ -345,7 +345,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Why the pipeline gets ignored",
       lead: "The error is not stupidity. Our everyday experience trains us to expect fast feedback.",
       ideas: ["Why people ignore the supply line"],
-      run: { molecule: "lowVisPipeline", T: 100, params: { tInv: 2, delay: 12, aware: 0 }, look: "With a slow 12-week supplier and an impatient manager, inventory booms to about 184 at week 24, busts to about 55 at week 48 and booms again near week 67." },
+      run: { molecule: "lowVisPipeline", T: 100, params: { tInv: 2, delay: 12, aware: 0 }, look: "With a slow 12-week supplier and an impatient manager, inventory booms from 60 to about 151 at week 20, busts back to about 60 at week 40 and booms again, to about 159, near week 58." },
     },
     {
       title: "The same structure everywhere",
@@ -393,14 +393,14 @@ export const STEPS_B: Record<string, Step[]> = {
       ideas: ["An unexpected rise in demand must first lower inventory", "Amplification and phase lag are unavoidable; oscillation is not"],
       formulation: "Demand forecast and order backlog",
       example: "One firm meets a 20% rise in orders",
-      run: { molecule: "stockmgmt", T: 40, params: { desInv: 60, demand: 12 }, look: "Demand rises 20% and inventory first falls from 60 to about 56.5 by week 5; the supply line overshoots to about 73.6 before settling at 72, with no oscillation." },
+      run: { molecule: "stockmgmt", T: 40, params: { desInv: 60, demand: 12 }, look: "Set here, the higher demand is no surprise: the supply line starts full for 12 a week (72) and nothing moves. For the surprise, run Start in balance and raise Demand from 10 to 12 while it plays: inventory first falls from 60 to about 56.5 within 5 weeks, and the supply line overshoots to about 73.6 before settling at 72, with no oscillation." },
     },
     {
       title: "Each link adds amplification",
       lead: "Chain two such firms together and the swings grow at every step upstream.",
       ideas: ["Every extra stock and delay adds amplification"],
       example: "A two-stage chain whipsaws its supplier",
-      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12 }, look: "Doubling the supplier delay to 12 weeks doubles the pipeline needed, to 120, and orders not received overshoot to about 192 by week 6 while inventory only dips to about 47: the orders this stage passes upstream swing far more than its own stock, even though it tracks the pipeline." },
+      run: { molecule: "lowVisPipeline", T: 80, params: { delay: 12 }, look: "Doubling the supplier delay to 12 weeks doubles the pipeline needed, to 120. Orders not received start there yet still overshoot to about 155 by week 6 and fall back, while inventory climbs smoothly from 60 to 100: the orders this stage passes upstream swing while its own stock does not, even though it tracks the pipeline." },
       exercises: [10],
     },
     {
@@ -421,7 +421,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Fixing the chain",
       lead: "If delays and distorted signals cause the trouble, the remedies attack those.",
       ideas: ["Integration policies attack delays and distorted signals"],
-      run: { molecule: "lowVisPipeline", T: 60, params: { tInv: 2, delay: 6, aware: 1 }, look: "Take the boom-and-bust manager, halve the supplier delay to 6 weeks and give the pipeline full weight: inventory now peaks at only about 105 and has settled by week 20, instead of swinging between about 45 and 184." },
+      run: { molecule: "lowVisPipeline", T: 60, params: { tInv: 2, delay: 6, aware: 1 }, look: "Take the boom-and-bust manager, halve the supplier delay to 6 weeks and give the pipeline full weight: inventory now peaks at only about 105 and has settled by week 20, instead of swinging between about 60 and 160." },
       exercises: [11, 14],
     },
     {
@@ -608,7 +608,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Theory guides the tools. The next generation could map a model's behaviour at the press of a button.",
       ideas: ["Software that explores the model for you"],
       diagram: "An automated testing toolkit",
-      run: { molecule: "stockmgmt", T: 80, params: { slw: 0, demand: 2, desInv: 200 }, look: "An extreme test of the kind software could run for you: with demand at 2 and target 200, orders are held at zero rather than going negative, the supply line drains to almost nothing, and inventory still overshoots to about 252 around week 21." },
+      run: { molecule: "stockmgmt", T: 80, params: { slw: 0, demand: 2, desInv: 200 }, look: "An extreme test of the kind software could run for you: with demand at 2 and target 200, orders are held at zero rather than going negative, the supply line drains to almost nothing, and inventory still overshoots to about 250 around week 22." },
       exercises: [1, 2, 3, 5],
     },
     {

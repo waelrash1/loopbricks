@@ -111,6 +111,7 @@ export const MODELS_D: Record<string, Model> = {
       { id: "historical", label: "Historical quantity", init: 100, scale: 600, color: C.pink, chartHidden: true },
       { id: "extrapolatedDisp", label: "Extrapolated quantity", init: 100, scale: 600, color: C.good, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ extrapolatedDisp: r.extrapolated }), // the display stock starts at the value it shows
     params: [
       { id: "growth", label: "Growth of actual quantity", min: -5, max: 8, step: 0.5, value: 3, unit: "%/yr" },
       { id: "timeToPerceive", label: "Time to perceive quantity", min: 0.5, max: 6, step: 0.5, value: 2, unit: "yr" },
@@ -298,6 +299,7 @@ export const MODELS_D: Record<string, Model> = {
       { id: "workToDo", label: "Work to do (sq ft)", init: 6000, scale: 6000, color: C.acc, chartHidden: true },
       { id: "durationDisp", label: "Duration till complete", init: 24, scale: 40, color: C.acc2, chartHidden: false },
     ],
+    initFrom: (_p, _s, r) => ({ durationDisp: r.durationTillComplete }), // the display stock starts at the value it shows
     params: [
       { id: "anticipatedRate", label: "Anticipated rate of accomplishing work", min: 50, max: 400, step: 10, value: 250, unit: "sq ft/wk" },
       { id: "actualRate", label: "Actual rate of accomplishing work", min: 0, max: 400, step: 10, value: 200, unit: "sq ft/wk" },

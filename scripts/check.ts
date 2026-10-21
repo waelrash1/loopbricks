@@ -41,7 +41,7 @@ for (const k of all) {
   lintCld(m.cld).forEach((e) => errs.push(`${k}: causal loop diagram: ${e}`));
   const runs = [initParams(m), ...(PRESETS[k] ?? []).map((p) => ({ ...initParams(m), ...p.params })), { ...initParams(m), ...(LESSONS[k]?.preset ?? {}) }];
   for (const p of runs) {
-    let s = freshState(m);
+    let s = freshState(m, p);
     for (let i = 0; i < 60 / DT; i++) {
       const r = stepOnce(m, s, p, DT);
       s = r.state;
@@ -78,8 +78,8 @@ for (const d of DOMAINS) {
         if (!p) errs.push(`${id}: preset "${pr.label}" sets unknown ${pid}`);
         else if (v < p.min || v > p.max) errs.push(`${id}: preset "${pr.label}" puts ${pid}=${v} outside the slider`);
       });
-      let st = freshState(m);
       const pp = { ...initParams(m), ...pr.params };
+      let st = freshState(m, pp);
       for (let i = 0; i < (d.stop[c.sim] * 2) / DT; i++) st = stepOnce(m, st, pp, DT).state;
       if (Object.values(st).some((v) => !Number.isFinite(v))) errs.push(`${id}: preset "${pr.label}" goes non-finite`);
     }
@@ -232,7 +232,7 @@ for (const t of BOOK_TOC) {
 }
 // model builder: the expression engine and the starter templates
 import { compile as exprCompile, tryCompile as exprTry } from "@/lib/expr";
-import { TEMPLATES, simulate as bSimulate, template as bTemplate, validate as bValidate } from "@/lib/builder";
+import { TEMPLATES, fromJSON, simulate as bSimulate, template as bTemplate, toJSON, validate as bValidate } from "@/lib/builder";
 {
   const ev = (s: string, sc: Record<string, number> = {}) => exprCompile(s).eval({ TIME: 0, DT: 1, ...sc });
   const cases: [string, number, Record<string, number>?][] = [
@@ -285,6 +285,12 @@ import { TEMPLATES, simulate as bSimulate, template as bTemplate, validate as bV
 }
 // shared specs: each must be a faithful copy of its app molecule, and the index and Python reference file current
 for (const spec of Object.values(SPECS)) verifySpec(spec).forEach((x) => errs.push(`spec ${spec.key}: ${x}`));
+// a spec opened in the model builder (saved and loaded as JSON) must run exactly as the spec does
+for (const spec of Object.values(SPECS)) {
+  const a = runSpec(spec), r = bSimulate(fromJSON(toJSON(spec.model)), Number.MAX_SAFE_INTEGER);
+  const same = r.ok && spec.model.stocks.every((st) => a.stocks[st.id].every((v, i) => v === r.values[st.id][i]));
+  if (!same) errs.push(`spec ${spec.key}: changes when opened in the model builder`);
+}
 all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in python/loopbricks/spec (the Python package cannot run it)`));
 {
   const files = readdirSync("python/loopbricks/spec").filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
@@ -297,6 +303,9 @@ all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in p
   MODULES.filter((m) => !NOTEBOOKS.some((n) => n.module === m.id)).forEach((m) => errs.push(`module ${m.id}: no notebook`));
   NOTEBOOKS.forEach((n) => {
     if (!quarto.includes(`- ${n.file}`)) errs.push(`notebooks/_quarto.yml: ${n.file} is not a chapter`);
+    // rendering the book runs the notebooks and can save their outputs; commit them clean so Colab starts fresh
+    const nb = JSON.parse(readFileSync(`notebooks/${n.file}`, "utf8"));
+    if (nb.cells.some((c: { outputs?: unknown[]; execution_count?: number | null }) => c.outputs?.length || c.execution_count != null)) errs.push(`${n.file} has saved outputs: clear them (jupyter nbconvert --clear-output --inplace)`);
     n.molecules.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${n.file}: unknown molecule ${k}`));
   });
 }

@@ -11,7 +11,8 @@
     "golden": "esbuild scripts/golden.ts --bundle --platform=node --alias:@=./src --log-level=error | node",
     "specs": "node scripts/spec-index.mjs && npm run golden",
     "spec-verify": "esbuild scripts/spec-verify.ts --bundle --platform=node --alias:@=./src --log-level=error --outfile=node_modules/.cache/spec-verify.cjs && node node_modules/.cache/spec-verify.cjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "book": "quarto render notebooks; python3 scripts/clear-notebooks.py"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

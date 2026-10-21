@@ -289,9 +289,9 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Open the aging chain, load the <b>Baby boom</b> preset (births 35/yr) and run it for 200 years. In what order do the cohorts approach their new equilibria, and roughly how long does each take to get within 10% of it? Relate the times to the youth duration (18 yr) and adult duration (45 yr).",
-      hint: "The equilibrium of each cohort is births × its duration: 630 young, 1575 adults and 525 elderly. The young get within 10% in about 30 years; the adults and elderly need about a century, because they wait on the youth stage and then drain through the 45-year adult stage.",
+      hint: "The equilibrium of each cohort is births × its duration: 630 young, 1575 adults and 525 elderly. The young get within 10% in about 26 years; the adults and elderly need about a century, because they wait on the youth stage and then drain through the 45-year adult stage.",
       answer:
-        "The cohorts settle in order down the chain. Each equilibrium is births × residence time: 35 × 18 = 630 young, 35 × 45 = 1575 adults and 35 × 15 = 525 elderly. The young reach 567 (within 10%) at about year 30, close to their 18-year residence time plus a little, while the adults only reach 1418 around year 95 and the elderly reach 473 around year 112. The later stages are slow because they cannot start rising until the extra births have matured, and then they fill through the long 45-year adult stage: delays in a chain add up, so the oldest stock feels a baby boom for generations.",
+        "The cohorts settle in order down the chain. Each equilibrium is births × residence time: 35 × 18 = 630 young, 35 × 45 = 1575 adults and 35 × 15 = 525 elderly. The young reach 567 (within 10%) at about year 26, close to their 18-year residence time plus a little, while the adults only reach 1418 around year 88 and the elderly reach 473 around year 105. The later stages are slow because they cannot start rising until the extra births have matured, and then they fill through the long 45-year adult stage: delays in a chain add up, so the oldest stock feels a baby boom for generations.",
       link: { label: "Aging chain", hash: "/m/aging" },
     },
     {
@@ -299,7 +299,7 @@ export const CHAPTER: StudyChapter = {
         "Still in the aging chain, compare <b>Longer lives</b> (elder lifespan 28 yr) with the default (15 yr). Births are unchanged, so why does total population rise, and which cohort carries all of the increase? What does that imply for long-term care demand?",
       hint: "Only the elderly stock's outflow changes; its equilibrium becomes 20 × 28 = 560 instead of 300.",
       answer:
-        "Total population rises from about 1560 to about 1820 even though births stay at 20 a year, and the whole increase is in the elderly: young and adults head for the same 360 and 900 in both runs, while the elderly approach 20 × 28 = 560 instead of 300 (about 458 by year 50 and 526 by year 100). A stock's equilibrium is its inflow times its residence time, so lengthening only the last residence time raises only the last stock. Long-term care demand therefore grows almost in proportion to life expectancy after 65, with no change in births needed, and it builds up over decades.",
+        "Total population rises from about 1560 to about 1820 even though births stay at 20 a year, and the whole increase is in the elderly: young and adults stay at the same 360 and 900 in both runs, while the elderly climb from 300 toward 20 × 28 = 560 (about 516 by year 50 and 553 by year 100). A stock's equilibrium is its inflow times its residence time, so lengthening only the last residence time raises only the last stock. Long-term care demand therefore grows almost in proportion to life expectancy after 65, with no change in births needed, and it builds up over decades.",
       link: { label: "Aging chain", hash: "/m/aging" },
     },
     {
@@ -323,7 +323,7 @@ export const CHAPTER: StudyChapter = {
         "Show why a delay is not a coflow. In the Coflow molecule, set hiring to 0 and watch average experience: it keeps rising by a year every year, because experience accrues while nobody joins. Now imagine the attribute were labour per machine with no accrual: if investment stopped, what should happen to the average, and what would a SMOOTH towards the new-machine value wrongly do?",
       hint: "With no inflow and first-order outflow, leavers remove the average, so the average of a conserved attribute cannot change.",
       answer:
-        "With hiring at 0, headcount falls from 50 to about 22 by year 5 and 9 by year 10, while average experience rises from 2 to about 7.0 at year 5, 12.1 at year 10 and 22.2 at year 20, roughly a year per year, because everyone left ages and leavers take only the average with them. If the attribute did not accrue (labour per machine), first-order leavers would remove exactly the average, so with no inflow the average would stay put. A SMOOTH toward the new-machine value would wrongly drift the average toward a value that no new machines are bringing in. A coflow changes its average only through what enters (and any accrual), which a delay cannot represent.",
+        "With hiring at 0, headcount falls from 48 to about 21 by year 5 and 9 by year 10, while average experience rises from 6 to about 11.0 at year 5, 16.1 at year 10 and 26.2 at year 20, roughly a year per year, because everyone left ages and leavers take only the average with them. If the attribute did not accrue (labour per machine), first-order leavers would remove exactly the average, so with no inflow the average would stay put. A SMOOTH toward the new-machine value would wrongly drift the average toward a value that no new machines are bringing in. A coflow changes its average only through what enters (and any accrual), which a delay cannot represent.",
       link: { label: "Coflow", hash: "/m/coflow" },
     },
     {

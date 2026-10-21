@@ -10,7 +10,7 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      { "id": "sl", "name": "Supply line", "init": "60", "x": 360, "y": 230, "units": "units", "nonNegative": true },
+      { "id": "sl", "name": "Supply line", "init": "Desired_supply_line", "x": 360, "y": 230, "units": "units", "nonNegative": true },
       { "id": "inv", "name": "Inventory", "init": "60", "x": 660, "y": 230, "units": "units", "nonNegative": true }
     ],
     "flows": [
@@ -24,7 +24,7 @@
         "units": "units/week"
       },
       { "id": "acquisition", "name": "Acquisition", "from": "sl", "to": "inv", "eq": "Supply_line / Acquisition_delay", "x": 510, "y": 230, "units": "units/week" },
-      { "id": "sales", "name": "Sales", "from": "inv", "eq": "Demand", "x": 820, "y": 230, "units": "units/week" }
+      { "id": "sales", "name": "Sales", "from": "inv", "eq": "MIN(Demand, Inventory / DT)", "x": 820, "y": 230, "units": "units/week" }
     ],
     "vars": [
       { "id": "demand", "name": "Demand", "eq": "10", "x": 820, "y": 370, "units": "units/week" },

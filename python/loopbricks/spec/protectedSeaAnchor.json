@@ -21,7 +21,7 @@
       {
         "id": "valueDisp",
         "name": "Value",
-        "init": "100",
+        "init": "Produced_value",
         "x": 160,
         "y": 300,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "updValue",
         "name": "Updating value display",
         "to": "valueDisp",
-        "eq": "(Produced_value - Value) / 0.1",
+        "eq": "(Produced_value - Value) / DT",
         "x": 60,
         "y": 300
       }

@@ -21,7 +21,7 @@
       {
         "id": "requiredDisp",
         "name": "Resources required",
-        "init": "20",
+        "init": "Resources_needed",
         "x": 260,
         "y": 320,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "requiredTrack",
         "name": "Resources required tracking",
         "to": "requiredDisp",
-        "eq": "(Resources_needed - Resources_required) / 0.1",
+        "eq": "(Resources_needed - Resources_required) / DT",
         "x": 110,
         "y": 320
       }

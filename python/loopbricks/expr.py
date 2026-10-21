@@ -29,7 +29,7 @@ def name_key(name: str) -> str:
 FUNCS = {"MIN": (2, 99), "MAX": (2, 99), "ABS": (1, 1), "EXP": (1, 1), "LN": (1, 1), "SQRT": (1, 1), "IF": (3, 3), "STEP": (2, 2), "PULSE": (3, 3), "RAMP": (2, 2), "TIME": (0, 0)}
 OPS = {"+": "+", "-": "-", "−": "-", "–": "-", "*": "*", "×": "*", "·": "*", "/": "/", "÷": "/", "^": "^", "(": "(", ")": ")", ",": ",", "<": "<", ">": ">", "=": "=", "≤": "<=", "≥": ">=", "≠": "<>"}
 CMP = ("<", "<=", ">", ">=", "=", "<>")
-_NUM = re.compile(r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?")
+_NUM = re.compile(r"([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?")  # ASCII digits only, as in the app
 _NAME = re.compile(r"[^\W\d]\w*")
 
 
@@ -228,7 +228,16 @@ def _div(a: float, b: float) -> float:
     return a / b
 
 
+def _minmax(fn, xs: list) -> float:
+    # like Math.min/Math.max: any NaN gives NaN, and -0 counts as less than 0
+    if any(math.isnan(x) for x in xs):
+        return math.nan
+    return fn(xs, key=lambda x: (x, math.copysign(1.0, x)))
+
+
 def _pow(a: float, b: float) -> float:
+    if math.isnan(a) or math.isnan(b) or (abs(a) == 1 and math.isinf(b)):
+        return math.nan  # JavaScript: 1 ** NaN and (-1) ** Infinity are NaN, Python says 1
     try:
         return math.pow(a, b)
     except ValueError:  # negative base, fractional exponent; or 0 to a negative power
@@ -303,9 +312,9 @@ def _build(n) -> Fn:
         return s.get("TIME", 0.0)
 
     if f == "MIN":
-        return lambda s: min(g(s) for g in args)
+        return lambda s: _minmax(min, [g(s) for g in args])
     if f == "MAX":
-        return lambda s: max(g(s) for g in args)
+        return lambda s: _minmax(max, [g(s) for g in args])
     if f == "ABS":
         return lambda s: abs(args[0](s))
     if f == "EXP":

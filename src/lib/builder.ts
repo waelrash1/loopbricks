@@ -336,7 +336,7 @@ export function fromJSON(text: string): BModel {
     timeUnit: str(m.timeUnit, "time"),
     T: num(m.T, 50),
     dt: num(m.dt, 0.25),
-    stocks: (m.stocks as unknown[]).map(rec).map((s) => ({ id: id(s.id, "stock"), name: str(s.name), init: str(s.init, "0"), x: num(s.x, 200), y: num(s.y, 200), units: opt(s.units) })),
+    stocks: (m.stocks as unknown[]).map(rec).map((s) => ({ id: id(s.id, "stock"), name: str(s.name), init: str(s.init, "0"), x: num(s.x, 200), y: num(s.y, 200), units: opt(s.units), nonNegative: s.nonNegative === true || undefined })),
     flows: (m.flows as unknown[]).map(rec).map((f) => ({ id: id(f.id, "flow"), name: str(f.name), from: opt(f.from), to: opt(f.to), eq: str(f.eq), x: num(f.x, 300), y: num(f.y, 200), units: opt(f.units) })),
     vars: (m.vars as unknown[]).map(rec).map((v) => ({ id: id(v.id, "variable"), name: str(v.name), eq: str(v.eq), x: num(v.x, 300), y: num(v.y, 320), units: opt(v.units) })),
   };

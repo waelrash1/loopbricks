@@ -171,6 +171,7 @@ export const MODELS_A: Record<string, Model> = {
       { id: "s1", label: "", init: 30, scale: 100, color: C.acc2, hidden: true }, // supplier's first stage (invisible to the buyer)
       { id: "inv", label: "Inventory", init: 60, scale: 160, color: C.acc },
     ],
+    initFrom: (p) => ({ onr: p.ship * p.delay, s1: (p.ship * p.delay) / 2 }), // the pipeline starts full for current shipping, whatever the delay
     params: [
       { id: "ship", label: "Shipping", min: 2, max: 20, step: 0.5, value: 10, unit: "/wk" },
       { id: "tInv", label: "Time to correct inventory", min: 1, max: 12, step: 0.5, value: 4, unit: "wk" },
@@ -336,6 +337,7 @@ export const MODELS_A: Record<string, Model> = {
       { id: "judged", label: "Value in use", init: 100, scale: 260, color: C.acc },
       { id: "ind", label: "value = Adjustment × anchor", init: 122.5, scale: 260, color: C.acc2 },
     ],
+    initFrom: (_p, _s, r) => ({ ind: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "anchor", label: "Anchor", min: 20, max: 200, step: 5, value: 100, unit: "" },
       { id: "current", label: "Current value of variable", min: 20, max: 200, step: 5, value: 150, unit: "" },
@@ -384,7 +386,7 @@ export const MODELS_A: Record<string, Model> = {
       <li><b>Business</b>: this year's budget = last year's, nudged for sales relative to plan.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Anchor 100, current value 150, normal value 100 ⇒ pressure = 1.5. With strength 0.5 the adjustment is <code>1.5<sup>0.5</sup> ≈ 1.22</code>, so value ≈ <b>122</b>: well short of the 150 a fully proportional adjustment (strength 1) would give. The molecule has no stocks and no dynamics; in this demo the blue "Value in use" starts at 100 and follows the orange algebraic value with a 2-week lag purely so you can watch the adjustment happen.</div>
+    Anchor 100, current value 150, normal value 100 ⇒ pressure = 1.5. With strength 0.5 the adjustment is <code>1.5<sup>0.5</sup> ≈ 1.22</code>, so value ≈ <b>122</b>: well short of the 150 a fully proportional adjustment (strength 1) would give. The molecule has no stocks and no dynamics; in this demo the blue "Value in use" starts at the algebraic value and, when you move a slider, follows the orange value with a 2-week lag purely so you can watch the adjustment happen.</div>
     <h4>References</h4>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Univariate Anchoring and Adjustment.</li>
@@ -404,6 +406,7 @@ export const MODELS_A: Record<string, Model> = {
       { id: "judged", label: "Value in use", init: 100, scale: 260, color: C.acc },
       { id: "ind", label: "value = anchor × adjustments", init: 180, scale: 260, color: C.acc2 },
     ],
+    initFrom: (_p, _s, r) => ({ ind: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "anchor", label: "Anchor", min: 20, max: 200, step: 5, value: 100, unit: "" },
       { id: "p1", label: "Pressure #1", min: 0.25, max: 4, step: 0.05, value: 2.25, unit: "×" },
@@ -477,6 +480,7 @@ export const MODELS_A: Record<string, Model> = {
       { id: "flawed", label: "Done with flaws", init: 0, scale: 400, color: C.pink },
       { id: "qPct", label: "Quality (%)", init: 68.9, scale: 100, color: C.acc, chartHidden: true },
     ],
+    initFrom: (_p, _s, r) => ({ qPct: r.q * 100 }), // the display stock starts at the value it shows
     params: [
       { id: "normalQ", label: "Normal quality", min: 0.5, max: 1, step: 0.01, value: 0.9, unit: "" },
       { id: "fatigue", label: "Fatigue", min: 0.5, max: 2, step: 0.05, value: 1.25, unit: "×" },
@@ -629,7 +633,7 @@ export const DIAGRAM_EXTRA_A: Record<string, { stocks: [string, string][]; aux?:
   },
   lowVisPipeline: {
     stocks: [
-      ["Orders not received", "INTEG(ordering − orders being fulfilled, 60)"],
+      ["Orders not received", "INTEG(ordering − orders being fulfilled, shipping × supplier delay)"],
       ["Inventory", "INTEG(receiving product − shipping, 60)"],
     ],
     aux: [
@@ -652,7 +656,7 @@ export const DIAGRAM_EXTRA_A: Record<string, { stocks: [string, string][]; aux?:
     ],
   },
   univariateAnchor: {
-    stocks: [["Value in use", "INTEG((value − Value in use) / 2, 100)  [display lag, not in the book]"]],
+    stocks: [["Value in use", "INTEG((value − Value in use) / 2, value at the start)  [display lag, not in the book]"]],
     aux: [
       ["value", "Adjustment × anchor"],
       ["Adjustment", "f(Pressure) = Pressure ^ strength  [f(1) = 1]"],
@@ -660,7 +664,7 @@ export const DIAGRAM_EXTRA_A: Record<string, { stocks: [string, string][]; aux?:
     ],
   },
   multivariateAnchor: {
-    stocks: [["Value in use", "INTEG((value − Value in use) / 2, 100)  [display lag, not in the book]"]],
+    stocks: [["Value in use", "INTEG((value − Value in use) / 2, value at the start)  [display lag, not in the book]"]],
     aux: [
       ["value", "Anchor × Adjustment #1 × Adjustment #2 × Adjustment #3"],
       ["Adjustment #1", "√(Pressure #1)"],

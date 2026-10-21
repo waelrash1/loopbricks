@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from copy import deepcopy
 from importlib import resources
 from pathlib import Path
@@ -145,6 +146,11 @@ class Model:
             out[v["id"]] = str(float(val))
         return out
 
+    def _bad(self, eid: str, v: float, t: float) -> str:
+        # the same message as the app's model builder
+        v = "NaN" if math.isnan(v) else ("Infinity" if v > 0 else "-Infinity")
+        return f"{self._by_key[self._key[eid]]['name']} gave {v} at time {round(t, 6):g}. Look for a division by zero, a root or log of a negative number, or explosive growth."
+
     def run(self, T: Optional[float] = None, dt: Optional[float] = None, preset: Optional[str] = None, include: str = "all", **params: float):
         """Simulate with Euler's method and return a pandas DataFrame indexed by time.
 
@@ -160,7 +166,7 @@ class Model:
             code[vid] = compile_expr(src)
         T = float(self.T if T is None else T)
         dt = float(self.dt if dt is None else dt)
-        steps = round(T / dt)
+        steps = math.floor(T / dt + 0.5)  # Math.round in the app; Python's round() sends halves to even
         s: Dict[str, float] = {"TIME": 0.0, "DT": dt}
         ids = [e["id"] for e in self._elements()]
 
@@ -181,6 +187,9 @@ class Model:
 
         for eid in ids:
             init(eid)
+        for st in self.stocks:
+            if not math.isfinite(s[self._key[st["id"]]]):
+                raise ModelError(self._bad(st["id"], s[self._key[st["id"]]], 0.0))
 
         stocks = [(st["id"], self._key[st["id"]], bool(st.get("nonNegative")), [self._key[f["id"]] for f in self.flows if f.get("to") == st["id"]], [self._key[f["id"]] for f in self.flows if f.get("from") == st["id"]]) for st in self.stocks]
         rows: List[List[float]] = []
@@ -189,7 +198,9 @@ class Model:
             t = i * dt
             s["TIME"] = t
             for eid in self._order:
-                s[self._key[eid]] = code[eid](s)
+                v = s[self._key[eid]] = code[eid](s)
+                if not math.isfinite(v):
+                    raise ModelError(self._bad(eid, v, t))
             times.append(round(t, 10))
             rows.append([s[self._key[eid]] for eid in ids])
             if i == steps:
@@ -203,7 +214,9 @@ class Model:
                 for k in outs:
                     total_out += s[k]
                 nxt.append(s[key] + dt * (total_in - total_out))
-            for (_, key, floor, _, _), v in zip(stocks, nxt):
+            for (sid, key, floor, _, _), v in zip(stocks, nxt):
+                if not math.isfinite(v):
+                    raise ModelError(self._bad(sid, v, t + dt))
                 s[key] = max(0.0, v) if floor else v
 
         names = {e["id"]: e["name"] for e in self._elements()}

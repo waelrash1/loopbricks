@@ -28,8 +28,8 @@ export function fitStats(sim: number[], obs: number[]): Fit | null {
 export function simulateAt(m: Model, params: Record<string, number>, refs: RefData[]): Record<string, number[]> {
   const T = Math.max(...refs.flatMap((r) => r.points.map((p) => p[0])));
   const want = refs.map((r) => ({ r, i: 0, out: [] as number[] }));
-  let s = freshState(m), t = 0;
   const p = { ...initParams(m), ...params };
+  let s = freshState(m, p), t = 0;
   const take = () =>
     want.forEach((w) => {
       while (w.i < w.r.points.length && w.r.points[w.i][0] <= t + DT / 2) (w.out.push(s[w.r.stock]), w.i++);

@@ -10,9 +10,9 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      { "id": "people", "name": "Headcount", "init": "50", "x": 210, "y": 150, "nonNegative": true },
-      { "id": "totExp", "name": "Total experience", "init": "100", "x": 545, "y": 150, "nonNegative": true },
-      { "id": "avgExp", "name": "Avg experience", "init": "2", "x": 700, "y": 150, "nonNegative": true }
+      { "id": "people", "name": "Headcount", "init": "48", "x": 210, "y": 150, "nonNegative": true },
+      { "id": "totExp", "name": "Total experience", "init": "288", "x": 545, "y": 150, "nonNegative": true },
+      { "id": "avgExp", "name": "Avg experience", "init": "Total_experience / MAX(Headcount, 0.000001)", "x": 700, "y": 150, "nonNegative": true }
     ],
     "flows": [
       { "id": "hireFlow", "name": "Hires", "to": "people", "eq": "Hiring", "x": 95, "y": 150 },
@@ -20,7 +20,7 @@
       { "id": "expHired", "name": "Experience hired", "to": "totExp", "eq": "Hiring * Hire_experience", "x": 545, "y": 40 },
       { "id": "expGained", "name": "Experience gained", "to": "totExp", "eq": "Headcount * 1", "x": 430, "y": 150 },
       { "id": "expLost", "name": "Experience lost", "from": "totExp", "eq": "Attrition * Experience_per_head", "x": 545, "y": 260 },
-      { "id": "avgAdj", "name": "Average experience adjustment", "to": "avgExp", "eq": "(Total_experience / MAX(Headcount, 0.000001) - Avg_experience) / 0.1", "x": 700, "y": 60 }
+      { "id": "avgAdj", "name": "Average experience adjustment", "to": "avgExp", "eq": "(Total_experience / MAX(Headcount, 0.000001) - Avg_experience) / DT", "x": 700, "y": 60 }
     ],
     "vars": [
       { "id": "hire", "name": "Hiring", "eq": "8", "x": 80, "y": 370 },

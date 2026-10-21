@@ -21,7 +21,7 @@
       {
         "id": "relOutput",
         "name": "Output vs normal",
-        "init": "1",
+        "init": "Relative_output",
         "x": 160,
         "y": 300,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "updRelOutput",
         "name": "Updating output display",
         "to": "relOutput",
-        "eq": "(Relative_output - Output_vs_normal) / 0.1",
+        "eq": "(Relative_output - Output_vs_normal) / DT",
         "x": 60,
         "y": 300
       }

@@ -21,7 +21,7 @@
       {
         "id": "indicatedDisp",
         "name": "Indicated price",
-        "init": "10",
+        "init": "Indicated_price_signal",
         "x": 160,
         "y": 300,
         "nonNegative": true
@@ -40,7 +40,7 @@
         "id": "updIndicated",
         "name": "Updating indicated display",
         "to": "indicatedDisp",
-        "eq": "(Indicated_price_signal - Indicated_price) / 0.1",
+        "eq": "(Indicated_price_signal - Indicated_price) / DT",
         "x": 60,
         "y": 300
       }

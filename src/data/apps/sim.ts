@@ -34,6 +34,8 @@ export function skin(key: string, s: Skin): Model {
     timeUnit: s.timeUnit ?? b.timeUnit,
     unitY: s.unitY ?? b.unitY,
     stocks: b.stocks.map((x) => ({ ...x, ...s.stocks?.[x.id] })),
+    // a starting value the skin sets itself wins over one the molecule works out from the parameters
+    initFrom: b.initFrom && ((p, st, r) => Object.fromEntries(Object.entries(b.initFrom!(p, st, r)).filter(([id]) => s.stocks?.[id]?.init === undefined))),
     params: b.params.map((x) => ({ ...x, ...s.params?.[x.id] })),
   };
 }
@@ -48,8 +50,8 @@ export function built(key: string, model: Model, flows: Record<string, FlowMeta>
 }
 
 export function runModel(m: Model, params: Record<string, number>, T: number): RunResult {
-  let s = freshState(m);
   const p = { ...initParams(m), ...params };
+  let s = freshState(m, p);
   const r: RunResult = { end: s, max: { ...s }, min: { ...s }, tMax: Object.fromEntries(Object.keys(s).map((k) => [k, 0])) };
   for (let i = 1; i <= Math.round(T / DT); i++) {
     s = stepOnce(m, s, p, DT).state;
@@ -64,8 +66,8 @@ export function runModel(m: Model, params: Record<string, number>, T: number): R
 
 // n evenly spaced samples of every stock over a run, for small sketches
 export function sampleModel(m: Model, params: Record<string, number>, T: number, n = 48): number[][] {
-  let s = freshState(m);
   const p = { ...initParams(m), ...params };
+  let s = freshState(m, p);
   const steps = Math.round(T / DT), every = Math.max(1, Math.floor(steps / (n - 1)));
   const out = m.stocks.map((st) => [s[st.id]]);
   for (let i = 1; i <= steps; i++) {
