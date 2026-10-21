@@ -14,11 +14,11 @@
     ],
     "flows": [
       { "id": "in", "name": "Entering", "to": "q", "eq": "Inflow", "x": 185, "y": 150 },
-      { "id": "out", "name": "Outflow", "from": "q", "eq": "In_service / Avg_residence_τ", "x": 623, "y": 150 }
+      { "id": "out", "name": "Outflow", "from": "q", "eq": "In_service / Avg_residence_time", "x": 623, "y": 150 }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "8", "x": 80, "y": 260 },
-      { "id": "tau", "name": "Avg residence τ", "eq": "5", "x": 250, "y": 320 }
+      { "id": "tau", "name": "Avg residence time", "eq": "5", "x": 250, "y": 320 }
     ]
   },
   "params": {

@@ -1,0 +1,19 @@
+# Preface {.unnumbered}
+
+This book teaches system dynamics twice over: with interactive models you can run in the browser, and with Python you can read, change and extend.
+
+Every chapter goes with a module of the [LoopBricks app](https://waelrash1.github.io/loopbricks/#/learn). The app is where you build intuition: drag a slider, predict what a model will do, then watch it happen. The chapter is where you take the same model apart in code. Both run the same model files, and a test checks that they give the same numbers at every time step, so what you see in one is what you get in the other.
+
+## How to use the chapters
+
+Each chapter is a Jupyter notebook. Open it in Google Colab with the badge at its top and run the cells in order; the first cell installs the `loopbricks` package. On your own machine:
+
+```
+pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@main#subdirectory=python"
+```
+
+Try the exercises before opening the worked answers. Predicting first, even wrongly, is what makes the result stick.
+
+## Sources
+
+The ideas build on the system dynamics literature, above all John Sterman's *Business Dynamics: Systems Thinking and Modeling for a Complex World* (McGraw-Hill, 2000), cited chapter by chapter where it helps. Many models are LoopBricks versions of the small reusable structures in Jim Hines' *Molecules of Structure*. The text and code here are our own.

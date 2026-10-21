@@ -10,6 +10,7 @@ import { SPECS, runSpec } from "@/lib/spec";
 import { goldenData } from "@/lib/golden";
 import { readFileSync, readdirSync } from "node:fs";
 import { verifySpec } from "@/lib/specVerify";
+import { NOTEBOOKS } from "@/lib/notebook";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
@@ -288,6 +289,16 @@ all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in p
 {
   const files = readdirSync("python/loopbricks/spec").filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
   if (JSON.stringify(files) !== JSON.stringify(Object.keys(SPECS).sort())) errs.push("src/lib/specIndex.ts does not list every spec file: run npm run specs");
+}
+// notebooks: one per module, listed in the app and as a chapter of the Quarto book, running only molecules that exist
+{
+  const files = readdirSync("notebooks").filter((f) => f.endsWith(".ipynb")).sort(), quarto = readFileSync("notebooks/_quarto.yml", "utf8");
+  if (JSON.stringify(files) !== JSON.stringify(NOTEBOOKS.map((n) => n.file).sort())) errs.push("src/lib/notebook.ts NOTEBOOKS does not match the files in notebooks/");
+  MODULES.filter((m) => !NOTEBOOKS.some((n) => n.module === m.id)).forEach((m) => errs.push(`module ${m.id}: no notebook`));
+  NOTEBOOKS.forEach((n) => {
+    if (!quarto.includes(`- ${n.file}`)) errs.push(`notebooks/_quarto.yml: ${n.file} is not a chapter`);
+    n.molecules.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${n.file}: unknown molecule ${k}`));
+  });
 }
 try {
   const onDisk = readFileSync("python/tests/golden.json", "utf8");

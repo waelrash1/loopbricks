@@ -13,10 +13,10 @@
       { "id": "q", "name": "Stock", "init": "100", "x": 365, "y": 150, "nonNegative": true }
     ],
     "flows": [
-      { "id": "out", "name": "Decay", "from": "q", "eq": "Stock / Decay_time_τ", "x": 608, "y": 150 }
+      { "id": "out", "name": "Decay", "from": "q", "eq": "Stock / Decay_time", "x": 608, "y": 150 }
     ],
     "vars": [
-      { "id": "tau", "name": "Decay time τ", "eq": "5", "x": 80, "y": 260 }
+      { "id": "tau", "name": "Decay time", "eq": "5", "x": 80, "y": 260 }
     ]
   },
   "params": {

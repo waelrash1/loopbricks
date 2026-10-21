@@ -15,13 +15,13 @@
     ],
     "flows": [
       { "id": "in", "name": "Feed", "to": "raw", "eq": "Feed_in", "x": 95, "y": 155 },
-      { "id": "conv", "name": "Processing", "from": "raw", "eq": "Raw / Process_time_τ", "x": 300, "y": 230 },
+      { "id": "conv", "name": "Processing", "from": "raw", "eq": "Raw / Process_time", "x": 300, "y": 230 },
       { "id": "made", "name": "Production", "to": "fin", "eq": "Processing * Yield", "x": 390, "y": 155 },
       { "id": "out", "name": "Shipments", "from": "fin", "eq": "Finished / 6", "x": 710, "y": 155 }
     ],
     "vars": [
       { "id": "feed", "name": "Feed in", "eq": "10", "x": 80, "y": 340 },
-      { "id": "tau", "name": "Process time τ", "eq": "4", "x": 250, "y": 400 },
+      { "id": "tau", "name": "Process time", "eq": "4", "x": 250, "y": 400 },
       { "id": "yield", "name": "Yield", "eq": "2", "x": 420, "y": 340 }
     ]
   },

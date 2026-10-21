@@ -17,13 +17,13 @@
       { "id": "in", "name": "Entering", "to": "l1", "eq": "Inflow", "x": 95, "y": 125 },
       { "id": "fwd", "name": "Advance", "from": "l1", "to": "l2", "eq": "Exiting_stage_1 * (1 - Leak_fraction)", "x": 390, "y": 125 },
       { "id": "leakFlow", "name": "Leaking", "from": "l1", "eq": "Exiting_stage_1 * Leak_fraction", "x": 205, "y": 233 },
-      { "id": "out", "name": "Outflow", "from": "l2", "eq": "Stage_2 / Flow_τ", "x": 710, "y": 125 }
+      { "id": "out", "name": "Outflow", "from": "l2", "eq": "Stage_2 / Flow_time", "x": 710, "y": 125 }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "0", "x": 80, "y": 343 },
-      { "id": "tau", "name": "Flow τ", "eq": "4", "x": 250, "y": 403 },
+      { "id": "tau", "name": "Flow time", "eq": "4", "x": 250, "y": 403 },
       { "id": "leak", "name": "Leak fraction", "eq": "0.3", "x": 420, "y": 343 },
-      { "id": "exit", "name": "Exiting stage 1", "eq": "Stage_1 / Flow_τ", "x": 590, "y": 403 }
+      { "id": "exit", "name": "Exiting stage 1", "eq": "Stage_1 / Flow_time", "x": 590, "y": 403 }
     ]
   },
   "params": {

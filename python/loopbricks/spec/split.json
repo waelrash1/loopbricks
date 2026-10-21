@@ -16,13 +16,13 @@
     "flows": [
       { "id": "toA", "name": "To A", "to": "a", "eq": "Inflow * Fraction_to_A", "x": 300, "y": 115 },
       { "id": "toB", "name": "To B", "to": "b", "eq": "Inflow * (1 - Fraction_to_A)", "x": 300, "y": 185 },
-      { "id": "outA", "name": "Drain A", "from": "a", "eq": "Channel_A / Drain_τ", "x": 690, "y": 80 },
-      { "id": "outB", "name": "Drain B", "from": "b", "eq": "Channel_B / Drain_τ", "x": 690, "y": 220 }
+      { "id": "outA", "name": "Drain A", "from": "a", "eq": "Channel_A / Drain_time", "x": 690, "y": 80 },
+      { "id": "outB", "name": "Drain B", "from": "b", "eq": "Channel_B / Drain_time", "x": 690, "y": 220 }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "14", "x": 80, "y": 330 },
       { "id": "frac", "name": "Fraction to A", "eq": "0.6", "x": 250, "y": 390 },
-      { "id": "tau", "name": "Drain τ", "eq": "5", "x": 420, "y": 330 }
+      { "id": "tau", "name": "Drain time", "eq": "5", "x": 420, "y": 330 }
     ]
   },
   "params": {

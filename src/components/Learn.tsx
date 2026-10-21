@@ -11,6 +11,8 @@ import { markSeen, useSeen } from "@/lib/progress";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import SfDiagram from "@/components/SfDiagram";
 import { cn } from "@/lib/utils";
+import { NotebookLinks } from "@/components/PythonPanel";
+import { notebookForModule } from "@/lib/notebook";
 
 const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
 const sub = "heading text-[22px] md:text-[24px]";
@@ -911,6 +913,14 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
           <section id="lm-quiz" className="mt-14 scroll-mt-24">
             <h2 className={sub}>Check your understanding</h2>
             <QuizBlock key={id} quiz={m.quiz} />
+          </section>
+        )}
+
+        {notebookForModule(id) && (
+          <section className="mt-10 print:hidden">
+            <h2 className="heading text-[17px]">In Python</h2>
+            <p className="mt-1 text-[14px] text-muted-foreground max-w-[70ch]">The same models in a Jupyter notebook: run them in code, change them, and work the exercises.</p>
+            <div className="mt-3"><NotebookLinks file={notebookForModule(id)!.file} title={`${m.def.title} in Python`} /></div>
           </section>
         )}
 

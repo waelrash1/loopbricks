@@ -17,7 +17,7 @@ m.run(supply_line_weight=0.5, T=100)            # change any constant by name
 Install in Colab or locally:
 
 ```
-pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@book#subdirectory=python"
+pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@main#subdirectory=python"
 ```
 
 Models exported from the app's model builder load with `lb.Model.from_file("my-model.json")`.

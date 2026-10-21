@@ -2,6 +2,24 @@ import { Code2, Download, ExternalLink, Hammer } from "lucide-react";
 import { loadModel, saveModel } from "@/lib/builder";
 import { SPECS } from "@/lib/spec";
 import { colabUrl, notebooksFor, rawUrl } from "@/lib/notebook";
+import { moduleById } from "@/data/learn/modules";
+
+const moduleTitle = (id: string) => `${moduleById(id)?.title ?? id} in Python`;
+
+// A notebook's title with its two ways in: Colab, or download and run locally.
+export function NotebookLinks({ file, title }: { file: string; title: string }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[14px] font-semibold mr-1">{title}</span>
+      <a href={colabUrl(file)} target="_blank" rel="noreferrer" className="brick brick-y h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
+        <ExternalLink size={13} aria-hidden /> Open in Colab
+      </a>
+      <a href={rawUrl(file)} download={file} className="brick brick-w h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
+        <Download size={13} aria-hidden /> Download
+      </a>
+    </div>
+  );
+}
 
 // On a molecule page: the same model in Python, with the notebooks that use it.
 export default function PythonPanel({ molecule, onOpen }: { molecule: string; onOpen: (hash: string) => void }) {
@@ -34,20 +52,17 @@ export default function PythonPanel({ molecule, onOpen }: { molecule: string; on
             </button>
           </div>
         )}
-        {nbs.map((n) => (
-          <div key={n.file} className="rounded-card bg-accent/25 px-5 py-4">
-            <p className="heading text-[16px]">{n.title}</p>
-            <p className="mt-1 text-[14px] text-foreground/80">A notebook that builds this model step by step, with exercises and worked answers.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <a href={colabUrl(n.file)} target="_blank" rel="noreferrer" className="brick brick-y h-9 px-3.5 text-[13px] font-semibold inline-flex items-center gap-1.5">
-                <ExternalLink size={14} aria-hidden /> Open in Colab
-              </a>
-              <a href={rawUrl(n.file)} download={n.file} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold inline-flex items-center gap-1.5">
-                <Download size={14} aria-hidden /> Download the notebook
-              </a>
-            </div>
+        {nbs.length > 0 && (
+          <div className="rounded-card bg-accent/25 px-5 py-4">
+            <p className="heading text-[16px]">Notebooks that use it</p>
+            <p className="mt-1 text-[14px] text-foreground/80">Python companions to the Learn modules, with exercises and worked answers.</p>
+            <ul className="mt-3 space-y-2">
+              {nbs.map((n) => (
+                <li key={n.file}><NotebookLinks file={n.file} title={moduleTitle(n.module)} /></li>
+              ))}
+            </ul>
           </div>
-        ))}
+        )}
       </div>
     </section>
   );

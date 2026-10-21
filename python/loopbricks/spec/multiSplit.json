@@ -64,7 +64,7 @@
         "id": "outA",
         "name": "Drain A",
         "from": "chA",
-        "eq": "Channel_A / Drain_τ",
+        "eq": "Channel_A / Drain_time",
         "x": 690,
         "y": 60
       },
@@ -72,7 +72,7 @@
         "id": "outB",
         "name": "Drain B",
         "from": "chB",
-        "eq": "Channel_B / Drain_τ",
+        "eq": "Channel_B / Drain_time",
         "x": 690,
         "y": 155
       },
@@ -80,7 +80,7 @@
         "id": "outC",
         "name": "Drain C",
         "from": "chC",
-        "eq": "Channel_C / Drain_τ",
+        "eq": "Channel_C / Drain_time",
         "x": 690,
         "y": 250
       }
@@ -116,7 +116,7 @@
       },
       {
         "id": "tau",
-        "name": "Drain τ",
+        "name": "Drain time",
         "eq": "5",
         "x": 740,
         "y": 375

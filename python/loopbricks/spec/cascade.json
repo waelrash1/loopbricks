@@ -16,13 +16,13 @@
     ],
     "flows": [
       { "id": "in", "name": "Entering", "to": "l1", "eq": "Inflow", "x": 70, "y": 155 },
-      { "id": "f12", "name": "Flow 1 to 2", "from": "l1", "to": "l2", "eq": "Stage_1 / Stage_delay_τ", "x": 290, "y": 155 },
-      { "id": "f23", "name": "Flow 2 to 3", "from": "l2", "to": "l3", "eq": "Stage_2 / Stage_delay_τ", "x": 530, "y": 155 },
-      { "id": "out", "name": "Outflow", "from": "l3", "eq": "Stage_3 / Stage_delay_τ", "x": 750, "y": 155 }
+      { "id": "f12", "name": "Flow 1 to 2", "from": "l1", "to": "l2", "eq": "Stage_1 / Stage_delay", "x": 290, "y": 155 },
+      { "id": "f23", "name": "Flow 2 to 3", "from": "l2", "to": "l3", "eq": "Stage_2 / Stage_delay", "x": 530, "y": 155 },
+      { "id": "out", "name": "Outflow", "from": "l3", "eq": "Stage_3 / Stage_delay", "x": 750, "y": 155 }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "0", "x": 80, "y": 265 },
-      { "id": "tau", "name": "Stage delay τ", "eq": "4", "x": 250, "y": 325 }
+      { "id": "tau", "name": "Stage delay", "eq": "4", "x": 250, "y": 325 }
     ]
   },
   "params": {
