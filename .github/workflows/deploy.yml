@@ -22,6 +22,12 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+      # the stable 1.0 release stays online at /v1/, built from its tag (the app uses relative paths, so a sub-folder works)
+      - uses: actions/checkout@v7
+        with:
+          ref: v1.0
+          path: v1-src
+      - run: cd v1-src && npm ci && npm run build && cp -r dist ../dist/v1
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

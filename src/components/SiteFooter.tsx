@@ -35,6 +35,9 @@ export default function SiteFooter() {
               Maynooth University, Maynooth, Co. Kildare, Ireland
             </span>
           </p>
+          <p className="mt-4 text-muted-foreground">
+            Looking for the earlier version, without Python? <a href="./v1/" className="tlink font-semibold">Open LoopBricks 1.0</a>
+          </p>
         </div>
       </div>
     </footer>
