@@ -61,3 +61,7 @@ HTML. Add it to a group in `GROUPS`, then run `npm run check`.
 - `src/components/`: diagrams, chart, controls, sidebar, overview map.
 - `src/lib/cldGeometry.ts`: causal loop layout and the clarity lint.
 - `src/index.css`: design tokens (colour, type, the one corner radius) and prose styles.
+
+## Sources and independence
+
+LoopBricks is an independent project. Its simulation engines (TypeScript in the app, Python in the `loopbricks` package) and all model files were written from scratch; no Vensim or Stella files or software are used. The molecules are our own implementations of the structures described in Jim Hines' *Molecules of Structure*, and their names are his. LoopBricks is not affiliated with or endorsed by Jim Hines, Ventana Systems or isee systems. Vensim is a trademark of Ventana Systems, Inc.; Stella is a trademark of isee systems, inc.

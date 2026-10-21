@@ -36,6 +36,9 @@ export default function SiteFooter() {
             </span>
           </p>
           <p className="mt-4 text-muted-foreground">
+            An independent project: our own engines and models, built from the structures in Jim Hines&rsquo; <i>Molecules of Structure</i>. Not affiliated with or endorsed by Jim Hines, Ventana Systems (Vensim) or isee systems (Stella).
+          </p>
+          <p className="mt-2 text-muted-foreground">
             <a href="./book/" className="tlink font-semibold">Read the book</a>, with a Python chapter for every Learn module. Looking for the earlier version, without Python? <a href="./v1/" className="tlink font-semibold">Open LoopBricks 1.0</a>
           </p>
         </div>

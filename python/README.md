@@ -21,3 +21,7 @@ pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@main#s
 ```
 
 Models exported from the app's model builder load with `lb.Model.from_file("my-model.json")`.
+
+## Sources and independence
+
+LoopBricks is an independent project. Its simulation engines (TypeScript in the app, Python in the `loopbricks` package) and all model files were written from scratch; no Vensim or Stella files or software are used. The molecules are our own implementations of the structures described in Jim Hines' *Molecules of Structure*, and their names are his. LoopBricks is not affiliated with or endorsed by Jim Hines, Ventana Systems or isee systems. Vensim is a trademark of Ventana Systems, Inc.; Stella is a trademark of isee systems, inc.

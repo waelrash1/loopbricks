@@ -16,4 +16,4 @@ Try the exercises before opening the worked answers. Predicting first, even wron
 
 ## Sources
 
-The ideas build on the system dynamics literature, above all John Sterman's *Business Dynamics: Systems Thinking and Modeling for a Complex World* (McGraw-Hill, 2000), cited chapter by chapter where it helps. Many models are LoopBricks versions of the small reusable structures in Jim Hines' *Molecules of Structure*. The text and code here are our own.
+The ideas build on the system dynamics literature, from Forrester's founding work to Sterman's *Business Dynamics: Systems Thinking and Modeling for a Complex World* (McGraw-Hill, 2000), cited where it helps. Many models are our own implementations of the small reusable structures described in Jim Hines' *Molecules of Structure*, whose names they keep. The text, code and simulation engines are our own; no Vensim or Stella files or software are used. LoopBricks is not affiliated with or endorsed by Jim Hines, Ventana Systems or isee systems. Vensim is a trademark of Ventana Systems, Inc.; Stella is a trademark of isee systems, inc.
