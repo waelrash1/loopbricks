@@ -919,7 +919,10 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
         {notebookForModule(id) && (
           <section className="mt-10 print:hidden">
             <h2 className="heading text-[17px]">In Python</h2>
-            <p className="mt-1 text-[14px] text-muted-foreground max-w-[70ch]">The same models in a Jupyter notebook: run them in code, change them, and work the exercises.</p>
+            <p className="mt-1 text-[14px] text-muted-foreground max-w-[70ch]">
+              The same models in a Jupyter notebook: run them in code, change them, and work the exercises. It is also{" "}
+              <a href={`./book/${notebookForModule(id)!.file.replace(".ipynb", ".html")}`} className="tlink font-semibold">a chapter of the book</a>, with every plot already drawn.
+            </p>
             <div className="mt-3"><NotebookLinks file={notebookForModule(id)!.file} title={`${m.def.title} in Python`} /></div>
           </section>
         )}

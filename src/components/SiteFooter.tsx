@@ -36,7 +36,7 @@ export default function SiteFooter() {
             </span>
           </p>
           <p className="mt-4 text-muted-foreground">
-            Looking for the earlier version, without Python? <a href="./v1/" className="tlink font-semibold">Open LoopBricks 1.0</a>
+            <a href="./book/" className="tlink font-semibold">Read the book</a>, with a Python chapter for every Learn module. Looking for the earlier version, without Python? <a href="./v1/" className="tlink font-semibold">Open LoopBricks 1.0</a>
           </p>
         </div>
       </div>

@@ -28,6 +28,15 @@ jobs:
           ref: v1.0
           path: v1-src
       - run: cd v1-src && npm ci && npm run build && cp -r dist ../dist/v1
+      # the book at /book/: Quarto runs every notebook against this commit's package, so plots are always current
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install "./python[test]" jupyter && python -m ipykernel install --user --name python3
+      - uses: quarto-dev/quarto-actions/setup@v2
+      - run: quarto render notebooks && cp -r notebooks/_book dist/book
+        env:
+          MPLBACKEND: Agg
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
