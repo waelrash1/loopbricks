@@ -1,0 +1,134 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "capacityUtil",
+  "title": "Capacity Utilization",
+  "description": "Production rises with desired output but bends over as it nears capacity: a smooth utilization curve, the graceful cousin of a hard ceiling.",
+  "model": {
+    "name": "Capacity Utilization",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "init": "50",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "prod",
+        "name": "Production",
+        "to": "inventory",
+        "eq": "Capacity * Utilization",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "sales",
+        "name": "Sales",
+        "from": "inventory",
+        "eq": "Demand",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "capacity",
+        "name": "Capacity",
+        "eq": "20",
+        "x": 100,
+        "y": 300
+      },
+      {
+        "id": "demand",
+        "name": "Demand",
+        "eq": "18",
+        "x": 260,
+        "y": 300
+      },
+      {
+        "id": "targetInv",
+        "name": "Target inventory",
+        "eq": "100",
+        "x": 420,
+        "y": 300
+      },
+      {
+        "id": "adj",
+        "name": "Restock time",
+        "eq": "3",
+        "x": 580,
+        "y": 300
+      },
+      {
+        "id": "desired",
+        "name": "Desired production",
+        "eq": "Demand + (Target_inventory - Inventory) / Restock_time",
+        "x": 740,
+        "y": 300
+      },
+      {
+        "id": "indicated",
+        "name": "Indicated utilization",
+        "eq": "MAX(0, Desired_production) / Capacity",
+        "x": 100,
+        "y": 370
+      },
+      {
+        "id": "util",
+        "name": "Utilization",
+        "eq": "1 - EXP(-1.3 * Indicated_utilization)",
+        "x": 260,
+        "y": 370
+      }
+    ]
+  },
+  "params": {
+    "capacity": {
+      "min": 10,
+      "max": 40,
+      "step": 1
+    },
+    "demand": {
+      "min": 0,
+      "max": 40,
+      "step": 1
+    },
+    "targetInv": {
+      "min": 50,
+      "max": 200,
+      "step": 10
+    },
+    "adj": {
+      "min": 1,
+      "max": 8,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Demand < capacity",
+      "params": {
+        "capacity": 25,
+        "demand": 15,
+        "targetInv": 100,
+        "adj": 3
+      }
+    },
+    {
+      "label": "Demand > capacity",
+      "params": {
+        "capacity": 15,
+        "demand": 25,
+        "targetInv": 100,
+        "adj": 3
+      }
+    }
+  ]
+}

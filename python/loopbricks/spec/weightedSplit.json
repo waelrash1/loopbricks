@@ -1,0 +1,54 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "weightedSplit",
+  "title": "Weighted Split (managerial weights on three backlogs)",
+  "description": "A Proportional Split in which each claim is first multiplied by a managerial weight, so preference or bias tilts the allocation away from what the claims alone would give.",
+  "model": {
+    "name": "Weighted Split",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"tasksA","name":"Tasks A","init":"30","x":410,"y":50,"nonNegative":true},
+      {"id":"tasksB","name":"Tasks B","init":"30","x":410,"y":130,"nonNegative":true},
+      {"id":"tasksC","name":"Tasks C","init":"30","x":410,"y":210,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"inA","name":"New tasks A","to":"tasksA","eq":"New_tasks_per_type","x":198,"y":50},
+      {"id":"inB","name":"New tasks B","to":"tasksB","eq":"New_tasks_per_type","x":243,"y":130},
+      {"id":"inC","name":"New tasks C","to":"tasksC","eq":"New_tasks_per_type","x":198,"y":210},
+      {"id":"doneA","name":"Completing A","from":"tasksA","eq":"MIN(Resources_to_A * Productivity, Tasks_A / Minimum_task_time)","x":625,"y":50},
+      {"id":"doneB","name":"Completing B","from":"tasksB","eq":"MIN(Resources_to_B * Productivity, Tasks_B / Minimum_task_time)","x":580,"y":130},
+      {"id":"doneC","name":"Completing C","from":"tasksC","eq":"MIN(Resources_to_C * Productivity, Tasks_C / Minimum_task_time)","x":625,"y":210}
+    ],
+    "vars": [
+      {"id":"resources","name":"Resources","eq":"12","units":"people","x":80,"y":340},
+      {"id":"newTasks","name":"New tasks per type","eq":"4","units":"/week","x":220,"y":340},
+      {"id":"weightA","name":"Weight for A","eq":"2","x":360,"y":340},
+      {"id":"weightB","name":"Weight for B","eq":"1","x":500,"y":340},
+      {"id":"weightC","name":"Weight for C","eq":"1","x":640,"y":340},
+      {"id":"productivityW","name":"Productivity","eq":"1","x":780,"y":340},
+      {"id":"minTaskTime","name":"Minimum task time","eq":"0.5","x":80,"y":420},
+      {"id":"wsA","name":"Weighted claim A","eq":"Tasks_A * Weight_for_A","x":220,"y":420},
+      {"id":"wsB","name":"Weighted claim B","eq":"Tasks_B * Weight_for_B","x":360,"y":420},
+      {"id":"wsC","name":"Weighted claim C","eq":"Tasks_C * Weight_for_C","x":500,"y":420},
+      {"id":"total","name":"Total claim strength","eq":"Weighted_claim_A + Weighted_claim_B + Weighted_claim_C","x":640,"y":420},
+      {"id":"resA","name":"Resources to A","eq":"Resources * IF(Total_claim_strength > 1e-9, Weighted_claim_A / Total_claim_strength, 1 / 3)","x":780,"y":420},
+      {"id":"resB","name":"Resources to B","eq":"Resources * IF(Total_claim_strength > 1e-9, Weighted_claim_B / Total_claim_strength, 1 / 3)","x":80,"y":500},
+      {"id":"resC","name":"Resources to C","eq":"Resources * IF(Total_claim_strength > 1e-9, Weighted_claim_C / Total_claim_strength, 1 / 3)","x":220,"y":500}
+    ]
+  },
+  "params": {
+    "resources": {"min":2,"max":24,"step":1},
+    "newTasks": {"min":0,"max":8,"step":0.5},
+    "weightA": {"min":0,"max":4,"step":0.25},
+    "weightB": {"min":0,"max":4,"step":0.25},
+    "weightC": {"min":0,"max":4,"step":0.25}
+  },
+  "presets": [
+    {"label":"A favoured (weight 2)","params":{"resources":12,"newTasks":4,"weightA":2,"weightB":1,"weightC":1}},
+    {"label":"Equal weights (proportional)","params":{"resources":12,"newTasks":4,"weightA":1,"weightB":1,"weightC":1}},
+    {"label":"A neglected (weight 0.5)","params":{"resources":12,"newTasks":4,"weightA":0.5,"weightB":1,"weightC":1}}
+  ]
+}

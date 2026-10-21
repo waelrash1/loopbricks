@@ -1,0 +1,114 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "smoothPricing",
+  "title": "Smooth Pricing",
+  "description": "Prices are sticky: they ease toward an indicated price (set by cost and market pressure) over time rather than jumping, a smooth applied to price.",
+  "model": {
+    "name": "Smooth Pricing",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "price",
+        "name": "Price",
+        "init": "10",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "indicatedDisp",
+        "name": "Indicated price",
+        "init": "10",
+        "x": 160,
+        "y": 300,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "changing",
+        "name": "Changing price",
+        "to": "price",
+        "eq": "(Indicated_price_signal - Price) / Price_adj_time",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "updIndicated",
+        "name": "Updating indicated display",
+        "to": "indicatedDisp",
+        "eq": "(Indicated_price_signal - Indicated_price) / 0.1",
+        "x": 60,
+        "y": 300
+      }
+    ],
+    "vars": [
+      {
+        "id": "refPrice",
+        "name": "Reference price",
+        "eq": "10",
+        "x": 100,
+        "y": 420
+      },
+      {
+        "id": "pressure",
+        "name": "Market pressure",
+        "eq": "1",
+        "x": 260,
+        "y": 420
+      },
+      {
+        "id": "tau",
+        "name": "Price adj time",
+        "eq": "4",
+        "x": 420,
+        "y": 420
+      },
+      {
+        "id": "indicated",
+        "name": "Indicated price signal",
+        "eq": "Reference_price * Market_pressure",
+        "x": 580,
+        "y": 420
+      }
+    ]
+  },
+  "params": {
+    "refPrice": {
+      "min": 5,
+      "max": 20,
+      "step": 0.5
+    },
+    "pressure": {
+      "min": 0.5,
+      "max": 2,
+      "step": 0.05
+    },
+    "tau": {
+      "min": 0.5,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Demand shock",
+      "params": {
+        "refPrice": 10,
+        "pressure": 1.4,
+        "tau": 4
+      }
+    },
+    {
+      "label": "Sticky (slow)",
+      "params": {
+        "refPrice": 10,
+        "pressure": 1.4,
+        "tau": 10
+      }
+    }
+  ]
+}

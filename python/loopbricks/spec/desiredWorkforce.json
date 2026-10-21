@@ -1,0 +1,37 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "desiredWorkforce",
+  "title": "Desired Workforce from Workflow",
+  "description": "Work out the rate at which work must be accomplished, divide by productivity, and you have the number of people you need. Producing, run backwards.",
+  "model": {
+    "name": "Desired Workforce from Workflow",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"workforce","name":"Workforce","init":"10","x":410,"y":150,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"hiring","name":"Hiring","to":"workforce","eq":"MAX(0, Workforce_adjustment)","x":193,"y":150},
+      {"id":"releasing","name":"Releasing","from":"workforce","eq":"MAX(0, -Workforce_adjustment)","x":630,"y":150}
+    ],
+    "vars": [
+      {"id":"desiredRate","name":"Desired accomplishing rate","eq":"120","units":"/week","x":80,"y":340},
+      {"id":"productivity","name":"Productivity","eq":"4","units":"/p·week","x":220,"y":340},
+      {"id":"adjTime","name":"Time to adjust workforce","eq":"4","units":"week","x":360,"y":340},
+      {"id":"desiredPeople","name":"Desired people","eq":"Desired_accomplishing_rate / MAX(Productivity, 0.000001)","x":500,"y":340},
+      {"id":"adjust","name":"Workforce adjustment","eq":"(Desired_people - Workforce) / Time_to_adjust_workforce","x":640,"y":340}
+    ]
+  },
+  "params": {
+    "desiredRate": {"min":0,"max":200,"step":5},
+    "productivity": {"min":1,"max":10,"step":0.5},
+    "adjTime": {"min":1,"max":12,"step":0.5}
+  },
+  "presets": [
+    {"label":"Staff up","params":{"desiredRate":120,"productivity":4,"adjTime":4}},
+    {"label":"Higher productivity","params":{"desiredRate":120,"productivity":6,"adjTime":4}},
+    {"label":"Workload falls","params":{"desiredRate":20,"productivity":4,"adjTime":4}}
+  ]
+}

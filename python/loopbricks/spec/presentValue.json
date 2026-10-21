@@ -1,0 +1,107 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "presentValue",
+  "title": "Present Value (Discounting)",
+  "description": "A future stream of cash is worth less the longer you wait. Accumulate each flow discounted by elapsed time and you get its present value.",
+  "model": {
+    "name": "Present Value",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "pv",
+        "name": "Present value",
+        "init": "0",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "clock",
+        "name": "elapsed",
+        "init": "0",
+        "x": 160,
+        "y": 300,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "discounting",
+        "name": "Discounting",
+        "to": "pv",
+        "eq": "Cash_flow * Discount_factor",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "ticking",
+        "name": "Clock ticking",
+        "to": "clock",
+        "eq": "1",
+        "x": 60,
+        "y": 300
+      }
+    ],
+    "vars": [
+      {
+        "id": "cashFlow",
+        "name": "Cash flow",
+        "eq": "20",
+        "x": 100,
+        "y": 420
+      },
+      {
+        "id": "r",
+        "name": "Discount rate",
+        "eq": "8",
+        "x": 260,
+        "y": 420
+      },
+      {
+        "id": "discount",
+        "name": "Discount factor",
+        "eq": "EXP(-(Discount_rate / 100) * elapsed)",
+        "x": 420,
+        "y": 420
+      }
+    ]
+  },
+  "params": {
+    "cashFlow": {
+      "min": 0,
+      "max": 50,
+      "step": 1
+    },
+    "r": {
+      "min": 1,
+      "max": 20,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "8% discount",
+      "params": {
+        "cashFlow": 20,
+        "r": 8
+      }
+    },
+    {
+      "label": "Low (4%)",
+      "params": {
+        "cashFlow": 20,
+        "r": 4
+      }
+    },
+    {
+      "label": "High (16%)",
+      "params": {
+        "cashFlow": 20,
+        "r": 16
+      }
+    }
+  ]
+}

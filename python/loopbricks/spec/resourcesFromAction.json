@@ -1,0 +1,129 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "resourcesFromAction",
+  "title": "Resources from Action (resources = desired flow ÷ ability)",
+  "description": "Turn Action from Resource around: divide the flow you want by what one resource can do, and you have the resources you need.",
+  "model": {
+    "name": "Resources from Action",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "resources",
+        "name": "Resources",
+        "init": "5",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "requiredDisp",
+        "name": "Resources required",
+        "init": "20",
+        "x": 260,
+        "y": 320,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "acquiring",
+        "name": "Acquiring resources",
+        "to": "resources",
+        "eq": "(Resources_needed - Resources) / Time_to_acquire_resources",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "requiredTrack",
+        "name": "Resources required tracking",
+        "to": "requiredDisp",
+        "eq": "(Resources_needed - Resources_required) / 0.1",
+        "x": 110,
+        "y": 320
+      }
+    ],
+    "vars": [
+      {
+        "id": "desiredFlow",
+        "name": "Desired flow",
+        "eq": "60",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "ability",
+        "name": "Resource ability to create flow",
+        "eq": "3",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "adjTime",
+        "name": "Time to acquire resources",
+        "eq": "4",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "required",
+        "name": "Resources needed",
+        "eq": "Desired_flow / MAX(0.01, Resource_ability_to_create_flow)",
+        "x": 80,
+        "y": 450
+      },
+      {
+        "id": "flowCreated",
+        "name": "Flow created",
+        "eq": "Resources * Resource_ability_to_create_flow",
+        "x": 230,
+        "y": 450
+      }
+    ]
+  },
+  "params": {
+    "desiredFlow": {
+      "min": 0,
+      "max": 120,
+      "step": 5
+    },
+    "ability": {
+      "min": 0.5,
+      "max": 6,
+      "step": 0.25
+    },
+    "adjTime": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Need 20",
+      "params": {
+        "desiredFlow": 60,
+        "ability": 3,
+        "adjTime": 4
+      }
+    },
+    {
+      "label": "Abler resources",
+      "params": {
+        "desiredFlow": 60,
+        "ability": 6,
+        "adjTime": 4
+      }
+    },
+    {
+      "label": "Double the target",
+      "params": {
+        "desiredFlow": 120,
+        "ability": 3,
+        "adjTime": 4
+      }
+    }
+  ]
+}

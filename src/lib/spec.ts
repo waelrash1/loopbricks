@@ -1,9 +1,7 @@
 // Shared model specifications: one JSON file per model, run by this app (through the builder engine) and by the
 // Python package `loopbricks`, which ships the same files. scripts/check.ts proves both give the same numbers.
 import { simulate, type BModel } from "@/lib/builder";
-import bathtub from "../../python/loopbricks/spec/bathtub.json";
-import closegap from "../../python/loopbricks/spec/closegap.json";
-import stockmgmt from "../../python/loopbricks/spec/stockmgmt.json";
+import { SPEC_FILES } from "@/lib/specIndex";
 
 export type Spec = {
   format: "loopbricks-model";
@@ -16,7 +14,7 @@ export type Spec = {
   presets: { label: string; params: Record<string, number> }[];
 };
 
-export const SPECS: Record<string, Spec> = Object.fromEntries([bathtub, closegap, stockmgmt].map((s) => [s.key, s as unknown as Spec]));
+export const SPECS: Record<string, Spec> = Object.fromEntries((SPEC_FILES as Spec[]).map((s) => [s.key, s]));
 
 // the model with some constants replaced, ready to simulate
 export function withParams(spec: Spec, params: Record<string, number> = {}, opts: { T?: number; dt?: number } = {}): BModel {

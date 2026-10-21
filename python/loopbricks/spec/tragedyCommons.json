@@ -1,0 +1,53 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "tragedyCommons",
+  "title": "Tragedy of the Commons (shared renewable resource)",
+  "description": "Two fleets fish one stock. Each grows while its boats pay, and each boat's catch falls as the shared stock falls. Nobody chooses the collapse; the structure does.",
+  "model": {
+    "name": "Tragedy of the Commons",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"res","name":"Fish stock","init":"90","x":415,"y":75,"units":"kt","nonNegative":true},
+      {"id":"fa","name":"Fleet A","init":"4","x":205,"y":225,"units":"boats","nonNegative":true},
+      {"id":"fb","name":"Fleet B","init":"4","x":600,"y":225,"units":"boats","nonNegative":true}
+    ],
+    "flows": [
+      {"id":"regen","name":"Regrowth","to":"res","eq":"Regrowth_rate * Fish_stock * (1 - Fish_stock / Carrying_capacity)","x":233,"y":75},
+      {"id":"harvest","name":"Catch","from":"res","eq":"IF(Catch_limit > 0, MIN(Potential_catch, Catch_limit), Potential_catch)","x":593,"y":75},
+      {"id":"buildA","name":"Building A","to":"fa","eq":"Fleet_A * Fleet_A_expansion * MAX(0, Profit_signal)","x":95,"y":225},
+      {"id":"scrapA","name":"Scrapping A","from":"fa","eq":"Fleet_A * Fleet_A_expansion * MAX(0, -Profit_signal)","x":305,"y":225},
+      {"id":"buildB","name":"Building B","to":"fb","eq":"Fleet_B * Fleet_B_expansion * MAX(0, Profit_signal)","x":498,"y":225},
+      {"id":"scrapB","name":"Scrapping B","from":"fb","eq":"Fleet_B * Fleet_B_expansion * MAX(0, -Profit_signal)","x":718,"y":225}
+    ],
+    "vars": [
+      {"id":"r","name":"Regrowth rate","eq":"0.4","units":"/year","x":80,"y":340},
+      {"id":"catchFull","name":"Max catch per boat","eq":"1","units":"kt/year","x":220,"y":340},
+      {"id":"breakEven","name":"Break even catch","eq":"0.25","units":"kt/year","x":360,"y":340},
+      {"id":"gA","name":"Fleet A expansion","eq":"0.4","units":"/year","x":500,"y":340},
+      {"id":"gB","name":"Fleet B expansion","eq":"0.4","units":"/year","x":640,"y":340},
+      {"id":"quota","name":"Catch limit","eq":"0","units":"kt/year","x":780,"y":340},
+      {"id":"K","name":"Carrying capacity","eq":"100","x":80,"y":420},
+      {"id":"perBoatPotential","name":"Potential catch per boat","eq":"(Max_catch_per_boat * Fish_stock) / Carrying_capacity","x":220,"y":420},
+      {"id":"potential","name":"Potential catch","eq":"(Fleet_A + Fleet_B) * Potential_catch_per_boat","x":360,"y":420},
+      {"id":"perBoat","name":"Catch per boat","eq":"Catch / (Fleet_A + Fleet_B + 1e-9)","x":500,"y":420},
+      {"id":"signal","name":"Profit signal","eq":"Catch_per_boat / Break_even_catch - 1","x":640,"y":420}
+    ]
+  },
+  "params": {
+    "r": {"min":0.1,"max":1,"step":0.05},
+    "catchFull": {"min":0.5,"max":3,"step":0.1},
+    "breakEven": {"min":0.1,"max":1,"step":0.05},
+    "gA": {"min":0,"max":1,"step":0.05},
+    "gB": {"min":0,"max":1,"step":0.05},
+    "quota": {"min":0,"max":10,"step":0.5}
+  },
+  "presets": [
+    {"label":"Open access","params":{"r":0.4,"catchFull":1,"breakEven":0.25,"gA":0.4,"gB":0.4,"quota":0}},
+    {"label":"One fleet holds back","params":{"r":0.4,"catchFull":1,"breakEven":0.25,"gA":0.4,"gB":0,"quota":0}},
+    {"label":"Catch limit of 8","params":{"r":0.4,"catchFull":1,"breakEven":0.25,"gA":0.4,"gB":0.4,"quota":8}},
+    {"label":"Slow-growing stock","params":{"r":0.2,"catchFull":1,"breakEven":0.25,"gA":0.4,"gB":0.4,"quota":0}}
+  ]
+}

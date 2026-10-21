@@ -1,0 +1,35 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "reducingBacklog",
+  "title": "Reducing Backlog by Doing Work",
+  "description": "A stock of work to do is drained by workers × productivity. With both constant it falls in a straight line, and nothing in the molecule stops it at zero.",
+  "model": {
+    "name": "Reducing Backlog by Doing Work",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"workToDo","name":"Work to do","init":"1200","x":315,"y":150,"nonNegative":true},
+      {"id":"overdrawn","name":"Overdrawn","init":"0","x":560,"y":330,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"producing","name":"Producing","from":"workToDo","eq":"Workers * Productivity","x":583,"y":150},
+      {"id":"overdrawing","name":"Overdrawing","to":"overdrawn","eq":"Producing - Covered_producing","x":450,"y":330}
+    ],
+    "vars": [
+      {"id":"workers","name":"Workers","eq":"10","units":"people","x":80,"y":420},
+      {"id":"productivity","name":"Productivity","eq":"4","units":"/p·month","x":220,"y":420},
+      {"id":"covered","name":"Covered producing","eq":"MIN(Producing, Work_to_do / 0.1)","x":360,"y":420}
+    ]
+  },
+  "params": {
+    "workers": {"min":0,"max":30,"step":1},
+    "productivity": {"min":0.5,"max":10,"step":0.5}
+  },
+  "presets": [
+    {"label":"Straight-line decline","params":{"workers":10,"productivity":4}},
+    {"label":"Double the workers","params":{"workers":20,"productivity":4}},
+    {"label":"Small team (unfinished at month 60)","params":{"workers":4,"productivity":4}}
+  ]
+}

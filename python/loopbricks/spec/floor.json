@@ -1,0 +1,33 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "floor",
+  "title": "Floor (Lower Bound)",
+  "description": "The mirror of a ceiling: a stock drains toward a minimum and the outflow throttles so it never crosses the floor, MAX() instead of MIN().",
+  "model": {
+    "name": "Floor",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "q", "name": "Stock", "init": "100", "x": 365, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "out", "name": "Drain", "from": "q", "eq": "MAX(0, MIN(Desired_outflow, (Stock - Floor) / Approach_time))", "x": 608, "y": 150 }
+    ],
+    "vars": [
+      { "id": "base", "name": "Desired outflow", "eq": "14", "x": 80, "y": 260 },
+      { "id": "floor", "name": "Floor", "eq": "30", "x": 250, "y": 320 },
+      { "id": "at", "name": "Approach time", "eq": "2", "x": 420, "y": 260 }
+    ]
+  },
+  "params": {
+    "base": { "min": 0, "max": 30, "step": 1 },
+    "floor": { "min": 0, "max": 90, "step": 5 },
+    "at": { "min": 0.5, "max": 8, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Settle on floor", "params": {"base": 14, "floor": 30, "at": 2} },
+    { "label": "Hard floor", "params": {"base": 14, "floor": 30, "at": 0.5} }
+  ]
+}

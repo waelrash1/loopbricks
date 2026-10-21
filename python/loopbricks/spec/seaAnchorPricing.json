@@ -1,0 +1,165 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "seaAnchorPricing",
+  "title": "Sea Anchor Pricing (price form)",
+  "description": "Price setters bump price above or below an underlying 'fair' price when inventory or market share press on them, and the underlying price then drifts toward whatever price they set.",
+  "model": {
+    "name": "Sea Anchor Pricing",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "underlyingPrice",
+        "name": "Underlying price",
+        "init": "10",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "priceDisp",
+        "name": "Price",
+        "init": "11.43",
+        "x": 260,
+        "y": 320,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "changeInUnderlyingPrice",
+        "name": "Change in underlying price",
+        "to": "underlyingPrice",
+        "eq": "(Current_price - Underlying_price) / Time_to_change_underlying_price",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "priceTrack",
+        "name": "Price tracking",
+        "to": "priceDisp",
+        "eq": "(Current_price - Price) / 0.1",
+        "x": 110,
+        "y": 320
+      }
+    ],
+    "vars": [
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "eq": "75",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "targetInventory",
+        "name": "Target inventory",
+        "eq": "100",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "relMarketShare",
+        "name": "Relative market share",
+        "eq": "1",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "timeToChange",
+        "name": "Time to change underlying price",
+        "eq": "4",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "relInv",
+        "name": "Relative inventory",
+        "eq": "Inventory / MAX(1, Target_inventory)",
+        "x": 80,
+        "y": 450
+      },
+      {
+        "id": "effInv",
+        "name": "Effect of inventory on price",
+        "eq": "2 / (1 + Relative_inventory)",
+        "x": 230,
+        "y": 450
+      },
+      {
+        "id": "effMs",
+        "name": "Effect of market share on price",
+        "eq": "(2 * Relative_market_share) / (1 + Relative_market_share)",
+        "x": 380,
+        "y": 450
+      },
+      {
+        "id": "pressure",
+        "name": "Pressure to change price",
+        "eq": "Effect_of_inventory_on_price * Effect_of_market_share_on_price",
+        "x": 530,
+        "y": 450
+      },
+      {
+        "id": "price",
+        "name": "Current price",
+        "eq": "Underlying_price * Pressure_to_change_price",
+        "x": 680,
+        "y": 450
+      }
+    ]
+  },
+  "params": {
+    "inventory": {
+      "min": 0,
+      "max": 200,
+      "step": 5
+    },
+    "targetInventory": {
+      "min": 20,
+      "max": 200,
+      "step": 5
+    },
+    "relMarketShare": {
+      "min": 0.5,
+      "max": 1.5,
+      "step": 0.05
+    },
+    "timeToChange": {
+      "min": 1,
+      "max": 20,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Shortage (price climbs)",
+      "params": {
+        "inventory": 75,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "timeToChange": 4
+      }
+    },
+    {
+      "label": "Neutral (pressure = 1)",
+      "params": {
+        "inventory": 100,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "timeToChange": 4
+      }
+    },
+    {
+      "label": "Glut (decays toward 0)",
+      "params": {
+        "inventory": 150,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "timeToChange": 4
+      }
+    }
+  ]
+}

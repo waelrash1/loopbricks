@@ -1,0 +1,42 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "coflow",
+  "title": "Coflow (Attribute Tracking)",
+  "description": "An attribute, skill, quality, age, cost, rides along with material as it flows. Track the total and divide to get the average.",
+  "model": {
+    "name": "Coflow",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "people", "name": "Headcount", "init": "50", "x": 210, "y": 150, "nonNegative": true },
+      { "id": "totExp", "name": "Total experience", "init": "100", "x": 545, "y": 150, "nonNegative": true },
+      { "id": "avgExp", "name": "Avg experience", "init": "2", "x": 700, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "hireFlow", "name": "Hires", "to": "people", "eq": "Hiring", "x": 95, "y": 150 },
+      { "id": "quitFlow", "name": "Attrition", "from": "people", "eq": "Headcount / Avg_tenure", "x": 325, "y": 150 },
+      { "id": "expHired", "name": "Experience hired", "to": "totExp", "eq": "Hiring * Hire_experience", "x": 545, "y": 40 },
+      { "id": "expGained", "name": "Experience gained", "to": "totExp", "eq": "Headcount * 1", "x": 430, "y": 150 },
+      { "id": "expLost", "name": "Experience lost", "from": "totExp", "eq": "Attrition * Experience_per_head", "x": 545, "y": 260 },
+      { "id": "avgAdj", "name": "Average experience adjustment", "to": "avgExp", "eq": "(Total_experience / MAX(Headcount, 0.000001) - Avg_experience) / 0.1", "x": 700, "y": 60 }
+    ],
+    "vars": [
+      { "id": "hire", "name": "Hiring", "eq": "8", "x": 80, "y": 370 },
+      { "id": "tenure", "name": "Avg tenure", "eq": "6", "x": 250, "y": 430 },
+      { "id": "hireExp", "name": "Hire experience", "eq": "0", "x": 420, "y": 370 },
+      { "id": "avg", "name": "Experience per head", "eq": "Total_experience / MAX(Headcount, 0.000001)", "x": 590, "y": 430 }
+    ]
+  },
+  "params": {
+    "hire": { "min": 0, "max": 20, "step": 0.5 },
+    "tenure": { "min": 2, "max": 20, "step": 0.5 },
+    "hireExp": { "min": 0, "max": 8, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Steady team", "params": {"hire": 8, "tenure": 6, "hireExp": 0} },
+    { "label": "Rapid hiring (dilution)", "params": {"hire": 18, "tenure": 6, "hireExp": 0} },
+    { "label": "Hire veterans", "params": {"hire": 8, "tenure": 6, "hireExp": 5} }
+  ]
+}

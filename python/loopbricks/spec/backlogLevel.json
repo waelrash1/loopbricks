@@ -1,0 +1,158 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "backlogLevel",
+  "title": "Backlog Shipping Protected by Level",
+  "description": "Ship to clear a backlog, but you can only ship what's in stock. Shipping draws down inventory and tapers as inventory runs low: two coupled balancing loops.",
+  "model": {
+    "name": "Backlog Protected by Level",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "backlog",
+        "name": "Backlog",
+        "init": "30",
+        "x": 210,
+        "y": 75,
+        "nonNegative": true
+      },
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "init": "100",
+        "x": 210,
+        "y": 220,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "ordersIn",
+        "name": "Orders",
+        "to": "backlog",
+        "eq": "Order_rate",
+        "x": 95,
+        "y": 75
+      },
+      {
+        "id": "fulfilling",
+        "name": "Fulfilling",
+        "from": "backlog",
+        "eq": "Shipping_rate",
+        "x": 370,
+        "y": 75
+      },
+      {
+        "id": "producingIn",
+        "name": "Producing",
+        "to": "inventory",
+        "eq": "Production",
+        "x": 95,
+        "y": 220
+      },
+      {
+        "id": "shipping",
+        "name": "Shipping",
+        "from": "inventory",
+        "eq": "Shipping_rate",
+        "x": 370,
+        "y": 220
+      }
+    ],
+    "vars": [
+      {
+        "id": "orders",
+        "name": "Order rate",
+        "eq": "12",
+        "x": 100,
+        "y": 355
+      },
+      {
+        "id": "shipTime",
+        "name": "Desired ship time",
+        "eq": "2",
+        "x": 260,
+        "y": 355
+      },
+      {
+        "id": "producing",
+        "name": "Production",
+        "eq": "12",
+        "x": 420,
+        "y": 355
+      },
+      {
+        "id": "protectInv",
+        "name": "Full service inventory",
+        "eq": "60",
+        "x": 580,
+        "y": 355
+      },
+      {
+        "id": "desiredShip",
+        "name": "Desired shipping",
+        "eq": "Backlog / Desired_ship_time",
+        "x": 740,
+        "y": 355
+      },
+      {
+        "id": "invEffect",
+        "name": "Inventory effect",
+        "eq": "MAX(0, MIN(1, Inventory / Full_service_inventory))",
+        "x": 100,
+        "y": 425
+      },
+      {
+        "id": "ship",
+        "name": "Shipping rate",
+        "eq": "Desired_shipping * Inventory_effect",
+        "x": 260,
+        "y": 425
+      }
+    ]
+  },
+  "params": {
+    "orders": {
+      "min": 0,
+      "max": 25,
+      "step": 1
+    },
+    "shipTime": {
+      "min": 1,
+      "max": 8,
+      "step": 0.5
+    },
+    "producing": {
+      "min": 0,
+      "max": 25,
+      "step": 1
+    },
+    "protectInv": {
+      "min": 20,
+      "max": 120,
+      "step": 5
+    }
+  },
+  "presets": [
+    {
+      "label": "Healthy stock",
+      "params": {
+        "orders": 12,
+        "shipTime": 2,
+        "producing": 12,
+        "protectInv": 60
+      }
+    },
+    {
+      "label": "Starve production",
+      "params": {
+        "orders": 12,
+        "shipTime": 2,
+        "producing": 5,
+        "protectInv": 60
+      }
+    }
+  ]
+}

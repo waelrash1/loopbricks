@@ -1,0 +1,136 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "effectFunction",
+  "title": "Effect of a Dimensionless Input",
+  "description": "The building block behind every 'effect of X on Y' multiplier: normalize an input by a reference, then run that ratio through a nonlinear function.",
+  "model": {
+    "name": "Effect Function",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "result",
+        "name": "Result",
+        "init": "50",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "inflow",
+        "name": "Modulated flow",
+        "to": "result",
+        "eq": "Normal_flow * Effect",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "outflow",
+        "name": "Drain",
+        "from": "result",
+        "eq": "Result / Drain_time",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "input",
+        "name": "Input",
+        "eq": "100",
+        "x": 100,
+        "y": 300
+      },
+      {
+        "id": "reference",
+        "name": "Reference",
+        "eq": "100",
+        "x": 260,
+        "y": 300
+      },
+      {
+        "id": "normalFlow",
+        "name": "Normal flow",
+        "eq": "15",
+        "x": 420,
+        "y": 300
+      },
+      {
+        "id": "drainTau",
+        "name": "Drain time",
+        "eq": "8",
+        "x": 580,
+        "y": 300
+      },
+      {
+        "id": "relative",
+        "name": "Relative input",
+        "eq": "Input / Reference",
+        "x": 740,
+        "y": 300
+      },
+      {
+        "id": "effect",
+        "name": "Effect",
+        "eq": "2 * Relative_input / (1 + Relative_input)",
+        "x": 100,
+        "y": 370
+      }
+    ]
+  },
+  "params": {
+    "input": {
+      "min": 0,
+      "max": 200,
+      "step": 5
+    },
+    "reference": {
+      "min": 10,
+      "max": 200,
+      "step": 5
+    },
+    "normalFlow": {
+      "min": 0,
+      "max": 30,
+      "step": 1
+    },
+    "drainTau": {
+      "min": 2,
+      "max": 20,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "At reference (1×)",
+      "params": {
+        "input": 100,
+        "reference": 100,
+        "normalFlow": 15,
+        "drainTau": 8
+      }
+    },
+    {
+      "label": "Input high (2×)",
+      "params": {
+        "input": 200,
+        "reference": 100,
+        "normalFlow": 15,
+        "drainTau": 8
+      }
+    },
+    {
+      "label": "Input low",
+      "params": {
+        "input": 40,
+        "reference": 100,
+        "normalFlow": 15,
+        "drainTau": 8
+      }
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "quality",
+  "title": "Quality (Fraction of Work Done Correctly)",
+  "description": "Quality is the fraction of work being done correctly: a normal value multiplied by the effects of fatigue, schedule pressure, work adequacy and skill, capped at 1.",
+  "model": {
+    "name": "Quality",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "todo",
+        "name": "Work to do",
+        "init": "400",
+        "x": 150,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "okWork",
+        "name": "Done correctly",
+        "init": "0",
+        "x": 645,
+        "y": 83,
+        "nonNegative": true
+      },
+      {
+        "id": "flawed",
+        "name": "Done with flaws",
+        "init": "0",
+        "x": 645,
+        "y": 213,
+        "nonNegative": true
+      },
+      {
+        "id": "qPct",
+        "name": "Quality percent",
+        "init": "68.9",
+        "x": 260,
+        "y": 365,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "correct",
+        "name": "Doing work correctly",
+        "from": "todo",
+        "to": "okWork",
+        "eq": "Work_rate * Quality",
+        "x": 400,
+        "y": 109
+      },
+      {
+        "id": "flaws",
+        "name": "Doing work with flaws",
+        "from": "todo",
+        "to": "flawed",
+        "eq": "Work_rate * (1 - Quality)",
+        "x": 400,
+        "y": 189
+      },
+      {
+        "id": "qTrack",
+        "name": "Quality percent tracking",
+        "to": "qPct",
+        "eq": "(Quality * 100 - Quality_percent) / DT",
+        "x": 110,
+        "y": 365
+      }
+    ],
+    "vars": [
+      {
+        "id": "normalQ",
+        "name": "Normal quality",
+        "eq": "0.9",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "fatigue",
+        "name": "Fatigue",
+        "eq": "1.25",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "sched",
+        "name": "Schedule pressure",
+        "eq": "1.5",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "adequacy",
+        "name": "Work adequacy",
+        "eq": "1",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "skill",
+        "name": "Average skill",
+        "eq": "1",
+        "x": 680,
+        "y": -40
+      },
+      {
+        "id": "effFatigue",
+        "name": "Effect of fatigue on quality",
+        "eq": "MAX(0.4, MIN(1.1, 1 - 0.4 * (Fatigue - 1)))",
+        "x": 80,
+        "y": 495
+      },
+      {
+        "id": "effSched",
+        "name": "Effect of schedule pressure on quality",
+        "eq": "MAX(0.4, MIN(1.1, 1 - 0.3 * (Schedule_pressure - 1)))",
+        "x": 230,
+        "y": 495
+      },
+      {
+        "id": "effAdequacy",
+        "name": "Effect of work adequacy on quality",
+        "eq": "MAX(0.5, MIN(1.05, 0.5 + 0.5 * Work_adequacy))",
+        "x": 380,
+        "y": 495
+      },
+      {
+        "id": "effSkill",
+        "name": "Effect of average skill on quality",
+        "eq": "MAX(0.4, MIN(1.1, 0.4 + 0.6 * Average_skill))",
+        "x": 530,
+        "y": 495
+      },
+      {
+        "id": "q",
+        "name": "Quality",
+        "eq": "MAX(0, MIN(1, Normal_quality * Effect_of_fatigue_on_quality * Effect_of_schedule_pressure_on_quality * Effect_of_work_adequacy_on_quality * Effect_of_average_skill_on_quality))",
+        "x": 680,
+        "y": 495
+      },
+      {
+        "id": "workRate",
+        "name": "Work rate",
+        "eq": "MIN(10, Work_to_do / DT)",
+        "x": 830,
+        "y": 495
+      }
+    ]
+  },
+  "params": {
+    "normalQ": {
+      "min": 0.5,
+      "max": 1,
+      "step": 0.01
+    },
+    "fatigue": {
+      "min": 0.5,
+      "max": 2,
+      "step": 0.05
+    },
+    "sched": {
+      "min": 0.5,
+      "max": 2,
+      "step": 0.05
+    },
+    "adequacy": {
+      "min": 0,
+      "max": 1.5,
+      "step": 0.05
+    },
+    "skill": {
+      "min": 0.2,
+      "max": 1.5,
+      "step": 0.05
+    }
+  },
+  "presets": [
+    {
+      "label": "Normal conditions",
+      "params": {
+        "normalQ": 0.9,
+        "fatigue": 1,
+        "sched": 1,
+        "adequacy": 1,
+        "skill": 1
+      }
+    },
+    {
+      "label": "Deadline crunch",
+      "params": {
+        "normalQ": 0.9,
+        "fatigue": 1.5,
+        "sched": 2,
+        "adequacy": 1,
+        "skill": 1
+      }
+    },
+    {
+      "label": "Green team",
+      "params": {
+        "normalQ": 0.9,
+        "fatigue": 1,
+        "sched": 1,
+        "adequacy": 1,
+        "skill": 0.4
+      }
+    }
+  ]
+}

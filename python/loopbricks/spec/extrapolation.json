@@ -1,0 +1,45 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "extrapolation",
+  "title": "Extrapolation (forecast from the fractional trend)",
+  "description": "Take the latest observation and grow it by the perceived fractional trend, first across the perception lag to reach today, then across the forecast horizon to reach the future.",
+  "model": {
+    "name": "Extrapolation",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"actual","name":"Actual quantity","init":"100","x":410,"y":50,"nonNegative":true},
+      {"id":"perceived","name":"Perceived quantity","init":"100","x":410,"y":130,"nonNegative":true},
+      {"id":"historical","name":"Historical quantity","init":"100","x":410,"y":210,"nonNegative":true},
+      {"id":"extrapolatedDisp","name":"Extrapolated quantity","init":"100","x":560,"y":330,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"changeInActual","name":"Change in actual quantity","to":"actual","eq":"Actual_quantity * (Growth_of_actual_quantity / 100)","x":193,"y":50},
+      {"id":"perceiving","name":"Change in perceived quantity","to":"perceived","eq":"(Actual_quantity - Perceived_quantity) / MAX(0.1, Time_to_perceive_quantity)","x":193,"y":130},
+      {"id":"changeInHistorical","name":"Change in historical quantity","to":"historical","eq":"(Perceived_quantity - Historical_quantity) / Trend_duration","x":193,"y":210},
+      {"id":"track_extrapolatedDisp","name":"Tracking extrapolation","to":"extrapolatedDisp","eq":"(Extrapolation - Extrapolated_quantity) / 0.1","x":450,"y":330}
+    ],
+    "vars": [
+      {"id":"growth","name":"Growth of actual quantity","eq":"3","units":"%/year","x":80,"y":420},
+      {"id":"timeToPerceive","name":"Time to perceive quantity","eq":"2","units":"year","x":220,"y":420},
+      {"id":"trendDuration","name":"Duration over which to calculate trend","eq":"3","units":"year","x":360,"y":420},
+      {"id":"forecastHorizon","name":"Forecast horizon","eq":"5","units":"year","x":500,"y":420},
+      {"id":"duration","name":"Trend duration","eq":"MAX(0.1, Duration_over_which_to_calculate_trend)","x":640,"y":420},
+      {"id":"fractionalTrend","name":"Fractional trend","eq":"(Perceived_quantity - Historical_quantity) / (MAX(0.000001, Historical_quantity) * Trend_duration)","x":780,"y":420},
+      {"id":"extrapolated","name":"Extrapolation","eq":"Perceived_quantity * (1 + Fractional_trend * (Time_to_perceive_quantity + Forecast_horizon))","x":80,"y":500}
+    ]
+  },
+  "params": {
+    "growth": {"min":-5,"max":8,"step":0.5},
+    "timeToPerceive": {"min":0.5,"max":6,"step":0.5},
+    "trendDuration": {"min":1,"max":10,"step":0.5},
+    "forecastHorizon": {"min":0,"max":10,"step":0.5}
+  },
+  "presets": [
+    {"label":"5-year forecast","params":{"growth":3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":5}},
+    {"label":"Nowcast (horizon 0)","params":{"growth":3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":0}},
+    {"label":"Decline (−3%/yr)","params":{"growth":-3,"timeToPerceive":2,"trendDuration":3,"forecastHorizon":5}}
+  ]
+}

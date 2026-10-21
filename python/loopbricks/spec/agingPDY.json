@@ -1,0 +1,154 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "agingPDY",
+  "title": "Aging Chain with Productivity",
+  "description": "An aging chain carrying a productivity coflow: rookies, experienced and veterans each produce differently, so rapid hiring can raise headcount yet cut output per person.",
+  "model": {
+    "name": "Aging Chain with PDY",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "rookies",
+        "name": "Rookies",
+        "init": "60",
+        "x": 158,
+        "y": 145,
+        "nonNegative": true
+      },
+      {
+        "id": "experienced",
+        "name": "Experienced",
+        "init": "500",
+        "x": 403,
+        "y": 145,
+        "nonNegative": true
+      },
+      {
+        "id": "gray",
+        "name": "Veterans",
+        "init": "160",
+        "x": 648,
+        "y": 145,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "hire",
+        "name": "Recruiting",
+        "to": "rookies",
+        "eq": "Hiring",
+        "x": 65,
+        "y": 145
+      },
+      {
+        "id": "mature",
+        "name": "Maturing",
+        "from": "rookies",
+        "to": "experienced",
+        "eq": "Rookies / Time_to_mature",
+        "x": 280,
+        "y": 145
+      },
+      {
+        "id": "senior",
+        "name": "Becoming senior",
+        "from": "experienced",
+        "to": "gray",
+        "eq": "Experienced / Experienced_tenure",
+        "x": 525,
+        "y": 145
+      },
+      {
+        "id": "retire",
+        "name": "Retiring",
+        "from": "gray",
+        "eq": "Veterans / Veteran_tenure",
+        "x": 748,
+        "y": 145
+      }
+    ],
+    "vars": [
+      {
+        "id": "hiring",
+        "name": "Hiring",
+        "eq": "20",
+        "x": 100,
+        "y": 285
+      },
+      {
+        "id": "tMature",
+        "name": "Time to mature",
+        "eq": "3",
+        "x": 260,
+        "y": 285
+      },
+      {
+        "id": "tExp",
+        "name": "Experienced tenure",
+        "eq": "25",
+        "x": 420,
+        "y": 285
+      },
+      {
+        "id": "tGray",
+        "name": "Veteran tenure",
+        "eq": "8",
+        "x": 580,
+        "y": 285
+      },
+      {
+        "id": "production",
+        "name": "Production",
+        "eq": "Rookies * 0.5 + Experienced * 1 + Veterans * 0.8",
+        "x": 740,
+        "y": 285
+      }
+    ]
+  },
+  "params": {
+    "hiring": {
+      "min": 0,
+      "max": 40,
+      "step": 1
+    },
+    "tMature": {
+      "min": 1,
+      "max": 10,
+      "step": 0.5
+    },
+    "tExp": {
+      "min": 10,
+      "max": 40,
+      "step": 1
+    },
+    "tGray": {
+      "min": 3,
+      "max": 15,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "Steady",
+      "params": {
+        "hiring": 20,
+        "tMature": 3,
+        "tExp": 25,
+        "tGray": 8
+      }
+    },
+    {
+      "label": "Rapid hiring (dilution)",
+      "params": {
+        "hiring": 40,
+        "tMature": 3,
+        "tExp": 25,
+        "tGray": 8
+      }
+    }
+  ]
+}

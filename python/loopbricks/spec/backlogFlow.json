@@ -1,0 +1,99 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "backlogFlow",
+  "title": "Backlog Shipping Protected by Flow",
+  "description": "Orders pile into a backlog; you ship them at the rate needed to clear in a target time: capped by capacity. The backlog can never be shipped negative.",
+  "model": {
+    "name": "Backlog Protected by Flow",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "backlog",
+        "name": "Backlog",
+        "init": "60",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "in",
+        "name": "Orders",
+        "to": "backlog",
+        "eq": "Order_rate",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "ship",
+        "name": "Shipping",
+        "from": "backlog",
+        "eq": "MIN(Backlog / Desired_ship_time, Shipping_capacity)",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "orders",
+        "name": "Order rate",
+        "eq": "12",
+        "x": 100,
+        "y": 300
+      },
+      {
+        "id": "shipTime",
+        "name": "Desired ship time",
+        "eq": "3",
+        "x": 260,
+        "y": 300
+      },
+      {
+        "id": "capacity",
+        "name": "Shipping capacity",
+        "eq": "10",
+        "x": 420,
+        "y": 300
+      }
+    ]
+  },
+  "params": {
+    "orders": {
+      "min": 0,
+      "max": 25,
+      "step": 1
+    },
+    "shipTime": {
+      "min": 1,
+      "max": 10,
+      "step": 0.5
+    },
+    "capacity": {
+      "min": 0,
+      "max": 30,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "Capacity-bound (grows)",
+      "params": {
+        "orders": 12,
+        "shipTime": 3,
+        "capacity": 10
+      }
+    },
+    {
+      "label": "Service-bound (settles)",
+      "params": {
+        "orders": 12,
+        "shipTime": 3,
+        "capacity": 20
+      }
+    }
+  ]
+}

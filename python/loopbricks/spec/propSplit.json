@@ -1,0 +1,241 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "propSplit",
+  "title": "Proportional Split (people across three backlogs)",
+  "description": "Divide a resource among competing claims in proportion to the strength of each claim. Here the claims are three backlogs of work and the resource is a flexible team.",
+  "model": {
+    "name": "Proportional Split",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "tasksA",
+        "name": "Tasks A",
+        "init": "20",
+        "x": 410,
+        "y": 60,
+        "nonNegative": true
+      },
+      {
+        "id": "tasksB",
+        "name": "Tasks B",
+        "init": "60",
+        "x": 410,
+        "y": 155,
+        "nonNegative": true
+      },
+      {
+        "id": "tasksC",
+        "name": "Tasks C",
+        "init": "20",
+        "x": 410,
+        "y": 250,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "inA",
+        "name": "Arrivals A",
+        "to": "tasksA",
+        "eq": "New_tasks_A",
+        "x": 198,
+        "y": 60
+      },
+      {
+        "id": "inB",
+        "name": "Arrivals B",
+        "to": "tasksB",
+        "eq": "New_tasks_B",
+        "x": 198,
+        "y": 155
+      },
+      {
+        "id": "inC",
+        "name": "Arrivals C",
+        "to": "tasksC",
+        "eq": "New_tasks_C",
+        "x": 198,
+        "y": 250
+      },
+      {
+        "id": "doneA",
+        "name": "Completing A",
+        "from": "tasksA",
+        "eq": "MIN(Resources_to_A * Productivity, Tasks_A / Minimum_task_time)",
+        "x": 625,
+        "y": 60
+      },
+      {
+        "id": "doneB",
+        "name": "Completing B",
+        "from": "tasksB",
+        "eq": "MIN(Resources_to_B * Productivity, Tasks_B / Minimum_task_time)",
+        "x": 625,
+        "y": 155
+      },
+      {
+        "id": "doneC",
+        "name": "Completing C",
+        "from": "tasksC",
+        "eq": "MIN(Resources_to_C * Productivity, Tasks_C / Minimum_task_time)",
+        "x": 625,
+        "y": 250
+      }
+    ],
+    "vars": [
+      {
+        "id": "resources",
+        "name": "Resources",
+        "eq": "10",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "productivity",
+        "name": "Productivity",
+        "eq": "1",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "arrA",
+        "name": "New tasks A",
+        "eq": "5",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "arrB",
+        "name": "New tasks B",
+        "eq": "3",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "arrC",
+        "name": "New tasks C",
+        "eq": "2",
+        "x": 680,
+        "y": -40
+      },
+      {
+        "id": "minTaskTime",
+        "name": "Minimum task time",
+        "eq": "0.5",
+        "x": 80,
+        "y": 380
+      },
+      {
+        "id": "total",
+        "name": "Total claim strength",
+        "eq": "Tasks_A + Tasks_B + Tasks_C",
+        "x": 230,
+        "y": 380
+      },
+      {
+        "id": "relA",
+        "name": "Relative claim A",
+        "eq": "IF(Total_claim_strength > 1e-9, Tasks_A / Total_claim_strength, 1 / 3)",
+        "x": 380,
+        "y": 380
+      },
+      {
+        "id": "relB",
+        "name": "Relative claim B",
+        "eq": "IF(Total_claim_strength > 1e-9, Tasks_B / Total_claim_strength, 1 / 3)",
+        "x": 530,
+        "y": 380
+      },
+      {
+        "id": "relC",
+        "name": "Relative claim C",
+        "eq": "IF(Total_claim_strength > 1e-9, Tasks_C / Total_claim_strength, 1 / 3)",
+        "x": 680,
+        "y": 380
+      },
+      {
+        "id": "resA",
+        "name": "Resources to A",
+        "eq": "Resources * Relative_claim_A",
+        "x": 830,
+        "y": 380
+      },
+      {
+        "id": "resB",
+        "name": "Resources to B",
+        "eq": "Resources * Relative_claim_B",
+        "x": 80,
+        "y": 450
+      },
+      {
+        "id": "resC",
+        "name": "Resources to C",
+        "eq": "Resources * Relative_claim_C",
+        "x": 230,
+        "y": 450
+      }
+    ]
+  },
+  "params": {
+    "resources": {
+      "min": 2,
+      "max": 20,
+      "step": 1
+    },
+    "productivity": {
+      "min": 0.5,
+      "max": 2,
+      "step": 0.1
+    },
+    "arrA": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    },
+    "arrB": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    },
+    "arrC": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Capacity = arrivals",
+      "params": {
+        "resources": 10,
+        "productivity": 1,
+        "arrA": 5,
+        "arrB": 3,
+        "arrC": 2
+      }
+    },
+    {
+      "label": "Overloaded",
+      "params": {
+        "resources": 7,
+        "productivity": 1,
+        "arrA": 5,
+        "arrB": 3,
+        "arrC": 2
+      }
+    },
+    {
+      "label": "Surplus capacity",
+      "params": {
+        "resources": 14,
+        "productivity": 1,
+        "arrA": 5,
+        "arrB": 3,
+        "arrC": 2
+      }
+    }
+  ]
+}

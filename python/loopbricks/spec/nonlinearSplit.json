@@ -1,0 +1,182 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "nonlinearSplit",
+  "title": "Nonlinear Split (with a minimum share)",
+  "description": "Split a quantity between two claimants by relative claim strength, but pass that indicated fraction through a lookup first: for example so that neither side ever gets less than a minimum share.",
+  "model": {
+    "name": "Nonlinear Split",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "a",
+        "name": "Held by A",
+        "init": "0",
+        "x": 535,
+        "y": 80,
+        "nonNegative": true
+      },
+      {
+        "id": "b",
+        "name": "Held by B",
+        "init": "0",
+        "x": 535,
+        "y": 220,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "toA",
+        "name": "Quantity to A",
+        "to": "a",
+        "eq": "Total_quantity * Fraction_to_A",
+        "x": 300,
+        "y": 115
+      },
+      {
+        "id": "toB",
+        "name": "Quantity to B",
+        "to": "b",
+        "eq": "Total_quantity - Quantity_to_A",
+        "x": 300,
+        "y": 185
+      },
+      {
+        "id": "outA",
+        "name": "Use by A",
+        "from": "a",
+        "eq": "Held_by_A / Holding_time",
+        "x": 690,
+        "y": 80
+      },
+      {
+        "id": "outB",
+        "name": "Use by B",
+        "from": "b",
+        "eq": "Held_by_B / Holding_time",
+        "x": 690,
+        "y": 220
+      }
+    ],
+    "vars": [
+      {
+        "id": "totalQuantity",
+        "name": "Total quantity",
+        "eq": "20",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "strengthA",
+        "name": "Strength of A claim",
+        "eq": "9",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "strengthB",
+        "name": "Strength of B claim",
+        "eq": "1",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "minFraction",
+        "name": "Minimum fraction",
+        "eq": "0.2",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "tau",
+        "name": "Holding time",
+        "eq": "5",
+        "x": 680,
+        "y": -40
+      },
+      {
+        "id": "totalClaim",
+        "name": "Total claim strength",
+        "eq": "Strength_of_A_claim + Strength_of_B_claim",
+        "x": 80,
+        "y": 350
+      },
+      {
+        "id": "indicated",
+        "name": "Indicated fraction to A",
+        "eq": "IF(Total_claim_strength > 0, Strength_of_A_claim / Total_claim_strength, 0.5)",
+        "x": 230,
+        "y": 350
+      },
+      {
+        "id": "fraction",
+        "name": "Fraction to A",
+        "eq": "MIN(1 - Minimum_fraction, MAX(Minimum_fraction, Indicated_fraction_to_A))",
+        "x": 380,
+        "y": 350
+      }
+    ]
+  },
+  "params": {
+    "totalQuantity": {
+      "min": 0,
+      "max": 40,
+      "step": 1
+    },
+    "strengthA": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    },
+    "strengthB": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    },
+    "minFraction": {
+      "min": 0,
+      "max": 0.5,
+      "step": 0.05
+    },
+    "tau": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Minimum share binds",
+      "params": {
+        "totalQuantity": 20,
+        "strengthA": 9,
+        "strengthB": 1,
+        "minFraction": 0.2,
+        "tau": 5
+      }
+    },
+    {
+      "label": "Plain proportional",
+      "params": {
+        "totalQuantity": 20,
+        "strengthA": 9,
+        "strengthB": 1,
+        "minFraction": 0,
+        "tau": 5
+      }
+    },
+    {
+      "label": "Forced 50 / 50",
+      "params": {
+        "totalQuantity": 20,
+        "strengthA": 9,
+        "strengthB": 1,
+        "minFraction": 0.5,
+        "tau": 5
+      }
+    }
+  ]
+}

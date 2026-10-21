@@ -1,0 +1,85 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "estCompletion",
+  "title": "Estimated Completion Date",
+  "description": "Divide work remaining by the work rate to estimate time to finish, but if scope creeps as fast as you work, the finish line never arrives.",
+  "model": {
+    "name": "Estimated Completion",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "workRemaining",
+        "name": "Work remaining",
+        "init": "500",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "in",
+        "name": "Adding scope",
+        "to": "workRemaining",
+        "eq": "Scope_creep",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "accomplishing",
+        "name": "Accomplishing",
+        "from": "workRemaining",
+        "eq": "MIN(Work_rate, Work_remaining / 0.5)",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "workRate",
+        "name": "Work rate",
+        "eq": "30",
+        "x": 100,
+        "y": 300
+      },
+      {
+        "id": "scopeCreep",
+        "name": "Scope creep",
+        "eq": "0",
+        "x": 260,
+        "y": 300
+      }
+    ]
+  },
+  "params": {
+    "workRate": {
+      "min": 10,
+      "max": 80,
+      "step": 5
+    },
+    "scopeCreep": {
+      "min": 0,
+      "max": 40,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "Fixed scope (finishes)",
+      "params": {
+        "workRate": 30,
+        "scopeCreep": 0
+      }
+    },
+    {
+      "label": "Scope creep (recedes)",
+      "params": {
+        "workRate": 30,
+        "scopeCreep": 28
+      }
+    }
+  ]
+}

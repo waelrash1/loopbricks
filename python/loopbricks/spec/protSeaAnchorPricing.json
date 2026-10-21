@@ -1,0 +1,187 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "protSeaAnchorPricing",
+  "title": "Protected Sea Anchor Pricing",
+  "description": "Sea Anchor Pricing with a floor: the underlying price cannot sink below the lowest price that price setters regard as fair or sustainable, so the price can never get stuck at zero.",
+  "model": {
+    "name": "Protected Sea Anchor Pricing",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "underlyingPrice",
+        "name": "Underlying price",
+        "init": "10",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "priceDisp",
+        "name": "Price",
+        "init": "8",
+        "x": 260,
+        "y": 320,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "changeInUnderlyingPrice",
+        "name": "Change in underlying price",
+        "to": "underlyingPrice",
+        "eq": "(Indicated_underlying_price - Underlying_price) / Time_to_change_underlying_price",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "priceTrack",
+        "name": "Price tracking",
+        "to": "priceDisp",
+        "eq": "(Current_price - Price) / 0.1",
+        "x": 110,
+        "y": 320
+      }
+    ],
+    "vars": [
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "eq": "150",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "targetInventory",
+        "name": "Target inventory",
+        "eq": "100",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "relMarketShare",
+        "name": "Relative market share",
+        "eq": "1",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "minPrice",
+        "name": "Minimum underlying price",
+        "eq": "6",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "timeToChange",
+        "name": "Time to change underlying price",
+        "eq": "5",
+        "x": 680,
+        "y": -40
+      },
+      {
+        "id": "relInv",
+        "name": "Relative inventory",
+        "eq": "Inventory / MAX(1, Target_inventory)",
+        "x": 80,
+        "y": 450
+      },
+      {
+        "id": "effInv",
+        "name": "Effect of inventory on price",
+        "eq": "2 / (1 + Relative_inventory)",
+        "x": 230,
+        "y": 450
+      },
+      {
+        "id": "effMs",
+        "name": "Effect of market share on price",
+        "eq": "(2 * Relative_market_share) / (1 + Relative_market_share)",
+        "x": 380,
+        "y": 450
+      },
+      {
+        "id": "pressure",
+        "name": "Pressure to change price",
+        "eq": "Effect_of_inventory_on_price * Effect_of_market_share_on_price",
+        "x": 530,
+        "y": 450
+      },
+      {
+        "id": "price",
+        "name": "Current price",
+        "eq": "Underlying_price * Pressure_to_change_price",
+        "x": 680,
+        "y": 450
+      },
+      {
+        "id": "indicated",
+        "name": "Indicated underlying price",
+        "eq": "MAX(Current_price, Minimum_underlying_price)",
+        "x": 830,
+        "y": 450
+      }
+    ]
+  },
+  "params": {
+    "inventory": {
+      "min": 0,
+      "max": 200,
+      "step": 5
+    },
+    "targetInventory": {
+      "min": 20,
+      "max": 200,
+      "step": 5
+    },
+    "relMarketShare": {
+      "min": 0.5,
+      "max": 1.5,
+      "step": 0.05
+    },
+    "minPrice": {
+      "min": 0,
+      "max": 12,
+      "step": 0.5
+    },
+    "timeToChange": {
+      "min": 1,
+      "max": 20,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Glut with $6 floor",
+      "params": {
+        "inventory": 150,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "minPrice": 6,
+        "timeToChange": 5
+      }
+    },
+    {
+      "label": "Glut, no floor",
+      "params": {
+        "inventory": 150,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "minPrice": 0,
+        "timeToChange": 5
+      }
+    },
+    {
+      "label": "Shortage (floor idle)",
+      "params": {
+        "inventory": 75,
+        "targetInventory": 100,
+        "relMarketShare": 1,
+        "minPrice": 6,
+        "timeToChange": 5
+      }
+    }
+  ]
+}

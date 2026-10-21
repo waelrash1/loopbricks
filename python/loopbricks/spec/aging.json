@@ -1,0 +1,41 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "aging",
+  "title": "Aging Chain",
+  "description": "A cascade through age or maturity classes: cohorts ageing into the next bracket while some leave. The structure behind every population pyramid.",
+  "model": {
+    "name": "Aging Chain",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "young", "name": "Youth", "init": "300", "x": 157.5, "y": 145, "nonNegative": true },
+      { "id": "adult", "name": "Working age", "init": "800", "x": 402.5, "y": 145, "nonNegative": true },
+      { "id": "old", "name": "Elderly", "init": "200", "x": 647.5, "y": 145, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "in", "name": "Being born", "to": "young", "eq": "Births", "x": 65, "y": 145 },
+      { "id": "aYA", "name": "Maturation", "from": "young", "to": "adult", "eq": "Youth / Youth_duration", "x": 280, "y": 145 },
+      { "id": "aAO", "name": "Retirement", "from": "adult", "to": "old", "eq": "Working_age / Adult_duration", "x": 525, "y": 145 },
+      { "id": "deaths", "name": "Deaths", "from": "old", "eq": "Elderly / Elder_lifespan", "x": 748, "y": 145 }
+    ],
+    "vars": [
+      { "id": "births", "name": "Births", "eq": "20", "x": 80, "y": 255 },
+      { "id": "tY", "name": "Youth duration", "eq": "18", "x": 250, "y": 315 },
+      { "id": "tA", "name": "Adult duration", "eq": "45", "x": 420, "y": 255 },
+      { "id": "tO", "name": "Elder lifespan", "eq": "15", "x": 590, "y": 315 }
+    ]
+  },
+  "params": {
+    "births": { "min": 0, "max": 40, "step": 1 },
+    "tY": { "min": 5, "max": 25, "step": 1 },
+    "tA": { "min": 20, "max": 50, "step": 1 },
+    "tO": { "min": 5, "max": 30, "step": 1 }
+  },
+  "presets": [
+    { "label": "Baby boom", "params": {"births": 35, "tY": 18, "tA": 45, "tO": 15} },
+    { "label": "Birth decline", "params": {"births": 8, "tY": 18, "tA": 45, "tO": 15} },
+    { "label": "Longer lives", "params": {"births": 20, "tY": 18, "tA": 45, "tO": 28} }
+  ]
+}

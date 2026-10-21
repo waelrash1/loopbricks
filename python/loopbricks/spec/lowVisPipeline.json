@@ -1,0 +1,227 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "lowVisPipeline",
+  "title": "Low-Visibility Pipeline Correction (Orders Not Received)",
+  "description": "Adjust an inventory through a supplier you cannot see into: track only the orders you have placed but not received, and infer the delivery delay from them.",
+  "model": {
+    "name": "Low-Visibility Pipeline Correction",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "onr",
+        "name": "Orders not received",
+        "init": "60",
+        "x": 290,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "s1",
+        "name": "Supplier first stage",
+        "init": "30",
+        "x": 260,
+        "y": 315,
+        "nonNegative": true
+      },
+      {
+        "id": "inv",
+        "name": "Inventory",
+        "init": "60",
+        "x": 585,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "ordering",
+        "name": "Ordering",
+        "to": "onr",
+        "eq": "MAX(0, Pipeline_correction + Shipping + Inventory_correction)",
+        "x": 130,
+        "y": 150
+      },
+      {
+        "id": "receiving",
+        "name": "Receiving product",
+        "from": "onr",
+        "to": "inv",
+        "eq": "MAX(0, Orders_not_received - Supplier_first_stage) / Stage_time",
+        "x": 440,
+        "y": 150
+      },
+      {
+        "id": "shipping",
+        "name": "Shipments",
+        "from": "inv",
+        "eq": "MIN(Shipping, Inventory / DT)",
+        "x": 719,
+        "y": 150
+      },
+      {
+        "id": "s1In",
+        "name": "Supplier taking orders",
+        "to": "s1",
+        "eq": "Ordering",
+        "x": 110,
+        "y": 315
+      },
+      {
+        "id": "s1Out",
+        "name": "Supplier first stage done",
+        "from": "s1",
+        "eq": "Supplier_first_stage / (Supplier_delay / 2)",
+        "x": 410,
+        "y": 315
+      }
+    ],
+    "vars": [
+      {
+        "id": "ship",
+        "name": "Shipping",
+        "eq": "10",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "tInv",
+        "name": "Time to correct inventory",
+        "eq": "4",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "tPipe",
+        "name": "Time to correct pipeline",
+        "eq": "4",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "delay",
+        "name": "Supplier delay",
+        "eq": "6",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "aware",
+        "name": "Awareness of pipeline",
+        "eq": "1",
+        "x": 680,
+        "y": -40
+      },
+      {
+        "id": "desInv",
+        "name": "Desired inventory",
+        "eq": "100",
+        "x": 80,
+        "y": 445
+      },
+      {
+        "id": "stage",
+        "name": "Stage time",
+        "eq": "Supplier_delay / 2",
+        "x": 230,
+        "y": 445
+      },
+      {
+        "id": "calcDelay",
+        "name": "Calculated delivery delay",
+        "eq": "MIN(30, Orders_not_received / MAX(Receiving_product, 1e-6))",
+        "x": 380,
+        "y": 445
+      },
+      {
+        "id": "required",
+        "name": "Required orders in pipeline",
+        "eq": "Shipping * Calculated_delivery_delay",
+        "x": 530,
+        "y": 445
+      },
+      {
+        "id": "pipeGap",
+        "name": "Order pipeline gap",
+        "eq": "(Required_orders_in_pipeline - Orders_not_received) * Awareness_of_pipeline",
+        "x": 680,
+        "y": 445
+      },
+      {
+        "id": "corrPipe",
+        "name": "Pipeline correction",
+        "eq": "Order_pipeline_gap / Time_to_correct_pipeline",
+        "x": 830,
+        "y": 445
+      },
+      {
+        "id": "corrInv",
+        "name": "Inventory correction",
+        "eq": "(Desired_inventory - Inventory) / Time_to_correct_inventory",
+        "x": 80,
+        "y": 515
+      }
+    ]
+  },
+  "params": {
+    "ship": {
+      "min": 2,
+      "max": 20,
+      "step": 0.5
+    },
+    "tInv": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    },
+    "tPipe": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    },
+    "delay": {
+      "min": 2,
+      "max": 12,
+      "step": 0.5
+    },
+    "aware": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    }
+  },
+  "presets": [
+    {
+      "label": "Tracks the pipeline",
+      "params": {
+        "ship": 10,
+        "tInv": 4,
+        "tPipe": 4,
+        "delay": 6,
+        "aware": 1
+      }
+    },
+    {
+      "label": "Ignores the pipeline",
+      "params": {
+        "ship": 10,
+        "tInv": 4,
+        "tPipe": 4,
+        "delay": 6,
+        "aware": 0
+      }
+    },
+    {
+      "label": "Boom and bust (slow supplier)",
+      "params": {
+        "ship": 10,
+        "tInv": 2,
+        "tPipe": 4,
+        "delay": 12,
+        "aware": 0
+      }
+    }
+  ]
+}

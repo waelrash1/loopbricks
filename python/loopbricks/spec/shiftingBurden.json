@@ -1,0 +1,47 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "shiftingBurden",
+  "title": "Shifting the Burden (quick fixes and the capability trap)",
+  "description": "Quick fixes make problems disappear for now, but patched problems come back, and every hour spent firefighting is an hour not spent on the capability that would stop problems at the source.",
+  "model": {
+    "name": "Shifting the Burden",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"prob","name":"Open problems","init":"73","x":295,"y":210,"nonNegative":true},
+      {"id":"patched","name":"Patched problems","init":"292","x":585,"y":215,"nonNegative":true},
+      {"id":"cap","name":"Capability","init":"53","x":585,"y":65,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"arise","name":"Problems arising","to":"prob","eq":"Problem_load * (1.5 - Capability / 100)","x":135,"y":215},
+      {"id":"quick","name":"Quick fixes","from":"prob","to":"patched","eq":"MIN(Share_patched_quickly * Open_problems, Team_capacity)","x":440,"y":192},
+      {"id":"resurface","name":"Patches failing","from":"patched","to":"prob","eq":"Patched_problems / Patch_life","x":440,"y":240},
+      {"id":"solve","name":"Fundamental fixes","from":"prob","eq":"((1 - Share_patched_quickly) * Open_problems * (Capability / 100)) / 2","x":242,"y":118},
+      {"id":"build","name":"Building capability","to":"cap","eq":"(Spare_capacity_fraction * (100 - Capability)) / Time_to_build_skill","x":460,"y":64},
+      {"id":"erode","name":"Capability fading","from":"cap","eq":"Capability / 25","x":718,"y":64}
+    ],
+    "vars": [
+      {"id":"load","name":"Problem load","eq":"10","units":"/week","x":80,"y":340},
+      {"id":"share","name":"Share patched quickly","eq":"0.5","x":220,"y":340},
+      {"id":"tRet","name":"Patch life","eq":"8","units":"week","x":360,"y":340},
+      {"id":"capacity","name":"Team capacity","eq":"80","units":"fixes/week","x":500,"y":340},
+      {"id":"tBuild","name":"Time to build skill","eq":"12","units":"week","x":640,"y":340},
+      {"id":"spare","name":"Spare capacity fraction","eq":"MAX(0, 1 - Quick_fixes / Team_capacity)","x":780,"y":340}
+    ]
+  },
+  "params": {
+    "load": {"min":2,"max":20,"step":0.5},
+    "share": {"min":0,"max":1,"step":0.05},
+    "tRet": {"min":2,"max":20,"step":1},
+    "capacity": {"min":40,"max":160,"step":5},
+    "tBuild": {"min":4,"max":40,"step":1}
+  },
+  "presets": [
+    {"label":"Balanced","params":{"load":10,"share":0.5,"tRet":8,"capacity":80,"tBuild":12}},
+    {"label":"Firefighting","params":{"load":10,"share":0.8,"tRet":8,"capacity":80,"tBuild":12}},
+    {"label":"Invest in the fix","params":{"load":10,"share":0.2,"tRet":8,"capacity":80,"tBuild":12}},
+    {"label":"Patches fail fast","params":{"load":10,"share":0.5,"tRet":3,"capacity":80,"tBuild":12}}
+  ]
+}

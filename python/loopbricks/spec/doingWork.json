@@ -1,0 +1,108 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "doingWork",
+  "title": "Doing Work (Producing & Backlog)",
+  "description": "Resources do work at rate = workforce × productivity, draining a backlog and building completed output. The engine that turns people into accomplishment.",
+  "model": {
+    "name": "Doing Work",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "backlog",
+        "name": "Backlog",
+        "init": "600",
+        "x": 210,
+        "y": 140,
+        "nonNegative": true
+      },
+      {
+        "id": "output",
+        "name": "Completed",
+        "init": "0",
+        "x": 620,
+        "y": 140,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "in",
+        "name": "Arriving work",
+        "to": "backlog",
+        "eq": "New_work",
+        "x": 95,
+        "y": 140
+      },
+      {
+        "id": "accomplishing",
+        "name": "Doing work",
+        "from": "backlog",
+        "to": "output",
+        "eq": "MIN(Workforce * Productivity, Backlog / 0.5)",
+        "x": 415,
+        "y": 140
+      }
+    ],
+    "vars": [
+      {
+        "id": "workforce",
+        "name": "Workforce",
+        "eq": "20",
+        "x": 100,
+        "y": 280
+      },
+      {
+        "id": "productivity",
+        "name": "Productivity",
+        "eq": "4",
+        "x": 260,
+        "y": 280
+      },
+      {
+        "id": "newWork",
+        "name": "New work",
+        "eq": "0",
+        "x": 420,
+        "y": 280
+      }
+    ]
+  },
+  "params": {
+    "workforce": {
+      "min": 0,
+      "max": 50,
+      "step": 1
+    },
+    "productivity": {
+      "min": 1,
+      "max": 10,
+      "step": 0.5
+    },
+    "newWork": {
+      "min": 0,
+      "max": 30,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "Clear backlog",
+      "params": {
+        "workforce": 20,
+        "productivity": 4,
+        "newWork": 0
+      }
+    },
+    {
+      "label": "Backlog grows",
+      "params": {
+        "workforce": 10,
+        "productivity": 4,
+        "newWork": 60
+      }
+    }
+  ]
+}

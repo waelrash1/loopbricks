@@ -1,0 +1,121 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "schedulePressure",
+  "title": "Scheduled Completion & Pressure",
+  "description": "A fixed deadline plus work remaining creates schedule pressure: the closer the date and the more work left, the harder the team pushes, self-pacing toward the deadline.",
+  "model": {
+    "name": "Schedule Pressure",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "workRemaining",
+        "name": "Work remaining",
+        "init": "400",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "clock",
+        "name": "elapsed",
+        "init": "0",
+        "x": 160,
+        "y": 300,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "workRate",
+        "name": "Work rate",
+        "from": "workRemaining",
+        "eq": "MIN(Normal_work_rate * Effect_of_pressure, Work_remaining / 0.25)",
+        "x": 623,
+        "y": 150
+      },
+      {
+        "id": "ticking",
+        "name": "Clock ticking",
+        "to": "clock",
+        "eq": "1",
+        "x": 60,
+        "y": 300
+      }
+    ],
+    "vars": [
+      {
+        "id": "scheduled",
+        "name": "Scheduled date",
+        "eq": "15",
+        "x": 100,
+        "y": 420
+      },
+      {
+        "id": "baseRate",
+        "name": "Normal work rate",
+        "eq": "25",
+        "x": 260,
+        "y": 420
+      },
+      {
+        "id": "timeLeft",
+        "name": "Time left",
+        "eq": "MAX(Scheduled_date - elapsed, 0.25)",
+        "x": 420,
+        "y": 420
+      },
+      {
+        "id": "requiredRate",
+        "name": "Required rate",
+        "eq": "Work_remaining / Time_left",
+        "x": 580,
+        "y": 420
+      },
+      {
+        "id": "pressure",
+        "name": "Schedule pressure",
+        "eq": "Required_rate / Normal_work_rate",
+        "x": 740,
+        "y": 420
+      },
+      {
+        "id": "effect",
+        "name": "Effect of pressure",
+        "eq": "MAX(0.5, MIN(2, Schedule_pressure))",
+        "x": 100,
+        "y": 490
+      }
+    ]
+  },
+  "params": {
+    "scheduled": {
+      "min": 5,
+      "max": 40,
+      "step": 1
+    },
+    "baseRate": {
+      "min": 10,
+      "max": 50,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "On schedule",
+      "params": {
+        "scheduled": 15,
+        "baseRate": 25
+      }
+    },
+    {
+      "label": "Tight deadline (slips)",
+      "params": {
+        "scheduled": 8,
+        "baseRate": 25
+      }
+    }
+  ]
+}

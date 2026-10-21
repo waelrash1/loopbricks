@@ -353,7 +353,7 @@ export default function MoleculeExplorer() {
             </Suspense>
 
             <Suspense fallback={null}>
-              <PythonPanel molecule={key} />
+              <PythonPanel molecule={key} onOpen={(h) => go(h)} />
             </Suspense>
 
             {casesUsing(key).length > 0 && (

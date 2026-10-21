@@ -1,0 +1,43 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "smoothHigher",
+  "title": "Smooth (higher-order): a cascade of smooths",
+  "description": "Chain first-order smooths so that each one is the goal of the next. The last one starts slowly, gains speed, then slows for the final approach: people who are slow to notice a change but do catch on completely.",
+  "model": {
+    "name": "Smooth (Higher-Order)",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"smooth1","name":"Smooth1","init":"20","x":410,"y":50,"nonNegative":true},
+      {"id":"smooth2","name":"Smooth2","init":"20","x":410,"y":130,"nonNegative":true},
+      {"id":"smooth3","name":"Smooth3","init":"20","x":410,"y":210,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"updating1","name":"Updating smooth1","to":"smooth1","eq":"Gap_1 / MAX(0.1, Smoothing_time_1)","x":193,"y":50},
+      {"id":"updating2","name":"Updating smooth2","to":"smooth2","eq":"Gap_2 / MAX(0.1, Smoothing_time_2)","x":193,"y":130},
+      {"id":"updating3","name":"Updating smooth3","to":"smooth3","eq":"Gap_3 / MAX(0.1, Smoothing_time_3)","x":193,"y":210}
+    ],
+    "vars": [
+      {"id":"goal","name":"Goal","eq":"80","units":"stuff","x":80,"y":340},
+      {"id":"time1","name":"Smoothing time 1","eq":"2","units":"year","x":220,"y":340},
+      {"id":"time2","name":"Smoothing time 2","eq":"2","units":"year","x":360,"y":340},
+      {"id":"time3","name":"Smoothing time 3","eq":"2","units":"year","x":500,"y":340},
+      {"id":"gap1","name":"Gap 1","eq":"Goal - Smooth1","x":640,"y":340},
+      {"id":"gap2","name":"Gap 2","eq":"Smooth1 - Smooth2","x":780,"y":340},
+      {"id":"gap3","name":"Gap 3","eq":"Smooth2 - Smooth3","x":80,"y":420}
+    ]
+  },
+  "params": {
+    "goal": {"min":0,"max":100,"step":1},
+    "time1": {"min":0.5,"max":8,"step":0.5},
+    "time2": {"min":0.5,"max":8,"step":0.5},
+    "time3": {"min":0.5,"max":8,"step":0.5}
+  },
+  "presets": [
+    {"label":"Equal stages (2, 2, 2)","params":{"goal":80,"time1":2,"time2":2,"time3":2}},
+    {"label":"One long stage (5, 0.5, 0.5)","params":{"goal":80,"time1":5,"time2":0.5,"time3":0.5}},
+    {"label":"Slow to catch on (4, 4, 4)","params":{"goal":80,"time1":4,"time2":4,"time3":4}}
+  ]
+}

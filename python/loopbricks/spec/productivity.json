@@ -1,0 +1,47 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "productivity",
+  "title": "Productivity (PDY)",
+  "description": "How fast one worker produces: a normal productivity multiplied by the effects of fatigue, schedule pressure, work adequacy and average skill. Each effect is 1 under normal conditions.",
+  "model": {
+    "name": "Productivity (PDY)",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"made","name":"Made by one worker","init":"0","x":410,"y":150,"nonNegative":true},
+      {"id":"ref","name":"At normal PDY","init":"0","x":560,"y":330,"nonNegative":true},
+      {"id":"pdy","name":"Productivity shown","init":"4.0392","x":760,"y":330,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"producing","name":"Producing one worker","to":"made","eq":"Productivity","x":193,"y":150},
+      {"id":"atNormal","name":"Producing at normal PDY","to":"ref","eq":"Normal_productivity","x":450,"y":330},
+      {"id":"track_pdy","name":"Tracking productivity","to":"pdy","eq":"(Productivity - Productivity_shown) / 0.1","x":650,"y":330}
+    ],
+    "vars": [
+      {"id":"normalPDY","name":"Normal productivity","eq":"5","units":"/p·month","x":80,"y":420},
+      {"id":"fatigue","name":"Fatigue","eq":"1.3","x":220,"y":420},
+      {"id":"sched","name":"Schedule pressure","eq":"1.2","x":360,"y":420},
+      {"id":"adequacy","name":"Work adequacy","eq":"1","x":500,"y":420},
+      {"id":"skill","name":"Average skill","eq":"0.8","x":640,"y":420},
+      {"id":"eFatigue","name":"Effect of fatigue","eq":"MAX(0.4, MIN(1.1, 1 - 0.5 * (Fatigue - 1)))","x":780,"y":420},
+      {"id":"ePressure","name":"Effect of schedule pressure","eq":"MAX(0.7, MIN(1.3, 1 + 0.4 * (Schedule_pressure - 1)))","x":80,"y":500},
+      {"id":"eAdequacy","name":"Effect of work adequacy","eq":"MAX(0, MIN(1, Work_adequacy))","x":220,"y":500},
+      {"id":"eSkill","name":"Effect of average skill","eq":"MAX(0.4, MIN(1.3, 0.4 + 0.6 * Average_skill))","x":360,"y":500},
+      {"id":"pdyNow","name":"Productivity","eq":"Normal_productivity * Effect_of_fatigue * Effect_of_schedule_pressure * Effect_of_work_adequacy * Effect_of_average_skill","x":500,"y":500}
+    ]
+  },
+  "params": {
+    "normalPDY": {"min":1,"max":10,"step":0.5},
+    "fatigue": {"min":0.5,"max":2,"step":0.05},
+    "sched": {"min":0.5,"max":2,"step":0.05},
+    "adequacy": {"min":0,"max":1.5,"step":0.05},
+    "skill": {"min":0.2,"max":1.5,"step":0.05}
+  },
+  "presets": [
+    {"label":"Tired, pushed, less skilled","params":{"normalPDY":5,"fatigue":1.3,"sched":1.2,"adequacy":1,"skill":0.8}},
+    {"label":"All normal","params":{"normalPDY":5,"fatigue":1,"sched":1,"adequacy":1,"skill":1}},
+    {"label":"Short of work","params":{"normalPDY":5,"fatigue":1,"sched":1,"adequacy":0.4,"skill":1}}
+  ]
+}

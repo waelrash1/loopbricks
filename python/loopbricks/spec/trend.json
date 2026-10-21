@@ -1,0 +1,33 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "trend",
+  "title": "Trend & Extrapolation",
+  "description": "Perception lags a moving signal, and the gap between the two reveals its growth rate, which forecasters then extrapolate forward.",
+  "model": {
+    "name": "Trend",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "input", "name": "Actual", "init": "100", "x": 295, "y": 150, "nonNegative": true },
+      { "id": "ppv", "name": "Perceived", "init": "100", "x": 585, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "grow", "name": "Growth", "to": "input", "eq": "Actual * (True_growth / 100)", "x": 135, "y": 150 },
+      { "id": "perceive", "name": "Perception", "to": "ppv", "eq": "(Actual - Perceived) / Perception_time", "x": 440, "y": 150 }
+    ],
+    "vars": [
+      { "id": "g", "name": "True growth", "eq": "6", "x": 80, "y": 260 },
+      { "id": "tp", "name": "Perception time", "eq": "4", "x": 250, "y": 320 }
+    ]
+  },
+  "params": {
+    "g": { "min": -5, "max": 15, "step": 0.5 },
+    "tp": { "min": 1, "max": 12, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Steady growth", "params": {"g": 6, "tp": 4} },
+    { "label": "Turning point", "params": {"g": -4, "tp": 4} }
+  ]
+}

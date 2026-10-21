@@ -1,0 +1,33 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "ceiling",
+  "title": "Ceiling (Capacity Constraint)",
+  "description": "A hard limit imposed with MIN(): a flow runs at its desired rate until headroom shrinks, then throttles so the stock approaches a cap without overshooting.",
+  "model": {
+    "name": "Ceiling",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "q", "name": "Stock", "init": "10", "x": 395, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "in", "name": "Inflow", "to": "q", "eq": "MAX(0, MIN(Desired_inflow, (Ceiling - Stock) / Approach_time))", "x": 185, "y": 150 }
+    ],
+    "vars": [
+      { "id": "base", "name": "Desired inflow", "eq": "14", "x": 80, "y": 260 },
+      { "id": "ceil", "name": "Ceiling", "eq": "100", "x": 250, "y": 320 },
+      { "id": "at", "name": "Approach time", "eq": "2", "x": 420, "y": 260 }
+    ]
+  },
+  "params": {
+    "base": { "min": 0, "max": 30, "step": 1 },
+    "ceil": { "min": 20, "max": 120, "step": 5 },
+    "at": { "min": 0.5, "max": 8, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Approach cap", "params": {"base": 14, "ceil": 100, "at": 2} },
+    { "label": "Hard clip", "params": {"base": 14, "ceil": 100, "at": 0.5} }
+  ]
+}

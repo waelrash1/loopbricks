@@ -1,0 +1,192 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "multiSplit",
+  "title": "Multidimensional Split",
+  "description": "One inflow divided across many channels by relative weights that always sum to the whole: the N-way generalization of Split Flow.",
+  "model": {
+    "name": "Multidimensional Split",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "chA",
+        "name": "Channel A",
+        "init": "0",
+        "x": 535,
+        "y": 60,
+        "nonNegative": true
+      },
+      {
+        "id": "chB",
+        "name": "Channel B",
+        "init": "0",
+        "x": 535,
+        "y": 155,
+        "nonNegative": true
+      },
+      {
+        "id": "chC",
+        "name": "Channel C",
+        "init": "0",
+        "x": 535,
+        "y": 250,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "toA",
+        "name": "To A",
+        "to": "chA",
+        "eq": "Inflow * Weight_A / Total_weight",
+        "x": 400,
+        "y": 60
+      },
+      {
+        "id": "toB",
+        "name": "To B",
+        "to": "chB",
+        "eq": "Inflow * Weight_B / Total_weight",
+        "x": 400,
+        "y": 155
+      },
+      {
+        "id": "toC",
+        "name": "To C",
+        "to": "chC",
+        "eq": "Inflow * Weight_C / Total_weight",
+        "x": 400,
+        "y": 250
+      },
+      {
+        "id": "outA",
+        "name": "Drain A",
+        "from": "chA",
+        "eq": "Channel_A / Drain_τ",
+        "x": 690,
+        "y": 60
+      },
+      {
+        "id": "outB",
+        "name": "Drain B",
+        "from": "chB",
+        "eq": "Channel_B / Drain_τ",
+        "x": 690,
+        "y": 155
+      },
+      {
+        "id": "outC",
+        "name": "Drain C",
+        "from": "chC",
+        "eq": "Channel_C / Drain_τ",
+        "x": 690,
+        "y": 250
+      }
+    ],
+    "vars": [
+      {
+        "id": "inflow",
+        "name": "Inflow",
+        "eq": "15",
+        "x": 100,
+        "y": 375
+      },
+      {
+        "id": "wA",
+        "name": "Weight A",
+        "eq": "5",
+        "x": 260,
+        "y": 375
+      },
+      {
+        "id": "wB",
+        "name": "Weight B",
+        "eq": "3",
+        "x": 420,
+        "y": 375
+      },
+      {
+        "id": "wC",
+        "name": "Weight C",
+        "eq": "2",
+        "x": 580,
+        "y": 375
+      },
+      {
+        "id": "tau",
+        "name": "Drain τ",
+        "eq": "5",
+        "x": 740,
+        "y": 375
+      },
+      {
+        "id": "tot",
+        "name": "Total weight",
+        "eq": "IF(Weight_A + Weight_B + Weight_C = 0, 1, Weight_A + Weight_B + Weight_C)",
+        "x": 100,
+        "y": 445
+      }
+    ]
+  },
+  "params": {
+    "inflow": {
+      "min": 0,
+      "max": 30,
+      "step": 1
+    },
+    "wA": {
+      "min": 0,
+      "max": 10,
+      "step": 1
+    },
+    "wB": {
+      "min": 0,
+      "max": 10,
+      "step": 1
+    },
+    "wC": {
+      "min": 0,
+      "max": 10,
+      "step": 1
+    },
+    "tau": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "5 : 3 : 2",
+      "params": {
+        "inflow": 15,
+        "wA": 5,
+        "wB": 3,
+        "wC": 2,
+        "tau": 5
+      }
+    },
+    {
+      "label": "Even",
+      "params": {
+        "inflow": 15,
+        "wA": 1,
+        "wB": 1,
+        "wC": 1,
+        "tau": 5
+      }
+    },
+    {
+      "label": "A dominant",
+      "params": {
+        "inflow": 15,
+        "wA": 8,
+        "wB": 1,
+        "wC": 1,
+        "tau": 5
+      }
+    }
+  ]
+}

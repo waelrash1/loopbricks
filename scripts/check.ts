@@ -8,7 +8,8 @@ import { lintCld } from "@/lib/cldGeometry";
 import { lintSf } from "@/lib/sfLint";
 import { SPECS, runSpec } from "@/lib/spec";
 import { goldenData } from "@/lib/golden";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { verifySpec } from "@/lib/specVerify";
 import { stepOnce, freshState, initParams, DT } from "@/sim/engine";
 import { DOMAINS, GUIDE, runnerFor } from "@/data/apps";
 import { calibrate, fitStats, simulateAt } from "@/lib/fit";
@@ -281,20 +282,12 @@ import { TEMPLATES, simulate as bSimulate, template as bTemplate, validate as bV
   const zr = bSimulate(zero);
   if (zr.ok || zr.issues[0]?.id !== "f2") errs.push("builder: a division by zero should stop the run and blame the drain");
 }
-// shared specs: each must reproduce its app molecule step for step, and the Python reference file must be current
-for (const spec of Object.values(SPECS)) {
-  const m = MODELS[spec.key];
-  if (!m) { errs.push(`spec ${spec.key}: no molecule of that name`); continue; }
-  for (const { label, params } of [{ label: "defaults", params: {} as Record<string, number> }, ...spec.presets]) {
-    const run = runSpec(spec, params);
-    const p = { ...initParams(m), ...params };
-    let st = freshState(m), worst = 0;
-    run.times.forEach((_, i) => {
-      for (const id of Object.keys(run.stocks)) worst = Math.max(worst, Math.abs(run.stocks[id][i] - st[id]) / Math.max(1, Math.abs(st[id])));
-      st = stepOnce(m, st, p, DT).state;
-    });
-    if (worst > 1e-9) errs.push(`spec ${spec.key} (${label}): differs from the app molecule by ${worst.toExponential(2)}`);
-  }
+// shared specs: each must be a faithful copy of its app molecule, and the index and Python reference file current
+for (const spec of Object.values(SPECS)) verifySpec(spec).forEach((x) => errs.push(`spec ${spec.key}: ${x}`));
+all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in python/loopbricks/spec (the Python package cannot run it)`));
+{
+  const files = readdirSync("python/loopbricks/spec").filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
+  if (JSON.stringify(files) !== JSON.stringify(Object.keys(SPECS).sort())) errs.push("src/lib/specIndex.ts does not list every spec file: run npm run specs");
 }
 try {
   const onDisk = readFileSync("python/tests/golden.json", "utf8");

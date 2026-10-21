@@ -1,0 +1,158 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "multivariateAnchor",
+  "title": "Multivariate Anchoring and Adjustment",
+  "description": "Something that depends on many things: take a normal value, the anchor, and multiply it by one adjustment per factor, each neutral at 1.",
+  "model": {
+    "name": "Multivariate Anchoring and Adjustment",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "judged",
+        "name": "Value in use",
+        "init": "100",
+        "x": 405,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "ind",
+        "name": "Algebraic value",
+        "init": "180",
+        "x": 260,
+        "y": 320,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "adjusting",
+        "name": "Adopting the value",
+        "to": "judged",
+        "eq": "(Value - Value_in_use) / 2",
+        "x": 190,
+        "y": 150
+      },
+      {
+        "id": "indTrack",
+        "name": "Algebraic value tracking",
+        "to": "ind",
+        "eq": "(Value - Algebraic_value) / DT",
+        "x": 110,
+        "y": 320
+      }
+    ],
+    "vars": [
+      {
+        "id": "anchor",
+        "name": "Anchor",
+        "eq": "100",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "p1",
+        "name": "Pressure 1",
+        "eq": "2.25",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "p2",
+        "name": "Pressure 2",
+        "eq": "1",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "p3",
+        "name": "Pressure 3",
+        "eq": "1.2",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "a1",
+        "name": "Adjustment 1",
+        "eq": "SQRT(MAX(Pressure_1, 0))",
+        "x": 80,
+        "y": 450
+      },
+      {
+        "id": "a2",
+        "name": "Adjustment 2",
+        "eq": "1 / SQRT(MAX(Pressure_2, 1e-6))",
+        "x": 230,
+        "y": 450
+      },
+      {
+        "id": "a3",
+        "name": "Adjustment 3",
+        "eq": "MAX(Pressure_3, 0)",
+        "x": 380,
+        "y": 450
+      },
+      {
+        "id": "value",
+        "name": "Value",
+        "eq": "Anchor * Adjustment_1 * Adjustment_2 * Adjustment_3",
+        "x": 530,
+        "y": 450
+      }
+    ]
+  },
+  "params": {
+    "anchor": {
+      "min": 20,
+      "max": 200,
+      "step": 5
+    },
+    "p1": {
+      "min": 0.25,
+      "max": 4,
+      "step": 0.05
+    },
+    "p2": {
+      "min": 0.25,
+      "max": 4,
+      "step": 0.05
+    },
+    "p3": {
+      "min": 0.25,
+      "max": 2,
+      "step": 0.05
+    }
+  },
+  "presets": [
+    {
+      "label": "All normal",
+      "params": {
+        "anchor": 100,
+        "p1": 1,
+        "p2": 1,
+        "p3": 1
+      }
+    },
+    {
+      "label": "Offsetting pressures",
+      "params": {
+        "anchor": 100,
+        "p1": 4,
+        "p2": 4,
+        "p3": 1
+      }
+    },
+    {
+      "label": "Compounding pressures",
+      "params": {
+        "anchor": 100,
+        "p1": 2.25,
+        "p2": 0.45,
+        "p3": 1.2
+      }
+    }
+  ]
+}

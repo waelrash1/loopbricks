@@ -1,0 +1,38 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "split",
+  "title": "Split Flow",
+  "description": "One inflow divides between destinations by a fraction: the basis of allocation, routing, and market share.",
+  "model": {
+    "name": "Split Flow",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "a", "name": "Channel A", "init": "0", "x": 535, "y": 80, "nonNegative": true },
+      { "id": "b", "name": "Channel B", "init": "0", "x": 535, "y": 220, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "toA", "name": "To A", "to": "a", "eq": "Inflow * Fraction_to_A", "x": 300, "y": 115 },
+      { "id": "toB", "name": "To B", "to": "b", "eq": "Inflow * (1 - Fraction_to_A)", "x": 300, "y": 185 },
+      { "id": "outA", "name": "Drain A", "from": "a", "eq": "Channel_A / Drain_τ", "x": 690, "y": 80 },
+      { "id": "outB", "name": "Drain B", "from": "b", "eq": "Channel_B / Drain_τ", "x": 690, "y": 220 }
+    ],
+    "vars": [
+      { "id": "inflow", "name": "Inflow", "eq": "14", "x": 80, "y": 330 },
+      { "id": "frac", "name": "Fraction to A", "eq": "0.6", "x": 250, "y": 390 },
+      { "id": "tau", "name": "Drain τ", "eq": "5", "x": 420, "y": 330 }
+    ]
+  },
+  "params": {
+    "inflow": { "min": 0, "max": 30, "step": 0.5 },
+    "frac": { "min": 0, "max": 1, "step": 0.02 },
+    "tau": { "min": 1, "max": 12, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "60 / 40", "params": {"inflow": 14, "frac": 0.6, "tau": 5} },
+    { "label": "Winner takes all", "params": {"inflow": 14, "frac": 1, "tau": 5} },
+    { "label": "Even split", "params": {"inflow": 14, "frac": 0.5, "tau": 5} }
+  ]
+}

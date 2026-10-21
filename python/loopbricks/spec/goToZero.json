@@ -1,0 +1,108 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "goToZero",
+  "title": "Go To Zero (Action That Empties a Stock)",
+  "description": "The action that would take a quantity to zero over a given time is simply the quantity divided by that time. It is the seed of every decay, delay and drain.",
+  "model": {
+    "name": "Go To Zero",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "cur",
+        "name": "Current value",
+        "init": "100",
+        "x": 210,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "plan",
+        "name": "If action held constant",
+        "init": "100",
+        "x": 580,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "in",
+        "name": "Replenishing",
+        "to": "cur",
+        "eq": "Replenishment",
+        "x": 95,
+        "y": 150
+      },
+      {
+        "id": "action",
+        "name": "Action to go to zero",
+        "from": "cur",
+        "eq": "Current_value / Time_to_go_to_zero",
+        "x": 333,
+        "y": 150
+      },
+      {
+        "id": "planOut",
+        "name": "Constant action",
+        "from": "plan",
+        "eq": "MIN(100 / Time_to_go_to_zero, If_action_held_constant / DT)",
+        "x": 713,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "tau",
+        "name": "Time to go to zero",
+        "eq": "5",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "inflow",
+        "name": "Replenishment",
+        "eq": "0",
+        "x": 230,
+        "y": -40
+      }
+    ]
+  },
+  "params": {
+    "tau": {
+      "min": 1,
+      "max": 20,
+      "step": 0.5
+    },
+    "inflow": {
+      "min": 0,
+      "max": 20,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Quick (τ = 2)",
+      "params": {
+        "tau": 2,
+        "inflow": 0
+      }
+    },
+    {
+      "label": "Slow (τ = 12)",
+      "params": {
+        "tau": 12,
+        "inflow": 0
+      }
+    },
+    {
+      "label": "With replenishment",
+      "params": {
+        "tau": 5,
+        "inflow": 8
+      }
+    }
+  ]
+}

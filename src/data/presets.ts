@@ -98,7 +98,7 @@ export const PRESETS: Record<string, Preset[]> = {
     { label: "Winner takes all", params: { inflow: 20, network: 1, churn: 18 } },
   ],
   floor: [
-    { label: "Settle on floor", params: { base: 14, ceil: 100, floor: 30, at: 2 } },
+    { label: "Settle on floor", params: { base: 14, floor: 30, at: 2 } },
     { label: "Hard floor", params: { base: 14, floor: 30, at: 0.5 } },
   ],
   protLevel: [

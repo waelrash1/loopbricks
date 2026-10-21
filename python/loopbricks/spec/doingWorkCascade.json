@@ -1,0 +1,43 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "doingWorkCascade",
+  "title": "Doing Work Cascade (Unprotected)",
+  "description": "A chain of stocks where every flow is people working: each stage's workers pull from the stock behind them and push into the one ahead. Stocks rise or fall in straight lines.",
+  "model": {
+    "name": "Doing Work Cascade",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"invA","name":"Inventory A","init":"100","x":170,"y":155,"nonNegative":true},
+      {"id":"invB","name":"Inventory B","init":"20","x":410,"y":155,"nonNegative":true},
+      {"id":"invC","name":"Inventory C","init":"60","x":650,"y":155,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"pA","name":"Producing A","to":"invA","eq":"Workers_A * Productivity","x":80,"y":155},
+      {"id":"pB","name":"Producing B","from":"invA","to":"invB","eq":"Workers_B * Productivity","x":290,"y":155},
+      {"id":"pC","name":"Producing C","from":"invB","to":"invC","eq":"Workers_C * Productivity","x":530,"y":155},
+      {"id":"pD","name":"Producing D","from":"invC","eq":"Workers_D * Productivity","x":743,"y":155}
+    ],
+    "vars": [
+      {"id":"workersA","name":"Workers A","eq":"5","units":"people","x":80,"y":340},
+      {"id":"workersB","name":"Workers B","eq":"6","units":"people","x":220,"y":340},
+      {"id":"workersC","name":"Workers C","eq":"4","units":"people","x":360,"y":340},
+      {"id":"workersD","name":"Workers D","eq":"4","units":"people","x":500,"y":340},
+      {"id":"productivity","name":"Productivity","eq":"2","units":"/p·month","x":640,"y":340}
+    ]
+  },
+  "params": {
+    "workersA": {"min":0,"max":15,"step":1},
+    "workersB": {"min":0,"max":15,"step":1},
+    "workersC": {"min":0,"max":15,"step":1},
+    "workersD": {"min":0,"max":15,"step":1},
+    "productivity": {"min":0.5,"max":5,"step":0.5}
+  },
+  "presets": [
+    {"label":"Unbalanced crews","params":{"workersA":5,"workersB":6,"workersC":4,"workersD":4,"productivity":2}},
+    {"label":"Balanced line","params":{"workersA":5,"workersB":5,"workersC":5,"workersD":5,"productivity":2}},
+    {"label":"Starve stage A (the flaw)","params":{"workersA":2,"workersB":8,"workersC":4,"workersD":4,"productivity":2}}
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "financialFlow",
+  "title": "Financial Flow from Resource (spending = workers × wage)",
+  "description": "The continuing rent of a resource, wages, lease payments, interest, is the resource multiplied by its rent per unit per period.",
+  "model": {
+    "name": "Financial Flow from Resource",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "cash",
+        "name": "Cash",
+        "init": "500",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "revenueIn",
+        "name": "Revenue received",
+        "to": "cash",
+        "eq": "Revenue",
+        "x": 245,
+        "y": 150
+      },
+      {
+        "id": "spending",
+        "name": "Spending",
+        "from": "cash",
+        "eq": "Workers * Wage",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "workers",
+        "name": "Workers",
+        "eq": "20",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "wage",
+        "name": "Wage",
+        "eq": "5",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "revenue",
+        "name": "Revenue",
+        "eq": "80",
+        "x": 380,
+        "y": -40
+      }
+    ]
+  },
+  "params": {
+    "workers": {
+      "min": 0,
+      "max": 50,
+      "step": 1
+    },
+    "wage": {
+      "min": 2,
+      "max": 12,
+      "step": 0.5
+    },
+    "revenue": {
+      "min": 0,
+      "max": 200,
+      "step": 5
+    }
+  },
+  "presets": [
+    {
+      "label": "Burning cash",
+      "params": {
+        "workers": 20,
+        "wage": 5,
+        "revenue": 80
+      }
+    },
+    {
+      "label": "Break-even",
+      "params": {
+        "workers": 16,
+        "wage": 5,
+        "revenue": 80
+      }
+    },
+    {
+      "label": "Building cash",
+      "params": {
+        "workers": 12,
+        "wage": 5,
+        "revenue": 80
+      }
+    }
+  ]
+}

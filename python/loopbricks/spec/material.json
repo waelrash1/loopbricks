@@ -1,0 +1,38 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "material",
+  "title": "Material Delay (3rd order)",
+  "description": "A physical thing genuinely takes time to traverse: mail, shipping, a pipeline. Output is a delayed, conservation-respecting echo of the input.",
+  "model": {
+    "name": "Material Delay",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "l1", "name": "In transit 1", "init": "0", "x": 157.5, "y": 145, "nonNegative": true },
+      { "id": "l2", "name": "In transit 2", "init": "0", "x": 402.5, "y": 145, "nonNegative": true },
+      { "id": "l3", "name": "In transit 3", "init": "0", "x": 647.5, "y": 145, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "in", "name": "Entering", "to": "l1", "eq": "Inflow", "x": 65, "y": 145 },
+      { "id": "f1", "name": "Flow 1 to 2", "from": "l1", "to": "l2", "eq": "In_transit_1 / Stage_transit_time", "x": 280, "y": 145 },
+      { "id": "f2", "name": "Flow 2 to 3", "from": "l2", "to": "l3", "eq": "In_transit_2 / Stage_transit_time", "x": 525, "y": 145 },
+      { "id": "out", "name": "Arrivals", "from": "l3", "eq": "In_transit_3 / Stage_transit_time", "x": 748, "y": 145 }
+    ],
+    "vars": [
+      { "id": "inflow", "name": "Inflow", "eq": "8", "x": 80, "y": 255 },
+      { "id": "delay", "name": "Transit delay", "eq": "9", "x": 250, "y": 315 },
+      { "id": "st", "name": "Stage transit time", "eq": "Transit_delay / 3", "x": 420, "y": 255 }
+    ]
+  },
+  "params": {
+    "inflow": { "min": 0, "max": 16, "step": 0.5 },
+    "delay": { "min": 2, "max": 18, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Short transit", "params": {"inflow": 8, "delay": 4} },
+    { "label": "Steady pipeline", "params": {"inflow": 8, "delay": 9} },
+    { "label": "Long transit", "params": {"inflow": 8, "delay": 16} }
+  ]
+}

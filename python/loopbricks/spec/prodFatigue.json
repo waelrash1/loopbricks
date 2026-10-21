@@ -1,0 +1,142 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "prodFatigue",
+  "title": "Productivity, Overtime & Fatigue",
+  "description": "Overtime lifts output now but builds fatigue that erodes productivity later: push too hard and total output falls below normal. The backfire of crunch.",
+  "model": {
+    "name": "Productivity & Fatigue",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "fatigue",
+        "name": "Fatigue",
+        "init": "1",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "relOutput",
+        "name": "Output vs normal",
+        "init": "1",
+        "x": 160,
+        "y": 300,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "gettingFatigued",
+        "name": "Getting fatigued",
+        "to": "fatigue",
+        "eq": "(Overtime - Fatigue) / Time_to_fatigue",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "updRelOutput",
+        "name": "Updating output display",
+        "to": "relOutput",
+        "eq": "(Relative_output - Output_vs_normal) / 0.1",
+        "x": 60,
+        "y": 300
+      }
+    ],
+    "vars": [
+      {
+        "id": "overtime",
+        "name": "Overtime",
+        "eq": "1",
+        "x": 100,
+        "y": 420
+      },
+      {
+        "id": "timeToFatigue",
+        "name": "Time to fatigue",
+        "eq": "4",
+        "x": 260,
+        "y": 420
+      },
+      {
+        "id": "workforce",
+        "name": "Workforce",
+        "eq": "20",
+        "x": 420,
+        "y": 420
+      },
+      {
+        "id": "normalPDY",
+        "name": "Normal productivity",
+        "eq": "5",
+        "x": 580,
+        "y": 420
+      },
+      {
+        "id": "effect",
+        "name": "Effect of fatigue",
+        "eq": "MAX(0.3, MIN(1.1, 2 - Fatigue))",
+        "x": 740,
+        "y": 420
+      },
+      {
+        "id": "relOut",
+        "name": "Relative output",
+        "eq": "Overtime * Effect_of_fatigue",
+        "x": 100,
+        "y": 490
+      },
+      {
+        "id": "output",
+        "name": "Output",
+        "eq": "Workforce * Normal_productivity * Relative_output",
+        "x": 260,
+        "y": 490
+      }
+    ]
+  },
+  "params": {
+    "overtime": {
+      "min": 1,
+      "max": 1.6,
+      "step": 0.05
+    },
+    "timeToFatigue": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    },
+    "workforce": {
+      "min": 0,
+      "max": 50,
+      "step": 1
+    },
+    "normalPDY": {
+      "min": 1,
+      "max": 10,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Normal hours",
+      "params": {
+        "overtime": 1,
+        "timeToFatigue": 4,
+        "workforce": 20,
+        "normalPDY": 5
+      }
+    },
+    {
+      "label": "Crunch (backfires)",
+      "params": {
+        "overtime": 1.4,
+        "timeToFatigue": 4,
+        "workforce": 20,
+        "normalPDY": 5
+      }
+    }
+  ]
+}

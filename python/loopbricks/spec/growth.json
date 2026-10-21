@@ -1,0 +1,33 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "growth",
+  "title": "Exponential Growth (Reinforcing Loop)",
+  "description": "The first reinforcing loop: more begets more. Births feed back to grow the very stock that produces them: accelerating, compounding growth.",
+  "model": {
+    "name": "Population Growth",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "pop", "name": "Population", "init": "100", "x": 395, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "births", "name": "Births", "to": "pop", "eq": "Population * (Birth_rate / 100)", "x": 185, "y": 150 },
+      { "id": "deaths", "name": "Deaths", "from": "pop", "eq": "Population * (Death_rate / 100)", "x": 623, "y": 150 }
+    ],
+    "vars": [
+      { "id": "birth", "name": "Birth rate", "eq": "5", "x": 80, "y": 260 },
+      { "id": "death", "name": "Death rate", "eq": "2", "x": 250, "y": 320 }
+    ]
+  },
+  "params": {
+    "birth": { "min": 0, "max": 12, "step": 0.5 },
+    "death": { "min": 0, "max": 12, "step": 0.5 }
+  },
+  "presets": [
+    { "label": "Growing", "params": {"birth": 5, "death": 2} },
+    { "label": "Declining", "params": {"birth": 2, "death": 5} },
+    { "label": "Stable", "params": {"birth": 3, "death": 3} }
+  ]
+}

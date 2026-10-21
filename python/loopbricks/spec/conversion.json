@@ -1,0 +1,37 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "conversion",
+  "title": "Conversion",
+  "description": "Material changes form, and units, as it flows between stocks: ore becomes metal, orders become product.",
+  "model": {
+    "name": "Conversion",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "raw", "name": "Raw", "init": "100", "x": 205, "y": 155, "nonNegative": true },
+      { "id": "fin", "name": "Finished", "init": "0", "x": 575, "y": 155, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "in", "name": "Feed", "to": "raw", "eq": "Feed_in", "x": 95, "y": 155 },
+      { "id": "conv", "name": "Processing", "from": "raw", "eq": "Raw / Process_time_τ", "x": 300, "y": 230 },
+      { "id": "made", "name": "Production", "to": "fin", "eq": "Processing * Yield", "x": 390, "y": 155 },
+      { "id": "out", "name": "Shipments", "from": "fin", "eq": "Finished / 6", "x": 710, "y": 155 }
+    ],
+    "vars": [
+      { "id": "feed", "name": "Feed in", "eq": "10", "x": 80, "y": 340 },
+      { "id": "tau", "name": "Process time τ", "eq": "4", "x": 250, "y": 400 },
+      { "id": "yield", "name": "Yield", "eq": "2", "x": 420, "y": 340 }
+    ]
+  },
+  "params": {
+    "feed": { "min": 0, "max": 30, "step": 0.5 },
+    "tau": { "min": 1, "max": 12, "step": 0.5 },
+    "yield": { "min": 0.2, "max": 5, "step": 0.1 }
+  },
+  "presets": [
+    { "label": "High yield", "params": {"feed": 10, "tau": 4, "yield": 4} },
+    { "label": "Low yield", "params": {"feed": 10, "tau": 4, "yield": 0.6} }
+  ]
+}

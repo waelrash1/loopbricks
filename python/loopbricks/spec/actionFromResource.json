@@ -1,0 +1,107 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "actionFromResource",
+  "title": "Action from Resource (flow = resources × ability)",
+  "description": "An action, a flow, is a resource multiplied by its ability to create that flow, i.e. its productivity. One of the three basic ways to create a flow.",
+  "model": {
+    "name": "Action from Resource",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "tank",
+        "name": "Tank",
+        "init": "0",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "flow",
+        "name": "Flow",
+        "to": "tank",
+        "eq": "Resources * Resource_ability_to_create_flow",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "outflow",
+        "name": "Drain",
+        "from": "tank",
+        "eq": "Tank / Drain_time",
+        "x": 623,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "resources",
+        "name": "Resources",
+        "eq": "10",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "ability",
+        "name": "Resource ability to create flow",
+        "eq": "3",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "drainTau",
+        "name": "Drain time",
+        "eq": "4",
+        "x": 380,
+        "y": -40
+      }
+    ]
+  },
+  "params": {
+    "resources": {
+      "min": 0,
+      "max": 30,
+      "step": 1
+    },
+    "ability": {
+      "min": 0,
+      "max": 6,
+      "step": 0.25
+    },
+    "drainTau": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "10 pumps × 3",
+      "params": {
+        "resources": 10,
+        "ability": 3,
+        "drainTau": 4
+      }
+    },
+    {
+      "label": "Double the resources",
+      "params": {
+        "resources": 20,
+        "ability": 3,
+        "drainTau": 4
+      }
+    },
+    {
+      "label": "Half the ability",
+      "params": {
+        "resources": 10,
+        "ability": 1.5,
+        "drainTau": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "cascadeProtByPDY",
+  "title": "Cascade Protected by PDY",
+  "description": "A doing-work chain in which each crew's productivity depends on how much is in the stock it draws from. Starve a stage and it slows down instead of pulling its stock below zero.",
+  "model": {
+    "name": "Cascade Protected by PDY",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"invB","name":"Inventory B","init":"150","x":170,"y":155,"nonNegative":true},
+      {"id":"invC","name":"Inventory C","init":"60","x":410,"y":155,"nonNegative":true},
+      {"id":"invD","name":"Inventory D","init":"60","x":650,"y":155,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"pA","name":"Producing A","to":"invB","eq":"Workers_A * Normal_PDY","x":80,"y":155},
+      {"id":"pB","name":"Producing B","from":"invB","to":"invC","eq":"Workers_B * Productivity_B","x":290,"y":155},
+      {"id":"pC","name":"Producing C","from":"invC","to":"invD","eq":"Workers_C * Productivity_C","x":530,"y":155},
+      {"id":"pD","name":"Producing D","from":"invD","eq":"Workers_D * Productivity_D","x":743,"y":155}
+    ],
+    "vars": [
+      {"id":"workersA","name":"Workers A","eq":"10","units":"people","x":80,"y":340},
+      {"id":"workersB","name":"Workers B","eq":"14","units":"people","x":220,"y":340},
+      {"id":"workersC","name":"Workers C","eq":"12","units":"people","x":360,"y":340},
+      {"id":"workersD","name":"Workers D","eq":"16","units":"people","x":500,"y":340},
+      {"id":"required","name":"Work for full PDY","eq":"60","x":640,"y":340},
+      {"id":"normalPDY","name":"Normal PDY","eq":"2","x":780,"y":340},
+      {"id":"req","name":"Work for full PDY guarded","eq":"MAX(Work_for_full_PDY, 0.000001)","x":80,"y":420},
+      {"id":"pdyB","name":"Productivity B","eq":"Normal_PDY * MAX(0, MIN(1, Inventory_B / Work_for_full_PDY_guarded))","x":220,"y":420},
+      {"id":"pdyC","name":"Productivity C","eq":"Normal_PDY * MAX(0, MIN(1, Inventory_C / Work_for_full_PDY_guarded))","x":360,"y":420},
+      {"id":"pdyD","name":"Productivity D","eq":"Normal_PDY * MAX(0, MIN(1, Inventory_D / Work_for_full_PDY_guarded))","x":500,"y":420}
+    ]
+  },
+  "params": {
+    "workersA": {"min":0,"max":30,"step":1},
+    "workersB": {"min":0,"max":30,"step":1},
+    "workersC": {"min":0,"max":30,"step":1},
+    "workersD": {"min":0,"max":30,"step":1},
+    "required": {"min":10,"max":200,"step":5}
+  },
+  "presets": [
+    {"label":"Settling chain","params":{"workersA":10,"workersB":14,"workersC":12,"workersD":16,"required":60}},
+    {"label":"Feed stops","params":{"workersA":0,"workersB":14,"workersC":12,"workersD":16,"required":60}},
+    {"label":"Bottleneck at C","params":{"workersA":10,"workersB":14,"workersC":8,"workersD":16,"required":60}}
+  ]
+}

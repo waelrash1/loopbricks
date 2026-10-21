@@ -1,0 +1,233 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "cascadedCoflow",
+  "title": "Cascaded Coflow",
+  "description": "An attribute riding along a multi-stage chain, as units flow through and value is added at each stage, the average attribute builds up stage by stage.",
+  "model": {
+    "name": "Cascaded Coflow",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "wip1",
+        "name": "WIP stage 1",
+        "init": "32",
+        "x": 205,
+        "y": 145,
+        "nonNegative": true
+      },
+      {
+        "id": "wip2",
+        "name": "WIP stage 2",
+        "init": "0",
+        "x": 525,
+        "y": 145,
+        "nonNegative": true
+      },
+      {
+        "id": "attr1",
+        "name": "cost in 1",
+        "init": "32",
+        "x": 160,
+        "y": 285,
+        "nonNegative": true
+      },
+      {
+        "id": "attr2",
+        "name": "cost in 2",
+        "init": "0",
+        "x": 440,
+        "y": 285,
+        "nonNegative": true
+      },
+      {
+        "id": "avg1",
+        "name": "Avg cost stage 1",
+        "init": "1",
+        "x": 720,
+        "y": 285,
+        "nonNegative": true
+      },
+      {
+        "id": "avg2",
+        "name": "Avg cost stage 2",
+        "init": "1",
+        "x": 1000,
+        "y": 285,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "in",
+        "name": "Starts",
+        "to": "wip1",
+        "eq": "Input",
+        "x": 95,
+        "y": 145
+      },
+      {
+        "id": "f12",
+        "name": "Stage 1 to 2",
+        "from": "wip1",
+        "to": "wip2",
+        "eq": "WIP_stage_1 / Stage_time",
+        "x": 365,
+        "y": 145
+      },
+      {
+        "id": "f23",
+        "name": "Completion",
+        "from": "wip2",
+        "eq": "WIP_stage_2 / Stage_time",
+        "x": 685,
+        "y": 145
+      },
+      {
+        "id": "costIn",
+        "name": "Cost entering",
+        "to": "attr1",
+        "eq": "Input * Input_cost",
+        "x": 60,
+        "y": 285
+      },
+      {
+        "id": "accr1",
+        "name": "Accrual 1",
+        "to": "attr1",
+        "eq": "WIP_stage_1 * Value_added",
+        "x": 60,
+        "y": 325
+      },
+      {
+        "id": "cost12",
+        "name": "Cost moving 1 to 2",
+        "from": "attr1",
+        "to": "attr2",
+        "eq": "Stage_1_to_2 * Cost_per_unit_1",
+        "x": 300,
+        "y": 285
+      },
+      {
+        "id": "accr2",
+        "name": "Accrual 2",
+        "to": "attr2",
+        "eq": "WIP_stage_2 * Value_added",
+        "x": 340,
+        "y": 325
+      },
+      {
+        "id": "cost23",
+        "name": "Cost completing",
+        "from": "attr2",
+        "eq": "Completion * Cost_per_unit_2",
+        "x": 540,
+        "y": 285
+      },
+      {
+        "id": "updAvg1",
+        "name": "Updating avg 1",
+        "to": "avg1",
+        "eq": "(Cost_per_unit_1 - Avg_cost_stage_1) / 0.1",
+        "x": 620,
+        "y": 285
+      },
+      {
+        "id": "updAvg2",
+        "name": "Updating avg 2",
+        "to": "avg2",
+        "eq": "(Cost_per_unit_2 - Avg_cost_stage_2) / 0.1",
+        "x": 900,
+        "y": 285
+      }
+    ],
+    "vars": [
+      {
+        "id": "input",
+        "name": "Input",
+        "eq": "8",
+        "x": 100,
+        "y": 405
+      },
+      {
+        "id": "tau",
+        "name": "Stage time",
+        "eq": "4",
+        "x": 260,
+        "y": 405
+      },
+      {
+        "id": "inCost",
+        "name": "Input cost",
+        "eq": "1",
+        "x": 420,
+        "y": 405
+      },
+      {
+        "id": "valueAdd",
+        "name": "Value added",
+        "eq": "0.5",
+        "x": 580,
+        "y": 405
+      },
+      {
+        "id": "a1",
+        "name": "Cost per unit 1",
+        "eq": "cost_in_1 / MAX(WIP_stage_1, 1e-6)",
+        "x": 740,
+        "y": 405
+      },
+      {
+        "id": "a2",
+        "name": "Cost per unit 2",
+        "eq": "cost_in_2 / MAX(WIP_stage_2, 1e-6)",
+        "x": 100,
+        "y": 475
+      }
+    ]
+  },
+  "params": {
+    "input": {
+      "min": 0,
+      "max": 20,
+      "step": 0.5
+    },
+    "tau": {
+      "min": 1,
+      "max": 10,
+      "step": 0.5
+    },
+    "inCost": {
+      "min": 0.5,
+      "max": 3,
+      "step": 0.1
+    },
+    "valueAdd": {
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  },
+  "presets": [
+    {
+      "label": "Value added",
+      "params": {
+        "input": 8,
+        "tau": 4,
+        "inCost": 1,
+        "valueAdd": 0.5
+      }
+    },
+    {
+      "label": "No value added",
+      "params": {
+        "input": 8,
+        "tau": 4,
+        "inCost": 1,
+        "valueAdd": 0
+      }
+    }
+  ]
+}

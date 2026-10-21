@@ -1,0 +1,35 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "buildingInventory",
+  "title": "Building Inventory by Doing Work",
+  "description": "People working fill a stock: the inflow is workers × productivity. With both constant, inventory climbs in a straight line.",
+  "model": {
+    "name": "Building Inventory by Doing Work",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"inventory","name":"Inventory","init":"100","x":410,"y":150,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"producing","name":"Producing","to":"inventory","eq":"Workers * Productivity","x":193,"y":150},
+      {"id":"shipping","name":"Shipping","from":"inventory","eq":"MIN(Shipments, Inventory / 0.5)","x":630,"y":150}
+    ],
+    "vars": [
+      {"id":"workers","name":"Workers","eq":"10","units":"people","x":80,"y":340},
+      {"id":"productivity","name":"Productivity","eq":"2","units":"/p·month","x":220,"y":340},
+      {"id":"shipments","name":"Shipments","eq":"0","units":"/month","x":360,"y":340}
+    ]
+  },
+  "params": {
+    "workers": {"min":0,"max":30,"step":1},
+    "productivity": {"min":0.5,"max":10,"step":0.5},
+    "shipments": {"min":0,"max":60,"step":1}
+  },
+  "presets": [
+    {"label":"Pure build-up","params":{"workers":10,"productivity":2,"shipments":0}},
+    {"label":"Shipments = production","params":{"workers":10,"productivity":2,"shipments":20}},
+    {"label":"Shipments outrun production","params":{"workers":5,"productivity":2,"shipments":30}}
+  ]
+}

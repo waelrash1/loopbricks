@@ -1,0 +1,112 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "weightedAvg",
+  "title": "Weighted Average",
+  "description": "Blend two sources into one estimate by a weight, then let a stock track that blend. The basis of combining forecasts, signals, or opinions.",
+  "model": {
+    "name": "Weighted Average",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "estimate",
+        "name": "Estimate",
+        "init": "50",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "adjust",
+        "name": "Adjust to blend",
+        "to": "estimate",
+        "eq": "(Blend - Estimate) / Adjust_time",
+        "x": 185,
+        "y": 150
+      }
+    ],
+    "vars": [
+      {
+        "id": "srcA",
+        "name": "Source A",
+        "eq": "70",
+        "x": 100,
+        "y": 300
+      },
+      {
+        "id": "srcB",
+        "name": "Source B",
+        "eq": "30",
+        "x": 260,
+        "y": 300
+      },
+      {
+        "id": "weightA",
+        "name": "Weight on A",
+        "eq": "0.6",
+        "x": 420,
+        "y": 300
+      },
+      {
+        "id": "tau",
+        "name": "Adjust time",
+        "eq": "4",
+        "x": 580,
+        "y": 300
+      },
+      {
+        "id": "blend",
+        "name": "Blend",
+        "eq": "Weight_on_A * Source_A + (1 - Weight_on_A) * Source_B",
+        "x": 740,
+        "y": 300
+      }
+    ]
+  },
+  "params": {
+    "srcA": {
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    "srcB": {
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    "weightA": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "tau": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Favor A",
+      "params": {
+        "srcA": 70,
+        "srcB": 30,
+        "weightA": 0.8,
+        "tau": 4
+      }
+    },
+    {
+      "label": "Even blend",
+      "params": {
+        "srcA": 70,
+        "srcB": 30,
+        "weightA": 0.5,
+        "tau": 4
+      }
+    }
+  ]
+}

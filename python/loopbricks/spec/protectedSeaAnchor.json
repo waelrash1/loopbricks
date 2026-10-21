@@ -1,0 +1,144 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "protectedSeaAnchor",
+  "title": "Protected Sea Anchor & Adjustment",
+  "description": "Tie the drifting anchor partly to a credible fundamental and the runaway spiral is cured: the same structure, now stable. Protection is the fix for self-reference.",
+  "model": {
+    "name": "Protected Sea Anchor",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "anchor",
+        "name": "Anchor",
+        "init": "100",
+        "x": 395,
+        "y": 150,
+        "nonNegative": true
+      },
+      {
+        "id": "valueDisp",
+        "name": "Value",
+        "init": "100",
+        "x": 160,
+        "y": 300,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "changeAnchor",
+        "name": "Change anchor",
+        "to": "anchor",
+        "eq": "(Anchor_target - Anchor) / Anchor_lag",
+        "x": 185,
+        "y": 150
+      },
+      {
+        "id": "updValue",
+        "name": "Updating value display",
+        "to": "valueDisp",
+        "eq": "(Produced_value - Value) / 0.1",
+        "x": 60,
+        "y": 300
+      }
+    ],
+    "vars": [
+      {
+        "id": "pressure",
+        "name": "Adjustment pressure",
+        "eq": "1.2",
+        "x": 100,
+        "y": 420
+      },
+      {
+        "id": "fundamental",
+        "name": "Fundamental",
+        "eq": "100",
+        "x": 260,
+        "y": 420
+      },
+      {
+        "id": "protection",
+        "name": "Protection",
+        "eq": "0.5",
+        "x": 420,
+        "y": 420
+      },
+      {
+        "id": "timeToChange",
+        "name": "Anchor lag",
+        "eq": "6",
+        "x": 580,
+        "y": 420
+      },
+      {
+        "id": "value",
+        "name": "Produced value",
+        "eq": "Anchor * Adjustment_pressure",
+        "x": 740,
+        "y": 420
+      },
+      {
+        "id": "target",
+        "name": "Anchor target",
+        "eq": "(1 - Protection) * Produced_value + Protection * Fundamental",
+        "x": 100,
+        "y": 490
+      }
+    ]
+  },
+  "params": {
+    "pressure": {
+      "min": 0.5,
+      "max": 2,
+      "step": 0.05
+    },
+    "fundamental": {
+      "min": 50,
+      "max": 150,
+      "step": 5
+    },
+    "protection": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "timeToChange": {
+      "min": 1,
+      "max": 24,
+      "step": 1
+    }
+  },
+  "presets": [
+    {
+      "label": "Unprotected (drifts)",
+      "params": {
+        "pressure": 1.2,
+        "fundamental": 100,
+        "protection": 0,
+        "timeToChange": 6
+      }
+    },
+    {
+      "label": "Protected (stable)",
+      "params": {
+        "pressure": 1.2,
+        "fundamental": 100,
+        "protection": 0.5,
+        "timeToChange": 6
+      }
+    },
+    {
+      "label": "Strong anchor",
+      "params": {
+        "pressure": 1.4,
+        "fundamental": 100,
+        "protection": 0.9,
+        "timeToChange": 6
+      }
+    }
+  ]
+}

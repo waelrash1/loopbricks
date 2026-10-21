@@ -1,0 +1,39 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "estProductivity",
+  "title": "Estimated Productivity (Output ÷ Workforce)",
+  "description": "Managers cannot see productivity directly, so they infer it: work being accomplished divided by the workforce doing it. The estimate is only as good as the flow they can observe.",
+  "model": {
+    "name": "Estimated Productivity",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"workToDo","name":"Work to do","init":"1500","x":410,"y":85,"nonNegative":true},
+      {"id":"perceived","name":"Perceived PDY","init":"2","x":410,"y":205,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"accomplishing","name":"Work being accomplished","from":"workToDo","eq":"MIN(Workforce * Actual_productivity, Work_to_do / 0.5)","x":630,"y":85},
+      {"id":"up","name":"Revising up","to":"perceived","eq":"MAX(0, Perception_adjustment)","x":193,"y":205},
+      {"id":"down","name":"Revising down","from":"perceived","eq":"MAX(0, -Perception_adjustment)","x":630,"y":205}
+    ],
+    "vars": [
+      {"id":"workforce","name":"Workforce","eq":"10","units":"people","x":80,"y":340},
+      {"id":"actualPDY","name":"Actual productivity","eq":"5","units":"/p·month","x":220,"y":340},
+      {"id":"perceptionTime","name":"Perception time","eq":"3","units":"month","x":360,"y":340},
+      {"id":"estimatedPDY","name":"Estimated PDY","eq":"Work_being_accomplished / MAX(Workforce, 0.000001)","x":500,"y":340},
+      {"id":"adjust","name":"Perception adjustment","eq":"(Estimated_PDY - Perceived_PDY) / Perception_time","x":640,"y":340}
+    ]
+  },
+  "params": {
+    "workforce": {"min":1,"max":30,"step":1},
+    "actualPDY": {"min":1,"max":10,"step":0.5},
+    "perceptionTime": {"min":0.5,"max":8,"step":0.5}
+  },
+  "presets": [
+    {"label":"Baseline","params":{"workforce":10,"actualPDY":5,"perceptionTime":3}},
+    {"label":"Double the workforce","params":{"workforce":20,"actualPDY":5,"perceptionTime":3}},
+    {"label":"Slow to perceive","params":{"workforce":10,"actualPDY":8,"perceptionTime":8}}
+  ]
+}

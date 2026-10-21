@@ -1,0 +1,145 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "coflowExperience",
+  "title": "Coflow with Experience (Hines Form)",
+  "description": "A workforce in which new people arrive with less experience and everyone gains a year of experience per year. Hiring dilutes the average; time rebuilds it.",
+  "model": {
+    "name": "Coflow with Experience",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "wf",
+        "name": "Workforce",
+        "init": "80",
+        "x": 410,
+        "y": 85,
+        "nonNegative": true
+      },
+      {
+        "id": "avg",
+        "name": "Average experience",
+        "init": "8",
+        "x": 410,
+        "y": 205,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "hiring",
+        "name": "New hires",
+        "to": "wf",
+        "eq": "Hiring",
+        "x": 193,
+        "y": 85
+      },
+      {
+        "id": "attrition",
+        "name": "Attrition",
+        "from": "wf",
+        "eq": "Workforce / Time_to_quit_or_retire",
+        "x": 630,
+        "y": 85
+      },
+      {
+        "id": "gain",
+        "name": "Experience gain",
+        "to": "avg",
+        "eq": "1",
+        "x": 193,
+        "y": 205
+      },
+      {
+        "id": "dilute",
+        "name": "Dilution by new hires",
+        "from": "avg",
+        "eq": "-Change_in_average_experience",
+        "x": 630,
+        "y": 205
+      }
+    ],
+    "vars": [
+      {
+        "id": "hire",
+        "name": "Hiring",
+        "eq": "20",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "ttq",
+        "name": "Time to quit or retire",
+        "eq": "8",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "newExp",
+        "name": "Avg experience of new hire",
+        "eq": "0",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "dilFrac",
+        "name": "Dilution fraction",
+        "eq": "MIN(5, Hiring / MAX(Workforce, 1e-6))",
+        "x": 80,
+        "y": 335
+      },
+      {
+        "id": "change",
+        "name": "Change in average experience",
+        "eq": "(Avg_experience_of_new_hire - Average_experience) * Dilution_fraction",
+        "x": 230,
+        "y": 335
+      }
+    ]
+  },
+  "params": {
+    "hire": {
+      "min": 0,
+      "max": 30,
+      "step": 0.5
+    },
+    "ttq": {
+      "min": 2,
+      "max": 20,
+      "step": 0.5
+    },
+    "newExp": {
+      "min": 0,
+      "max": 10,
+      "step": 0.5
+    }
+  },
+  "presets": [
+    {
+      "label": "Steady team",
+      "params": {
+        "hire": 10,
+        "ttq": 8,
+        "newExp": 0
+      }
+    },
+    {
+      "label": "Hiring surge (dilution)",
+      "params": {
+        "hire": 20,
+        "ttq": 8,
+        "newExp": 0
+      }
+    },
+    {
+      "label": "Hire veterans",
+      "params": {
+        "hire": 20,
+        "ttq": 8,
+        "newExp": 5
+      }
+    }
+  ]
+}

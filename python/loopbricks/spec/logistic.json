@@ -1,0 +1,34 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "logistic",
+  "title": "Constrained Growth (Limits to Growth)",
+  "description": "A reinforcing loop meets a balancing one: growth that is exponential at first, then bends over and saturates at a carrying capacity, the S-curve.",
+  "model": {
+    "name": "Constrained Growth",
+    "timeUnit": "year",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      { "id": "pop", "name": "Population", "init": "10", "x": 395, "y": 150, "nonNegative": true }
+    ],
+    "flows": [
+      { "id": "births", "name": "Growth", "to": "pop", "eq": "Population * Fractional_growth_rate", "x": 185, "y": 150 },
+      { "id": "crowding", "name": "Crowding deaths", "from": "pop", "eq": "Population * Fractional_growth_rate * (Population / Carrying_capacity)", "x": 623, "y": 150 }
+    ],
+    "vars": [
+      { "id": "r", "name": "Growth rate", "eq": "18", "x": 80, "y": 260 },
+      { "id": "K", "name": "Carrying capacity", "eq": "200", "x": 250, "y": 320 },
+      { "id": "frac", "name": "Fractional growth rate", "eq": "Growth_rate / 100", "x": 420, "y": 260 }
+    ]
+  },
+  "params": {
+    "r": { "min": 1, "max": 40, "step": 1 },
+    "K": { "min": 50, "max": 400, "step": 10 }
+  },
+  "presets": [
+    { "label": "S-curve", "params": {"r": 18, "K": 200} },
+    { "label": "Fast to cap", "params": {"r": 35, "K": 200} },
+    { "label": "Higher capacity", "params": {"r": 18, "K": 350} }
+  ]
+}

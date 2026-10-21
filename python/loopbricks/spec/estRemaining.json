@@ -1,0 +1,35 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "estRemaining",
+  "title": "Estimated Remaining Duration (work to do ÷ anticipated rate)",
+  "description": "The time left on a job is the work still to do divided by the rate at which we anticipate doing it. The estimate is only as good as the anticipated rate.",
+  "model": {
+    "name": "Estimated Remaining Duration",
+    "timeUnit": "week",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {"id":"workToDo","name":"Work to do","init":"6000","x":395,"y":150,"units":"sq ft","nonNegative":true},
+      {"id":"durationDisp","name":"Duration till complete","init":"24","x":560,"y":330,"nonNegative":true}
+    ],
+    "flows": [
+      {"id":"accomplishing","name":"Accomplishing work","from":"workToDo","eq":"IF(Work_to_do > 0, Actual_rate_of_accomplishing_work, 0)","x":623,"y":150},
+      {"id":"track_durationDisp","name":"Tracking duration","to":"durationDisp","eq":"(Estimated_remaining_duration - Duration_till_complete) / 0.1","x":450,"y":330}
+    ],
+    "vars": [
+      {"id":"anticipatedRate","name":"Anticipated rate of accomplishing work","eq":"250","units":"sq ft/week","x":80,"y":420},
+      {"id":"actualRate","name":"Actual rate of accomplishing work","eq":"200","units":"sq ft/week","x":220,"y":420},
+      {"id":"duration","name":"Estimated remaining duration","eq":"Work_to_do / MAX(1, Anticipated_rate_of_accomplishing_work)","x":360,"y":420}
+    ]
+  },
+  "params": {
+    "anticipatedRate": {"min":50,"max":400,"step":10},
+    "actualRate": {"min":0,"max":400,"step":10}
+  },
+  "presets": [
+    {"label":"Slower than anticipated","params":{"anticipatedRate":250,"actualRate":200}},
+    {"label":"As anticipated","params":{"anticipatedRate":200,"actualRate":200}},
+    {"label":"Faster than anticipated","params":{"anticipatedRate":150,"actualRate":200}}
+  ]
+}

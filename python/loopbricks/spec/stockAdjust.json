@@ -1,0 +1,143 @@
+{
+  "format": "loopbricks-model",
+  "version": 1,
+  "key": "stockAdjust",
+  "title": "First-Order Stock Adjustment (Replace + Correct)",
+  "description": "Keep a stock at its desired level with a two-part stocking decision: replace whatever flows out, and add a little extra to close the gap.",
+  "model": {
+    "name": "First-Order Stock Adjustment",
+    "timeUnit": "month",
+    "T": 60,
+    "dt": 0.1,
+    "stocks": [
+      {
+        "id": "level",
+        "name": "Level",
+        "init": "40",
+        "x": 410,
+        "y": 155,
+        "nonNegative": true
+      }
+    ],
+    "flows": [
+      {
+        "id": "stocking",
+        "name": "Stocking",
+        "to": "level",
+        "eq": "MAX(0, Stocking_to_adjust_level + Stocking_for_replacement)",
+        "x": 195,
+        "y": 155
+      },
+      {
+        "id": "outflow",
+        "name": "Using up",
+        "from": "level",
+        "eq": "MIN(outFlow, Level / DT)",
+        "x": 628,
+        "y": 155
+      }
+    ],
+    "vars": [
+      {
+        "id": "out",
+        "name": "outFlow",
+        "eq": "10",
+        "x": 80,
+        "y": -40
+      },
+      {
+        "id": "desired",
+        "name": "Desired level",
+        "eq": "100",
+        "x": 230,
+        "y": -40
+      },
+      {
+        "id": "adj",
+        "name": "Adjustment time",
+        "eq": "4",
+        "x": 380,
+        "y": -40
+      },
+      {
+        "id": "repl",
+        "name": "Replacement fraction",
+        "eq": "1",
+        "x": 530,
+        "y": -40
+      },
+      {
+        "id": "gap",
+        "name": "Gap",
+        "eq": "Desired_level - Level",
+        "x": 80,
+        "y": 285
+      },
+      {
+        "id": "toAdjust",
+        "name": "Stocking to adjust level",
+        "eq": "Gap / Adjustment_time",
+        "x": 230,
+        "y": 285
+      },
+      {
+        "id": "forRepl",
+        "name": "Stocking for replacement",
+        "eq": "Replacement_fraction * outFlow",
+        "x": 380,
+        "y": 285
+      }
+    ]
+  },
+  "params": {
+    "out": {
+      "min": 0,
+      "max": 30,
+      "step": 0.5
+    },
+    "desired": {
+      "min": 20,
+      "max": 200,
+      "step": 5
+    },
+    "adj": {
+      "min": 1,
+      "max": 12,
+      "step": 0.5
+    },
+    "repl": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    }
+  },
+  "presets": [
+    {
+      "label": "Replace + correct",
+      "params": {
+        "out": 10,
+        "desired": 100,
+        "adj": 4,
+        "repl": 1
+      }
+    },
+    {
+      "label": "No replacement ordering",
+      "params": {
+        "out": 10,
+        "desired": 100,
+        "adj": 4,
+        "repl": 0
+      }
+    },
+    {
+      "label": "Slow adjustment",
+      "params": {
+        "out": 10,
+        "desired": 100,
+        "adj": 10,
+        "repl": 1
+      }
+    }
+  ]
+}
