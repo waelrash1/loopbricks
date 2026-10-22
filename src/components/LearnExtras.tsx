@@ -112,11 +112,6 @@ export function DrawIndex({ onDraw, onIndex }: { onDraw: (id: string) => void; o
 
 export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => void; onAll: () => void }) {
   const ex = DRAW_EXERCISES.find((x) => x.id === id);
-  const [links, setLinks] = useState<UL[]>([]);
-  const [from, setFrom] = useState<string | null>(null);
-  const [checked, setChecked] = useState(false);
-  const [reveal, setReveal] = useState(false);
-  const [form, setForm] = useState<UL>({ from: "", to: "", sign: "+" });
   if (!ex)
     return (
       <div className={`${wrap} pt-10`}>
@@ -128,21 +123,46 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
         </p>
       </div>
     );
-  const [W, H] = cldSize(ex.cld);
-  const boxes = Object.fromEntries(ex.cld.vars.map((v) => [v.id, nodeBox(v)]));
-  const answer = new Map(ex.cld.links.map((l) => [key(l), l.sign]));
-  const label = (vid: string) => ex.cld.vars.find((v) => v.id === vid)?.label ?? vid;
+  return (
+    <div className={`${wrap} pt-6 md:pt-8`}>
+      <p className="text-sm text-muted-foreground mb-6">
+        <button onClick={onIndex} className="hover:text-foreground">
+          Learn
+        </button>
+        <span aria-hidden className="mx-2">/</span>
+        <button onClick={onAll} className="hover:text-foreground">
+          Draw the loops
+        </button>
+      </p>
+      <h1 className="display text-[30px] md:text-[40px]">{ex.title}</h1>
+      <p className="mt-3 text-[16px] leading-[1.65] max-w-[70ch]" dangerouslySetInnerHTML={{ __html: ex.story }} />
+      <DrawBoard cld={ex.cld} title={ex.title} solvedKey={`done:draw/${ex.id}`} />
+    </div>
+  );
+}
+
+// The drawing surface on its own: used by the loop-drawing pages and by the modelling studio cases.
+export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title: string; solvedKey?: string; stacked?: boolean }) {
+  const [links, setLinks] = useState<UL[]>([]);
+  const [from, setFrom] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+  const [reveal, setReveal] = useState(false);
+  const [form, setForm] = useState<UL>({ from: "", to: "", sign: "+" });
+  const [W, H] = cldSize(cld);
+  const boxes = Object.fromEntries(cld.vars.map((v) => [v.id, nodeBox(v)]));
+  const answer = new Map(cld.links.map((l) => [key(l), l.sign]));
+  const label = (vid: string) => cld.vars.find((v) => v.id === vid)?.label ?? vid;
   const add = (l: UL) => {
     if (l.from === l.to || links.some((x) => key(x) === key(l))) return;
     setLinks((ls) => [...ls, l]);
     setChecked(false);
   };
   const status = (l: UL) => (!answer.has(key(l)) ? "extra" : answer.get(key(l)) === l.sign ? "right" : "sign");
-  const missing = ex.cld.links.filter((l) => !links.some((u) => key(u) === key(l)));
+  const missing = cld.links.filter((l) => !links.some((u) => key(u) === key(l)));
   const right = links.filter((l) => status(l) === "right").length;
-  const mine = loopsIn({ ...ex.cld, links: links.map((l) => ({ ...l })) });
-  const theirs = loopsIn(ex.cld);
-  const allRight = right === ex.cld.links.length && links.length === right;
+  const mine = loopsIn({ ...cld, links: links.map((l) => ({ ...l })) });
+  const theirs = loopsIn(cld);
+  const allRight = right === cld.links.length && links.length === right;
   const solved = checked && allRight;
   const count = (xs: ("B" | "R")[]) => `${xs.filter((x) => x === "R").length} reinforcing, ${xs.filter((x) => x === "B").length} balancing`;
 
@@ -162,23 +182,12 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
   const col = (l: UL) => (!checked ? "hsl(var(--foreground))" : { right: "#0f8a5f", sign: "#c77700", extra: "#c2255c" }[status(l)]);
 
   return (
-    <div className={`${wrap} pt-6 md:pt-8`}>
-      <p className="text-sm text-muted-foreground mb-6">
-        <button onClick={onIndex} className="hover:text-foreground">
-          Learn
-        </button>
-        <span aria-hidden className="mx-2">/</span>
-        <button onClick={onAll} className="hover:text-foreground">
-          Draw the loops
-        </button>
-      </p>
-      <h1 className="display text-[30px] md:text-[40px]">{ex.title}</h1>
-      <p className="mt-3 text-[16px] leading-[1.65] max-w-[70ch]" dangerouslySetInnerHTML={{ __html: ex.story }} />
+    <>
       <p className="mt-3 text-[14.5px] text-muted-foreground max-w-[70ch]">
-        Click a variable, then the variable it affects. Click a sign to switch between + and −. The model answer has {ex.cld.links.length} links.
+        Click a variable, then the variable it affects. Click a sign to switch between + and −. The model answer has {cld.links.length} links.
       </p>
 
-      <div className="mt-5 grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-6">
+      <div className={cn("mt-5 grid gap-6", !stacked && "lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]")}>
         <div className="sheet">
           <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none" role="img" aria-label="Your causal loop diagram">
             <defs>
@@ -209,7 +218,7 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
                 </g>
               );
             })}
-            {ex.cld.vars.map((v) => {
+            {cld.vars.map((v) => {
               const b = boxes[v.id];
               return (
                 <g key={v.id} className="cursor-pointer" onClick={() => (from === null ? setFrom(v.id) : (add({ from, to: v.id, sign: "+" }), setFrom(null)))}>
@@ -235,7 +244,7 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
                 <span className="font-semibold">{f === "from" ? "From" : "To"}</span>
                 <select value={form[f]} onChange={(e) => setForm({ ...form, [f]: e.target.value })} className="rounded-[6px] border border-border bg-background px-2 py-1.5">
                   <option value="">Choose</option>
-                  {ex.cld.vars.map((v) => (
+                  {cld.vars.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.label}
                     </option>
@@ -256,7 +265,7 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
 
         <div className="grid gap-3 content-start">
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => (setChecked(true), allRight && markSeen(`done:draw/${ex.id}`))} disabled={!links.length} className="brick brick-y h-10 px-4 text-[14px] font-semibold disabled:opacity-50">
+            <button onClick={() => (setChecked(true), allRight && solvedKey && markSeen(solvedKey))} disabled={!links.length} className="brick brick-y h-10 px-4 text-[14px] font-semibold disabled:opacity-50">
               Check my diagram
             </button>
             <button onClick={() => (setLinks([]), setChecked(false), setReveal(false))} className="brick brick-w h-10 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5">
@@ -284,7 +293,7 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
               ) : (
                 <>
                   <b>
-                    {right} of {ex.cld.links.length} links right.
+                    {right} of {cld.links.length} links right.
                   </b>{" "}
                   {missing.length > 0 && `${missing.length} missing. `}
                   {links.filter((l) => status(l) === "sign").length > 0 && `${links.filter((l) => status(l) === "sign").length} with the wrong sign. `}
@@ -301,11 +310,11 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
           </button>
           {reveal && (
             <div className="sheet">
-              <CausalLoopDiagram model={{ name: ex.title, cld: ex.cld } as unknown as Model} />
+              <CausalLoopDiagram model={{ name: title, cld: cld } as unknown as Model} />
             </div>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

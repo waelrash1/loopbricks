@@ -5,6 +5,7 @@ import { DIAGNOSTIC, DIAGNOSTIC_SOURCES } from "@/data/learn/diagnostic";
 import { ASSESSMENT, SYLLABUS } from "@/data/learn/syllabus";
 import { PROJECTS } from "@/data/learn/projects";
 import { MODULES, moduleById } from "@/data/learn/modules";
+import { READINGS, refFor } from "@/data/learn/readings";
 import { doneKey } from "@/components/Learn";
 import { markSeen, useSeen } from "@/lib/progress";
 import { cn } from "@/lib/utils";
@@ -230,7 +231,7 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
       <Crumb go={go} here="For instructors" />
       <h1 className="display text-[32px] md:text-[44px]">For instructors</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
-        A suggested 12-week course built on the modules, labs, games and projects here, with an assessment scheme, links to assign modules, and a way for students to hand in their
+        A suggested 12-week course built on the modules, labs, games, studio cases and projects here, with weekly readings, an assessment scheme, links to assign modules, and a way for students to hand in their
         progress. Everything runs in the browser; nothing is sent to a server.
       </p>
 
@@ -241,7 +242,8 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
             <tr className="text-left text-muted-foreground">
               <th className="py-1.5 pr-3 font-semibold w-[60px]">Week</th>
               <th className="pr-3 font-semibold">Modules</th>
-              <th className="font-semibold">In class</th>
+              <th className="pr-3 font-semibold">In class</th>
+              <th className="font-semibold w-[26%]">Read before class</th>
             </tr>
           </thead>
           <tbody>
@@ -255,12 +257,23 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
                     </button>
                   ))}
                 </td>
-                <td className="py-2 leading-[1.55]">{w.activity}</td>
+                <td className="py-2 pr-3 leading-[1.55]">{w.activity}</td>
+                <td className="py-2 leading-[1.5] text-[13.5px]">
+                  {[...new Set(w.modules.flatMap((id) => (READINGS[id]?.core ?? []).map((x) => `${refFor(x.ref)?.short ?? x.ref}${x.where ? `, ${x.where}` : ""}`)))].join("; ")}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <p className="mt-3 text-[14px] text-muted-foreground max-w-[80ch]">
+        Each module page also lists further reading and seminar questions. The full{" "}
+        <button onClick={() => go("/learn/references")} className="tlink font-semibold text-foreground">
+          reading list
+        </button>{" "}
+        has every source with its DOI.
+      </p>
 
       <h2 className="heading text-[22px] mt-10">Assessment</h2>
       <ul className="mt-3 grid gap-2 max-w-[80ch]">

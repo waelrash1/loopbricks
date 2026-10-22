@@ -13,6 +13,7 @@ import SfDiagram from "@/components/SfDiagram";
 import { cn } from "@/lib/utils";
 import { NotebookLinks } from "@/components/PythonPanel";
 import { notebookForModule } from "@/lib/notebook";
+import { ModuleReadings } from "@/components/Readings";
 
 const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
 const sub = "heading text-[22px] md:text-[24px]";
@@ -138,11 +139,13 @@ const LEVELS: { level: Level; blurb: string }[] = [
 export const PRACTICE: [string, string, string][] = [
   ["Decision games", "Run a supply chain, a fishery or a firefighting team, week by week, and see what your decisions do.", "/learn/games"],
   ["Draw the loops", "Connect variables with signed links and check your diagram against a model answer.", "/learn/draw"],
+  ["Modelling studio", "Turn a messy brief into a problem statement, a boundary, a causal loop diagram and a stock and flow map, with a model answer at each step.", "/learn/studio"],
   ["Build a model", "Lay out stocks and flows, write the equations, and run your own model.", "/learn/build"],
   ["Capstone projects", "Take one problem from client brief to policy advice, stage by stage.", "/learn/projects"],
   ["Mixed review", "Questions drawn across the modules you have finished.", "/learn/review"],
   ["Before and after", "A short test of common misconceptions: take it now, and again at the end.", "/learn/check"],
   ["Glossary", "Every term, defined plainly, with a link to where it is taught.", "/learn/glossary"],
+  ["Reading list", "Every source in the course, with DOIs, and where each one is used.", "/learn/references"],
   ["For instructors", "A 12-week syllabus, assessment, assignment links and progress export.", "/learn/teach"],
 ];
 export const doneKey = (id: string) => `done:learn/${id}`;
@@ -288,7 +291,11 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
       </section>
       <p className="mt-12 text-[13px] text-muted-foreground max-w-[80ch]">
         Main sources: Sterman JD (2000), Business Dynamics: Systems Thinking and Modeling for a Complex World, Irwin/McGraw-Hill, cited by page throughout; Senge PM (1990), The Fifth
-        Discipline, Doubleday, for the archetypes; and the studies cited in each application case. Text and diagrams are our own.
+        Discipline, Doubleday, for the archetypes; and the journal articles listed under each module and case. Text and diagrams are our own. The{" "}
+        <button onClick={() => onOpen("/learn/references")} className="tlink font-semibold text-foreground">
+          reading list
+        </button>{" "}
+        gathers every source in one place.
       </p>
     </div>
   );
@@ -577,7 +584,7 @@ function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => v
   const t = tabs.find((x) => x[0] === tab) ? tab : tabs[0][0];
   return (
     <div className={cn("rounded-card bg-card border border-border flex flex-col", sticky && "h-full")}>
-      <div role="tablist" aria-label="Show" className="flex gap-1 p-2 border-b border-border">
+      <div role="tablist" aria-label="Show" className="flex flex-wrap gap-1 p-2 border-b border-border">
         {tabs.map(([k, label]) => (
           <button
             key={k}
@@ -905,6 +912,8 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             </div>
           </section>
         )}
+
+        <ModuleReadings id={id} go={onOpen} />
 
         {m.pitfalls.length > 0 && (
           <section className="mt-14">

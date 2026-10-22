@@ -14,6 +14,9 @@ const AssignedPage = lazy(() => Pages().then((m) => ({ default: m.AssignedPage }
 const ProgressPage = lazy(() => Pages().then((m) => ({ default: m.ProgressPage })));
 const ProjectsIndex = lazy(() => Pages().then((m) => ({ default: m.ProjectsIndex })));
 const ProjectPage = lazy(() => Pages().then((m) => ({ default: m.ProjectPage })));
+const StudioIndex = lazy(() => import("@/components/Studio").then((m) => ({ default: m.StudioIndex })));
+const StudioPage = lazy(() => import("@/components/Studio").then((m) => ({ default: m.StudioPage })));
+const ReferencesPage = lazy(() => import("@/components/ReadingList").then((m) => ({ default: m.ReferencesPage })));
 const ModelBuilder = lazy(() => import("@/components/Builder").then((m) => ({ default: m.ModelBuilder })));
 const GamesIndex = lazy(() => import("@/components/Games").then((m) => ({ default: m.GamesIndex })));
 const GamePage = lazy(() => import("@/components/Games").then((m) => ({ default: m.GamePage })));
@@ -31,6 +34,8 @@ export default function LearnRoutes({ page, id, go }: { page?: string; id?: stri
   if (page === "teach") return <TeachPage go={go} />;
   if (page === "progress") return <ProgressPage go={go} />;
   if (page === "assigned") return <AssignedPage ids={(id ?? "").split("+").filter(Boolean)} go={go} />;
+  if (page === "studio") return id ? <StudioPage key={id} id={id} go={go} /> : <StudioIndex go={go} />;
+  if (page === "references") return <ReferencesPage go={go} />;
   if (page === "projects") return id ? <ProjectPage key={id} id={id} go={go} /> : <ProjectsIndex go={go} />;
   return <ModulePage key={page} id={page} onModule={module} onIndex={index} onOpen={go} />;
 }

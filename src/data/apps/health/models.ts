@@ -207,6 +207,181 @@ const chronic: Model = {
   desc: "",
 };
 
+
+// After Rashwan, Abo-Hamad and Arisha (2015): older patients in Irish acute hospitals. Our own small model of
+// the structure they describe; the numbers are of the order the paper and its 2013 forerunner report, not their model.
+const bedBlocking: Model = {
+  name: "Bed blocking in elderly care",
+  title: "Older patients, acute beds and post-acute care",
+  timeUnit: "wk",
+  unitY: "patients",
+  lede: "Older patients who have finished acute treatment wait in hospital for a nursing-home or rehabilitation bed, so the acute beds they hold stop new admissions.",
+  stocks: [
+    { id: "ed", label: "Waiting in ED for a bed", init: 400, scale: 4000, color: C.pink, floor: true },
+    { id: "acute", label: "In acute treatment", init: 5800, scale: 8000, color: C.acc, floor: true, chartHidden: true },
+    { id: "blocked", label: "Waiting for post-acute care", init: 600, scale: 3000, color: C.acc2, floor: true },
+    { id: "post", label: "In nursing homes and rehabilitation", init: 25800, scale: 40000, color: C.good, floor: true, chartHidden: true },
+    { id: "demand", label: "Older emergency arrivals per week", init: 4060, scale: 8000, color: C.acc, floor: true, chartHidden: true },
+    { id: "blockedShare", label: "Acute beds blocked (%)", init: 0, scale: 40, color: C.acc2, chartHidden: true, derived: (s, p) => (100 * s.blocked) / p.acuteBeds },
+    { id: "occupancy", label: "Acute bed occupancy (%)", init: 0, scale: 140, color: C.pink, chartHidden: true, derived: (s, p) => (100 * (s.acute + s.blocked)) / p.acuteBeds },
+  ],
+  params: [
+    { id: "growth", label: "Demand growth", min: 0, max: 8, step: 0.5, value: 4, unit: "%/yr" },
+    { id: "acuteBeds", label: "Acute beds", min: 6000, max: 10000, step: 100, value: 7500, unit: "" },
+    { id: "postBeds", label: "Post-acute beds", min: 18000, max: 34000, step: 200, value: 25800, unit: "" },
+    { id: "postUp", label: "More post-acute beds", min: 0, max: 40, step: 5, value: 0, unit: "%" },
+    { id: "avoid", label: "Admissions avoided", min: 0, max: 30, step: 5, value: 0, unit: "%" },
+    { id: "outUp", label: "Faster LTC discharge", min: 0, max: 30, step: 5, value: 0, unit: "%" },
+  ],
+  rates: (s, p) => {
+    const treated = s.acute / 1.43; // about ten days of acute treatment
+    const home = treated * (1 - 0.186); // home, other hospitals and deaths: 81% of older patients (2013 paper, table 1)
+    const needPost = treated * 0.186; // rehabilitation, convalescence and long-term care: 19%
+    const leavePost = (s.post / 34.7) * (1 + p.outUp / 100); // about eight months in post-acute care
+    const freePost = Math.max(0, p.postBeds * (1 + p.postUp / 100) - s.post);
+    const place = Math.min(s.blocked / 0.3, freePost / 0.3 + leavePost); // a bed is offered as one frees up
+    const freeAcute = Math.max(0, p.acuteBeds - s.acute - s.blocked);
+    return {
+      arrive: s.demand * (1 - p.avoid / 100),
+      admit: Math.min(s.ed / 0.1, freeAcute / 0.1 + home + place), // admitted as beds free up
+      divert: s.ed / 1, // ponytail: after about a week patients are treated elsewhere or go home; keeps the queue finite
+      home,
+      needPost,
+      place,
+      leavePost,
+      ageing: (s.demand * p.growth) / 100 / 52,
+    };
+  },
+  derivs: (_s, _p, r) => ({
+    ed: r.arrive - r.admit - r.divert,
+    acute: r.admit - r.home - r.needPost,
+    blocked: r.needPost - r.place,
+    post: r.place - r.leavePost,
+    demand: r.ageing,
+  }),
+  diagram: {
+    stocks: {
+      ed: { x: 90, y: 70, w: 100, h: 90 },
+      acute: { x: 290, y: 70, w: 100, h: 90 },
+      blocked: { x: 490, y: 70, w: 100, h: 90 },
+      post: { x: 690, y: 70, w: 100, h: 90 },
+    },
+    flows: [
+      { id: "arrive", pts: [[10, 115], [90, 115]], to: "ed", max: 6000 },
+      { id: "divert", pts: [[140, 160], [140, 230]], from: "ed", max: 2000 },
+      { id: "admit", pts: [[190, 115], [290, 115]], from: "ed", to: "acute", max: 6000 },
+      { id: "home", pts: [[340, 160], [340, 230]], from: "acute", max: 6000, color: C.good },
+      { id: "needPost", pts: [[390, 115], [490, 115]], from: "acute", to: "blocked", max: 1500 },
+      { id: "place", pts: [[590, 115], [690, 115]], from: "blocked", to: "post", max: 1500 },
+      { id: "leavePost", pts: [[790, 115], [870, 115]], from: "post", max: 1500, color: C.good },
+    ],
+  },
+  cld: {
+    vars: [
+      { id: "ag", label: "ED waiting", x: 90, y: 50 },
+      { id: "oc", label: "Acute occupancy", x: 470, y: 50 },
+      { id: "bl", label: "Blocked beds", x: 470, y: 220 },
+      { id: "pa", label: "Placements", x: 300, y: 220 },
+      { id: "po", label: "Post-acute beds", x: 75, y: 220 },
+    ],
+    links: [
+      { from: "oc", to: "ag", sign: "+", curve: 0 },
+      { from: "bl", to: "oc", sign: "+", curve: 0 },
+      { from: "pa", to: "bl", sign: "−", curve: -50 },
+      { from: "bl", to: "pa", sign: "+", curve: -50 },
+      { from: "pa", to: "po", sign: "+", curve: -50 },
+      { from: "po", to: "pa", sign: "−", curve: -50 },
+    ],
+    loops: [
+      { type: "B", label: "B1", x: 385, y: 220 },
+      { type: "B", label: "B2", x: 188, y: 220 },
+    ],
+    size: [560, 280],
+    caption:
+      '<span class="chip chipB">B</span> Placements release blocked beds (B1), but only while post-acute beds are free (B2). Blocked beds raise acute occupancy, and full wards keep patients waiting in the ED. Extra post-acute beds loosen B2 for a while; as older demand keeps growing they fill, and blocked beds and acute occupancy climb again. Avoiding admissions and speeding discharge from long-term care change the flows themselves, so they keep working as long as they keep pace with demand.',
+  },
+  desc: "",
+};
+
+// After Rashwan and Arisha (2015): nurses in an acute medical unit respond to pressure by working harder and
+// cutting time per activity; working harder drains energy. Our own small model of that structure.
+const nurseBurnout: Model = {
+  name: "Nurse burnout in a medical unit",
+  title: "Workload pressure, work intensity and nurse energy",
+  timeUnit: "day",
+  unitY: "patients",
+  lede: "When patients build up, nurses work harder and cut time per task. Both clear the unit faster; working harder also drains their energy, and tired nurses are slower and more often absent.",
+  stocks: [
+    { id: "pts", label: "Patients in the unit", init: 12, scale: 40, color: C.acc, floor: true },
+    { id: "energy", label: "Nurse energy (1 = rested)", init: 1, scale: 1.2, color: C.good, floor: true, chartHidden: true },
+    { id: "energyPct", label: "Nurse energy (%)", init: 100, scale: 120, color: C.good, derived: (s) => 100 * s.energy },
+    { id: "pet", label: "Patient experience time (hours)", init: 6, scale: 20, color: C.acc2, derived: (s, _p, r) => (24 * s.pts) / Math.max(r.discharge, 1e-6) },
+  ],
+  params: [
+    { id: "arrivals", label: "Admissions", min: 30, max: 70, step: 1, value: 48, unit: "/day" },
+    { id: "smr", label: "Skill mix (senior share)", min: 0, max: 1, step: 0.05, value: 0.75, unit: "" },
+    { id: "wiMax", label: "Most extra effort", min: 0, max: 30, step: 5, value: 20, unit: "%" },
+    { id: "tpaMax", label: "Most time cut per task", min: 0, max: 16, step: 2, value: 8, unit: "%" },
+    { id: "burnout", label: "Burnout on (1) or off (0)", min: 0, max: 1, step: 1, value: 1, unit: "" },
+  ],
+  rates: (s, p) => {
+    const pressure = s.pts / (p.arrivals * 0.25); // the unit aims to see each patient within six hours
+    const over = Math.max(0, pressure - 1);
+    const wi = Math.min(p.wiMax / 100, over * 0.5); // working harder: up to the most nurses will give
+    const cut = Math.min(p.tpaMax / 100, over * 0.3); // cutting time per activity, up to its limit
+    const tired = p.burnout ? 0.55 + 0.45 * s.energy : 1; // tired nurses are slower
+    const present = p.burnout ? 1 - 0.15 * (1 - s.energy) : 1; // and more often absent
+    const skill = 0.6 + 0.4 * p.smr; // a junior nurse does about 60% of a senior's work
+    const capacity = (8 * 6.5 * skill * present * tired * (1 + wi)) / (1 - cut); // 8 nurses on duty
+    return {
+      admit: p.arrivals * Math.min(1, 2 / pressure), // past twice the target, patients go to other wards
+      discharge: Math.min(capacity, s.pts / 0.1),
+      drain: s.energy * wi * 0.5 + s.energy * over * 0.05, // effort and stress drain energy
+      recover: (1 - s.energy) / 3, // breaks and days off restore it over a few days
+    };
+  },
+  derivs: (_s, _p, r) => ({ pts: r.admit - r.discharge, energy: r.recover - r.drain }),
+  diagram: {
+    stocks: {
+      pts: { x: 200, y: 60, w: 110, h: 100 },
+      energy: { x: 520, y: 60, w: 110, h: 100 },
+    },
+    flows: [
+      { id: "admit", pts: [[60, 110], [200, 110]], to: "pts", max: 80 },
+      { id: "discharge", pts: [[310, 110], [440, 110]], from: "pts", max: 80, color: C.good },
+      { id: "recover", pts: [[420, 230], [575, 230], [575, 160]], to: "energy", max: 0.5, color: C.good },
+      { id: "drain", pts: [[630, 110], [760, 110]], from: "energy", max: 0.5 },
+    ],
+  },
+  cld: {
+    vars: [
+      { id: "wl", label: "Workload pressure", x: 100, y: 50 },
+      { id: "wi", label: "Work intensity", x: 400, y: 50 },
+      { id: "cap", label: "Nurse capacity", x: 400, y: 220 },
+      { id: "en", label: "Nurse energy", x: 570, y: 135 },
+      { id: "tpa", label: "Time per activity", x: 100, y: 220 },
+    ],
+    links: [
+      { from: "wl", to: "wi", sign: "+", curve: -15 },
+      { from: "wi", to: "cap", sign: "+", curve: -15 },
+      { from: "cap", to: "wl", sign: "−", curve: -15 },
+      { from: "wl", to: "tpa", sign: "−", curve: -15 },
+      { from: "tpa", to: "cap", sign: "−", curve: -15 },
+      { from: "wi", to: "en", sign: "−", curve: -15 },
+      { from: "en", to: "cap", sign: "+", curve: -15 },
+    ],
+    loops: [
+      { type: "B", label: "B1", x: 320, y: 105 },
+      { type: "B", label: "B2", x: 180, y: 170 },
+      { type: "R", label: "R1", x: 480, y: 135 },
+    ],
+    size: [660, 270],
+    caption:
+      '<span class="chip chipB">B</span> Working harder (B1) and cutting time per activity (B2) both raise capacity and relieve the pressure. <span class="chip chipR">R</span> But effort drains energy, tired nurses do less, and the pressure comes back stronger (R1): the burnout loop. Cutting time per activity has a cost the model does not show: missed care and errors.',
+  },
+  desc: "",
+};
+
 const flowMeta: Record<string, Record<string, FlowMeta>> = {
   sir: {
     infect: { name: "infection", eq: "R₀ × (1 − reduction) / period × S × I / N", in: ["s", "i", "r0", "dur", "dist"], loop: { s: "B", i: "R" } },
@@ -218,6 +393,22 @@ const flowMeta: Record<string, Record<string, FlowMeta>> = {
     admit: { name: "admission to ward", eq: "MIN(Waiting, free beds) / 0.2 day", in: ["wait", "ward", "fit", "beds"], loop: { wait: "B", ward: "B" } },
     becomeFit: { name: "becoming medically fit", eq: "In hospital / length of stay", in: ["ward", "los"], loop: "B" },
     discharge: { name: "discharge", eq: "MIN(Awaiting / 0.5 day, placements)", in: ["fit", "outCap"], loop: "B" },
+  },
+  bedBlocking: {
+    arrive: { name: "older emergency arrivals", eq: "arrivals × (1 − admissions avoided)", in: ["demand", "avoid"] },
+    admit: { name: "acute admission", eq: "MIN(ED waiting / 0.1 wk, free beds / 0.1 wk + beds freed)", in: ["ed", "acute", "blocked", "acuteBeds"], loop: { ed: "B", acute: "B" } },
+    divert: { name: "treated elsewhere", eq: "ED waiting / 1 wk", in: ["ed"], loop: "B" },
+    home: { name: "home and other discharges", eq: "81% × In acute / 1.43 wk", in: ["acute"], loop: "B" },
+    needPost: { name: "needing post-acute care", eq: "19% × In acute / 1.43 wk", in: ["acute"], loop: "B" },
+    place: { name: "post-acute admission", eq: "MIN(Waiting / 0.3 wk, free beds / 0.3 wk + leaving)", in: ["blocked", "post", "postBeds", "postUp"], loop: { blocked: "B", post: "B" } },
+    leavePost: { name: "leaving post-acute care", eq: "Post-acute / 34.7 wk × (1 + faster discharge)", in: ["post", "outUp"], loop: "B" },
+    ageing: { name: "ageing of demand", eq: "arrivals × growth", in: ["demand", "growth"], loop: "R" },
+  },
+  nurseBurnout: {
+    admit: { name: "admissions", eq: "admissions × MIN(1, 2 / workload pressure)", in: ["arrivals", "pts"], loop: "B" },
+    discharge: { name: "discharges", eq: "MIN(effective capacity, Patients / 0.1 day)", in: ["pts", "energy", "smr", "wiMax", "tpaMax", "burnout", "arrivals"], loop: { pts: "B", energy: "R" } },
+    drain: { name: "energy drain", eq: "Energy × (0.5 × work intensity + 0.05 × excess pressure)", in: ["energy", "pts", "wiMax", "arrivals"], loop: "R" },
+    recover: { name: "recovery", eq: "(1 − Energy) / 3 days", in: ["energy"], loop: "B" },
   },
   chronic: {
     entry: { name: "entering adulthood", eq: "150 per year", in: [] },
@@ -372,11 +563,34 @@ export const HEALTH_MODELS: Record<string, Model> = {
   sir: built("sir", sir, flowMeta.sir, extra.sir),
   patientFlow: built("patientFlow", patientFlow, flowMeta.patientFlow, extra.patientFlow),
   chronic: built("chronic", chronic, flowMeta.chronic, extra.chronic),
+  bedBlocking: built("bedBlocking", bedBlocking, flowMeta.bedBlocking, {
+    stocks: [
+      ["Waiting in ED", "INTEG(arrivals − admission − treated elsewhere, 400)"],
+      ["In acute treatment", "INTEG(admission − home − needing post-acute, 5800)"],
+      ["Waiting for post-acute care", "INTEG(needing post-acute − placement, 600)"],
+      ["In post-acute care", "INTEG(placement − leaving, 25800)"],
+      ["Arrivals per week", "INTEG(arrivals × growth / 52, 4060)"],
+    ],
+    aux: [["free post-acute beds", "post-acute beds × (1 + increase) − In post-acute"], ["acute occupancy", "(In acute + Waiting) / acute beds"], ["beds blocked", "Waiting / acute beds"]],
+  }),
+  nurseBurnout: built("nurseBurnout", nurseBurnout, flowMeta.nurseBurnout, {
+    stocks: [
+      ["Patients in the unit", "INTEG(admissions − discharges, 12)"],
+      ["Nurse energy", "INTEG(recovery − drain, 1)"],
+    ],
+    aux: [
+      ["workload pressure", "Patients / (admissions × 0.25 day)"],
+      ["work intensity", "MIN(most extra effort, 0.5 × MAX(0, pressure − 1))"],
+      ["time cut per activity", "MIN(most cut, 0.3 × MAX(0, pressure − 1))"],
+      ["effective capacity", "8 nurses × 6.5 × (0.6 + 0.4 × skill mix) × presence × energy effect × (1 + intensity) / (1 − cut)"],
+      ["patient experience time", "24 × Patients / discharges (hours)"],
+    ],
+  }),
   ...skins(SKINS),
 };
 
 // where each run should stop so the interesting part fills the chart (in the model's own time unit)
 export const SIM_STOP: Record<string, number> = {
   sir: 150, patientFlow: 60, chronic: 30, hivCascade: 36, bodyWeight: 48, ageingCare: 100, waitingList: 60,
-  mentalHealthAccess: 36, supplyChain: 60, physicianPipeline: 40, nurseFatigue: 30, outbreakDiffusion: 52,
+  mentalHealthAccess: 36, supplyChain: 60, physicianPipeline: 40, nurseFatigue: 30, outbreakDiffusion: 52, bedBlocking: 520, nurseBurnout: 28,
 };

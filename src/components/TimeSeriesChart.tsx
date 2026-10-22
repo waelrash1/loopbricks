@@ -163,7 +163,7 @@ export default function TimeSeriesChart({
       ctx.clearRect(0, 0, W, H);
       let max = 1e-6;
       history.series.forEach((h) => h.forEach((v) => v > max && (max = v)));
-      prev?.series.forEach((h, i) => !model.stocks[i]?.hidden && h.forEach((v) => v > max && (max = v)));
+      prev?.series.forEach((h, i) => !model.stocks[i]?.hidden && !model.stocks[i]?.chartHidden && h.forEach((v) => v > max && (max = v)));
       const runs = minimal ? [] : (shelfRef.current?.runs ?? []).map((r, k) => ({ r, dash: RUN_DASH[k % RUN_DASH.length] })).filter(({ r }) => r.visible);
       const refs = minimal ? [] : (shelfRef.current?.refs ?? []).filter((r) => r.visible);
       runs.forEach(({ r }) => Object.values(r.series).forEach((ys) => ys.forEach((v) => v > max && (max = v))));

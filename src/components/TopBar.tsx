@@ -80,7 +80,7 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
 
         <div className="relative ml-auto w-full sm:w-[220px] xl:w-[280px] order-4 sm:order-none pb-3 sm:pb-0">
           <label>
-            <span className="sr-only">Find a molecule or healthcare case</span>
+            <span className="sr-only">Search molecules and cases</span>
             <Search size={16} aria-hidden className="absolute left-3 top-[20px] sm:top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               ref={box}

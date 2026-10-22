@@ -61,13 +61,15 @@ const sectionOf = (r: Route): Section =>
 
 // The pages inside Learn, one row of tabs so nothing is more than one click away.
 const LEARN_TABS: [string, string, (r: Route) => boolean][] = [
-  ["Course", "/learn", (r) => r.view === "curriculum" && (!r.module || !["games", "draw", "projects", "glossary", "teach", "review", "check", "progress", "assigned"].includes(r.module))],
+  ["Course", "/learn", (r) => r.view === "curriculum" && (!r.module || !["games", "draw", "studio", "references", "projects", "glossary", "teach", "review", "check", "progress", "assigned"].includes(r.module))],
   ["Quick tour", "/tour/1", (r) => r.view === "learn"],
   ["Games", "/learn/games", (r) => r.view === "curriculum" && r.module === "games"],
   ["Draw the loops", "/learn/draw", (r) => r.view === "curriculum" && r.module === "draw"],
+  ["Modelling studio", "/learn/studio", (r) => r.view === "curriculum" && r.module === "studio"],
   ["Projects", "/learn/projects", (r) => r.view === "curriculum" && r.module === "projects"],
   ["Methods", "/methods", (r) => r.view === "methods"],
   ["Glossary", "/learn/glossary", (r) => r.view === "curriculum" && r.module === "glossary"],
+  ["Reading list", "/learn/references", (r) => r.view === "curriculum" && r.module === "references"],
   ["For instructors", "/learn/teach", (r) => r.view === "curriculum" && ["teach", "progress", "assigned", "review", "check"].includes(r.module ?? "")],
 ];
 function LearnTabs({ route }: { route: Route }) {
