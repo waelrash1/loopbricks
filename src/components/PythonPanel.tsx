@@ -69,7 +69,7 @@ export default function PythonPanel({ molecule, onOpen }: { molecule: string; on
           </div>
         )}
         {nbs.length > 0 && (
-          <div className="rounded-card bg-accent/25 px-5 py-4">
+          <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
             <p className="heading text-[16px]">Notebooks that use it</p>
             <p className="mt-1 text-[14px] text-foreground/80">Python companions to the Learn modules, with exercises and worked answers.</p>
             <ul className="mt-3 space-y-2">

@@ -8,6 +8,7 @@ import { LESSONS } from "@/data/lessons";
 import { useSimulation } from "@/hooks/useSimulation";
 import TopBar, { type Section } from "@/components/TopBar";
 import Home from "@/components/Home";
+import Tabs from "@/components/Tabs";
 import SiteFooter from "@/components/SiteFooter";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
@@ -90,8 +91,15 @@ const go = (hash: string) => {
 export default function MoleculeExplorer() {
   const [route, setRoute] = useState(parseRoute);
   const [showInfluences, setShowInfluences] = useState(true);
-  const [tab, setTab] = useState("explain");
   useEffect(() => {
+    // remember the last thing worth returning to, for "Pick up where you left off" on the home page
+    if (route.view === "molecule" || (route.view === "apps" && route.id) || (route.view === "curriculum" && route.module)) {
+      try {
+        localStorage.setItem("last", window.location.hash.slice(1));
+      } catch {
+        // storage blocked: the home page just won't offer it
+      }
+    }
     if (route.view === "molecule") markSeen(route.key);
     if (route.view === "apps" && route.id) markSeen(`${route.domain}/${route.id}`);
   }, [route]);
@@ -161,14 +169,6 @@ export default function MoleculeExplorer() {
   const smallBrick = "brick brick-w h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap";
 
   const section = sectionOf(route);
-  const TABS: [string, string][] = [
-    ["explain", "Explain"],
-    ["loops", "Loops"],
-    ["equations", "Equations"],
-    ["runs", "Runs and data"],
-    ["python", "Python"],
-    ["course", "In the course"],
-  ];
   // the panels below were written as page sections; inside a tab they lose their own heading and top margin
   const inTab = "[&>section]:mt-0 [&>section]:block [&>section>h2]:sr-only";
 
@@ -306,55 +306,53 @@ export default function MoleculeExplorer() {
               </div>
 
               <div className="mt-10">
-                <div role="tablist" aria-label="About this molecule" className="flex gap-1 overflow-x-auto whitespace-nowrap border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {TABS.map(([id, label]) => (
-                    <button key={id} role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls="tabpanel" onClick={() => setTab(id)} className={cn("h-11 px-3.5 text-[15px] font-semibold border-b-[3px] -mb-px", tab === id ? "border-accent text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div role="tabpanel" id="tabpanel" aria-labelledby={`tab-${tab}`} className="pt-7 min-h-[240px]">
-                  {tab === "explain" && <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />}
-                  {tab === "loops" && (
-                    <section className="sheet max-w-[900px]">
-                      <div className="sheet-head">
-                        <h2 className={h2}>Causal loop diagram</h2>
-                        <span className={hint}>The sign on each link is its polarity</span>
-                      </div>
-                      <CausalLoopDiagram model={model} />
-                    </section>
-                  )}
-                  {tab === "equations" && (
-                    <section className="sheet">
-                      <div className="sheet-head">
-                        <h2 className={h2}>Equations</h2>
-                        <span className={hint}>Constants update as you move the sliders</span>
-                      </div>
-                      <EquationsPanel model={model} modelKey={key} params={sim.params} />
-                    </section>
-                  )}
-                  {tab === "runs" && <RunsPanel modelKey={key} model={model} sim={sim} />}
-                  {tab === "python" && (
-                    <div className={inTab}>
-                      <Suspense fallback={<p className={hint}>Loading…</p>}>
-                        <PythonPanel molecule={key} onOpen={(h) => go(h)} />
-                      </Suspense>
-                    </div>
-                  )}
-                  {tab === "course" && (
-                    <div className={inTab}>
-                      <Suspense fallback={<p className={hint}>Loading…</p>}>
-                        <LearnPanel
-                          molecule={key}
-                          onModule={(id, anchor) => {
-                            go(`/learn/${id}`);
-                            if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
-                          }}
-                        />
-                      </Suspense>
-                    </div>
-                  )}
-                </div>
+                <Tabs
+                  label="About this molecule"
+                  items={[
+                    ["explain", "Explain", <div key="x" className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />],
+                    [
+                      "loops",
+                      "Loops",
+                      <section key="l" className="sheet max-w-[900px]">
+                        <p className={`${hint} mb-3`}>The sign on each link is its polarity.</p>
+                        <CausalLoopDiagram model={model} />
+                      </section>,
+                    ],
+                    [
+                      "equations",
+                      "Equations",
+                      <section key="e" className="sheet">
+                        <p className={`${hint} mb-3`}>Constants update as you move the sliders.</p>
+                        <EquationsPanel model={model} modelKey={key} params={sim.params} />
+                      </section>,
+                    ],
+                    ["runs", "Runs and data", <RunsPanel key="r" modelKey={key} model={model} sim={sim} />],
+                    [
+                      "python",
+                      "Python",
+                      <div key="p" className={inTab}>
+                        <Suspense fallback={<p className={hint}>Loading…</p>}>
+                          <PythonPanel molecule={key} onOpen={(h) => go(h)} />
+                        </Suspense>
+                      </div>,
+                    ],
+                    [
+                      "course",
+                      "In the course",
+                      <div key="c" className={inTab}>
+                        <Suspense fallback={<p className={hint}>Loading…</p>}>
+                          <LearnPanel
+                            molecule={key}
+                            onModule={(id, anchor) => {
+                              go(`/learn/${id}`);
+                              if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
+                            }}
+                          />
+                        </Suspense>
+                      </div>,
+                    ],
+                  ]}
+                />
               </div>
             </div>
 

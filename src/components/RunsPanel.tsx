@@ -246,9 +246,9 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
                       </span>
                       {fit && <span className="block text-foreground/75 max-w-[46ch] mt-0.5">{diagnose(fit)}</span>}
                     </td>
-                    <td className="py-1.5 px-2">{fit ? f2(fit.rmse) : "–"}</td>
-                    <td className="py-1.5 px-2">{fit?.mape != null ? `${(fit.mape * 100).toFixed(1)}%` : "–"}</td>
-                    <td className="py-1.5 px-2">{fit ? fit.r2.toFixed(2) : "–"}</td>
+                    <td className="py-1.5 px-2">{fit ? f2(fit.rmse) : "-"}</td>
+                    <td className="py-1.5 px-2">{fit?.mape != null ? `${(fit.mape * 100).toFixed(1)}%` : "-"}</td>
+                    <td className="py-1.5 px-2">{fit ? fit.r2.toFixed(2) : "-"}</td>
                     <td className="py-1.5 px-2 whitespace-nowrap">{fit ? `${fit.um.toFixed(2)} / ${fit.us.toFixed(2)} / ${fit.uc.toFixed(2)}` : "run the model"}</td>
                     <td className="py-1.5 text-right whitespace-nowrap">
                       <button className={iconBtn} onClick={() => patchRef(r.id, { visible: !r.visible })} aria-label={r.visible ? "Hide data" : "Show data"}>

@@ -521,7 +521,7 @@ function BeerDebrief({ g, onOpen, restart }: { g: BeerGame; onOpen: (hash: strin
   const peaks = STAGES.map((_, i) => beerPeak(r, i));
   return (
     <div className="mt-6">
-      <div className="rounded-card bg-accent/25 px-5 py-4">
+      <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
         <h2 ref={focusOnMount} tabIndex={-1} className="heading text-[20px] outline-none">Game over: your cost was {money(mine)}</h2>
         <p className="mt-2 text-[15px] leading-[1.6] max-w-[70ch]">
           A computer player in your seat, ordering like the average player in Sterman's experiment, ran up {money(comp)}. A manager in your seat who counted the supply line would have
@@ -601,7 +601,7 @@ function BeerDebrief({ g, onOpen, restart }: { g: BeerGame; onOpen: (hash: strin
         ]}
       />
       <p className="mt-8 text-[13px] text-muted-foreground max-w-[80ch]">
-        Source: Sterman JD (1989), Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment, Management Science 35(3):321–339. Weekly demand for beer
+        Source: Sterman JD (1989), Modeling managerial behavior: misperceptions of feedback in a dynamic decision making experiment, Management Science 35(3):321-339. Weekly demand for beer
         here is {beerDemand(1)} then {beerDemand(BEER.stepWeek)} cases, as in the classic board game.
       </p>
     </div>
@@ -707,7 +707,7 @@ function FishDebrief({ g, onOpen, restart }: { g: FishGame; onOpen: (hash: strin
   const end = (x: FishGame) => x.hist.res[x.year];
   return (
     <div className="mt-6">
-      <div className="rounded-card bg-accent/25 px-5 py-4">
+      <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
         <h2 ref={focusOnMount} tabIndex={-1} className="heading text-[20px] outline-none">
           30 years on: you made {millions(a)}, Fleet B made {millions(b)}
         </h2>
@@ -789,8 +789,8 @@ function FishDebrief({ g, onOpen, restart }: { g: FishGame; onOpen: (hash: strin
         ]}
       />
       <p className="mt-8 text-[13px] text-muted-foreground max-w-[80ch]">
-        Model: the tragedy of the commons molecule, run a year at a time. Sources: Hardin G (1968), The tragedy of the commons, Science 162:1243–1248; Moxnes E (1998), Not only the tragedy of
-        the commons: misperceptions of bioeconomics, Management Science 44(9):1234–1248.
+        Model: the tragedy of the commons molecule, run a year at a time. Sources: Hardin G (1968), The tragedy of the commons, Science 162:1243-1248; Moxnes E (1998), Not only the tragedy of
+        the commons: misperceptions of bioeconomics, Management Science 44(9):1234-1248.
       </p>
     </div>
   );
@@ -866,7 +866,7 @@ function FireDebrief({ g, onOpen, restart }: { g: FireGame; onOpen: (hash: strin
   const row = (label: string, x: FireGame): string[] => [label, fmt(fireScore(x)), fmt(x.hist.prob[8]), fmt(x.hist.prob[FIRE.weeks]), fmt(x.hist.cap[FIRE.weeks])];
   return (
     <div className="mt-6">
-      <div className="rounded-card bg-accent/25 px-5 py-4">
+      <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
         <h2 ref={focusOnMount} tabIndex={-1} className="heading text-[20px] outline-none">Two years on: {fmt(fireScore(g))} problems open on an average week</h2>
         <p className="mt-2 text-[15px] leading-[1.6] max-w-[70ch]">
           You patched {Math.round(avgShare * 100)}% of problems on average and ended with {fmt(g.s.prob)} open problems and a capability of {fmt(g.s.cap)}. Always patching 20% averages{" "}
@@ -941,7 +941,7 @@ function FireDebrief({ g, onOpen, restart }: { g: FireGame; onOpen: (hash: strin
       />
       <p className="mt-8 text-[13px] text-muted-foreground max-w-[80ch]">
         Model: the shifting the burden molecule, four weeks per turn. Sources: Senge PM (1990), The Fifth Discipline, Doubleday; Repenning NP and Sterman JD (2001), Nobody ever gets credit for
-        fixing problems that never happened, California Management Review 43(4):64–88.
+        fixing problems that never happened, California Management Review 43(4):64-88.
       </p>
     </div>
   );

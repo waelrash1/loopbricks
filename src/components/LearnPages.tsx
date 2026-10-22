@@ -447,7 +447,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
       </p>
       <p className="text-[13px] font-semibold text-accent-edge">{p.field}</p>
       <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{p.title}</h1>
-      <div className="mt-5 rounded-card bg-accent/25 px-5 py-4 max-w-[80ch]">
+      <div className="mt-5 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[80ch]">
         <p className="heading text-[15px]">The brief</p>
         <p className="mt-1.5 text-[15.5px] leading-[1.65]">{p.problem}</p>
       </div>

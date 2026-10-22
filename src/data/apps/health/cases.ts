@@ -72,7 +72,7 @@ export const CASES: AppCase[] = [
     title: "An outbreak: who gets infected, and when it turns",
     theme: "Infectious disease",
     level: "Starter",
-    summary: "The susceptible–infected–recovered structure, and why outbreaks turn before everyone is infected.",
+    summary: "The susceptible-infected-recovered structure, and why outbreaks turn before everyone is infected.",
     question: "How big will the peak be, when will it come, and how much does each control measure flatten it?",
     sim: "sir",
     presets: [
@@ -254,7 +254,7 @@ export const CASES: AppCase[] = [
     ],
     data: [
       ["New diagnoses", "National HIV surveillance; UNAIDS AIDSinfo"],
-      ["Linkage within 1–3 months", "Clinic records or laboratory (first CD4 or viral-load test) data"],
+      ["Linkage within 1-3 months", "Clinic records or laboratory (first CD4 or viral-load test) data"],
       ["Retention and viral suppression", "Laboratory surveillance of viral-load tests"],
       ["Undiagnosed estimate", "Back-calculation models (often published by national agencies)"],
     ],
@@ -293,7 +293,7 @@ export const CASES: AppCase[] = [
     molecules: ["diffusion", "weightedAvg", "smooth"],
     evidence: [
       "Austin, Kristinsson and Anderson (1999): resistance emerges much faster than it decays once drug use is cut, so large reductions in resistance need equally large reductions in consumption.",
-      "Kianmehr et al. (2020) validated an SD model on about 53,000 visits for acute respiratory infection (US NAMCS, 1993–2015). Prescribing was driven by the doctor's past prescribing, perceived infection risk and patient expectation; patient expectation fell over two decades.",
+      "Kianmehr et al. (2020) validated an SD model on about 53,000 visits for acute respiratory infection (US NAMCS, 1993-2015). Prescribing was driven by the doctor's past prescribing, perceived infection risk and patient expectation; patient expectation fell over two decades.",
     ],
     insight:
       "This small model only shows the rise. Austin et al. show the fall is slower than the rise: resistance has momentum, so stewardship has to start before resistance is common.",
@@ -312,7 +312,7 @@ export const CASES: AppCase[] = [
       "Include a fitness cost so resistance can decline without drug pressure, and test how slowly it does.",
       "Stated plainly: this case uses a diffusion skin for the rise of resistance. It is a teaching simplification, not Austin's model.",
     ],
-    validation: "Kianmehr et al. (2020) validated their prescribing model against about 53,000 visits for acute respiratory infection in the US National Ambulatory Medical Care Survey, 1993–2015. Austin et al. (1999) related consumption to resistance in human communities; see the paper for the data used.",
+    validation: "Kianmehr et al. (2020) validated their prescribing model against about 53,000 visits for acute respiratory infection in the US National Ambulatory Medical Care Survey, 1993-2015. Austin et al. (1999) related consumption to resistance in human communities; see the paper for the data used.",
     checks: [
       { claim: "Heavy prescribing pressure makes resistance the majority sooner", test: (run) => run({ p: 3, q: 18 }, 15).end.adopt > run({ p: 0.5, q: 18 }, 15).end.adopt },
       { claim: "A weak advantage for resistance spreads it far more slowly", test: (run) => run({ p: 0.5, q: 5 }, 26).end.adopt < 0.5 * run({ p: 0.5, q: 18 }, 26).end.adopt },
@@ -394,7 +394,7 @@ export const CASES: AppCase[] = [
     ],
     molecules: ["aging", "coflow", "effectFunction", "weightedAvg"],
     evidence: [
-      "Homer et al. (2010), all US adults without a prior event, 1990–2040: of 19 interventions tested, at least 15 are potentially cost saving. Together they could cut deaths from first events by about 20% and total consequence costs by 26%.",
+      "Homer et al. (2010), all US adults without a prior event, 1990-2040: of 19 interventions tested, at least 15 are potentially cost saving. Together they could cut deaths from first events by about 20% and total consequence costs by 26%.",
       "Hirsch et al. (2010) built a county-level model for a Colorado health department, tracking how risk factors drive first and recurrent events and testing intervention strategies against the county's burden.",
     ],
     insight:
@@ -492,8 +492,8 @@ export const CASES: AppCase[] = [
     ],
     molecules: ["diffusion", "cascade", "broken", "capacityUtil"],
     evidence: [
-      "Homer and Wakeland (2021) fitted 12 historical series (average error 9%). For 2020–2030, cutting prescription dosage by 20% reduced people with use disorder by 11%; cutting diversion by 30% reduced them by 16%; raising lay naloxone use from 4% to 20% cut overdose deaths by 12%. No single intervention reduced both use disorder and deaths; all four together cut use disorder by 24% and deaths by 18%.",
-      "Lim et al. (2022), the SOURCE model calibrated to 1999–2020: social influence on starting and escalating use, risk perception driven by overdose deaths, and treatment capacity limits shape the epidemic, alongside changes in supply and the spread of illicit fentanyl.",
+      "Homer and Wakeland (2021) fitted 12 historical series (average error 9%). For 2020-2030, cutting prescription dosage by 20% reduced people with use disorder by 11%; cutting diversion by 30% reduced them by 16%; raising lay naloxone use from 4% to 20% cut overdose deaths by 12%. No single intervention reduced both use disorder and deaths; all four together cut use disorder by 24% and deaths by 18%.",
+      "Lim et al. (2022), the SOURCE model calibrated to 1999-2020: social influence on starting and escalating use, risk perception driven by overdose deaths, and treatment capacity limits shape the epidemic, alongside changes in supply and the spread of illicit fentanyl.",
     ],
     insight:
       "Policies that act on one stock can push another the wrong way: naloxone saves lives but keeps more people in the use-disorder stock, and supply cuts can push people to more dangerous illicit opioids. Only combinations improve both outcomes.",
@@ -560,7 +560,7 @@ export const CASES: AppCase[] = [
       "Model drop-out from waiting lists: long waits lose people, which hides unmet need.",
       "Test combinations, not single interventions; Occhipinti et al. found more is not necessarily better.",
     ],
-    validation: "Occhipinti et al. (2021) built their model with local stakeholders and report uncertainty intervals for every outcome (for example 26.3–30.8% around the 28.5% fall in self-harm hospitalisations).",
+    validation: "Occhipinti et al. (2021) built their model with local stakeholders and report uncertainty intervals for every outcome (for example 26.3-30.8% around the 28.5% fall in self-harm hospitalisations).",
     checks: [
       { claim: "When demand exceeds capacity, the waiting list keeps growing", test: (run) => run({ orders: 12, shipTime: 3, capacity: 10 }).end.backlog > 100 },
       { claim: "When capacity covers demand, the list settles at demand × target wait (Little's law)", test: (run) => Math.abs(run({ orders: 12, shipTime: 3, capacity: 14 }, 60).end.backlog - 36) < 1 },
@@ -604,7 +604,7 @@ export const CASES: AppCase[] = [
       ["Care capacity (beds, home-care hours)", "Long-term care registers; OECD Health Statistics"],
     ],
     practice: [
-      "Use finer age bands where care need changes quickly (75–84, 85+).",
+      "Use finer age bands where care need changes quickly (75-84, 85+).",
       "Link care need to capacity with a protected level, so unmet need spills into hospitals as Ansah et al. found.",
       "Check the chain against a published projection before adding policy.",
     ],
@@ -692,7 +692,7 @@ export const CASES: AppCase[] = [
     molecules: ["backlogFlow", "capacityUtil", "residence"],
     evidence: [
       "Lane, Monefeldt and Rosenhead (2000): some A&E delays can be cut by adding resources within and around A&E. Cutting bed numbers did not lengthen waits for emergency admission but sharply increased cancellations of elective surgery, moving the shortfall onto another patient group.",
-      "Lattimer et al. (2004): emergency admissions grew faster than the national average from 1998 to 2001, and admissions from general practice had the most influence on bed occupancy. Preventing 3–6% of older people's emergency admissions each year cut occupancy by 1% a year over five years.",
+      "Lattimer et al. (2004): emergency admissions grew faster than the national average from 1998 to 2001, and admissions from general practice had the most influence on bed occupancy. Preventing 3-6% of older people's emergency admissions each year cut occupancy by 1% a year over five years.",
     ],
     insight:
       "Hospitals protect emergency patients by cancelling planned ones, so the ED can look fine while the true cost shows up as elective cancellations. Judge any policy on several measures at once.",
@@ -958,7 +958,7 @@ export const CASES: AppCase[] = [
     molecules: ["aging", "cascade", "coflow", "split"],
     evidence: [
       "Tengs, Osgood and Chen (2001), the Tobacco Policy Model over 50 years: school-based education costs $4,900 to $340,000 per QALY depending on effectiveness and how long it lasts; at 30% effectiveness fading over 4 years, about $20,000 per QALY.",
-      "Tobias, Cavana and Bloomfield (2010), New Zealand 2001–2051: enhanced cessation gave an 11% greater fall in adult prevalence, 16% in consumption and 11% in tobacco-attributable deaths, and informed a NZ$42 million funding decision.",
+      "Tobias, Cavana and Bloomfield (2010), New Zealand 2001-2051: enhanced cessation gave an 11% greater fall in adult prevalence, 16% in consumption and 11% in tobacco-attributable deaths, and informed a NZ$42 million funding decision.",
     ],
     insight: "Prevention works through the youngest stock and pays off decades later; cessation works on current smokers and pays off sooner. A full model needs both an aging chain and smoking status.",
     tryThis: [

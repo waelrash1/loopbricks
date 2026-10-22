@@ -13,7 +13,7 @@ const sir: Model = {
   title: "Epidemic with vaccination and distancing",
   timeUnit: "day",
   unitY: "people",
-  lede: "Susceptible, infected, recovered: the Kermack–McKendrick structure behind every outbreak model.",
+  lede: "Susceptible, infected, recovered: the Kermack-McKendrick structure behind every outbreak model.",
   stocks: [
     { id: "s", label: "Susceptible", init: N - 10, scale: N, color: C.acc , floor: true },
     { id: "i", label: "Infected", init: 10, scale: N / 2, color: C.pink , floor: true },
@@ -289,7 +289,7 @@ const SKINS: Record<string, Skin> = {
     name: "Population ageing",
     unitY: "thousand people",
     // in balance for 20k births a year with 47 working years: births × years in each stage
-    stocks: { young: { label: "Children (0–17)" }, adult: { label: "Working age (18–64)", init: 940 }, old: { label: "Older people (65+)" } },
+    stocks: { young: { label: "Children (0-17)" }, adult: { label: "Working age (18-64)", init: 940 }, old: { label: "Older people (65+)" } },
     params: { births: { label: "Births", unit: "k/yr" }, tA: { value: 47 }, tO: { label: "Life expectancy at 65" } },
     flows: { in: ["births", "births"], aYA: ["turning 18", "Children / 18 yr"], aAO: ["turning 65", "Working age / 47 yr"], deaths: ["deaths", "Older / life expectancy at 65"] },
   },

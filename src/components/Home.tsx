@@ -1,7 +1,7 @@
 import { ArrowUpRight, BookOpen, Boxes, GraduationCap, PencilRuler, Stethoscope } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { MODULES } from "@/data/learn/modules";
-import { ALL_CASES, DOMAINS } from "@/data/apps";
+import { ALL_CASES, DOMAINS, caseIn, domainById } from "@/data/apps";
 import { useSeen } from "@/lib/progress";
 import { LiveDemo } from "@/components/MoleculeMap";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,27 @@ import { Button } from "@/components/ui/button";
 // ponytail: same key as doneKey in Learn.tsx, repeated so the home page does not load the whole course
 const isDone = (seen: Set<string>, id: string) => seen.has(`done:learn/${id}`);
 
+// What the last visit was about, in words, or nothing if it no longer exists.
+function lastVisit(): { hash: string; label: string } | null {
+  let hash: string | null = null;
+  try {
+    hash = localStorage.getItem("last");
+  } catch {
+    return null;
+  }
+  const [, a, b, c] = (hash ?? "").split("/");
+  const label =
+    a === "m" ? MODELS[b]?.name : a === "learn" ? MODULES.find((m) => m.id === b)?.title : a === "apps" ? caseIn(domainById(b), c)?.title : undefined;
+  return hash && label ? { hash, label } : null;
+}
+
 // The front door: one running model, then the four places in the app and the book.
 export default function Home({ go }: { go: (hash: string) => void }) {
   const seen = useSeen();
   const done = MODULES.filter((m) => isDone(seen, m.id)).length;
   const next = MODULES.find((m) => !isDone(seen, m.id));
   const total = Object.keys(MODELS).length;
+  const last = lastVisit();
   const door = "brick brick-w group text-left p-5 md:p-6 flex flex-col";
   const doorTitle = "heading text-[20px] flex items-center gap-2.5";
   const doorText = "mt-2 text-[14.5px] leading-[1.55] text-muted-foreground";
@@ -40,6 +55,14 @@ export default function Home({ go }: { go: (hash: string) => void }) {
       </section>
 
       <h2 className="sr-only">Where to go</h2>
+      {last && (
+        <p className="mb-4 text-[15px] text-muted-foreground">
+          Pick up where you left off:{" "}
+          <a href={"#" + last.hash} onClick={(e) => (e.preventDefault(), go(last.hash))} className="tlink font-semibold text-foreground">
+            {last.label}
+          </a>
+        </p>
+      )}
       <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-4">
         <button onClick={() => go("/learn")} className={`${door} lg:row-span-3`}>
           <span className={doorTitle}>

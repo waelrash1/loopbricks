@@ -113,9 +113,9 @@ export const MODELS_F: Record<string, Model> = {
     With r = 0.4 the largest sustainable catch is <code>r × 100 / 4 = 10</code> kt a year, at a stock of 50. A boat breaks even when it catches 0.25 kt, which happens when the stock is <code>0.25 / 1 × 100 = 25</code>. Open access therefore drives the stock towards 25, half the best level, and the overshoot on the way takes it to about 9 within ten years. Stop Fleet B expanding and the stock still falls to about 9: Fleet A simply takes the catch B left. Set a total catch limit of 8 and the stock holds near 72 with a steady catch of 8, more than open access lands on average.</div>
     <h4>References</h4>
     <ul class="refs">
-      <li>Hardin, G. (1968). The tragedy of the commons. <i>Science</i>, 162(3859), 1243–1248.</li>
+      <li>Hardin, G. (1968). The tragedy of the commons. <i>Science</i>, 162(3859), 1243-1248.</li>
       <li>Senge, P. M. (1990). <i>The Fifth Discipline</i>. Doubleday. Appendix 2, system archetypes.</li>
-      <li>Moxnes, E. (1998). Not only the tragedy of the commons: misperceptions of bioeconomics. <i>Management Science</i>, 44(9), 1234–1248.</li>
+      <li>Moxnes, E. (1998). Not only the tragedy of the commons: misperceptions of bioeconomics. <i>Management Science</i>, 44(9), 1234-1248.</li>
       <li>Ostrom, E. (1990). <i>Governing the Commons</i>. Cambridge University Press.</li>
     </ul>`,
   },
@@ -129,7 +129,7 @@ export const MODELS_F: Record<string, Model> = {
     stocks: [
       { id: "prob", label: "Open problems", init: 73, scale: 300, color: C.pink, floor: true },
       { id: "patched", label: "Patched problems", init: 292, scale: 700, color: "#8b98a9", chartHidden: true, floor: true },
-      { id: "cap", label: "Capability (0–100)", init: 53, scale: 100, color: C.good },
+      { id: "cap", label: "Capability (0-100)", init: 53, scale: 100, color: C.good },
     ],
     params: [
       { id: "load", label: "Problem load", min: 2, max: 20, step: 0.5, value: 10, unit: "/wk" },
@@ -204,8 +204,8 @@ export const MODELS_F: Record<string, Model> = {
     <h4>References</h4>
     <ul class="refs">
       <li>Senge, P. M. (1990). <i>The Fifth Discipline</i>. Doubleday. Appendix 2, system archetypes.</li>
-      <li>Repenning, N. P. &amp; Sterman, J. D. (2001). Nobody ever gets credit for fixing problems that never happened. <i>California Management Review</i>, 43(4), 64–88.</li>
-      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>. Irwin/McGraw-Hill. The DuPont maintenance case, pp. 66–79.</li>
+      <li>Repenning, N. P. &amp; Sterman, J. D. (2001). Nobody ever gets credit for fixing problems that never happened. <i>California Management Review</i>, 43(4), 64-88.</li>
+      <li>Sterman, J. D. (2000). <i>Business Dynamics</i>. Irwin/McGraw-Hill. The DuPont maintenance case, pp. 66-79.</li>
     </ul>`,
   },
 };

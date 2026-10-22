@@ -83,7 +83,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[64ch]">{p.summary}</p>
 
       {p.tryIt && (
-        <div className="mt-6 rounded-card bg-accent/25 px-5 py-4 max-w-[75ch]">
+        <div className="mt-6 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[75ch]">
           <p className="heading text-[16px]">Try it in LoopBricks</p>
           <p className="mt-1 text-[15px] leading-[1.6]">{p.tryIt.text}</p>
           <button onClick={() => onOpen(p.tryIt!.hash)} className="brick brick-y mt-3 h-9 px-4 text-[13.5px] font-semibold">
@@ -197,7 +197,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
           <span />
         )}
         {next && (
-          <button onClick={() => onPage(next.id)} className="brick brick-y text-left sm:text-right px-5 py-4">
+          <button onClick={() => onPage(next.id)} className="brick brick-w text-left sm:text-right px-5 py-4">
             <span className="block text-[13px]">Next</span>
             <span className="heading block text-[18px] mt-1">{next.title}</span>
           </button>

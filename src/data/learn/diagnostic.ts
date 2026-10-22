@@ -130,15 +130,15 @@ export const DIAGNOSTIC: DiagQuestion[] = [
 ];
 
 export const DIAGNOSTIC_SOURCES: string[] = [
-  "Booth Sweeney, L., & Sterman, J. D. (2000). Bathtub dynamics: Initial results of a systems thinking inventory. System Dynamics Review, 16(4), 249–286.",
-  "Cronin, M. A., Gonzalez, C., & Sterman, J. D. (2009). Why don't well-educated adults understand accumulation? A challenge to researchers, educators, and citizens. Organizational Behavior and Human Decision Processes, 108(1), 116–130.",
-  "Sterman, J. D., & Booth Sweeney, L. (2007). Understanding public complacency about climate change: Adults' mental models of climate change violate conservation of matter. Climatic Change, 80(3–4), 213–238.",
-  "Sterman, J. D. (1989). Modeling managerial behavior: Misperceptions of feedback in a dynamic decision making experiment. Management Science, 35(3), 321–339.",
-  "Diehl, E., & Sterman, J. D. (1995). Effects of feedback complexity on dynamic decision making. Organizational Behavior and Human Decision Processes, 62(2), 198–215.",
-  "Wagenaar, W. A., & Sagaria, S. D. (1975). Misperception of exponential growth. Perception & Psychophysics, 18(6), 416–422.",
-  "Wagenaar, W. A., & Timmers, H. (1979). The pond-and-duckweed problem: Three experiments on the misperception of exponential growth. Acta Psychologica, 43(3), 239–251.",
-  "Forrester, J. W. (1971). Counterintuitive behavior of social systems. Technology Review, 73(3), 52–68.",
-  "Repenning, N. P., & Sterman, J. D. (2001). Nobody ever gets credit for fixing problems that never happened: Creating and sustaining process improvement. California Management Review, 43(4), 64–88.",
-  "Richmond, B. (1993). Systems thinking: Critical thinking skills for the 1990s and beyond. System Dynamics Review, 9(2), 113–133.",
+  "Booth Sweeney, L., & Sterman, J. D. (2000). Bathtub dynamics: Initial results of a systems thinking inventory. System Dynamics Review, 16(4), 249-286.",
+  "Cronin, M. A., Gonzalez, C., & Sterman, J. D. (2009). Why don't well-educated adults understand accumulation? A challenge to researchers, educators, and citizens. Organizational Behavior and Human Decision Processes, 108(1), 116-130.",
+  "Sterman, J. D., & Booth Sweeney, L. (2007). Understanding public complacency about climate change: Adults' mental models of climate change violate conservation of matter. Climatic Change, 80(3-4), 213-238.",
+  "Sterman, J. D. (1989). Modeling managerial behavior: Misperceptions of feedback in a dynamic decision making experiment. Management Science, 35(3), 321-339.",
+  "Diehl, E., & Sterman, J. D. (1995). Effects of feedback complexity on dynamic decision making. Organizational Behavior and Human Decision Processes, 62(2), 198-215.",
+  "Wagenaar, W. A., & Sagaria, S. D. (1975). Misperception of exponential growth. Perception & Psychophysics, 18(6), 416-422.",
+  "Wagenaar, W. A., & Timmers, H. (1979). The pond-and-duckweed problem: Three experiments on the misperception of exponential growth. Acta Psychologica, 43(3), 239-251.",
+  "Forrester, J. W. (1971). Counterintuitive behavior of social systems. Technology Review, 73(3), 52-68.",
+  "Repenning, N. P., & Sterman, J. D. (2001). Nobody ever gets credit for fixing problems that never happened: Creating and sustaining process improvement. California Management Review, 43(4), 64-88.",
+  "Richmond, B. (1993). Systems thinking: Critical thinking skills for the 1990s and beyond. System Dynamics Review, 9(2), 113-133.",
   "Sterman, J. D. (2000). Business dynamics: Systems thinking and modeling for a complex world. Boston: Irwin/McGraw-Hill.",
 ];

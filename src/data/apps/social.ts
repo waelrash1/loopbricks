@@ -436,7 +436,7 @@ const CASES: AppCase[] = [
     ],
     practice: [
       "This small model hires only into the early-career stage and uses one average time per stage. Mendes and Aleluia used arrays by district and subject; shortages are local even when the national total looks fine.",
-      "Set desired teachers from pupils and class sizes, not from a fixed student–teacher ratio, which only extends past trends.",
+      "Set desired teachers from pupils and class sizes, not from a fixed student-teacher ratio, which only extends past trends.",
     ],
     checks: [
       { claim: "With an older workforce, hiring 20 a year still lets the teaching force shrink, because retirements outpace hiring", test: (run) => { const r = run({ hiring: 20 }).end; return r.rookies + r.experienced + r.gray < 860; } },

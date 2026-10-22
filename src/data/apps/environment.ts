@@ -470,10 +470,10 @@ const CASES: AppCase[] = [
     molecules: ["logistic", "growth", "ceiling"],
     evidence: [
       "Meadows et al. (1972) used World3, a system dynamics model of population, food production, industrial production, pollution and non-renewable resources, to explore scenarios for the world system.",
-      "Turner (2008) compared historical data for 1970–2000 with the scenarios: the data compare favourably with key features of the business-as-usual 'standard run', which results in collapse of the global system midway through the 21st century. They do not compare well with scenarios involving comprehensive use of technology or stabilising behaviour and policies.",
+      "Turner (2008) compared historical data for 1970-2000 with the scenarios: the data compare favourably with key features of the business-as-usual 'standard run', which results in collapse of the global system midway through the 21st century. They do not compare well with scenarios involving comprehensive use of technology or stabilising behaviour and policies.",
       "Turner also notes that, contrary to popular belief, the 1972 scenarios did not predict collapse by the end of the 20th century, and that the results show the particular importance of understanding and controlling global pollution.",
     ],
-    validation: "Turner (2008) compared eight World3 output variables (population, birth and death rates, services, food and industrial output per capita, non-renewable resources and persistent pollution) with observed data for 1970–2000, judging approximate magnitudes and trends rather than fitting the model.",
+    validation: "Turner (2008) compared eight World3 output variables (population, birth and death rates, services, food and industrial output per capita, non-renewable resources and persistent pollution) with observed data for 1970-2000, judging approximate magnitudes and trends rather than fitting the model.",
     insight:
       "A limit that pushes back at once and never erodes gives a smooth S-curve. In World3 the limits act through long delays and can be eroded by overuse, which is how the standard run overshoots and collapses. Delay plus erosion turns an S-curve into overshoot and collapse.",
     tryThis: [

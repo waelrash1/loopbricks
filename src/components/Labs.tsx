@@ -269,7 +269,7 @@ export function CalibrationLab() {
 
       <Step n={4} title="Let the computer search">
         <Para>
-          The app uses the Nelder–Mead method. It keeps a small triangle of guesses on this map, and at every step it replaces the worst corner. It tries a point mirrored through the
+          The app uses the Nelder-Mead method. It keeps a small triangle of guesses on this map, and at every step it replaces the worst corner. It tries a point mirrored through the
           other two, stretches further if that works, and shrinks the triangle if it does not. Each guess is a full simulation compared with the data. The orange path shows every guess.
         </Para>
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -359,10 +359,10 @@ export function CalibrationLab() {
         </Para>
       </Step>
 
-      <div className="mt-12 rounded-card bg-accent/25 px-5 py-4 max-w-[78ch]">
+      <div className="mt-12 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[78ch]">
         <p className="heading text-[17px]">What Sterman found with real players</p>
         <p className="mt-2 text-[15.5px] leading-[1.65]">
-          Sterman fitted this same stock-management rule to the orders of 44 people playing the beer game (Sterman 1989; 2000, pp. 693–694). The simple rule explained 71% of the variance in
+          Sterman fitted this same stock-management rule to the orders of 44 people playing the beer game (Sterman 1989; 2000, pp. 693-694). The simple rule explained 71% of the variance in
           their orders. On average, players gave the supply line a weight of only 0.34. Only a quarter counted more than half of it. For a third, the weight could not be told apart from
           zero. One factory player had a stock adjustment time of 1.25 weeks and a weight of 0. Correcting gaps that fast while ignoring orders in transit made orders swing wildly. The
           hidden manager in this lab is set close to the players' averages.
@@ -485,7 +485,7 @@ export function SensitivityLab() {
         </div>
         <Para>
           Whether the first policy helps depends on an assumption we are unsure of; the second does not. For most policy work, that difference is what sensitivity analysis is for: behaviour mode
-          and especially policy sensitivity are what count (Sterman 2000, pp. 883–884).
+          and especially policy sensitivity are what count (Sterman 2000, pp. 883-884).
         </Para>
         <Para>
           The score is an assumption too. Judged by the average distance from the target over the 80 weeks instead, reacting faster helps in {pct(policy.fasterGap)} of worlds and
@@ -499,8 +499,8 @@ export function SensitivityLab() {
         <ul className="mt-2 space-y-2 text-[15px] leading-[1.6] list-disc pl-5 marker:text-accent-edge">
           <li>Test over a range at least twice as wide as statistics or judgement suggest, because people are overconfident and confidence intervals miss specification error (p. 884).</li>
           <li>Vary more than parameters: models are usually more sensitive to boundary, aggregation and decision-rule assumptions than to numbers (p. 884).</li>
-          <li>Focus effort on parameters that are both uncertain and influential; one with little effect need not be tested even if uncertain (pp. 884–885).</li>
-          <li>Best and worst cases bound the outcomes; Monte Carlo runs give dynamic confidence bands like the ones above (pp. 885–886).</li>
+          <li>Focus effort on parameters that are both uncertain and influential; one with little effect need not be tested even if uncertain (pp. 884-885).</li>
+          <li>Best and worst cases bound the outcomes; Monte Carlo runs give dynamic confidence bands like the ones above (pp. 885-886).</li>
         </ul>
       </div>
     </div>

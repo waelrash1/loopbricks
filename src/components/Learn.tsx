@@ -18,7 +18,7 @@ const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
 const sub = "heading text-[22px] md:text-[24px]";
 // a page reference into Sterman (2000), the main source of the topic notes
 const pg = (p?: string) =>
-  p ? <span className="text-muted-foreground text-[13px]"> (Sterman 2000, {/[-–,]/.test(p) ? "pp." : "p."} {p.replace(/-/g, "–")})</span> : null;
+  p ? <span className="text-muted-foreground text-[13px]"> (Sterman 2000, {/[-,]/.test(p) ? "pp." : "p."} {p})</span> : null;
 const INK = "hsl(var(--foreground))", EDGE = "hsl(var(--input))", QUIET = "hsl(var(--muted-foreground))";
 
 // split text into lines of at most n characters, on spaces
@@ -426,7 +426,7 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
   return (
     <div>
       {phase === "predict" && (
-        <div className="mb-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
+        <div className="mb-2 rounded-[8px] bg-card border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
           <b>Predict first.</b> Draw how you expect <b>{tLine.st.label}</b> to move over {run.T} {m.timeUnit}, starting from the dot. Then run it and compare.
           {lines.length > 1 && (
             <label className="mt-2 flex items-center gap-2">
@@ -517,7 +517,7 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
       ) : (
         <>
           {/* what to notice comes after the learner has committed to a prediction */}
-          <p className="mt-2 rounded-[8px] bg-accent/25 px-3 py-2 text-[13.5px] leading-[1.5]">
+          <p className="mt-2 rounded-[8px] bg-card border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
             <b>Look for: </b>
             {run.look}
           </p>
@@ -688,7 +688,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
     const x = m.exercises[k];
     if (!x) return null;
     return (
-      <div key={k} className="rounded-card bg-accent/20 px-4 py-3.5">
+      <div key={k} className="rounded-card bg-card border-l-4 border-accent px-4 py-3.5">
         <p className="text-[12.5px] font-semibold text-muted-foreground">Try it {exNo.get(k)}</p>
         <p className="mt-1 text-[15px] leading-[1.6]">{x.prompt}</p>
         {x.hint && (
@@ -711,6 +711,28 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
       </div>
     );
   };
+
+  // jump to any step, or step through; the same control sits on the workbench and, on phones, at the bottom
+  const stepper = (
+    <div className="flex items-center gap-2">
+      <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-9 h-9 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+        <ChevronLeft size={16} />
+      </button>
+      <label className="flex-1 min-w-0">
+        <span className="sr-only">Go to step</span>
+        <select value={active} onChange={(e) => goStep(+e.target.value)} className="w-full h-9 rounded-btn border border-border bg-card px-2.5 text-[13.5px] font-semibold text-foreground truncate">
+          {steps.map((s, k) => (
+            <option key={s.step.title} value={k}>
+              Step {k + 1} of {steps.length}: {s.step.title}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-9 h-9 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
 
   return (
     <article className="max-w-[1320px] mx-auto px-4 md:px-8 pt-6 md:pt-8">
@@ -759,7 +781,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
         </header>
         <div className="grid gap-4 content-start">
           {m.objectives.length > 0 && (
-            <div className="rounded-card bg-accent/25 px-5 py-4">
+            <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
               <p className="heading text-[16px]">By the end you will be able to</p>
               <ul className="mt-2 space-y-1.5 text-[15px] leading-[1.55] list-disc pl-5 marker:text-accent-edge">
                 {m.objectives.map((o) => (
@@ -854,23 +876,12 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
         </ol>
         <aside className="hidden lg:block" aria-label="Workbench for the current step">
           <div className="sticky top-[84px] h-[calc(100dvh-108px)] flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[13px] text-muted-foreground truncate">
-                Step {shown + 1}: <span className="text-foreground font-semibold">{steps[shown]?.step.title}</span>
-              </p>
-              <div className="flex gap-1 shrink-0">
-                <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-8 h-8 grid place-items-center disabled:opacity-40">
-                  <ChevronLeft size={15} />
-                </button>
-                <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-8 h-8 grid place-items-center disabled:opacity-40">
-                  <ChevronRight size={15} />
-                </button>
-              </div>
-            </div>
+            {stepper}
             <div className="flex-1 min-h-0">{steps[shown] && <Bench key={shown} r={steps[shown]} onOpen={onOpen} sticky />}</div>
           </div>
         </aside>
       </div>
+      <div className="lg:hidden print:hidden sticky bottom-0 z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur border-t border-border">{stepper}</div>
 
       <div className="max-w-[1100px]">
         {(restEx.length > 0 || restExamples.length > 0) && (
@@ -962,7 +973,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             <span />
           )}
           {next && (
-            <button onClick={() => onModule(next.def.id)} className="brick brick-y text-left sm:text-right px-5 py-4">
+            <button onClick={() => onModule(next.def.id)} className="brick brick-w text-left sm:text-right px-5 py-4">
               <span className="flex sm:justify-end items-center gap-1 text-[13px]">
                 Next module <ChevronRight size={14} aria-hidden />
               </span>
@@ -987,7 +998,7 @@ export function LearnPanel({ molecule, onModule }: { molecule: string; onModule:
       <h2 className="heading text-[26px]">Learn the concept</h2>
       <div className="grid gap-4 max-w-[80ch]">
         {arch.length > 0 && (
-          <div className="rounded-card bg-accent/25 px-5 py-4">
+          <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
             <p className="heading text-[16px]">Archetype{arch.length > 1 ? "s" : ""} this molecule runs</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {arch.map((a) => (

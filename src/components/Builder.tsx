@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, AlertTriangle, Box, Circle, ClipboardCopy, Code2, Download, FileText, Hammer, Play, Plus, Trash2, Upload, Workflow } from "lucide-react";
+import { AlertCircle, AlertTriangle, Box, Circle, ClipboardCopy, Code2, Download, FileText, Play, Plus, Trash2, Upload, Workflow } from "lucide-react";
 import { notebookFor } from "@/lib/notebook";
 import {
   TEMPLATES,
@@ -340,14 +340,10 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   const stale = run && run.model !== model;
 
   return (
-    <div className={`${wrap} pt-10 md:pt-14 pb-16`} onKeyDown={onRootKey}>
-      <p className="flex items-center gap-2 text-[14px] font-semibold text-muted-foreground">
-        <Hammer size={17} aria-hidden /> Model builder
-      </p>
-      <h1 className="display text-[36px] md:text-[52px] max-w-[22ch] mt-2">Build your own stock-and-flow model</h1>
-      <p className="mt-5 text-[17px] leading-[1.6] text-foreground/80 max-w-[68ch]">
-        Draw the stocks, connect them with flows, add the variables that set the rates, and write an equation for each. The builder checks your model as you go and runs it with Euler
-        integration. Your work is saved in this browser.
+    <div className={`${wrap} pt-6 md:pt-8 pb-16`} onKeyDown={onRootKey}>
+      <h1 className="heading text-[26px] md:text-[30px]">Build a model</h1>
+      <p className="mt-1.5 text-[15px] leading-[1.55] text-muted-foreground max-w-[80ch]">
+        Add stocks, flows and variables, write an equation for each, then run it. The builder checks your model as you go and saves it in this browser.
       </p>
 
       {/* templates and files */}
@@ -567,7 +563,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
             )}
             {run?.res.ok && (
               <>
-                {stale && <p className="mt-3 text-[13px] rounded-[8px] bg-accent/25 px-3 py-2">You have changed the model since this run. Run again to see the effect.</p>}
+                {stale && <p className="mt-3 text-[13px] rounded-[8px] bg-card border-l-4 border-accent px-3 py-2">You have changed the model since this run. Run again to see the effect.</p>}
                 <Results model={run.model} res={run.res} />
               </>
             )}

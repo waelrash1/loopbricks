@@ -53,7 +53,7 @@ export function objective(m: Model, params: Record<string, number>, refs: RefDat
   }, 0);
 }
 
-// Nelder–Mead in the unit box of the chosen sliders: small, derivative-free and good enough for a handful of parameters.
+// Nelder-Mead in the unit box of the chosen sliders: small, derivative-free and good enough for a handful of parameters.
 // ponytail: local search from the current settings; for many parameters or noisy fits, restart from several points or use MCMC.
 export function calibrate(m: Model, start: Record<string, number>, ids: string[], refs: RefData[], maxEval = 400) {
   const box = ids.map((id) => m.params.find((p) => p.id === id)!);

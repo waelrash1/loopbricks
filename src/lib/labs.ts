@@ -14,7 +14,7 @@ export const CAL_TRUTH = { adj: 4, slw: 0.35 };
 export const CAL_TIMES = Array.from({ length: 21 }, (_, i) => i * 2); // weeks 0..40
 export const CAL_HOLDOUT = 16; // fit on weeks 0..16, test on the rest
 
-// fixed pseudo-random noise (Park–Miller), so every learner sees the same "observations"
+// fixed pseudo-random noise (Park-Miller), so every learner sees the same "observations"
 function noise(n: number, seed = 7, amp = 6) {
   let s = seed;
   return Array.from({ length: n }, () => ((s = (s * 16807) % 2147483647) / 2147483647 - 0.5) * amp);
