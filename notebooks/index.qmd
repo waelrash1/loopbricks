@@ -1,19 +1,38 @@
 # Preface {.unnumbered}
 
-This book teaches system dynamics twice over: with interactive models you can run in the browser, and with Python you can read, change and extend.
+A hospital adds clinics and the waiting list still grows. A firm hires to clear a backlog and ends up with too many staff a year later. A policy works for six months and then makes things worse. These are feedback problems: the system responds to what we do, often with a delay, and the response defeats the intention.
 
-Every chapter goes with a module of the [LoopBricks app](https://waelrash1.github.io/loopbricks/#/learn). The app is where you build intuition: drag a slider, predict what a model will do, then watch it happen. The chapter is where you take the same model apart in code. Both run the same model files, and a test checks that they give the same numbers at every time step, so what you see in one is what you get in the other.
+System dynamics is a way to model such problems as stocks, flows and feedback loops, test the model against evidence, and use it to find policies that work. This book teaches it in Python, so the models sit next to the data, the statistics and the machine learning that analysts already use.
 
-## How to use the chapters
+## Who this book is for
 
-Each chapter is a Jupyter notebook. Open it in Google Colab with the badge at its top and run the cells in order; the first cell installs the `loopbricks` package. On your own machine:
+The reader is the analytical modeller: a postgraduate student, an early-career analyst, a data scientist or a researcher who wants to build feedback models and defend them. You need a little Python; chapter 1 starts gently and explains each line of the first model. No prior system dynamics is assumed. If you already know the field, each chapter's opening says what you can skip.
+
+The people who benefit most never read the code: the managers and policy makers who ask *why is this happening*, *what if we act*, and *how sure are we?* Every chapter ends with what to tell them.
+
+## How the book works
+
+The book has four parts:
+
+1. **Getting started**: why systems push back, and how to go from a story to a diagram.
+2. **How structure drives behaviour**: loops, delays, decision rules, oscillation and the patterns that repeat across fields.
+3. **Evidence**: verification and validation, then data, calibration, goodness of fit and uncertainty.
+4. **Models in use**: from model to decision, and how machine learning helps at every stage of a modelling project.
+
+One running case goes through every chapter: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 10. The data are synthetic, shaped like published Irish waiting-list counts; chapter 9 explains how they were made and why.
+
+The models are built from small, reusable structures, or *molecules*. Each molecule is explained once, in the chapter where it first matters, and used freely afterwards.
+
+Every chapter is a Jupyter notebook. Open it in Google Colab with the badge at its top, or install the package on your own machine:
 
 ```
 pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@main#subdirectory=python"
 ```
 
-Try the exercises before opening the worked answers. Predicting first, even wrongly, is what makes the result stick.
+Try the exercises before opening the worked answers. Predicting first, even wrongly, is what makes the result stick. Every number in the text comes from running the code, and a test runs every chapter on each change.
+
+The [LoopBricks app](https://waelrash1.github.io/loopbricks/) runs the same models in the browser, if you want to play with a molecule before reading its code. The appendices keep the notebooks that go with the app's learning modules.
 
 ## Sources
 
-The ideas build on the system dynamics literature, from Forrester's founding work to Sterman's *Business Dynamics: Systems Thinking and Modeling for a Complex World* (McGraw-Hill, 2000), cited where it helps. Many models are our own implementations of the small reusable structures described in Jim Hines' *Molecules of Structure*, whose names they keep. The text, code and simulation engines are our own; no Vensim or Stella files or software are used. LoopBricks is not affiliated with or endorsed by Jim Hines, Ventana Systems or isee systems. Vensim is a trademark of Ventana Systems, Inc.; Stella is a trademark of isee systems, inc.
+The ideas build on the system dynamics literature, from Forrester's founding work [@forrester1961] onwards, and are cited where they help [@sterman2000; @meadows2008]. Many models are our own implementations of the small reusable structures described in Jim Hines' *Molecules of Structure* [@hines_molecules], whose names they keep. The text, code and simulation engines are our own; no Vensim or Stella files or software are used. LoopBricks is not affiliated with or endorsed by Jim Hines, Ventana Systems or isee systems. Vensim is a trademark of Ventana Systems, Inc.; Stella is a trademark of isee systems, inc.

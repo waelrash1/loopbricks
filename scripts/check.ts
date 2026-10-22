@@ -335,7 +335,7 @@ all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in p
 }
 // notebooks: one per module, listed in the app and as a chapter of the Quarto book, running only molecules that exist
 {
-  const files = readdirSync("notebooks").filter((f) => f.endsWith(".ipynb")).sort(), quarto = readFileSync("notebooks/_quarto.yml", "utf8");
+  const files = readdirSync("notebooks").filter((f) => /^\d\d-.*\.ipynb$/.test(f)).sort() /* module notebooks; book chapters are cNN-*.ipynb */, quarto = readFileSync("notebooks/_quarto.yml", "utf8");
   if (JSON.stringify(files) !== JSON.stringify(NOTEBOOKS.map((n) => n.file).sort())) errs.push("src/lib/notebook.ts NOTEBOOKS does not match the files in notebooks/");
   MODULES.filter((m) => !NOTEBOOKS.some((n) => n.module === m.id)).forEach((m) => errs.push(`module ${m.id}: no notebook`));
   NOTEBOOKS.forEach((n) => {
@@ -344,6 +344,13 @@ all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in p
     const nb = JSON.parse(readFileSync(`notebooks/${n.file}`, "utf8"));
     if (nb.cells.some((c: { outputs?: unknown[]; execution_count?: number | null }) => c.outputs?.length || c.execution_count != null)) errs.push(`${n.file} has saved outputs: clear them (jupyter nbconvert --clear-output --inplace)`);
     n.molecules.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${n.file}: unknown molecule ${k}`));
+  });
+  // book chapters: listed in the book, committed without outputs, no em or en dashes
+  readdirSync("notebooks").filter((f) => /^c\d\d-.*\.ipynb$/.test(f)).forEach((f) => {
+    if (!quarto.includes(`- ${f}`)) errs.push(`notebooks/_quarto.yml: ${f} is not a chapter`);
+    const raw = readFileSync(`notebooks/${f}`, "utf8"), nb = JSON.parse(raw);
+    if (nb.cells.some((c: { outputs?: unknown[]; execution_count?: number | null }) => c.outputs?.length || c.execution_count != null)) errs.push(`${f} has saved outputs: clear them`);
+    if (/[–—]|\\u201[34]/.test(raw)) errs.push(`${f}: em or en dash`);
   });
 }
 try {

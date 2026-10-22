@@ -11,7 +11,7 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 - **Reader:** the analytical modeller. Postgraduate students and early-career analysts who code or are learning to; data scientists; researchers. Experienced system dynamicists read on a fast path.
 - **Beneficiaries:** decision and policy makers. They do not read the code; the reader learns to produce what they need.
 - **Stands alone.** The LoopBricks app is a companion, never a prerequisite. Chapters do not open with "the Python companion to".
-- **Running case:** one hospital waiting list, built up chapter by chapter, using Irish waiting-list data (NTPF via data.gov.ie, CC BY; monthly counts by time band, 2014 to March 2021; no additions or removals are published, so the flows must be inferred).
+- **Running case:** one outpatient waiting list, built up chapter by chapter, from `data/waiting_list.csv`: synthetic monthly counts by time band (2014 to 2023), shaped like published Irish NTPF series (whose reuse licence is unconfirmed); no additions or removals, so the flows must be inferred. Swap in the real series (same columns) once the licence is confirmed.
 
 ## Structure
 
@@ -29,7 +29,7 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 | IV Models in use | 10 From model to decision | Policy design, robustness, a one-page brief, an interactive simulator; plus a published-model replication | estRemaining, estCompletion | 12, 18 |
 | | 11 Models that learn | ML forecasting contest under a policy change; hybrid curves; structure discovery; LLM-drafted diagrams | (none new) | 18 |
 
-Appendices: A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73, each credited to Hines, with its home chapter); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
+Appendices: A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
 
 ## Chapter template
 
@@ -57,7 +57,7 @@ Appendices: A Python in a hurry; B The package and equation language; C The mole
 12. Every figure with a caption and alt text, a colour-blind-safe palette and distinct line styles, readable in greyscale.
 13. Sentences of about 25 words or fewer; no em or en dashes.
 14. Varied, international examples; data sources with licence and credit lines.
-15. Credit Hines on every molecule we use: "after Hines, Molecules of Structure", noting where ours differs.
+15. Credit Hines on every molecule taken from him: "after Hines, Molecules of Structure", noting where ours differs. Tragedy of the Commons and Shifting the Burden are our own models of archetypes and say so.
 
 ## Rules that do not change
 

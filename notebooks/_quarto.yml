@@ -1,13 +1,13 @@
-# The LoopBricks book. Each chapter is one of the notebooks in this folder, so the book, Colab and the app's
-# "Open in Colab" links all use the same files. Build with `npm run book`, which renders and then clears the outputs
-# that rendering saves into the notebooks (or `quarto preview notebooks` while writing).
+# The book. Chapters are the cNN notebooks; the NN module notebooks (also opened from the app and Colab) are appendices.
+# Build with `npm run book`, which renders and then clears the outputs that rendering saves into the notebooks
+# (or `quarto preview notebooks` while writing).
 project:
   type: book
   output-dir: _book
 
 book:
-  title: "System Dynamics with LoopBricks"
-  subtitle: "Feedback, stocks and flows, in the browser and in Python"
+  title: "System Dynamics with Python"
+  subtitle: "Building, testing and using feedback models for decisions"
   author: "Wael Rashwan"
   repo-url: https://github.com/waelrash1/loopbricks
   repo-subdir: notebooks
@@ -15,32 +15,48 @@ book:
   repo-actions: [source, issue]
   chapters:
     - index.qmd
-    - part: "Foundations"
+    - part: "Getting started"
       chapters:
-        - 01-surprise.ipynb
-        - 02-stocks-flows.ipynb
-        - 03-loops.ipynb
-        - 04-patterns.ipynb
-    - part: "Core dynamics"
+        - c01-push-back.ipynb
+        - c02-story-to-diagram.ipynb
+    - part: "How structure drives behaviour"
       chapters:
-        - 05-first-order.ipynb
-        - 06-delays.ipynb
-        - 07-s-shaped.ipynb
-        - 08-lock-in.ipynb
-        - 09-chains.ipynb
-        - 10-oscillation.ipynb
-        - 11-archetypes.ipynb
-    - part: "Modelling practice"
+        - c03-loops.ipynb
+        - c04-delays.ipynb
+        - c05-decisions.ipynb
+        - c06-swings.ipynb
+        - c07-patterns.ipynb
+    - part: "Evidence"
       chapters:
-        - 12-process.ipynb
-        - 13-formulation.ipynb
-        - 14-behaviour.ipynb
-        - 15-cycles.ipynb
-        - 16-testing.ipynb
-    - part: "Advanced"
+        - c08-testing.ipynb
+        - c09-calibration.ipynb
+    - part: "Models in use"
       chapters:
-        - 17-mechanics.ipynb
-        - 18-frontier.ipynb
+        - c10-model-to-decision.ipynb
+        - c11-models-that-learn.ipynb
+  # ponytail: the 18 app-module notebooks stay as appendices so the app's links to them keep working;
+  # planned appendices (Python in a hurry, the package, the molecule catalogue...) go in front of them when written
+  appendices:
+    - 01-surprise.ipynb
+    - 02-stocks-flows.ipynb
+    - 03-loops.ipynb
+    - 04-patterns.ipynb
+    - 05-first-order.ipynb
+    - 06-delays.ipynb
+    - 07-s-shaped.ipynb
+    - 08-lock-in.ipynb
+    - 09-chains.ipynb
+    - 10-oscillation.ipynb
+    - 11-archetypes.ipynb
+    - 12-process.ipynb
+    - 13-formulation.ipynb
+    - 14-behaviour.ipynb
+    - 15-cycles.ipynb
+    - 16-testing.ipynb
+    - 17-mechanics.ipynb
+    - 18-frontier.ipynb
+
+bibliography: references.bib
 
 execute:
   enabled: true # run every notebook while rendering, so the book shows fresh plots
