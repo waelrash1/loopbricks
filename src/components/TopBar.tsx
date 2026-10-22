@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PanelLeft, Search } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { groupOf, search } from "@/data/catalog";
 import { searchApps } from "@/data/apps";
@@ -14,43 +14,22 @@ export const BrickMark = ({ size = 26 }: { size?: number }) => (
   </svg>
 );
 
+export type Section = "home" | "learn" | "library" | "cases" | "build";
+// Four places, named for what you do there; the book is the fifth, outside the app.
+const NAV: [Section, string, string][] = [
+  ["learn", "Learn", "/learn"],
+  ["library", "Library", "/library"],
+  ["cases", "Cases", "/apps"],
+  ["build", "Build", "/build"],
+];
+
 const navLink = (active: boolean) =>
   cn(
     "relative h-11 sm:h-16 inline-flex items-center text-[15px] font-semibold",
-    active ? "text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:rounded-t after:bg-accent" : "text-muted-foreground hover:text-foreground"
+    active ? "text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-t after:bg-accent" : "text-muted-foreground hover:text-foreground"
   );
 
-export default function TopBar({
-  onSelect,
-  onCase,
-  showMap,
-  mapActive,
-  startTour,
-  tourActive,
-  showApps,
-  appsActive,
-  showTree,
-  treeActive,
-  showMethods,
-  methodsActive,
-  paneOpen,
-  togglePane,
-}: {
-  onSelect: (k: string) => void;
-  onCase: (domain: string, id: string) => void;
-  showMap: () => void;
-  mapActive: boolean;
-  startTour: () => void;
-  tourActive: boolean;
-  showApps: () => void;
-  appsActive: boolean;
-  showTree: () => void;
-  treeActive: boolean;
-  showMethods: () => void;
-  methodsActive: boolean;
-  paneOpen: boolean;
-  togglePane: () => void;
-}) {
+export default function TopBar({ section, go, onSelect, onCase }: { section: Section; go: (hash: string) => void; onSelect: (k: string) => void; onCase: (domain: string, id: string) => void }) {
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const box = useRef<HTMLInputElement>(null);
@@ -62,11 +41,12 @@ export default function TopBar({
       ].slice(0, 9)
     : [];
 
-  // "/" jumps to search from anywhere
+  // "/" or Cmd+K jumps to search from anywhere
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (e.key !== "/" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const cmdK = e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey);
+      if (!cmdK && (e.key !== "/" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")) return;
       e.preventDefault();
       box.current?.focus();
     };
@@ -82,39 +62,23 @@ export default function TopBar({
 
   return (
     <header className="print:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
-      <div className="px-4 md:px-6 flex flex-wrap items-center gap-x-5 xl:gap-x-7">
-        <button
-          onClick={togglePane}
-          aria-expanded={paneOpen}
-          aria-label={paneOpen ? "Hide the side list" : "Show the side list"}
-          title={paneOpen ? "Hide the side list" : "Show the side list"}
-          className={cn("-mr-3 grid place-items-center w-9 h-9 rounded-[8px] hover:bg-muted", paneOpen ? "text-foreground" : "text-muted-foreground")}
-        >
-          <PanelLeft size={19} aria-hidden />
-        </button>
-        <button onClick={showMap} className="h-16 flex items-center gap-2.5 rounded-btn" aria-label="LoopBricks, all molecules">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 flex flex-wrap items-center gap-x-6 xl:gap-x-8">
+        <a href="#/" onClick={(e) => (e.preventDefault(), go("/"))} className="h-16 flex items-center gap-2.5 rounded-btn" aria-label="LoopBricks home">
           <BrickMark />
-          <span className="heading text-[20px]">LoopBricks</span>
-        </button>
-        <nav aria-label="Main" className="flex gap-5 xl:gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
-          <button onClick={showMap} aria-current={mapActive ? "page" : undefined} className={navLink(mapActive)}>
-            Molecules
-          </button>
-          <button onClick={startTour} aria-current={tourActive ? "page" : undefined} className={navLink(tourActive)}>
-            Guided tour
-          </button>
-          <button onClick={showTree} aria-current={treeActive ? "page" : undefined} className={navLink(treeActive)}>
-            Family tree
-          </button>
-          <button onClick={showApps} aria-current={appsActive ? "page" : undefined} className={navLink(appsActive)}>
-            Applications
-          </button>
-          <button onClick={showMethods} aria-current={methodsActive ? "page" : undefined} className={navLink(methodsActive)}>
-            Learn
-          </button>
+          <span className="heading text-[19px]">LoopBricks</span>
+        </a>
+        <nav aria-label="Main" className="flex gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+          {NAV.map(([id, label, hash]) => (
+            <a key={id} href={"#" + hash} onClick={(e) => (e.preventDefault(), go(hash))} aria-current={section === id ? "page" : undefined} className={navLink(section === id)}>
+              {label}
+            </a>
+          ))}
+          <a href="./book/" className={cn(navLink(false), "gap-1.5")}>
+            <BookOpen size={16} aria-hidden /> Book
+          </a>
         </nav>
 
-        <div className="relative ml-auto w-full sm:w-[220px] xl:w-[300px] order-4 sm:order-none pb-3 sm:pb-0">
+        <div className="relative ml-auto w-full sm:w-[220px] xl:w-[280px] order-4 sm:order-none pb-3 sm:pb-0">
           <label>
             <span className="sr-only">Find a molecule or healthcare case</span>
             <Search size={16} aria-hidden className="absolute left-3 top-[20px] sm:top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -136,7 +100,7 @@ export default function TopBar({
                 if (e.key === "Escape") setQuery("");
               }}
               onBlur={() => setQuery("")}
-              placeholder="Find a molecule or case"
+              placeholder="Search molecules and cases"
               className="w-full h-10 rounded-btn border border-border bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
             />
             <kbd aria-hidden className="hidden sm:grid absolute right-2.5 top-1/2 -translate-y-1/2 place-items-center w-5 h-5 rounded-[5px] bg-muted text-[11px] font-semibold text-muted-foreground">

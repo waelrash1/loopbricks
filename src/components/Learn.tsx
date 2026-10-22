@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, Check, ChevronLeft, ChevronRight, Clock, GraduationCap, X } from "lucide-react";
+import { ArrowDown, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { MODELS, type Model } from "@/data/molecules";
 import type { StudyDiagram } from "@/data/sterman/types";
 import { ARCHETYPES, LEARN_BY_MOLECULE, MODULE_CONTENT, archetypesFor, type ModuleContent } from "@/data/learn";
@@ -205,10 +205,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
   const next = MODULE_CONTENT.find((m) => !seen.has(doneKey(m.def.id)));
   return (
     <div className={`${wrap} pt-10 md:pt-14`}>
-      <p className="flex items-center gap-2 text-[14px] font-semibold text-muted-foreground">
-        <GraduationCap size={17} aria-hidden /> Learn system dynamics
-      </p>
-      <h1 className="display text-[36px] md:text-[52px] max-w-[20ch] mt-2">From feedback to models you can trust</h1>
+      <h1 className="display text-[36px] md:text-[48px] max-w-[20ch]">From feedback to models you can trust</h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-foreground/80 max-w-[64ch]">
         {MODULE_CONTENT.length} modules in four levels. Each one sets out what you will be able to do, explains the ideas with diagrams and equations, sends you into the simulator to
         try them, and ends with a short self-check.

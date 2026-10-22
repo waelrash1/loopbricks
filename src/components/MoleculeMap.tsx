@@ -1,15 +1,13 @@
-import { useEffect } from "react";
-import { Check, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, ExternalLink, Search } from "lucide-react";
 import { useSeen } from "@/lib/progress";
 import { GROUPS, MODELS } from "@/data/molecules";
-import { GROUP_BLURB } from "@/data/catalog";
-import { ALL_CASES, DOMAINS } from "@/data/apps";
+import { GROUP_BLURB, search } from "@/data/catalog";
 import { PRESETS } from "@/data/presets";
 import { useSimulation } from "@/hooks/useSimulation";
 import MiniDiagram from "@/components/MiniDiagram";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
-import { Button } from "@/components/ui/button";
 
 const DEMO = "stockmgmt";
 const DEMO_LENGTH = 60; // weeks: long enough to see the overshoot ring down
@@ -26,7 +24,7 @@ const slug = (title: string) => "fam-" + title.toLowerCase().replace(/[^a-z]+/g,
 
 // The hero is the product: a real molecule, running. Stock management with the supply line ignored
 // overshoots and oscillates, which is the most recognisable behaviour in the whole catalogue.
-function LiveDemo({ onOpen }: { onOpen: () => void }) {
+export function LiveDemo({ onOpen }: { onOpen: () => void }) {
   const model = MODELS[DEMO];
   const sim = useSimulation(model);
   const { applyParams, play, reset, setSpeed, setStopTime, subscribe } = sim;
@@ -78,47 +76,55 @@ function LoopTag({ k }: { k: string }) {
   );
 }
 
-export default function MoleculeMap({ onSelect, onStartTour, onApps, onTree }: { onSelect: (k: string) => void; onStartTour: () => void; onApps: () => void; onTree: () => void }) {
+// The library: every molecule by family, with a filter and a switch to the family tree.
+export default function MoleculeMap({ onSelect, onTree, missing }: { onSelect: (k: string) => void; onTree: () => void; missing?: string }) {
   const total = Object.keys(MODELS).length;
   const seen = useSeen();
+  const [q, setQ] = useState("");
+  const hits = q.trim() ? new Set(search(q).map((r) => r.key)) : null;
+  const groups = GROUPS.map((g) => ({ ...g, keys: hits ? g.keys.filter((k) => hits.has(k)) : g.keys })).filter((g) => g.keys.length);
   // hash routing owns the URL, so family links scroll instead of using #anchors
   const jump = (title: string) => document.getElementById(slug(title))?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 md:px-8">
-      <section className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-10 lg:gap-14 items-center pt-10 md:pt-16 pb-14 md:pb-20">
-        <div className="min-w-0">
-          <h1 className="display text-[44px] sm:text-[58px] xl:text-[66px]">Big models are built from small molecules.</h1>
-          <p className="mt-6 text-[18px] leading-[1.55] text-foreground/80 max-w-[38ch]">
-            {total} runnable building blocks from Jim Hines’ <i>Molecules of Structure</i>. Predict what each one does, then press play.
+    <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-8 md:pt-12">
+      {missing && (
+        <p role="alert" className="sheet mb-6 text-[15px]">
+          There is no molecule called &ldquo;{missing}&rdquo;. Pick one below, or filter by name.
+        </p>
+      )}
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div>
+          <h1 className="display text-[36px] md:text-[48px]">Library</h1>
+          <p className="mt-3 text-[16px] leading-[1.55] text-foreground/80 max-w-[56ch]">
+            {total} molecules in {GROUPS.length} families, from a single stock to whole projects. Open one to run it.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" onClick={onStartTour}>
-              Start the tour
-            </Button>
-            <Button size="lg" variant="secondary" onClick={() => onSelect("bathtub")}>
-              Open the Bathtub
-            </Button>
-          </div>
         </div>
-        <LiveDemo onOpen={() => onSelect(DEMO)} />
-      </section>
-
-      <p className="mb-3 text-[15px] text-foreground/80">
-        Twelve families, from the simplest stock to whole projects.{" "}
-        <button onClick={onTree} className="tlink font-semibold text-foreground">
-          See how they connect in the family tree
-        </button>
-      </p>
-      <nav aria-label="Families" className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
-        {GROUPS.map((g) => (
-          <button key={g.title} onClick={() => jump(g.title)} className="brick brick-w shrink-0 h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap">
-            {g.title} <span className="ml-1 text-muted-foreground font-normal">{g.keys.length}</span>
+        <div role="tablist" aria-label="View" className="inline-flex rounded-btn bg-muted p-1 text-[14px] font-semibold">
+          <span role="tab" aria-selected className="rounded-[7px] bg-card px-3.5 py-1.5 shadow-sm">By family</span>
+          <button role="tab" aria-selected={false} onClick={onTree} className="rounded-[7px] px-3.5 py-1.5 text-muted-foreground hover:text-foreground">
+            Family tree
           </button>
-        ))}
-      </nav>
+        </div>
+      </div>
 
-      {GROUPS.map((group) => (
+      <div className="mt-8 flex flex-col md:flex-row md:items-start gap-3">
+        <label className="relative md:w-[280px] shrink-0">
+          <span className="sr-only">Filter molecules</span>
+          <Search size={16} aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter, e.g. delay or split" className="w-full h-10 rounded-btn border border-border bg-card pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none" />
+        </label>
+        <nav aria-label="Families" className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+          {groups.map((g) => (
+            <button key={g.title} onClick={() => jump(g.title)} className="brick brick-w shrink-0 h-9 px-3 text-[13px] font-semibold whitespace-nowrap">
+              {g.title} <span className="ml-1 text-muted-foreground font-normal">{g.keys.length}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+      {hits && !groups.length && <p className="mt-10 text-[15px] text-muted-foreground">Nothing matches &ldquo;{q.trim()}&rdquo;. Try a shorter word, like &ldquo;delay&rdquo; or &ldquo;stock&rdquo;.</p>}
+
+      {groups.map((group) => (
         <section key={group.title} id={slug(group.title)} className="pt-12 md:pt-16">
           <h2 className="heading text-[26px] md:text-[30px]">{group.title}</h2>
           <p className="mt-2 mb-6 text-[15px] leading-[1.55] text-muted-foreground max-w-[60ch]">{GROUP_BLURB[group.title]}</p>
@@ -147,18 +153,6 @@ export default function MoleculeMap({ onSelect, onStartTour, onApps, onTree }: {
         </section>
       ))}
 
-      <section className="pt-16 md:pt-20">
-        <button onClick={onApps} className="brick brick-y w-full text-left p-6 md:p-8 grid md:grid-cols-[minmax(0,1fr)_auto] gap-4 items-center">
-          <span>
-            <span className="heading block text-[24px] md:text-[28px]">The molecules at work</span>
-            <span className="block mt-2 text-[15px] leading-[1.55] max-w-[70ch]">
-              {ALL_CASES.length} cases from published studies in {DOMAINS.length} fields, from {DOMAINS.map((d) => d.short.toLowerCase()).join(", ")}. Each runs in the browser, with the data it needs and checks on what it shows.
-            </span>
-          </span>
-          <span className="text-[15px] font-semibold whitespace-nowrap">Open the library</span>
-        </button>
-      </section>
-
       {DEMOS.length > 0 && (
         <section className="pt-16 md:pt-20">
           <h2 className="heading text-[26px] md:text-[30px]">Other demos</h2>
@@ -179,9 +173,8 @@ export default function MoleculeMap({ onSelect, onStartTour, onApps, onTree }: {
 
       <footer className="mt-20 border-t border-border pt-8 text-[13px] leading-[1.6] text-muted-foreground">
         <p className="max-w-[70ch]">
-          <span className="chip chipB">B</span>marks a balancing loop, <span className="chip chipR">R</span>a reinforcing one. Main reference: Jim Hines,{" "}
-          <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03 (2015). The molecules and their equations are his; the
-          lessons and causal loop diagrams were added for this app.
+          <span className="chip chipB">B</span>marks a balancing loop, <span className="chip chipR">R</span>a reinforcing one. Most molecules are our own implementations of structures described in Jim Hines,{" "}
+          <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03; the two archetype models are our own. The lessons and causal loop diagrams were added for this app.
         </p>
       </footer>
     </div>

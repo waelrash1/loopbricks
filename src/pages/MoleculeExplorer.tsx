@@ -1,12 +1,13 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { TOUR, childrenOf, groupOf, parentsOf } from "@/data/catalog";
 import { PRESETS } from "@/data/presets";
 import { LESSONS } from "@/data/lessons";
 import { useSimulation } from "@/hooks/useSimulation";
-import TopBar from "@/components/TopBar";
-import SidePane from "@/components/SidePane";
+import TopBar, { type Section } from "@/components/TopBar";
+import Home from "@/components/Home";
 import SiteFooter from "@/components/SiteFooter";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
@@ -28,19 +29,21 @@ import { useShelf } from "@/lib/runs";
 import { markSeen } from "@/lib/progress";
 import { caseIn, casesUsing, domainById } from "@/data/apps";
 
-// The address bar is the source of truth, so Back/Forward and shared links work:
-//   #/            overview map
-//   #/m/<key>     one molecule
-//   #/tour/<n>    guided tour, lesson n (1-based)
-//   #/methods     methods guide; #/methods/<page> one page; #/learn[/<module>] the curriculum
-//   #/tree        family tree; #/tree/<key> with that molecule selected
-//   #/apps        applications: #/apps/<field> a field's cases; #/apps/<field>/<id> one case
-type Route = { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "curriculum"; module?: string; id?: string };
+// The address bar is the source of truth, so Back/Forward and shared links work. Four sections:
+//   Learn:   #/learn[/<module>[/<id>]] the course and practice pages, #/tour/<n> the quick tour, #/methods[/<page>]
+//   Library: #/library all molecules, #/m/<key> one molecule, #/tree[/<key>] the family tree
+//   Cases:   #/apps[/<field>[/<id>]]
+//   Build:   #/build (also #/learn/build)
+// #/ is the home page. Every older address still resolves.
+type Route = { view: "home" } | { view: "map"; missing?: string } | { view: "molecule"; key: string } | { view: "learn"; idx: number } | { view: "apps"; domain?: string; id?: string } | { view: "tree"; key?: string } | { view: "methods"; page?: string } | { view: "curriculum"; module?: string; id?: string };
 function parseRoute(): Route {
   const [, a, b, c] = window.location.hash.split("/");
+  if (!a) return { view: "home" };
+  if (a === "library") return { view: "map" };
   if (a === "m" && MODELS[b]) return { view: "molecule", key: b };
   if (a === "tour" && TOUR[Number(b) - 1]) return { view: "learn", idx: Number(b) - 1 };
   if (a === "learn") return { view: "curriculum", module: b || undefined, id: c || undefined };
+  if (a === "build") return { view: "curriculum", module: "build" };
   // the old chapter-by-chapter study guide now lives in the curriculum
   if (a === "methods" && b === "book") return { view: "curriculum" };
   if (a === "methods") return { view: "methods", page: METHOD_PAGES.some((p) => p.id === b) ? b : undefined };
@@ -49,9 +52,37 @@ function parseRoute(): Route {
     const d = domainById(b);
     return { view: "apps", domain: d?.id, id: caseIn(d, c) ? c : undefined };
   }
-  // a link to a molecule that doesn't exist lands on the catalogue with a note, not silently
-  return { view: "map", missing: a === "m" && b ? b : undefined };
+  // a link to a molecule that doesn't exist lands in the library with a note, not silently
+  return a === "m" ? { view: "map", missing: b || undefined } : { view: "home" };
 }
+const sectionOf = (r: Route): Section =>
+  r.view === "home" ? "home" : r.view === "apps" ? "cases" : r.view === "curriculum" && r.module === "build" ? "build" : r.view === "learn" || r.view === "curriculum" || r.view === "methods" ? "learn" : "library";
+
+// The pages inside Learn, one row of tabs so nothing is more than one click away.
+const LEARN_TABS: [string, string, (r: Route) => boolean][] = [
+  ["Course", "/learn", (r) => r.view === "curriculum" && (!r.module || !["games", "draw", "projects", "glossary", "teach", "review", "check", "progress", "assigned"].includes(r.module))],
+  ["Quick tour", "/tour/1", (r) => r.view === "learn"],
+  ["Games", "/learn/games", (r) => r.view === "curriculum" && r.module === "games"],
+  ["Draw the loops", "/learn/draw", (r) => r.view === "curriculum" && r.module === "draw"],
+  ["Projects", "/learn/projects", (r) => r.view === "curriculum" && r.module === "projects"],
+  ["Methods", "/methods", (r) => r.view === "methods"],
+  ["Glossary", "/learn/glossary", (r) => r.view === "curriculum" && r.module === "glossary"],
+  ["For instructors", "/learn/teach", (r) => r.view === "curriculum" && ["teach", "progress", "assigned", "review", "check"].includes(r.module ?? "")],
+];
+function LearnTabs({ route }: { route: Route }) {
+  return (
+    <nav aria-label="Learn" className="print:hidden border-b border-border bg-card/60">
+      <div className="max-w-[1320px] mx-auto px-4 md:px-8 flex gap-1 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {LEARN_TABS.map(([label, hash, on]) => (
+          <a key={hash} href={"#" + hash} onClick={(e) => (e.preventDefault(), go(hash))} aria-current={on(route) ? "page" : undefined} className={cn("h-11 inline-flex items-center px-3 text-[14px] font-semibold rounded-t-[8px] border-b-2", on(route) ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+            {label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 const go = (hash: string) => {
   window.location.hash = hash;
 };
@@ -59,23 +90,7 @@ const go = (hash: string) => {
 export default function MoleculeExplorer() {
   const [route, setRoute] = useState(parseRoute);
   const [showInfluences, setShowInfluences] = useState(true);
-  // open by default on wide screens, where the choice is remembered
-  const [paneOpen, setPaneOpen] = useState(() => {
-    if (!matchMedia("(min-width: 1024px)").matches) return false;
-    try {
-      return localStorage.getItem("pane") !== "closed";
-    } catch {
-      return true;
-    }
-  });
-  const togglePane = (open = !paneOpen) => {
-    setPaneOpen(open);
-    try {
-      if (matchMedia("(min-width: 1024px)").matches) localStorage.setItem("pane", open ? "open" : "closed");
-    } catch {
-      // storage blocked: the pane just won't remember
-    }
-  };
+  const [tab, setTab] = useState("explain");
   useEffect(() => {
     if (route.view === "molecule") markSeen(route.key);
     if (route.view === "apps" && route.id) markSeen(`${route.domain}/${route.id}`);
@@ -96,9 +111,7 @@ export default function MoleculeExplorer() {
   const sim = useSimulation(model);
   const shelf = useShelf(key);
   const open = (k: string) => go(`/m/${k}`);
-  const showMap = () => go("/");
-  const startTour = () => go("/tour/1");
-  const showApps = () => go("/apps");
+  const showMap = () => go("/library");
   const showTree = (k?: string) => go(k ? `/tree/${k}` : "/tree");
   const showMethods = (p?: string) => go(p ? `/methods/${p}` : "/methods");
   const openDomain = (d: string) => go(`/apps/${d}`);
@@ -114,7 +127,7 @@ export default function MoleculeExplorer() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "map" || view === "apps" || view === "tree" || view === "methods" || view === "curriculum") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || view === "home" || view === "map" || view === "apps" || view === "tree" || view === "methods" || view === "curriculum") return;
       if (e.key === " ") {
         e.preventDefault();
         sim.toggle();
@@ -147,35 +160,31 @@ export default function MoleculeExplorer() {
   const siblings = GROUPS.find((g) => g.keys.includes(key))?.keys ?? [];
   const smallBrick = "brick brick-w h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap";
 
+  const section = sectionOf(route);
+  const TABS: [string, string][] = [
+    ["explain", "Explain"],
+    ["loops", "Loops"],
+    ["equations", "Equations"],
+    ["runs", "Runs and data"],
+    ["python", "Python"],
+    ["course", "In the course"],
+  ];
+  // the panels below were written as page sections; inside a tab they lose their own heading and top margin
+  const inTab = "[&>section]:mt-0 [&>section]:block [&>section>h2]:sr-only";
+
   return (
-    <div className="min-h-[100dvh]">
+    <div className="min-h-[100dvh] flex flex-col">
       <a href="#main" onClick={(e) => (e.preventDefault(), document.getElementById("main")?.focus())} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-40 brick brick-y px-4 py-2 text-sm font-semibold">
         Skip to content
       </a>
-      <TopBar onSelect={open} onCase={openCase} showMap={showMap} mapActive={view === "map"} startTour={startTour} tourActive={view === "learn"} showApps={showApps} appsActive={view === "apps"} showTree={() => showTree()} treeActive={view === "tree"} showMethods={() => go("/learn")} methodsActive={view === "methods" || view === "curriculum"} paneOpen={paneOpen} togglePane={() => togglePane()} />
+      <TopBar section={section} go={go} onSelect={open} onCase={openCase} />
+      {section === "learn" && <LearnTabs route={route} />}
 
-      <div className="flex">
-        {paneOpen && (
-          <SidePane
-            initialMode={view === "apps" ? "apps" : "molecules"}
-            current={route.view === "apps" ? `${route.domain}/${route.id}` : route.view === "tree" ? route.key : view === "molecule" || view === "learn" ? key : undefined}
-            onMolecule={open}
-            onCase={(k) => go(`/apps/${k}`)}
-            onClose={() => togglePane(false)}
-          />
-        )}
-        <main id="main" tabIndex={-1} className="flex-1 min-w-0 focus:outline-none">
-        {view === "map" ? (
-          <>
-            {route.view === "map" && route.missing && (
-              <p role="alert" className="max-w-[1320px] mx-auto px-4 md:px-8 pt-6">
-                <span className="sheet block text-[15px]">
-                  There is no molecule called “{route.missing}”. Pick one from the catalogue below, or search for it at the top.
-                </span>
-              </p>
-            )}
-            <MoleculeMap onSelect={open} onStartTour={startTour} onApps={showApps} onTree={() => showTree()} />
-          </>
+      <main id="main" tabIndex={-1} className="flex-1 min-w-0 focus:outline-none">
+        {view === "home" ? (
+          <Home go={go} />
+        ) : view === "map" ? (
+          <MoleculeMap onSelect={open} onTree={() => showTree()} missing={route.view === "map" ? route.missing : undefined} />
         ) : route.view === "curriculum" ? (
           <Suspense fallback={<p className="max-w-[1100px] mx-auto px-4 md:px-8 pt-10 text-muted-foreground">Loading…</p>}>
             <LearnRoutes page={route.module} id={route.id} go={go} />
@@ -188,7 +197,16 @@ export default function MoleculeExplorer() {
           )
         ) : route.view === "tree" ? (
           // on a large screen the tree view is exactly one window tall, so the whole map is visible at once
-          <div className="px-4 md:px-6 pt-5 pb-4 lg:h-[calc(100dvh-4rem)] flex flex-col">
+          <div className="px-4 md:px-6 pt-4 pb-4 lg:h-[calc(100dvh-4rem)] flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-4">
+              <h1 className="heading text-[22px]">Family tree</h1>
+              <div role="tablist" aria-label="View" className="inline-flex rounded-btn bg-muted p-1 text-[14px] font-semibold">
+                <button role="tab" aria-selected={false} onClick={showMap} className="rounded-[7px] px-3.5 py-1.5 text-muted-foreground hover:text-foreground">
+                  By family
+                </button>
+                <span role="tab" aria-selected className="rounded-[7px] bg-card px-3.5 py-1.5 shadow-sm">Family tree</span>
+              </div>
+            </div>
             <div className="flex-1 min-h-0">
               <FamilyTree initial={route.key} onOpen={open} />
             </div>
@@ -213,7 +231,7 @@ export default function MoleculeExplorer() {
               onNext={() => gotoLesson(lessonIdx + 1)}
               onJump={gotoLesson}
               lessons={TOUR.map((k) => MODELS[k].name)}
-              onExit={showMap}
+              onExit={() => go("/learn")}
               onReveal={(preset) => {
                 if (preset) sim.applyParams(preset);
                 sim.reset();
@@ -238,10 +256,10 @@ export default function MoleculeExplorer() {
           </div>
         ) : (
           <div className={`${wrap} pt-6 md:pt-8`}>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted-foreground mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted-foreground mb-4">
               <p>
                 <button onClick={showMap} className="hover:text-foreground">
-                  Molecules
+                  Library
                 </button>
                 <span aria-hidden className="mx-2">/</span>
                 <span className="text-foreground font-semibold">{groupOf(key)}</span>
@@ -259,158 +277,154 @@ export default function MoleculeExplorer() {
               </nav>
             </div>
 
-            <h1 className="display text-[34px] sm:text-[40px] md:text-[60px] max-w-[22ch] hyphens-auto [overflow-wrap:anywhere]">{model.title}</h1>
-            <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{model.lede}</p>
+            <h1 className="display text-[30px] sm:text-[36px] md:text-[44px] max-w-[26ch] hyphens-auto [overflow-wrap:anywhere]">{model.title}</h1>
+            <p className="mt-3 text-[17px] leading-[1.55] text-foreground/80 max-w-[70ch]">{model.lede}</p>
 
-            {(parents.length > 0 || children.length > 0) && (
-              <dl className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4">
-                {(
-                  [
-                    ["Built from", parents],
-                    ["Used in", children],
-                  ] as const
-                ).map(
-                  ([label, keys]) =>
-                    keys.length > 0 && (
-                      <div key={label}>
-                        <dt className="text-[13px] text-muted-foreground mb-2">{label}</dt>
-                        <dd className="flex flex-wrap gap-2">
-                          {keys.map((k) => (
-                            <button key={k} onClick={() => open(k)} className={smallBrick}>
-                              {MODELS[k].name}
-                            </button>
-                          ))}
-                        </dd>
-                      </div>
-                    )
-                )}
-                <div>
-                  <button onClick={() => showTree(key)} className="tlink text-[13px] font-semibold">
-                    See it in the family tree
-                  </button>
-                </div>
-              </dl>
-            )}
-
-            <div className={`${bench} mt-10`}>
-              <div className="flex flex-col gap-5 min-w-0">
-                <section className="sheet">
-                  <div className="sheet-head">
-                    <h2 className={h2}>Stock and flow diagram</h2>
-                    <label className={`flex items-center gap-2 cursor-pointer select-none ${hint}`}>
-                      <input type="checkbox" checked={showInfluences} onChange={(e) => setShowInfluences(e.target.checked)} className="w-4 h-4 accent-[hsl(var(--foreground))]" />
-                      Show influences and feedback
-                    </label>
-                  </div>
-                  <StockFlowDiagram model={model} modelKey={key} subscribe={sim.subscribe} running={sim.running} showInfluences={showInfluences} />
-                  <div className={`flex flex-wrap gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-border ${hint}`}>
-                    <span><span className="text-foreground">⧓</span> valve on a flow</span>
-                    <span><span style={{ color: "var(--viz-info)" }}>→</span> constant or information link</span>
-                    <span><span style={{ color: "var(--viz-acc2)" }}>→</span> feedback from a stock to a flow</span>
-                    <span><span className="chip chipB">B</span>balancing loop</span>
-                    <span><span className="chip chipR">R</span>reinforcing loop</span>
-                  </div>
-                </section>
-
-                <div data-runs-host className="flex flex-col gap-5">
+            <div data-runs-host className="mt-7">
+              <div className={bench}>
+                <div className="flex flex-col gap-5 min-w-0">
+                  <section className="sheet">
+                    <div className="sheet-head">
+                      <h2 className={h2}>Stock and flow diagram</h2>
+                      <label className={`flex items-center gap-2 cursor-pointer select-none ${hint}`}>
+                        <input type="checkbox" checked={showInfluences} onChange={(e) => setShowInfluences(e.target.checked)} className="w-4 h-4 accent-[hsl(var(--foreground))]" />
+                        Show influences and feedback
+                      </label>
+                    </div>
+                    <StockFlowDiagram model={model} modelKey={key} subscribe={sim.subscribe} running={sim.running} showInfluences={showInfluences} />
+                    <div className={`flex flex-wrap gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-border ${hint}`}>
+                      <span><span className="text-foreground">⧓</span> valve on a flow</span>
+                      <span><span style={{ color: "var(--viz-info)" }}>→</span> constant or information link</span>
+                      <span><span style={{ color: "var(--viz-acc2)" }}>→</span> feedback from a stock to a flow</span>
+                      <span><span className="chip chipB">B</span>balancing loop</span>
+                      <span><span className="chip chipR">R</span>reinforcing loop</span>
+                    </div>
+                  </section>
                   {behavior}
-                  <RunsPanel modelKey={key} model={model} sim={sim} />
                 </div>
-
-                <section className="sheet">
-                  <div className="sheet-head">
-                    <h2 className={h2}>Causal loop diagram</h2>
-                    <span className={hint}>The sign on each link is its polarity</span>
-                  </div>
-                  <CausalLoopDiagram model={model} />
-                </section>
-
-                <section className="sheet">
-                  <div className="sheet-head">
-                    <h2 className={h2}>Equations</h2>
-                    <span className={hint}>Constants update as you move the sliders</span>
-                  </div>
-                  <EquationsPanel model={model} modelKey={key} params={sim.params} />
-                </section>
+                {controls}
               </div>
 
-              {controls}
-            </div>
-
-            <section className="mt-16 grid lg:grid-cols-[260px_minmax(0,1fr)] gap-x-10 gap-y-4">
-              <h2 className="heading text-[26px]">What it is and when to use it</h2>
-              <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />
-            </section>
-
-            <Suspense fallback={null}>
-              <LearnPanel
-                molecule={key}
-                onModule={(id, anchor) => {
-                  go(`/learn/${id}`);
-                  if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
-                }}
-              />
-            </Suspense>
-
-            <Suspense fallback={null}>
-              <PythonPanel molecule={key} onOpen={(h) => go(h)} />
-            </Suspense>
-
-            {casesUsing(key).length > 0 && (
-              <section className="mt-16">
-                <h2 className="heading text-[20px] mb-1">At work in the applications</h2>
-                <p className="text-[14px] text-muted-foreground mb-4">Published cases whose structure uses this molecule.</p>
-                <div className="flex flex-wrap gap-2">
-                  {casesUsing(key).map(({ domain, c }) => (
-                    <button key={domain.id + c.id} onClick={() => openCase(domain.id, c.id)} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
-                      <span className="block text-[11.5px] font-normal text-muted-foreground">{domain.short}</span>
-                      {c.title}
+              <div className="mt-10">
+                <div role="tablist" aria-label="About this molecule" className="flex gap-1 overflow-x-auto whitespace-nowrap border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {TABS.map(([id, label]) => (
+                    <button key={id} role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls="tabpanel" onClick={() => setTab(id)} className={cn("h-11 px-3.5 text-[15px] font-semibold border-b-[3px] -mb-px", tab === id ? "border-accent text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                      {label}
                     </button>
                   ))}
                 </div>
-              </section>
-            )}
-
-            {siblings.length > 1 && (
-              <section className="mt-16">
-                <h2 className="heading text-[20px] mb-4">More in {groupOf(key)}</h2>
-                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
-                  {siblings.map((k) =>
-                    k === key ? (
-                      <span key={k} aria-current="page" className="brick brick-y h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap inline-flex items-center shrink-0">
-                        {MODELS[k].name}
-                      </span>
-                    ) : (
-                      <button key={k} onClick={() => open(k)} className={`${smallBrick} shrink-0`}>
-                        {MODELS[k].name}
-                      </button>
-                    )
+                <div role="tabpanel" id="tabpanel" aria-labelledby={`tab-${tab}`} className="pt-7 min-h-[240px]">
+                  {tab === "explain" && <div className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />}
+                  {tab === "loops" && (
+                    <section className="sheet max-w-[900px]">
+                      <div className="sheet-head">
+                        <h2 className={h2}>Causal loop diagram</h2>
+                        <span className={hint}>The sign on each link is its polarity</span>
+                      </div>
+                      <CausalLoopDiagram model={model} />
+                    </section>
+                  )}
+                  {tab === "equations" && (
+                    <section className="sheet">
+                      <div className="sheet-head">
+                        <h2 className={h2}>Equations</h2>
+                        <span className={hint}>Constants update as you move the sliders</span>
+                      </div>
+                      <EquationsPanel model={model} modelKey={key} params={sim.params} />
+                    </section>
+                  )}
+                  {tab === "runs" && <RunsPanel modelKey={key} model={model} sim={sim} />}
+                  {tab === "python" && (
+                    <div className={inTab}>
+                      <Suspense fallback={<p className={hint}>Loading…</p>}>
+                        <PythonPanel molecule={key} onOpen={(h) => go(h)} />
+                      </Suspense>
+                    </div>
+                  )}
+                  {tab === "course" && (
+                    <div className={inTab}>
+                      <Suspense fallback={<p className={hint}>Loading…</p>}>
+                        <LearnPanel
+                          molecule={key}
+                          onModule={(id, anchor) => {
+                            go(`/learn/${id}`);
+                            if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }), 400);
+                          }}
+                        />
+                      </Suspense>
+                    </div>
                   )}
                 </div>
-              </section>
-            )}
+              </div>
+            </div>
 
-            <nav aria-label="Next and previous molecule" className="mt-10 grid sm:grid-cols-2 gap-4">
+            <div className="mt-14 grid md:grid-cols-2 gap-x-10 gap-y-10">
+              {(parents.length > 0 || children.length > 0 || siblings.length > 1) && (
+                <section>
+                  <h2 className="heading text-[18px] mb-3">Related molecules</h2>
+                  <dl className="grid gap-4">
+                    {(
+                      [
+                        ["Built from", parents],
+                        ["Used in", children],
+                        [`Also in ${groupOf(key)}`, siblings.filter((k) => k !== key)],
+                      ] as const
+                    ).map(
+                      ([label, keys]) =>
+                        keys.length > 0 && (
+                          <div key={label}>
+                            <dt className="text-[13px] text-muted-foreground mb-2">{label}</dt>
+                            <dd className="flex flex-wrap gap-2">
+                              {keys.map((k) => (
+                                <button key={k} onClick={() => open(k)} className={smallBrick}>
+                                  {MODELS[k].name}
+                                </button>
+                              ))}
+                            </dd>
+                          </div>
+                        )
+                    )}
+                  </dl>
+                  <button onClick={() => showTree(key)} className="tlink mt-4 text-[13px] font-semibold">
+                    See it in the family tree
+                  </button>
+                </section>
+              )}
+              {casesUsing(key).length > 0 && (
+                <section>
+                  <h2 className="heading text-[18px] mb-3">Used in cases</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {casesUsing(key).map(({ domain, c }) => (
+                      <button key={domain.id + c.id} onClick={() => openCase(domain.id, c.id)} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
+                        <span className="block text-[11.5px] font-normal text-muted-foreground">{domain.short}</span>
+                        {c.title}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+
+            <nav aria-label="Next and previous molecule" className="mt-12 grid sm:grid-cols-2 gap-4">
               {prevKey ? (
                 <button onClick={() => open(prevKey)} className="brick brick-w text-left px-5 py-4">
                   <span className="flex items-center gap-1 text-[13px] text-muted-foreground"><ChevronLeft size={14} aria-hidden /> Previous</span>
-                  <span className="heading block text-[20px] mt-1">{MODELS[prevKey].name}</span>
+                  <span className="heading block text-[19px] mt-1">{MODELS[prevKey].name}</span>
                 </button>
               ) : (
                 <span />
               )}
               {nextKey && (
-                <button onClick={() => open(nextKey)} className="brick brick-y text-left sm:text-right px-5 py-4">
-                  <span className="flex sm:justify-end items-center gap-1 text-[13px]">Next <ChevronRight size={14} aria-hidden /></span>
-                  <span className="heading block text-[20px] mt-1">{MODELS[nextKey].name}</span>
+                <button onClick={() => open(nextKey)} className="brick brick-w text-left sm:text-right px-5 py-4">
+                  <span className="flex sm:justify-end items-center gap-1 text-[13px] text-muted-foreground">Next <ChevronRight size={14} aria-hidden /></span>
+                  <span className="heading block text-[19px] mt-1">{MODELS[nextKey].name}</span>
                 </button>
               )}
             </nav>
           </div>
         )}
-          <SiteFooter />
-        </main>
-      </div>
+      </main>
+      <SiteFooter />
     </div>
   );
 }
