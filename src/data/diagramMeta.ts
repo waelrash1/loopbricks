@@ -18,7 +18,7 @@ export type FlowMeta = { name: string; eq: string; in: string[]; loop?: "B" | "R
 export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
   bathtub: {
     in: { name: "Inflow", eq: "inflow", in: ["inflow"] },
-    out: { name: "Outflow", eq: "MIN(outflow, Level / DT + inflow)", in: ["outflow", "level", "inflow"] },
+    out: { name: "Outflow", eq: "MIN(outflow, Level / minimum draining time + inflow)", in: ["outflow", "level", "inflow", "minDrain"] },
   },
   cascade: {
     in: { name: "inflow", eq: "inflow", in: ["inflow"] },
@@ -63,8 +63,8 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
     deaths: { name: "deaths", eq: "Elderly / τ_elder", in: ["old", "tO"], loop: "B" },
   },
   smooth: {
-    adj1: { name: "adjust (1st)", eq: "(Input − Perceived₁) / τ", in: ["input", "s1", "tau"], loop: "B" },
-    adj3: { name: "adjust (3rd)", eq: "(stage₂ − Perceived₃) / (τ/3)", in: ["s3", "tau"], loop: "B" },
+    adj1: { name: "adjust (1st)", eq: "(Input − Perceived₁) / τ", in: ["target", "s1", "tau"], loop: "B" },
+    adj3: { name: "adjust (3rd)", eq: "(stage₂ − Perceived₃) / (τ/3)", in: ["target", "s3", "tau"], loop: "B" },
   },
   closegap: {
     adj: { name: "adjustment", eq: "(Goal − Actual) / AT", in: ["goal", "actual", "at"], loop: "B" },
@@ -77,7 +77,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
       loop: "B",
     },
     acquisition: { name: "acquisition", eq: "SupplyLine / acquisition delay", in: ["sl", "acq"], loop: "B" },
-    sales: { name: "sales", eq: "MIN(demand, Inventory / DT)", in: ["demand", "inv"] },
+    sales: { name: "sales", eq: "MIN(demand, Inventory / minimum shipping time)", in: ["demand", "inv"] },
   },
   trend: {
     grow: { name: "growth", eq: "Actual × g", in: ["input", "g"], loop: "R" },
@@ -130,7 +130,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
   },
   capacityUtil: {
     prod: { name: "production", eq: "capacity × utilization(desired / capacity)", in: ["capacity", "demand", "inventory", "targetInv", "adj"], loop: "B" },
-    sales: { name: "sales", eq: "demand", in: ["demand"] },
+    sales: { name: "sales", eq: "MIN(demand, Inventory / minimum shipping time)", in: ["demand", "inventory"] },
   },
   weightedAvg: {
     adjust: { name: "adjust to blend", eq: "(w·A + (1−w)·B − estimate) / τ", in: ["srcA", "srcB", "weightA", "tau", "estimate"], loop: "B" },
@@ -204,7 +204,7 @@ export const FLOW_META: Record<string, Record<string, FlowMeta>> = {
 
 type Eq = [string, string];
 export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
-  bathtub: { stocks: [["Level", "INTEG(Inflow − Outflow, 50)"]] },
+  bathtub: { stocks: [["Level", "INTEG(Inflow − Outflow, 50)"]], aux: [["minimum draining time", "0.25 yr by default: the fastest the tub can empty what it holds"]] },
   cascade: {
     stocks: [
       ["Stage1", "INTEG(inflow − flow 1→2, 60)"],
@@ -262,7 +262,7 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
       ["Supply line", "INTEG(order rate − acquisition, demand × acquisition delay)"],
       ["Inventory", "INTEG(acquisition − sales, 60)"],
     ],
-    aux: [["desired supply line", "demand × acquisition delay"]],
+    aux: [["desired supply line", "demand × acquisition delay"], ["minimum shipping time", "1 wk"]],
   },
   trend: {
     stocks: [
@@ -328,7 +328,7 @@ export const DIAGRAM_EXTRA: Record<string, { stocks: Eq[]; aux?: Eq[] }> = {
   },
   capacityUtil: {
     stocks: [["Inventory", "INTEG(production − sales, 50)"]],
-    aux: [["desired production", "demand + (target − Inventory)/restock"], ["utilization", "1 − e^(−1.3 × desired/capacity)"]],
+    aux: [["desired production", "demand + (target − Inventory)/restock"], ["utilization", "1 − e^(−1.3 × desired/capacity)"], ["minimum shipping time", "1 wk"]],
   },
   weightedAvg: { stocks: [["Estimate", "INTEG(adjust to blend, 50)"]], aux: [["blend", "w·A + (1−w)·B"]] },
   presentValue: {

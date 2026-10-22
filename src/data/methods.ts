@@ -429,7 +429,7 @@ const PAGES: MethodPage[] = [
         table: {
           head: ["Test", "What we did", "Result"],
           rows: [
-            ["Extreme conditions", "Bathtub with no inflow and the drain at 30 per year", "The level stops at 0 and never goes negative"],
+            ["Extreme conditions", "Bathtub with no inflow and the drain at 30 per year", "The level falls 30 a year to about 7.5, then the drain can take no more than the level over the 0.25-year minimum draining time, so it eases to almost 0 by year 2.5 and never goes negative"],
             ["Extreme conditions", "Stock Management with demand at its minimum", "Inventory settles at the target of 100, not above or below"],
             ["Integration error", "Stock Management ignoring the supply line, time step 0.5, 0.25, 0.1 and 0.05", "Peak inventory 111.7, 110.7, 110.2 and 110.0: the app's step of 0.1 is within 0.2% of the finest"],
             ["Behaviour anomaly", "Set the supply-line weight from 1 to 0", "Peak inventory rises from 100 to 110 and oscillation appears, as theory predicts"],

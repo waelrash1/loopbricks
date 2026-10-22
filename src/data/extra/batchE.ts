@@ -9,7 +9,7 @@ import type { Preset } from "@/data/presets";
 const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" }; // same series palette as molecules.ts
 const GREY = "#8b98a9"; // reference / bookkeeping series
 
-const DT = 0.1; // engine step: used only by display-only stocks and the overdraft bookkeeping
+const DT = 0.1; // engine step: used only by the overdraft bookkeeping in Reducing Backlog
 const EPS = 1e-6; // divide-by-zero guard
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -31,11 +31,10 @@ export const MODELS_E: Record<string, Model> = {
     unitY: "widgets (one worker)",
     lede: "How fast one worker produces: a normal productivity multiplied by the effects of fatigue, schedule pressure, work adequacy and average skill. Each effect is 1 under normal conditions.",
     stocks: [
-      { id: "made", label: "Made by one worker", init: 0, scale: 300, color: C.acc },
-      { id: "ref", label: "At normal PDY", init: 0, scale: 300, color: GREY },
-      { id: "pdy", label: "Productivity (/p·mo)", init: 4.0392, scale: 10, color: C.good, chartHidden: true },
+      { id: "made", label: "Made by one worker", init: 0, scale: 300, color: C.acc, floor: true },
+      { id: "ref", label: "At normal PDY", init: 0, scale: 300, color: GREY, floor: true },
+      { id: "pdy", label: "Productivity (/p·mo)", init: 4.0392, scale: 10, color: C.good, chartHidden: true, derived: (_s, _p, r) => r.producing },
     ],
-    initFrom: (_p, _s, r) => ({ pdy: r.producing }), // the display stock starts at the value it shows
     params: [
       { id: "normalPDY", label: "Normal productivity", min: 1, max: 10, step: 0.5, value: 5, unit: "/p·mo" },
       { id: "fatigue", label: "Fatigue", min: 0.5, max: 2, step: 0.05, value: 1.3, unit: "×" },
@@ -48,7 +47,7 @@ export const MODELS_E: Record<string, Model> = {
       atNormal: p.normalPDY,
     }),
     // the molecule itself is algebraic; the stocks only accumulate one worker's output so the result can be watched
-    derivs: (s, _p, r) => ({ made: r.producing, ref: r.atNormal, pdy: (r.producing - s.pdy) / DT }),
+    derivs: (s, _p, r) => ({ made: r.producing, ref: r.atNormal }),
     diagram: {
       stocks: { made: { x: 345, y: 90, w: 130, h: 120 } },
       flows: [{ id: "producing", pts: [[40, 150], [345, 150]], to: "made", max: 10, color: C.good }],
@@ -102,9 +101,8 @@ export const MODELS_E: Record<string, Model> = {
     lede: "Fatigue is a smooth of overtime, measured in the same units as overtime. A function of fatigue then gives its effect on productivity (or quality).",
     stocks: [
       { id: "fatigue", label: "Fatigue", init: 1, scale: 2, color: C.pink },
-      { id: "effect", label: "Effect on PDY", init: 1, scale: 1.2, color: C.good },
+      { id: "effect", label: "Effect on PDY", init: 1, scale: 1.2, color: C.good, derived: (_s, _p, r) => r.effect },
     ],
-    initFrom: (_p, _s, r) => ({ effect: r.effect }), // the display stock starts at the value it shows
     params: [
       { id: "overtime", label: "Overtime", min: 0.5, max: 2, step: 0.05, value: 1.5, unit: "×" },
       { id: "timeToFatigue", label: "Time to get fatigued", min: 0.5, max: 12, step: 0.5, value: 3, unit: "mo" },
@@ -118,7 +116,7 @@ export const MODELS_E: Record<string, Model> = {
         effect: fatigueEffect(s.fatigue, p.slope), // Effect of fatigue on PDY f(Fatigue)
       };
     },
-    derivs: (s, _p, r) => ({ fatigue: r.gettingFatigued - r.recovering, effect: (r.effect - s.effect) / DT }),
+    derivs: (s, _p, r) => ({ fatigue: r.gettingFatigued - r.recovering }),
     diagram: {
       stocks: { fatigue: { x: 345, y: 90, w: 130, h: 120 } },
       flows: [
@@ -166,11 +164,10 @@ export const MODELS_E: Record<string, Model> = {
     unitY: "tasks",
     lede: "Indicated overtime is the number of workers we wish we had divided by the number we actually have. A limiting function turns it into the overtime people will really work.",
     stocks: [
-      { id: "done", label: "Work accomplished", init: 0, scale: 3200, color: C.good },
-      { id: "shortfall", label: "Work fallen behind", init: 0, scale: 600, color: C.pink },
-      { id: "ot", label: "Overtime (×)", init: 1.3, scale: 2, color: C.acc, chartHidden: true },
+      { id: "done", label: "Work accomplished", init: 0, scale: 3200, color: C.good, floor: true },
+      { id: "shortfall", label: "Work fallen behind", init: 0, scale: 600, color: C.pink, floor: true },
+      { id: "ot", label: "Overtime (×)", init: 1.3, scale: 2, color: C.acc, chartHidden: true, derived: (_s, _p, r) => r.overtime },
     ],
-    initFrom: (_p, _s, r) => ({ ot: r.overtime }), // the display stock starts at the value it shows
     params: [
       { id: "desiredRate", label: "Desired accomplishing rate", min: 0, max: 150, step: 5, value: 60, unit: "/wk" },
       { id: "productivity", label: "Productivity", min: 1, max: 10, step: 0.5, value: 4, unit: "/p·wk" },
@@ -185,7 +182,7 @@ export const MODELS_E: Record<string, Model> = {
       return { accomplishing, fallingBehind: Math.max(0, p.desiredRate - accomplishing), overtime };
     },
     // the molecule itself is algebraic; the stocks only accumulate its consequences
-    derivs: (s, _p, r) => ({ done: r.accomplishing, shortfall: r.fallingBehind, ot: (r.overtime - s.ot) / DT }),
+    derivs: (s, _p, r) => ({ done: r.accomplishing, shortfall: r.fallingBehind }),
     diagram: {
       stocks: {
         done: { x: 345, y: 40, w: 130, h: 90 },
@@ -244,17 +241,16 @@ export const MODELS_E: Record<string, Model> = {
     unitY: "drawings",
     lede: "Workers times their productivity gives what they produce or accomplish. One multiplication, used in almost every model that has people doing work.",
     stocks: [
-      { id: "produced", label: "Drawings produced", init: 0, scale: 1200, color: C.good },
-      { id: "rate", label: "Producing (/mo)", init: 20, scale: 60, color: C.acc, chartHidden: true },
+      { id: "produced", label: "Drawings produced", init: 0, scale: 1200, color: C.good, floor: true },
+      { id: "rate", label: "Producing (/mo)", init: 20, scale: 60, color: C.acc, chartHidden: true, derived: (_s, _p, r) => r.producing },
     ],
-    initFrom: (_p, _s, r) => ({ rate: r.producing }), // the display stock starts at the value it shows
     params: [
       { id: "workers", label: "Workers", min: 0, max: 30, step: 1, value: 10, unit: "ppl" },
       { id: "productivity", label: "Productivity", min: 0.5, max: 10, step: 0.5, value: 2, unit: "/p·mo" },
     ],
     rates: (_s, p) => ({ producing: p.workers * p.productivity }), // producing = workers × productivity
     // the molecule itself is algebraic; the stock only counts what has been produced
-    derivs: (s, _p, r) => ({ produced: r.producing, rate: (r.producing - s.rate) / DT }),
+    derivs: (s, _p, r) => ({ produced: r.producing }),
     diagram: {
       stocks: { produced: { x: 440, y: 90, w: 130, h: 120 } },
       flows: [{ id: "producing", pts: [[40, 150], [440, 150]], to: "produced", max: 60, color: C.good }],
@@ -301,8 +297,8 @@ export const MODELS_E: Record<string, Model> = {
     unitY: "tasks",
     lede: "A stock of work to do is drained by workers × productivity. With both constant it falls in a straight line, and nothing in the molecule stops it at zero.",
     stocks: [
-      { id: "workToDo", label: "Work to do", init: 1200, scale: 1200, color: C.acc2 },
-      { id: "overdrawn", label: "Overdrawn (below zero)", init: 0, scale: 1200, color: GREY },
+      { id: "workToDo", label: "Work to do", init: 1200, scale: 1200, color: C.acc2, floor: true },
+      { id: "overdrawn", label: "Overdrawn (below zero)", init: 0, scale: 1200, color: GREY, floor: true },
     ],
     params: [
       { id: "workers", label: "Workers", min: 0, max: 30, step: 1, value: 10, unit: "ppl" },
@@ -336,7 +332,7 @@ export const MODELS_E: Record<string, Model> = {
       caption:
         '<span class="chip chipB">open</span> Producing drains work to do, and <b>no arrow runs back</b> from the stock to the rate. That is why the decline is a straight line rather than a curve, and why nothing prevents the stock from being drained below zero. Adding the missing link, less work on hand lowers productivity, gives Level Protected by PDY.',
     },
-    desc: `<p>Take a stock of work to do and make its outflow a Producing molecule, that is the whole structure. <b>Work to do declines</b>, and if workers and productivity are constant it declines linearly. Hines states the caveat plainly: nothing in this molecule prevents work to do from going negative. In Vensim the stock would simply carry on below zero. This simulator pins every stock at zero, so a second counter is added here: <b>overdrawn</b>: showing how far below zero the molecule's own arithmetic has gone. There is no inflow of new work in the book version, and none here.</p>
+    desc: `<p>Take a stock of work to do and make its outflow a Producing molecule, that is the whole structure. <b>Work to do declines</b>, and if workers and productivity are constant it declines linearly. Hines states the caveat plainly: nothing in this molecule prevents work to do from going negative. In Vensim the stock would simply carry on below zero. This simulator holds physical stocks such as work to do at zero (and says so under the chart), so a second counter is added here: <b>overdrawn</b>: showing how far below zero the molecule's own arithmetic has gone. There is no inflow of new work in the book version, and none here.</p>
     <div class="eq">WorkToDo = INTEG( −producing );&nbsp; producing = workers × productivity</div>
     <div class="whenbox"><h4>When to use it</h4>
     Use it as the core of any <b>backlog, queue or project scope worked off by people</b>, and as the starting point for Estimated Remaining Duration (work to do ÷ producing). Use it unprotected only where you are sure the stock cannot run out within the run; otherwise go on to Level Protected by PDY. Its mirror image, filling a stock with a producing molecule, is Building Inventory by Doing Work.</div>

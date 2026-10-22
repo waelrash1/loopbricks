@@ -278,7 +278,7 @@ export const CHAPTER: StudyChapter = {
       hint: "A first-order smooth closes 90% of a step in about 2.3 τ: roughly 5 weeks versus 35 weeks.",
       link: { label: "Smooth", hash: "/m/smooth" },
       answer:
-        "The input steps from 30 to 80 at the start. With τ = 2 the 1st-order smooth reaches 75 (90% of the way) at about week 4.6; with τ = 15 it takes until about week 34.6, so the slower manager acts roughly 30 weeks later. A first-order smooth closes 1 − e^(−t/τ) of a step, so 90% takes ln 10 ≈ 2.3 τ (4.6 versus 34.5 weeks). Perceptions built by averaging noisy information are always late, and the lag is proportional to the averaging time: smoothing more protects you from noise at the price of reacting slowly to real change.",
+        "The input steps from 30 to 80 at the start. With τ = 2 the 1st-order smooth reaches 75 (90% of the way) at about week 4.5; with τ = 15 it takes until about week 34.5, so the slower manager acts roughly 30 weeks later. A first-order smooth closes 1 − e^(−t/τ) of a step, so 90% takes ln 10 ≈ 2.3 τ (4.6 versus 34.5 weeks). Perceptions built by averaging noisy information are always late, and the lag is proportional to the averaging time: smoothing more protects you from noise at the price of reacting slowly to real change.",
     },
     {
       prompt:

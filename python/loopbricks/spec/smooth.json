@@ -10,14 +10,12 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      { "id": "input", "name": "Input signal", "init": "30", "x": 170, "y": 150, "nonNegative": true },
-      { "id": "s1", "name": "First order smooth", "init": "30", "x": 550, "y": 80, "nonNegative": true },
-      { "id": "m1", "name": "Smoothing stage 1", "init": "30", "x": 250, "y": 340, "nonNegative": true },
-      { "id": "m2", "name": "Smoothing stage 2", "init": "30", "x": 400, "y": 340, "nonNegative": true },
-      { "id": "s3", "name": "Third order smooth", "init": "30", "x": 550, "y": 220, "nonNegative": true }
+      { "id": "s1", "name": "First order smooth", "init": "30", "x": 550, "y": 80 },
+      { "id": "m1", "name": "Smoothing stage 1", "init": "30", "x": 250, "y": 340 },
+      { "id": "m2", "name": "Smoothing stage 2", "init": "30", "x": 400, "y": 340 },
+      { "id": "s3", "name": "Third order smooth", "init": "30", "x": 550, "y": 220 }
     ],
     "flows": [
-      { "id": "inAdj", "name": "Input adjustment", "to": "input", "eq": "(Input_level - Input_signal) / DT", "x": 60, "y": 150 },
       { "id": "adj1", "name": "Adjust first order", "to": "s1", "eq": "(Input_signal - First_order_smooth) / Smoothing_time", "x": 360, "y": 125 },
       { "id": "adjM1", "name": "Adjust stage 1", "to": "m1", "eq": "(Input_signal - Smoothing_stage_1) / Stage_smoothing_time", "x": 170, "y": 340 },
       { "id": "adjM2", "name": "Adjust stage 2", "to": "m2", "eq": "(Smoothing_stage_1 - Smoothing_stage_2) / Stage_smoothing_time", "x": 325, "y": 400 },
@@ -26,7 +24,8 @@
     "vars": [
       { "id": "target", "name": "Input level", "eq": "70", "x": 80, "y": 510 },
       { "id": "tau", "name": "Smoothing time", "eq": "6", "x": 250, "y": 570 },
-      { "id": "st", "name": "Stage smoothing time", "eq": "Smoothing_time / 3", "x": 420, "y": 510 }
+      { "id": "st", "name": "Stage smoothing time", "eq": "Smoothing_time / 3", "x": 420, "y": 510 },
+      { "id": "input", "name": "Input signal", "eq": "Input_level", "x": 170, "y": 150 }
     ]
   },
   "params": {

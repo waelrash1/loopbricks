@@ -15,16 +15,14 @@
         "name": "Present value",
         "init": "0",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
+        "y": 150
       },
       {
         "id": "clock",
         "name": "elapsed",
         "init": "0",
         "x": 160,
-        "y": 300,
-        "nonNegative": true
+        "y": 300
       }
     ],
     "flows": [

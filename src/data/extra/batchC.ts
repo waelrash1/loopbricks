@@ -82,7 +82,7 @@ export const MODELS_C: Record<string, Model> = {
     unitY: "widgets / person / mo",
     lede: "Managers cannot see productivity directly, so they infer it: work being accomplished divided by the workforce doing it. The estimate is only as good as the flow they can observe.",
     stocks: [
-      { id: "workToDo", label: "Work to do", init: 1500, scale: 1500, color: C.acc2, chartHidden: true },
+      { id: "workToDo", label: "Work to do", init: 1500, scale: 1500, color: C.acc2, chartHidden: true, floor: true },
       { id: "perceived", label: "Perceived PDY", init: 2, scale: 10, color: C.acc },
     ],
     params: [
@@ -152,7 +152,7 @@ export const MODELS_C: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "people",
     lede: "Work out the rate at which work must be accomplished, divide by productivity, and you have the number of people you need. Producing, run backwards.",
-    stocks: [{ id: "workforce", label: "Workforce", init: 10, scale: 60, color: C.acc }],
+    stocks: [{ id: "workforce", label: "Workforce", init: 10, scale: 60, color: C.acc, floor: true }],
     params: [
       { id: "desiredRate", label: "Desired accomplishing rate", min: 0, max: 200, step: 5, value: 120, unit: "/wk" },
       { id: "productivity", label: "Productivity", min: 1, max: 10, step: 0.5, value: 4, unit: "/p·wk" },
@@ -214,7 +214,7 @@ export const MODELS_C: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "tasks",
     lede: "Stop workers draining a backlog below zero by letting their productivity fall as the work runs thin: no tasks left means nothing to be productive on.",
-    stocks: [{ id: "remaining", label: "Remaining work", init: 300, scale: 300, color: C.acc }],
+    stocks: [{ id: "remaining", label: "Remaining work", init: 300, scale: 300, color: C.acc, floor: true }],
     params: [
       { id: "workers", label: "Workers", min: 0, max: 20, step: 1, value: 10, unit: "ppl" },
       { id: "normalPDY", label: "Normal PDY", min: 1, max: 10, step: 0.5, value: 5, unit: "/p·mo" },
@@ -276,7 +276,7 @@ export const MODELS_C: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "widgets",
     lede: "People working fill a stock: the inflow is workers × productivity. With both constant, inventory climbs in a straight line.",
-    stocks: [{ id: "inventory", label: "Inventory", init: 100, scale: 1300, color: C.good }],
+    stocks: [{ id: "inventory", label: "Inventory", init: 100, scale: 1300, color: C.good, floor: true }],
     params: [
       { id: "workers", label: "Workers", min: 0, max: 30, step: 1, value: 10, unit: "ppl" },
       { id: "productivity", label: "Productivity", min: 0.5, max: 10, step: 0.5, value: 2, unit: "/p·mo" },
@@ -335,9 +335,9 @@ export const MODELS_C: Record<string, Model> = {
     unitY: "widgets",
     lede: "A chain of stocks where every flow is people working: each stage's workers pull from the stock behind them and push into the one ahead. Stocks rise or fall in straight lines.",
     stocks: [
-      { id: "invA", label: "Inventory A", init: 100, scale: 260, color: C.acc },
-      { id: "invB", label: "Inventory B", init: 20, scale: 260, color: C.acc2 },
-      { id: "invC", label: "Inventory C", init: 60, scale: 260, color: C.good },
+      { id: "invA", label: "Inventory A", init: 100, scale: 260, color: C.acc, floor: true },
+      { id: "invB", label: "Inventory B", init: 20, scale: 260, color: C.acc2, floor: true },
+      { id: "invC", label: "Inventory C", init: 60, scale: 260, color: C.good, floor: true },
     ],
     params: [
       { id: "workersA", label: "Workers A", min: 0, max: 15, step: 1, value: 5, unit: "ppl" },
@@ -392,7 +392,7 @@ export const MODELS_C: Record<string, Model> = {
     desc: `<p>Take Cascaded Levels and make every flow a Producing molecule: stage A's workers build inventory A, stage B's workers move it on to B, and so on down the chain. With constant crews the stocks move in <b>straight lines</b>: up where the upstream crew is stronger, down where the downstream crew is. Hines gives each stage its own productivity; a single shared productivity is used here to keep the sliders manageable.</p>
     <div class="eq">Inventory<sub>i</sub> = INTEG( producing<sub>i</sub> − producing<sub>i+1</sub> );&nbsp; producing<sub>i</sub> = workers<sub>i</sub> × productivity<sub>i</sub></div>
     <div class="whenbox"><h4>When to use it</h4>
-    Use it as the skeleton of any <b>multi-stage process staffed stage by stage</b>: an R&amp;D pipeline, a production line, a claims process. But heed Hines' caveat: nothing prevents these levels going negative. In Vensim an overdrawn stock simply drops below zero; this simulator pins stocks at zero instead, so an emptied stage keeps "passing on" items that were never there. In real models, protect each flow (see Cascade Protected by PDY).</div>
+    Use it as the skeleton of any <b>multi-stage process staffed stage by stage</b>: an R&amp;D pipeline, a production line, a claims process. But heed Hines' caveat: nothing prevents these levels going negative. In Vensim an overdrawn stock simply drops below zero; this simulator holds physical stocks such as inventories at zero instead (and says so under the chart), so an emptied stage keeps "passing on" items that were never there. In real models, protect each flow (see Cascade Protected by PDY).</div>
     <h4>Real-world examples</h4>
     <ul>
       <li><b>Healthcare</b>: referral → assessment → treatment, each step worked by its own team.</li>
@@ -414,9 +414,9 @@ export const MODELS_C: Record<string, Model> = {
     unitY: "widgets",
     lede: "A doing-work chain in which each crew's productivity depends on how much is in the stock it draws from. Starve a stage and it slows down instead of pulling its stock below zero.",
     stocks: [
-      { id: "invB", label: "Inventory B", init: 150, scale: 160, color: C.acc },
-      { id: "invC", label: "Inventory C", init: 60, scale: 160, color: C.acc2 },
-      { id: "invD", label: "Inventory D", init: 60, scale: 160, color: C.good },
+      { id: "invB", label: "Inventory B", init: 150, scale: 160, color: C.acc, floor: true },
+      { id: "invC", label: "Inventory C", init: 60, scale: 160, color: C.acc2, floor: true },
+      { id: "invD", label: "Inventory D", init: 60, scale: 160, color: C.good, floor: true },
     ],
     params: [
       { id: "workersA", label: "Workers A", min: 0, max: 30, step: 1, value: 10, unit: "ppl" },

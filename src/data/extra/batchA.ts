@@ -7,7 +7,9 @@ import type { Preset } from "@/data/presets";
 
 const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" }; // same series palette as molecules.ts
 
-const DT = 0.1; // engine step: used only to stop a flow emptying a stock past zero
+const DT = 0.1; // engine step: used only by Go to Zero's frozen action, to stop it in the step it reaches zero
+const MIN_SHIP_TIME = 1; // fastest inventory can be shipped out (weeks)
+const MIN_TASK_TIME = 0.5; // fastest the last tasks can be done (weeks)
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // ---- illustrative "user defined functions" (all pass through the neutral point) ----
@@ -34,8 +36,8 @@ export const MODELS_A: Record<string, Model> = {
     unitY: "widgets",
     lede: "The action that would take a quantity to zero over a given time is simply the quantity divided by that time. It is the seed of every decay, delay and drain.",
     stocks: [
-      { id: "cur", label: "Current value", init: 100, scale: 100, color: C.acc },
-      { id: "plan", label: "If action held constant", init: 100, scale: 100, color: C.acc2 },
+      { id: "cur", label: "Current value", init: 100, scale: 100, color: C.acc, floor: true },
+      { id: "plan", label: "If action held constant", init: 100, scale: 100, color: C.acc2, floor: true },
     ],
     params: [
       { id: "tau", label: "Time to go to zero", min: 1, max: 20, step: 0.5, value: 5, unit: "mo" },
@@ -44,7 +46,8 @@ export const MODELS_A: Record<string, Model> = {
     rates: (s, p) => ({
       in: p.inflow,
       action: s.cur / p.tau, // ActionToGoToZero = CurrentValue / timeToGoToZero (recomputed every instant)
-      planOut: Math.min(100 / p.tau, s.plan / DT), // the same action frozen at its initial value
+      // the same action frozen at its initial value; the guard only stops it in the step it reaches zero (at t = τ, at any dt)
+      planOut: Math.min(100 / p.tau, s.plan / DT),
     }),
     derivs: (_s, _p, r) => ({ cur: r.in - r.action, plan: -r.planOut }),
     diagram: {
@@ -96,12 +99,13 @@ export const MODELS_A: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "widgets",
     lede: "Keep a stock at its desired level with a two-part stocking decision: replace whatever flows out, and add a little extra to close the gap.",
-    stocks: [{ id: "level", label: "Level", init: 40, scale: 130, color: C.acc }],
+    stocks: [{ id: "level", label: "Level", init: 40, scale: 130, color: C.acc, floor: true }],
     params: [
       { id: "out", label: "outFlow", min: 0, max: 30, step: 0.5, value: 10, unit: "/mo" },
       { id: "desired", label: "Desired level", min: 20, max: 200, step: 5, value: 100, unit: "" },
       { id: "adj", label: "Adjustment time", min: 1, max: 12, step: 0.5, value: 4, unit: "mo" },
       { id: "repl", label: "Replacement fraction", min: 0, max: 1, step: 0.05, value: 1, unit: "" },
+      { id: "minDrain", label: "Minimum draining time", min: 0.25, max: 5, step: 0.25, value: 1, unit: "mo" },
     ],
     rates: (s, p) => {
       const gap = p.desired - s.level;
@@ -109,7 +113,7 @@ export const MODELS_A: Record<string, Model> = {
       const forReplacement = p.repl * p.out; // StockingForReplacement (book: = outFlow, i.e. fraction 1)
       return {
         stocking: Math.max(0, toAdjust + forReplacement), // cannot "un-stock"
-        outflow: Math.min(p.out, s.level / DT),
+        outflow: Math.min(p.out, s.level / p.minDrain), // cannot use up more than the level holds
       };
     },
     derivs: (_s, _p, r) => ({ level: r.stocking - r.outflow }),
@@ -167,9 +171,9 @@ export const MODELS_A: Record<string, Model> = {
     unitY: "cases",
     lede: "Adjust an inventory through a supplier you cannot see into: track only the orders you have placed but not received, and infer the delivery delay from them.",
     stocks: [
-      { id: "onr", label: "Orders not received", init: 60, scale: 160, color: C.acc2 },
-      { id: "s1", label: "", init: 30, scale: 100, color: C.acc2, hidden: true }, // supplier's first stage (invisible to the buyer)
-      { id: "inv", label: "Inventory", init: 60, scale: 160, color: C.acc },
+      { id: "onr", label: "Orders not received", init: 60, scale: 160, color: C.acc2, floor: true },
+      { id: "s1", label: "", init: 30, scale: 100, color: C.acc2, hidden: true, floor: true }, // supplier's first stage (invisible to the buyer)
+      { id: "inv", label: "Inventory", init: 60, scale: 160, color: C.acc, floor: true },
     ],
     initFrom: (p) => ({ onr: p.ship * p.delay, s1: (p.ship * p.delay) / 2 }), // the pipeline starts full for current shipping, whatever the delay
     params: [
@@ -192,7 +196,7 @@ export const MODELS_A: Record<string, Model> = {
       return {
         ordering: Math.max(0, corrPipe + p.ship + corrInv),
         receiving,
-        shipping: Math.min(p.ship, s.inv / DT),
+        shipping: Math.min(p.ship, s.inv / MIN_SHIP_TIME),
       };
     },
     derivs: (s, p, r) => ({
@@ -255,7 +259,7 @@ export const MODELS_A: Record<string, Model> = {
     unitY: "yrs experience",
     lede: "A workforce in which new people arrive with less experience and everyone gains a year of experience per year. Hiring dilutes the average; time rebuilds it.",
     stocks: [
-      { id: "wf", label: "Workforce", init: 80, scale: 250, color: C.acc, chartHidden: true },
+      { id: "wf", label: "Workforce", init: 80, scale: 250, color: C.acc, chartHidden: true, floor: true },
       { id: "avg", label: "Average experience", init: 8, scale: 12, color: C.good },
     ],
     params: [
@@ -335,9 +339,8 @@ export const MODELS_A: Record<string, Model> = {
     lede: "People rarely work a quantity out from scratch. They start from a known value, the anchor, and adjust it for one piece of information.",
     stocks: [
       { id: "judged", label: "Value in use", init: 100, scale: 260, color: C.acc },
-      { id: "ind", label: "value = Adjustment × anchor", init: 122.5, scale: 260, color: C.acc2 },
+      { id: "ind", label: "value = Adjustment × anchor", init: 122.5, scale: 260, color: C.acc2, derived: (_s, _p, r) => r.value },
     ],
-    initFrom: (_p, _s, r) => ({ ind: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "anchor", label: "Anchor", min: 20, max: 200, step: 5, value: 100, unit: "" },
       { id: "current", label: "Current value of variable", min: 20, max: 200, step: 5, value: 150, unit: "" },
@@ -350,7 +353,7 @@ export const MODELS_A: Record<string, Model> = {
       return { value, adjusting: Math.abs(value - s.judged) / 2 };
     },
     // the molecule itself is algebraic; "Value in use" follows it over 2 wk only so the adjustment is visible
-    derivs: (s, _p, r) => ({ judged: (r.value - s.judged) / 2, ind: (r.value - s.ind) / DT }),
+    derivs: (s, _p, r) => ({ judged: (r.value - s.judged) / 2 }),
     diagram: {
       stocks: { judged: { x: 340, y: 90, w: 130, h: 120 } },
       flows: [{ id: "adjusting", pts: [[40, 150], [340, 150]], to: "judged", max: 25 }],
@@ -404,9 +407,8 @@ export const MODELS_A: Record<string, Model> = {
     lede: "Something that depends on many things: take a normal value, the anchor, and multiply it by one adjustment per factor, each neutral at 1.",
     stocks: [
       { id: "judged", label: "Value in use", init: 100, scale: 260, color: C.acc },
-      { id: "ind", label: "value = anchor × adjustments", init: 180, scale: 260, color: C.acc2 },
+      { id: "ind", label: "value = anchor × adjustments", init: 180, scale: 260, color: C.acc2, derived: (_s, _p, r) => r.value },
     ],
-    initFrom: (_p, _s, r) => ({ ind: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "anchor", label: "Anchor", min: 20, max: 200, step: 5, value: 100, unit: "" },
       { id: "p1", label: "Pressure #1", min: 0.25, max: 4, step: 0.05, value: 2.25, unit: "×" },
@@ -418,7 +420,7 @@ export const MODELS_A: Record<string, Model> = {
       const value = p.anchor * mvF1(p.p1) * mvF2(p.p2) * mvF3(p.p3);
       return { value, adjusting: Math.abs(value - s.judged) / 2 };
     },
-    derivs: (s, _p, r) => ({ judged: (r.value - s.judged) / 2, ind: (r.value - s.ind) / DT }),
+    derivs: (s, _p, r) => ({ judged: (r.value - s.judged) / 2 }),
     diagram: {
       stocks: { judged: { x: 340, y: 90, w: 130, h: 120 } },
       flows: [{ id: "adjusting", pts: [[40, 150], [340, 150]], to: "judged", max: 40 }],
@@ -475,12 +477,11 @@ export const MODELS_A: Record<string, Model> = {
     unitY: "tasks",
     lede: "Quality is the fraction of work being done correctly: a normal value multiplied by the effects of fatigue, schedule pressure, work adequacy and skill, capped at 1.",
     stocks: [
-      { id: "todo", label: "Work to do", init: 400, scale: 400, color: "#8b98a9" },
-      { id: "okWork", label: "Done correctly", init: 0, scale: 400, color: C.good },
-      { id: "flawed", label: "Done with flaws", init: 0, scale: 400, color: C.pink },
-      { id: "qPct", label: "Quality (%)", init: 68.9, scale: 100, color: C.acc, chartHidden: true },
+      { id: "todo", label: "Work to do", init: 400, scale: 400, color: "#8b98a9", floor: true },
+      { id: "okWork", label: "Done correctly", init: 0, scale: 400, color: C.good, floor: true },
+      { id: "flawed", label: "Done with flaws", init: 0, scale: 400, color: C.pink, floor: true },
+      { id: "qPct", label: "Quality (%)", init: 68.9, scale: 100, color: C.acc, chartHidden: true, derived: (_s, _p, r) => r.q * 100 },
     ],
-    initFrom: (_p, _s, r) => ({ qPct: r.q * 100 }), // the display stock starts at the value it shows
     params: [
       { id: "normalQ", label: "Normal quality", min: 0.5, max: 1, step: 0.01, value: 0.9, unit: "" },
       { id: "fatigue", label: "Fatigue", min: 0.5, max: 2, step: 0.05, value: 1.25, unit: "×" },
@@ -490,14 +491,13 @@ export const MODELS_A: Record<string, Model> = {
     ],
     rates: (s, p) => {
       const q = qualityOf(p); // MIN(1, NormalQuality × four effects)
-      const doing = Math.min(10, s.todo / DT); // 10 tasks/wk until the job is done
+      const doing = Math.min(10, s.todo / MIN_TASK_TIME); // 10 tasks/wk until the last few tasks
       return { correct: doing * q, flaws: doing * (1 - q), q };
     },
     derivs: (s, _p, r) => ({
       todo: -(r.correct + r.flaws),
       okWork: r.correct,
       flawed: r.flaws,
-      qPct: (r.q * 100 - s.qPct) / DT,
     }),
     diagram: {
       stocks: {
@@ -543,7 +543,7 @@ export const MODELS_A: Record<string, Model> = {
       <li><b>Projects</b>: error-free design or code as a share of work done during a deadline crunch.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    A 400-task job is worked at 10 tasks/wk, so it takes 40 weeks. Normal quality 0.9; fatigue 1.25 gives an effect of <code>1 − 0.4 × 0.25 = 0.90</code>; schedule pressure 1.5 gives <code>1 − 0.3 × 0.5 = 0.85</code>; adequacy and skill are normal (1). Quality = <code>0.9 × 0.90 × 0.85 ≈ 0.69</code>, so about <b>275</b> tasks end up done correctly and about <b>125</b> carry flaws. Return fatigue and pressure to 1 and only 40 are flawed.</div>
+    A 400-task job is worked at 10 tasks/wk, so it is all but finished in 40 weeks (the last few tasks take at least half a week, so under 2 remain then). Normal quality 0.9; fatigue 1.25 gives an effect of <code>1 − 0.4 × 0.25 = 0.90</code>; schedule pressure 1.5 gives <code>1 − 0.3 × 0.5 = 0.85</code>; adequacy and skill are normal (1). Quality = <code>0.9 × 0.90 × 0.85 ≈ 0.69</code>, so about <b>275</b> tasks end up done correctly and about <b>125</b> carry flaws. Return fatigue and pressure to 1 and only 40 are flawed.</div>
     <h4>References</h4>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Quality.</li>
@@ -566,7 +566,7 @@ export const FLOW_META_A: Record<string, Record<string, FlowMeta>> = {
       in: ["desired", "level", "adj", "out", "repl"],
       loop: "B",
     },
-    outflow: { name: "outFlow", eq: "outFlow", in: ["out"] },
+    outflow: { name: "outFlow", eq: "MIN(outFlow, Level / minimum draining time)", in: ["out", "level", "minDrain"] },
   },
   lowVisPipeline: {
     ordering: {
@@ -576,7 +576,7 @@ export const FLOW_META_A: Record<string, Record<string, FlowMeta>> = {
       loop: "B",
     },
     receiving: { name: "receiving product", eq: "supplier's last stage / (supplier delay / 2)", in: ["onr", "delay"], loop: "B" },
-    shipping: { name: "shipping", eq: "shipping", in: ["ship"] },
+    shipping: { name: "shipping", eq: "MIN(shipping, Inventory / minimum shipping time of 1 wk)", in: ["ship", "inv"] },
   },
   coflowExperience: {
     hiring: { name: "hiring", eq: "hiring", in: ["hire"] },
@@ -675,7 +675,7 @@ export const DIAGRAM_EXTRA_A: Record<string, { stocks: [string, string][]; aux?:
   },
   quality: {
     stocks: [
-      ["Work to do", "INTEG(−work rate, 400) ; work rate = 10 tasks/wk"],
+      ["Work to do", "INTEG(−work rate, 400) ; work rate = MIN(10 tasks/wk, Work to do / 0.5 wk)"],
       ["Done correctly", "INTEG(work rate × Quality, 0)"],
       ["Done with flaws", "INTEG(work rate × (1 − Quality), 0)"],
     ],

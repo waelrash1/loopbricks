@@ -10,17 +10,17 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      {"id":"workToDo","name":"Work to do","init":"6000","x":395,"y":150,"units":"sq ft","nonNegative":true},
-      {"id":"durationDisp","name":"Duration till complete","init":"Estimated_remaining_duration","x":560,"y":330,"nonNegative":true}
+      {"id":"workToDo","name":"Work to do","init":"6000","x":395,"y":150,"units":"sq ft","nonNegative":true}
     ],
     "flows": [
-      {"id":"accomplishing","name":"Accomplishing work","from":"workToDo","eq":"IF(Work_to_do > 0, Actual_rate_of_accomplishing_work, 0)","x":623,"y":150},
-      {"id":"track_durationDisp","name":"Tracking duration","to":"durationDisp","eq":"(Estimated_remaining_duration - Duration_till_complete) / DT","x":450,"y":330}
+      {"id":"accomplishing","name":"Accomplishing work","from":"workToDo","eq":"MIN(Actual_rate_of_accomplishing_work, Work_to_do / Minimum_task_time)","x":623,"y":150}
     ],
     "vars": [
       {"id":"anticipatedRate","name":"Anticipated rate of accomplishing work","eq":"250","units":"sq ft/week","x":80,"y":420},
       {"id":"actualRate","name":"Actual rate of accomplishing work","eq":"200","units":"sq ft/week","x":220,"y":420},
-      {"id":"duration","name":"Estimated remaining duration","eq":"Work_to_do / MAX(1, Anticipated_rate_of_accomplishing_work)","x":360,"y":420}
+      {"id":"duration","name":"Estimated remaining duration","eq":"Work_to_do / MAX(1, Anticipated_rate_of_accomplishing_work)","x":360,"y":420},
+      {"id":"durationDisp","name":"Duration till complete","eq":"Estimated_remaining_duration","x":560,"y":330},
+      {"id":"minTask","name":"Minimum task time","eq":"0.5","x":500,"y":420}
     ]
   },
   "params": {

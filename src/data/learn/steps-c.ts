@@ -317,7 +317,7 @@ export const STEPS_C: Record<string, Step[]> = {
         molecule: "capacityUtil",
         T: 30,
         params: { capacity: 15, demand: 25 },
-        look: "Demand of 25 a week against capacity of 15 empties inventory from 50 by about week 5, and it stays at zero because production can approach but not pass capacity.",
+        look: "Demand of 25 a week against capacity of 15 drains inventory from 50 to about 15 by week 6, and it stays there: production can approach but not pass capacity, and sales can be no more than inventory over the 1-week minimum shipping time, so inventory settles where that equals production.",
       },
     },
     {
@@ -727,7 +727,7 @@ export const STEPS_C: Record<string, Step[]> = {
         molecule: "smooth",
         T: 30,
         params: { target: 80 },
-        look: "After a step from 30 to 80, demand with a 6-week first-order lag covers about 63% of the change (61.5) by week 6, while the third-order version starts slower, about 39 against 49 at week 3.",
+        look: "After a step from 30 to 80, demand with a 6-week first-order lag covers about 63% of the change (about 62) by week 6, while the third-order version starts slower, about 39 against 50 at week 3.",
       },
     },
     {

@@ -10,9 +10,9 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      {"id":"smooth1","name":"Smooth1","init":"20","x":410,"y":50,"nonNegative":true},
-      {"id":"smooth2","name":"Smooth2","init":"20","x":410,"y":130,"nonNegative":true},
-      {"id":"smooth3","name":"Smooth3","init":"20","x":410,"y":210,"nonNegative":true}
+      {"id":"smooth1","name":"Smooth1","init":"20","x":410,"y":50},
+      {"id":"smooth2","name":"Smooth2","init":"20","x":410,"y":130},
+      {"id":"smooth3","name":"Smooth3","init":"20","x":410,"y":210}
     ],
     "flows": [
       {"id":"updating1","name":"Updating smooth1","to":"smooth1","eq":"Gap_1 / MAX(0.1, Smoothing_time_1)","x":193,"y":50},

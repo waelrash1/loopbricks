@@ -95,3 +95,30 @@ def test_non_finite_values_stop_the_run():
 
 def test_step_count_rounds_halves_up():
     assert list(_one_stock("0", T=10, dt=4).run().index) == [0, 4, 8, 12]  # Math.round(2.5) = 3 steps, as in the app
+
+
+# TABLE: the same cases as scripts/check.ts, so the app and the package give the same numbers
+TABLE = "TABLE(x, 0, 0, 10, 1, 20, 0.5)"
+
+
+@pytest.mark.parametrize(
+    "src,x,want",
+    [(TABLE, -5, 0), (TABLE, 0, 0), (TABLE, 2.5, 0.25), (TABLE, 10, 1), (TABLE, 15, 0.75), (TABLE, 20, 0.5), (TABLE, 1e9, 0.5),
+     ("TABLE(x, -1, 2, 1, -2)", 0.5, -1), ("TABLE(x / 2, -1, 2, 1, -2)", -4, 2)],
+)
+def test_table(src, x, want):
+    assert ev(src, x=x) == want
+
+
+def test_table_of_nan_is_nan():
+    assert math.isnan(ev("TABLE(x, 0, 0, 1, 1)", x=math.nan))
+
+
+@pytest.mark.parametrize(
+    "src,msg",
+    [("TABLE(x, 0, 1)", "at least 2 points"), ("TABLE(x, 0, 1, 2)", "a y for every x"), ("TABLE(x, 0, 1, a, 2)", "plain numbers"),
+     ("TABLE(x, 0, 1, 0, 2)", "must increase: 0 comes after 0"), ("TABLE(x, 2, 1, 1, 2)", "must increase"), ("TABLE + 1", "is a function")],
+)
+def test_table_errors(src, msg):
+    with pytest.raises(ExprError, match=re.escape(msg)):
+        compile_expr(src)

@@ -32,9 +32,8 @@ export const MODELS_B: Record<string, Model> = {
     lede: "Price setters bump price above or below an underlying 'fair' price when inventory or market share press on them, and the underlying price then drifts toward whatever price they set.",
     stocks: [
       { id: "underlyingPrice", label: "Underlying price", init: 10, scale: 90, color: C.acc2 },
-      { id: "priceDisp", label: "Price", init: 11.43, scale: 90, color: C.good, chartHidden: false },
+      { id: "priceDisp", label: "Price", init: 11.43, scale: 90, color: C.good, chartHidden: false, derived: (_s, _p, r) => r.price },
     ],
-    initFrom: (_p, _s, r) => ({ priceDisp: r.price }), // the display stock starts at the value it shows
     params: [
       { id: "inventory", label: "Inventory", min: 0, max: 200, step: 5, value: 75, unit: "widgets" },
       { id: "targetInventory", label: "Target inventory", min: 20, max: 200, step: 5, value: 100, unit: "widgets" },
@@ -46,7 +45,7 @@ export const MODELS_B: Record<string, Model> = {
       const price = s.underlyingPrice * pressure;
       return { pressure, price, changeInUnderlyingPrice: (price - s.underlyingPrice) / p.timeToChange };
     },
-    derivs: (s, _p, r) => ({ underlyingPrice: r.changeInUnderlyingPrice, priceDisp: (r.price - s.priceDisp) / 0.1 }),
+    derivs: (s, _p, r) => ({ underlyingPrice: r.changeInUnderlyingPrice }),
     diagram: {
       stocks: { underlyingPrice: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "changeInUnderlyingPrice", pts: [[40, 150], [330, 150]], to: "underlyingPrice", max: 1.5 }],
@@ -97,9 +96,8 @@ export const MODELS_B: Record<string, Model> = {
     lede: "Sea Anchor Pricing with a floor: the underlying price cannot sink below the lowest price that price setters regard as fair or sustainable, so the price can never get stuck at zero.",
     stocks: [
       { id: "underlyingPrice", label: "Underlying price", init: 10, scale: 20, color: C.acc2 },
-      { id: "priceDisp", label: "Price", init: 8, scale: 20, color: C.good, chartHidden: false },
+      { id: "priceDisp", label: "Price", init: 8, scale: 20, color: C.good, chartHidden: false, derived: (_s, _p, r) => r.price },
     ],
-    initFrom: (_p, _s, r) => ({ priceDisp: r.price }), // the display stock starts at the value it shows
     params: [
       { id: "inventory", label: "Inventory", min: 0, max: 200, step: 5, value: 150, unit: "widgets" },
       { id: "targetInventory", label: "Target inventory", min: 20, max: 200, step: 5, value: 100, unit: "widgets" },
@@ -113,7 +111,7 @@ export const MODELS_B: Record<string, Model> = {
       const indicated = Math.max(price, p.minPrice);
       return { pressure, price, indicated, changeInUnderlyingPrice: (indicated - s.underlyingPrice) / p.timeToChange };
     },
-    derivs: (s, _p, r) => ({ underlyingPrice: r.changeInUnderlyingPrice, priceDisp: (r.price - s.priceDisp) / 0.1 }),
+    derivs: (s, _p, r) => ({ underlyingPrice: r.changeInUnderlyingPrice }),
     diagram: {
       stocks: { underlyingPrice: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "changeInUnderlyingPrice", pts: [[40, 150], [330, 150]], to: "underlyingPrice", max: 1.5 }],
@@ -164,9 +162,9 @@ export const MODELS_B: Record<string, Model> = {
     unitY: "tasks",
     lede: "Divide a resource among competing claims in proportion to the strength of each claim. Here the claims are three backlogs of work and the resource is a flexible team.",
     stocks: [
-      { id: "tasksA", label: "Tasks A", init: 20, scale: 100, color: C.acc },
-      { id: "tasksB", label: "Tasks B", init: 60, scale: 100, color: C.acc2 },
-      { id: "tasksC", label: "Tasks C", init: 20, scale: 100, color: C.good },
+      { id: "tasksA", label: "Tasks A", init: 20, scale: 100, color: C.acc, floor: true },
+      { id: "tasksB", label: "Tasks B", init: 60, scale: 100, color: C.acc2, floor: true },
+      { id: "tasksC", label: "Tasks C", init: 20, scale: 100, color: C.good, floor: true },
     ],
     params: [
       { id: "resources", label: "Resources", min: 2, max: 20, step: 1, value: 10, unit: "people" },
@@ -251,8 +249,8 @@ export const MODELS_B: Record<string, Model> = {
     unitY: "units",
     lede: "Split a quantity between two claimants by relative claim strength, but pass that indicated fraction through a lookup first: for example so that neither side ever gets less than a minimum share.",
     stocks: [
-      { id: "a", label: "Held by A", init: 0, scale: 120, color: C.acc },
-      { id: "b", label: "Held by B", init: 0, scale: 120, color: C.pink },
+      { id: "a", label: "Held by A", init: 0, scale: 120, color: C.acc, floor: true },
+      { id: "b", label: "Held by B", init: 0, scale: 120, color: C.pink, floor: true },
     ],
     params: [
       { id: "totalQuantity", label: "Total quantity", min: 0, max: 40, step: 1, value: 20, unit: "/wk" },
@@ -325,7 +323,7 @@ export const MODELS_B: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "gallons",
     lede: "An action, a flow, is a resource multiplied by its ability to create that flow, i.e. its productivity. One of the three basic ways to create a flow.",
-    stocks: [{ id: "tank", label: "Tank", init: 0, scale: 150, color: C.acc }],
+    stocks: [{ id: "tank", label: "Tank", init: 0, scale: 150, color: C.acc, floor: true }],
     params: [
       { id: "resources", label: "Resources", min: 0, max: 30, step: 1, value: 10, unit: "resources" },
       { id: "ability", label: "Resource ability to create flow", min: 0, max: 6, step: 0.25, value: 3, unit: "gal/mo/resource" },
@@ -427,7 +425,7 @@ export const MODELS_B: Record<string, Model> = {
     <div class="worked"><h4>Worked example</h4>
     Twenty workers at $5k a month each cost <code>20 × 5 = $100k</code> a month. Revenue is $80k a month, so cash falls by $20k a month and the $500k in the bank lasts <code>500 / 20 = 25</code> months. Cut the team to 16 and spending equals revenue (<code>16 × 5 = 80</code>): cash holds steady.</div>
     <h4>Caveats</h4>
-    <p>Hines lists none for the molecule. In this app the cash stock simply stops at zero: payroll keeps being "paid" out of nothing, because the molecule itself contains no rule for what happens when the money runs out.</p>
+    <p>Hines lists none for the molecule. Cash has no floor here: once the money runs out it goes negative, an overdraft, because the molecule itself contains no rule for what happens when the money runs out.</p>
     <h4>References</h4>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Financial Flow from Resource.</li>
@@ -441,10 +439,9 @@ export const MODELS_B: Record<string, Model> = {
     unitY: "resources",
     lede: "Turn Action from Resource around: divide the flow you want by what one resource can do, and you have the resources you need.",
     stocks: [
-      { id: "resources", label: "Resources", init: 5, scale: 40, color: C.acc },
-      { id: "requiredDisp", label: "Resources required", init: 20, scale: 40, color: C.acc2, chartHidden: false },
+      { id: "resources", label: "Resources", init: 5, scale: 40, color: C.acc, floor: true },
+      { id: "requiredDisp", label: "Resources required", init: 20, scale: 40, color: C.acc2, chartHidden: false, derived: (_s, _p, r) => r.required },
     ],
-    initFrom: (_p, _s, r) => ({ requiredDisp: r.required }), // the display stock starts at the value it shows
     params: [
       { id: "desiredFlow", label: "Desired flow", min: 0, max: 120, step: 5, value: 60, unit: "gal/mo" },
       { id: "ability", label: "Resource ability to create flow", min: 0.5, max: 6, step: 0.25, value: 3, unit: "gal/mo/resource" },
@@ -454,7 +451,7 @@ export const MODELS_B: Record<string, Model> = {
       const required = p.desiredFlow / Math.max(0.01, p.ability);
       return { required, flow: s.resources * p.ability, acquiring: (required - s.resources) / p.adjTime };
     },
-    derivs: (s, _p, r) => ({ resources: r.acquiring, requiredDisp: (r.required - s.requiredDisp) / 0.1 }),
+    derivs: (s, _p, r) => ({ resources: r.acquiring }),
     diagram: {
       stocks: { resources: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "acquiring", pts: [[40, 150], [330, 150]], to: "resources", max: 5 }],
@@ -501,10 +498,9 @@ export const MODELS_B: Record<string, Model> = {
     unitY: "people",
     lede: "Divide the workforce budget by the average wage to get the number of people you can afford: the goal that hiring then chases.",
     stocks: [
-      { id: "workforce", label: "Workforce", init: 20, scale: 100, color: C.acc },
-      { id: "desiredDisp", label: "Desired people", init: 50, scale: 100, color: C.acc2, chartHidden: false },
+      { id: "workforce", label: "Workforce", init: 20, scale: 100, color: C.acc, floor: true },
+      { id: "desiredDisp", label: "Desired people", init: 50, scale: 100, color: C.acc2, chartHidden: false, derived: (_s, _p, r) => r.desired },
     ],
-    initFrom: (_p, _s, r) => ({ desiredDisp: r.desired }), // the display stock starts at the value it shows
     params: [
       { id: "budget", label: "Workforce budget", min: 500, max: 6000, step: 100, value: 3000, unit: "$k/yr" },
       { id: "avgWage", label: "Average wage", min: 30, max: 150, step: 5, value: 60, unit: "$k/person/yr" },
@@ -514,7 +510,7 @@ export const MODELS_B: Record<string, Model> = {
       const desired = p.budget / Math.max(1, p.avgWage);
       return { desired, spending: s.workforce * p.avgWage, hiring: (desired - s.workforce) / p.tHire };
     },
-    derivs: (s, _p, r) => ({ workforce: r.hiring, desiredDisp: (r.desired - s.desiredDisp) / 0.1 }),
+    derivs: (s, _p, r) => ({ workforce: r.hiring }),
     diagram: {
       stocks: { workforce: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "hiring", pts: [[40, 150], [330, 150]], to: "workforce", max: 20 }],

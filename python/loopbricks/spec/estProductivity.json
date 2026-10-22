@@ -11,7 +11,7 @@
     "dt": 0.1,
     "stocks": [
       {"id":"workToDo","name":"Work to do","init":"1500","x":410,"y":85,"nonNegative":true},
-      {"id":"perceived","name":"Perceived PDY","init":"2","x":410,"y":205,"nonNegative":true}
+      {"id":"perceived","name":"Perceived PDY","init":"2","x":410,"y":205}
     ],
     "flows": [
       {"id":"accomplishing","name":"Work being accomplished","from":"workToDo","eq":"MIN(Workforce * Actual_productivity, Work_to_do / 0.5)","x":630,"y":85},

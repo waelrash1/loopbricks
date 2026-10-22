@@ -100,6 +100,19 @@ function RunAsText({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb
   );
 }
 
+// The engine holds physical stocks at zero; say so when it happens, since it means an outflow was not protected
+function ClipNotice({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) => () => void }) {
+  const [ids, setIds] = useState<string[]>([]);
+  useEffect(() => subscribe(({ clipped }) => setIds((prev) => (prev.length === clipped.length ? prev : clipped))), [subscribe]);
+  if (!ids.length) return null;
+  const names = ids.map((id) => model.stocks.find((s) => s.id === id)?.label || id);
+  return (
+    <p role="status" className="mt-2 text-[13px] text-muted-foreground">
+      <b className="text-foreground">{names.join(", ")}</b> hit zero and {names.length > 1 ? "were" : "was"} held there: an outflow asked for more than the stock held.
+    </p>
+  );
+}
+
 export default function TimeSeriesChart({
   model,
   subscribe,
@@ -353,6 +366,7 @@ export default function TimeSeriesChart({
         )}
       </div>
       <canvas ref={canvas} role="img" aria-label={`Stock levels over time for ${model.name}. A description in words follows.`} className="w-full block" style={{ height }} />
+      {!minimal && <ClipNotice model={model} subscribe={subscribe} />}
       {!minimal && <RunAsText model={model} subscribe={subscribe} />}
     </>
   );

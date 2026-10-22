@@ -12,7 +12,8 @@ import {
 } from "@/sim/engine";
 
 // previous: the last run before a reset, kept so the chart can draw it dashed for comparison
-export type FrameCtx = { model: Model; state: Vars; rates: Vars; history: History; t: number; previous: History | null };
+// clipped: stocks the engine held at zero at some point in this run (an outflow asked for more than they held)
+export type FrameCtx = { model: Model; state: Vars; rates: Vars; history: History; t: number; previous: History | null; clipped: string[] };
 export type FrameCb = (ctx: FrameCtx) => void;
 
 // Animation runs imperatively through refs + subscribers so we never re-render React at 60fps.
@@ -28,6 +29,7 @@ export function useSimulation(model: Model) {
   const paramsRef = useRef<Vars>(params);
   const histRef = useRef<History>(freshHistory(model));
   const prevRef = useRef<History | null>(null);
+  const clipRef = useRef<string[]>([]);
   const tRef = useRef(0);
   const runningRef = useRef(false);
   const speedRef = useRef(6);
@@ -55,6 +57,7 @@ export function useSimulation(model: Model) {
       history: histRef.current,
       t: tRef.current,
       previous: prevRef.current,
+      clipped: clipRef.current,
     }),
     []
   );
@@ -77,9 +80,19 @@ export function useSimulation(model: Model) {
     [frameCtx]
   );
 
+  const advance = useCallback(() => {
+    const r = stepOnce(modelRef.current, stateRef.current, paramsRef.current, DT);
+    stateRef.current = r.state;
+    tRef.current += DT;
+    const fresh = r.clipped.filter((id) => !clipRef.current.includes(id));
+    if (fresh.length) clipRef.current = [...clipRef.current, ...fresh];
+    return r.rates;
+  }, []);
+
   // reset everything when the model changes (and on mount → first paint)
   useEffect(() => {
     stateRef.current = freshState(model);
+    clipRef.current = [];
     paramsRef.current = initParams(model);
     histRef.current = freshHistory(model);
     prevRef.current = null; // a different model's run is not comparable
@@ -102,12 +115,7 @@ export function useSimulation(model: Model) {
       if (runningRef.current) {
         let rates: Vars | undefined;
         const m = modelRef.current;
-        for (let i = 0; i < speedRef.current; i++) {
-          const r = stepOnce(m, stateRef.current, paramsRef.current, DT);
-          stateRef.current = r.state;
-          rates = r.rates;
-          tRef.current += DT;
-        }
+        for (let i = 0; i < speedRef.current; i++) rates = advance();
         pushHistory(histRef.current, m, stateRef.current, tRef.current);
         emit(rates);
         if (stopRef.current > 0 && tRef.current >= stopRef.current) setRunning(false);
@@ -116,15 +124,15 @@ export function useSimulation(model: Model) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [emit]);
+  }, [emit, advance]);
 
   const applyParams = useCallback(
     (obj: Vars) => {
       paramsRef.current = { ...paramsRef.current, ...obj }; // so a reset() straight after starts from these settings
       setParams((prev) => ({ ...prev, ...obj }));
-      // before the run starts, starting values that depend on the settings follow them (e.g. a supply line that starts full)
+      // before the run starts, starting values and derived series that depend on the settings follow them
       const m = modelRef.current;
-      if (m.initFrom && tRef.current === 0 && !runningRef.current) {
+      if ((m.initFrom || m.stocks.some((s) => s.derived)) && tRef.current === 0 && !runningRef.current) {
         stateRef.current = freshState(m, paramsRef.current);
         histRef.current = freshHistory(m);
         pushHistory(histRef.current, m, stateRef.current, 0);
@@ -136,26 +144,24 @@ export function useSimulation(model: Model) {
   const setParam = useCallback((id: string, v: number) => applyParams({ [id]: v }), [applyParams]);
   const pulse = useCallback(() => {
     const m = modelRef.current;
-    const id = m.stocks[0].id;
-    stateRef.current = { ...stateRef.current, [id]: stateRef.current[id] + m.stocks[0].scale * 0.5 };
+    const st = m.stocks.find((s) => !s.derived)!;
+    stateRef.current = { ...stateRef.current, [st.id]: stateRef.current[st.id] + st.scale * 0.5 };
     pushHistory(histRef.current, m, stateRef.current, tRef.current);
     emit();
   }, [emit]);
   const toggle = useCallback(() => setRunning((r) => !r), []);
   const play = useCallback(() => setRunning(true), []);
   const step = useCallback(() => {
-    const m = modelRef.current;
-    const r = stepOnce(m, stateRef.current, paramsRef.current, DT);
-    stateRef.current = r.state;
-    tRef.current += DT;
-    pushHistory(histRef.current, m, stateRef.current, tRef.current);
-    emit(r.rates);
-  }, [emit]);
+    const rates = advance();
+    pushHistory(histRef.current, modelRef.current, stateRef.current, tRef.current);
+    emit(rates);
+  }, [emit, advance]);
   const reset = useCallback(() => {
     const m = modelRef.current;
     if (histRef.current.times.length > 2) prevRef.current = histRef.current;
     stateRef.current = freshState(m, paramsRef.current);
     histRef.current = freshHistory(m);
+    clipRef.current = [];
     tRef.current = 0;
     pushHistory(histRef.current, m, stateRef.current, 0);
     setRunning(false);

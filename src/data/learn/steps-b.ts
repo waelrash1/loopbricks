@@ -407,7 +407,7 @@ export const STEPS_B: Record<string, Step[]> = {
       title: "Chains filter and amplify",
       lead: "Feed a chain random demand and it does not pass the noise straight through.",
       ideas: ["Supply chains filter fast noise and amplify slow swings"],
-      run: { molecule: "smooth", T: 40, look: "After the step from 30 to 70 the first-order smooth is at about 49 by week 4 and the third-order at about 42: stocks hold back quick changes and pass on slow ones." },
+      run: { molecule: "smooth", T: 40, look: "After the step from 30 to 70 the first-order smooth is at about 50 by week 4 and the third-order at about 43: stocks hold back quick changes and pass on slow ones." },
     },
     {
       title: "Mistrust feeds the cycle",
@@ -616,7 +616,7 @@ export const STEPS_B: Record<string, Step[]> = {
       lead: "Tools can also help while you build, catching errors as you type.",
       ideas: ["Automated help and linking behaviour to structure"],
       example: "The model tutor that catches a negative stock",
-      run: { molecule: "reducingBacklog", T: 60, params: { workers: 20 }, look: "Work to do hits zero at month 15, but the flow keeps running, so the overdrawn stock grows by 80 a month to 3,600 by month 60: a tutor should flag this." },
+      run: { molecule: "reducingBacklog", T: 60, params: { workers: 20 }, look: "Work to do hits zero at month 15, but the flow keeps running, so the overdrawn stock grows by 80 a month to 3,600 by month 60: a tutor should flag this, and the notice under the chart does, saying Work to do was held at zero." },
       exercises: [0],
     },
     {

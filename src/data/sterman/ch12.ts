@@ -323,7 +323,7 @@ export const CHAPTER: StudyChapter = {
         "Show why a delay is not a coflow. In the Coflow molecule, set hiring to 0 and watch average experience: it keeps rising by a year every year, because experience accrues while nobody joins. Now imagine the attribute were labour per machine with no accrual: if investment stopped, what should happen to the average, and what would a SMOOTH towards the new-machine value wrongly do?",
       hint: "With no inflow and first-order outflow, leavers remove the average, so the average of a conserved attribute cannot change.",
       answer:
-        "With hiring at 0, headcount falls from 48 to about 21 by year 5 and 9 by year 10, while average experience rises from 6 to about 11.0 at year 5, 16.1 at year 10 and 26.2 at year 20, roughly a year per year, because everyone left ages and leavers take only the average with them. If the attribute did not accrue (labour per machine), first-order leavers would remove exactly the average, so with no inflow the average would stay put. A SMOOTH toward the new-machine value would wrongly drift the average toward a value that no new machines are bringing in. A coflow changes its average only through what enters (and any accrual), which a delay cannot represent.",
+        "With hiring at 0, headcount falls from 48 to about 21 by year 5 and 9 by year 10, while average experience rises from 6 to about 11.1 at year 5, 16.2 at year 10 and 26.3 at year 20, roughly a year per year, because everyone left ages and leavers take only the average with them. If the attribute did not accrue (labour per machine), first-order leavers would remove exactly the average, so with no inflow the average would stay put. A SMOOTH toward the new-machine value would wrongly drift the average toward a value that no new machines are bringing in. A coflow changes its average only through what enters (and any accrual), which a delay cannot represent.",
       link: { label: "Coflow", hash: "/m/coflow" },
     },
     {
@@ -331,7 +331,7 @@ export const CHAPTER: StudyChapter = {
         "Open Cascaded Coflow with the <b>Value added</b> preset. Predict the equilibrium average cost in stage 1 and stage 2 before running (input cost 1 $/u, 0.5 $/u·wk added, 4 weeks per stage), then check. What happens to stage-2 cost if you lengthen the stage time to 8 weeks?",
       hint: "Each stage adds value added × stage time on average: 1 + 2 = 3 in stage 1, 3 + 2 = 5 in stage 2.",
       answer:
-        "Each stage adds value added × time spent in it: stage 1 settles at 1 + 0.5 × 4 = 3 $/unit and stage 2 at 3 + 0.5 × 4 = 5 $/unit, which the run shows (2.84 and 4.10 at week 10, exactly 3.00 and 5.00 by week 40). With an 8-week stage time each stage adds 4 $/unit, so stage 1 settles at 5 and stage 2 at 9 $/unit, and the work in progress doubles to 64 per stage. Longer stages pile up more cost per unit as well as more inventory, which is why cutting cycle time lowers unit cost in a coflow.",
+        "Each stage adds value added × time spent in it: stage 1 settles at 1 + 0.5 × 4 = 3 $/unit and stage 2 at 3 + 0.5 × 4 = 5 $/unit, which the run shows (2.84 and 4.11 at week 10, exactly 3.00 and 5.00 by week 40). With an 8-week stage time each stage adds 4 $/unit, so stage 1 settles at 5 and stage 2 at 9 $/unit, and the work in progress doubles to 64 per stage. Longer stages pile up more cost per unit as well as more inventory, which is why cutting cycle time lowers unit cost in a coflow.",
       link: { label: "Cascaded Coflow", hash: "/m/cascadedCoflow" },
     },
     {

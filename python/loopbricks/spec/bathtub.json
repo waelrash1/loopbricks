@@ -3,7 +3,7 @@
   "version": 1,
   "key": "bathtub",
   "title": "Bathtub",
-  "description": "One stock filled by an inflow and drained by an outflow. The outflow stops when the stock is empty.",
+  "description": "One stock filled by an inflow and drained by an outflow. The outflow eases off as the stock empties, over a minimum draining time.",
   "model": {
     "name": "Bathtub",
     "timeUnit": "year",
@@ -12,16 +12,18 @@
     "stocks": [{ "id": "level", "name": "Level", "init": "50", "x": 380, "y": 200, "units": "units", "nonNegative": true }],
     "flows": [
       { "id": "in", "name": "Filling", "to": "level", "eq": "Inflow", "x": 220, "y": 200, "units": "units/year" },
-      { "id": "out", "name": "Draining", "from": "level", "eq": "MIN(Outflow, Level / DT + Inflow)", "x": 540, "y": 200, "units": "units/year" }
+      { "id": "out", "name": "Draining", "from": "level", "eq": "MIN(Outflow, Level / Minimum_draining_time + Inflow)", "x": 540, "y": 200, "units": "units/year" }
     ],
     "vars": [
       { "id": "inflow", "name": "Inflow", "eq": "10", "x": 220, "y": 90, "units": "units/year" },
-      { "id": "outflow", "name": "Outflow", "eq": "8", "x": 540, "y": 90, "units": "units/year" }
+      { "id": "outflow", "name": "Outflow", "eq": "8", "x": 540, "y": 90, "units": "units/year" },
+      { "id": "minDrain", "name": "Minimum draining time", "eq": "0.25", "x": 380, "y": 90, "units": "year" }
     ]
   },
   "params": {
     "inflow": { "min": 0, "max": 30, "step": 0.5 },
-    "outflow": { "min": 0, "max": 30, "step": 0.5 }
+    "outflow": { "min": 0, "max": 30, "step": 0.5 },
+    "minDrain": { "min": 0.25, "max": 5, "step": 0.25 }
   },
   "presets": [
     { "label": "Filling", "params": { "inflow": 14, "outflow": 6 } },

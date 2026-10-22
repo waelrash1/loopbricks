@@ -10,16 +10,15 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      {"id":"produced","name":"Drawings produced","init":"0","x":505,"y":150,"nonNegative":true},
-      {"id":"rate","name":"Producing rate","init":"Producing","x":560,"y":330,"nonNegative":true}
+      {"id":"produced","name":"Drawings produced","init":"0","x":505,"y":150,"nonNegative":true}
     ],
     "flows": [
-      {"id":"producing","name":"Producing","to":"produced","eq":"Workers * Productivity","x":240,"y":150},
-      {"id":"track_rate","name":"Tracking producing rate","to":"rate","eq":"(Producing - Producing_rate) / DT","x":450,"y":330}
+      {"id":"producing","name":"Producing","to":"produced","eq":"Workers * Productivity","x":240,"y":150}
     ],
     "vars": [
       {"id":"workers","name":"Workers","eq":"10","units":"people","x":80,"y":420},
-      {"id":"productivity","name":"Productivity","eq":"2","units":"/p·month","x":220,"y":420}
+      {"id":"productivity","name":"Productivity","eq":"2","units":"/p·month","x":220,"y":420},
+      {"id":"rate","name":"Producing rate","eq":"Producing","x":560,"y":330}
     ]
   },
   "params": {

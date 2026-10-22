@@ -7,8 +7,8 @@
 
 The models are the same files the LoopBricks web app runs, and give the same numbers.
 """
-from .expr import ExprError, compile_expr, name_key
-from .model import Model, ModelError, molecule, molecules
+from .expr import ExprError, LoopBricksError, LoopBricksWarning, compile_expr, name_key
+from .model import Model, ModelError, UnknownNameError, molecule, molecules
 
-__version__ = "0.1.0"
-__all__ = ["Model", "ModelError", "ExprError", "molecule", "molecules", "compile_expr", "name_key", "__version__"]
+__version__ = "0.2.0"  # the only place the version is written; pyproject.toml reads it from here
+__all__ = ["Model", "LoopBricksError", "LoopBricksWarning", "ModelError", "ExprError", "UnknownNameError", "molecule", "molecules", "compile_expr", "name_key", "__version__"]

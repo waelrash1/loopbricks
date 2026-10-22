@@ -109,9 +109,8 @@ export const MODELS_D: Record<string, Model> = {
       { id: "actual", label: "Actual quantity", init: 100, scale: 600, color: C.acc },
       { id: "perceived", label: "Perceived quantity", init: 100, scale: 600, color: C.acc2 },
       { id: "historical", label: "Historical quantity", init: 100, scale: 600, color: C.pink, chartHidden: true },
-      { id: "extrapolatedDisp", label: "Extrapolated quantity", init: 100, scale: 600, color: C.good, chartHidden: false },
+      { id: "extrapolatedDisp", label: "Extrapolated quantity", init: 100, scale: 600, color: C.good, chartHidden: false, derived: (_s, _p, r) => r.extrapolated },
     ],
-    initFrom: (_p, _s, r) => ({ extrapolatedDisp: r.extrapolated }), // the display stock starts at the value it shows
     params: [
       { id: "growth", label: "Growth of actual quantity", min: -5, max: 8, step: 0.5, value: 3, unit: "%/yr" },
       { id: "timeToPerceive", label: "Time to perceive quantity", min: 0.5, max: 6, step: 0.5, value: 2, unit: "yr" },
@@ -134,7 +133,6 @@ export const MODELS_D: Record<string, Model> = {
       actual: r.changeInActual,
       perceived: r.perceiving,
       historical: r.changeInHistorical,
-      extrapolatedDisp: (r.extrapolated - s.extrapolatedDisp) / 0.1,
     }),
     diagram: {
       stocks: {
@@ -201,9 +199,9 @@ export const MODELS_D: Record<string, Model> = {
     unitY: "tasks",
     lede: "A Proportional Split in which each claim is first multiplied by a managerial weight, so preference or bias tilts the allocation away from what the claims alone would give.",
     stocks: [
-      { id: "tasksA", label: "Tasks A", init: 30, scale: 60, color: C.acc },
-      { id: "tasksB", label: "Tasks B", init: 30, scale: 60, color: C.acc2 },
-      { id: "tasksC", label: "Tasks C", init: 30, scale: 60, color: C.good },
+      { id: "tasksA", label: "Tasks A", init: 30, scale: 60, color: C.acc, floor: true },
+      { id: "tasksB", label: "Tasks B", init: 30, scale: 60, color: C.acc2, floor: true },
+      { id: "tasksC", label: "Tasks C", init: 30, scale: 60, color: C.good, floor: true },
     ],
     params: [
       { id: "resources", label: "Resources", min: 2, max: 24, step: 1, value: 12, unit: "people" },
@@ -296,19 +294,18 @@ export const MODELS_D: Record<string, Model> = {
     unitY: "weeks",
     lede: "The time left on a job is the work still to do divided by the rate at which we anticipate doing it. The estimate is only as good as the anticipated rate.",
     stocks: [
-      { id: "workToDo", label: "Work to do (sq ft)", init: 6000, scale: 6000, color: C.acc, chartHidden: true },
-      { id: "durationDisp", label: "Duration till complete", init: 24, scale: 40, color: C.acc2, chartHidden: false },
+      { id: "workToDo", label: "Work to do (sq ft)", init: 6000, scale: 6000, color: C.acc, chartHidden: true, floor: true },
+      { id: "durationDisp", label: "Duration till complete", init: 24, scale: 40, color: C.acc2, chartHidden: false, derived: (_s, _p, r) => r.durationTillComplete },
     ],
-    initFrom: (_p, _s, r) => ({ durationDisp: r.durationTillComplete }), // the display stock starts at the value it shows
     params: [
       { id: "anticipatedRate", label: "Anticipated rate of accomplishing work", min: 50, max: 400, step: 10, value: 250, unit: "sq ft/wk" },
       { id: "actualRate", label: "Actual rate of accomplishing work", min: 0, max: 400, step: 10, value: 200, unit: "sq ft/wk" },
     ],
     rates: (s, p) => ({
       durationTillComplete: s.workToDo / Math.max(1, p.anticipatedRate),
-      accomplishing: s.workToDo > 0 ? p.actualRate : 0,
+      accomplishing: Math.min(p.actualRate, s.workToDo / MIN_TASK_TIME), // the last tasks take at least half a week
     }),
-    derivs: (s, _p, r) => ({ workToDo: -r.accomplishing, durationDisp: (r.durationTillComplete - s.durationDisp) / 0.1 }),
+    derivs: (s, _p, r) => ({ workToDo: -r.accomplishing }),
     diagram: {
       stocks: { workToDo: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "accomplishing", pts: [[460, 150], [785, 150]], from: "workToDo", max: 400, color: C.good }],
@@ -340,7 +337,7 @@ export const MODELS_D: Record<string, Model> = {
       <li><b>Sustainability</b>: years left in a retrofit programme from homes outstanding and the planned installation rate.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    There are 6,000 square feet to do and the crew anticipates 250 a week, so the estimate is <code>6000 / 250 = 24</code> weeks. They actually manage 200 a week. Each week takes only <code>200 / 250 = 0.8</code> weeks off the estimate, so at week 24, the date first promised, 1,200 square feet remain and the estimate still reads <code>1200 / 250 = 4.8</code> weeks. The job really finishes at week <code>6000 / 200 = 30</code>. Set the anticipated rate to 200 as well and the estimate starts at 30 and falls exactly one week per week.</div>
+    There are 6,000 square feet to do and the crew anticipates 250 a week, so the estimate is <code>6000 / 250 = 24</code> weeks. They actually manage 200 a week. Each week takes only <code>200 / 250 = 0.8</code> weeks off the estimate, so at week 24, the date first promised, 1,200 square feet remain and the estimate still reads <code>1200 / 250 = 4.8</code> weeks. The job is all but done at week <code>6000 / 200 = 30</code>: here the last tasks take at least half a week, so the final 100 square feet slow down and about 33 are still left at week 30, a short tail. Set the anticipated rate to 200 as well and the estimate starts at 30 and falls exactly one week per week.</div>
     <h4>Caveats</h4>
     <p>If people or productivity can be zero, protect against dividing by zero in the equation for the duration; the anticipated-rate slider here stops at 50 for that reason.</p>
     <h4>References</h4>
@@ -380,7 +377,7 @@ export const FLOW_META_D: Record<string, Record<string, FlowMeta>> = {
     doneC: { name: "completing C", eq: "MIN(resources × (C × weight C / total weighted claim), C / 0.5)", in: ["tasksC", "resources", "weightC"], loop: "B" },
   },
   estRemaining: {
-    accomplishing: { name: "accomplishing work", eq: "actual rate of accomplishing work (0 once Work to do is empty)", in: ["workToDo", "actualRate"] },
+    accomplishing: { name: "accomplishing work", eq: "MIN(actual rate of accomplishing work, Work to do / 0.5 wk)", in: ["workToDo", "actualRate"] },
   },
 };
 

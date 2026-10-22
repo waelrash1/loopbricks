@@ -9,7 +9,7 @@
     "timeUnit": "week",
     "T": 60,
     "dt": 0.1,
-    "stocks": [{ "id": "actual", "name": "Actual", "init": "20", "x": 420, "y": 200, "units": "level", "nonNegative": true }],
+    "stocks": [{ "id": "actual", "name": "Actual", "init": "20", "x": 420, "y": 200, "units": "level" }],
     "flows": [{ "id": "adj", "name": "Adjusting", "to": "actual", "eq": "(Goal - Actual) / Adjustment_time", "x": 240, "y": 200, "units": "level/week" }],
     "vars": [
       { "id": "goal", "name": "Goal", "eq": "60", "x": 160, "y": 90, "units": "level" },

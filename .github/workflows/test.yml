@@ -1,5 +1,6 @@
 name: Test
-# On every branch: the app's checks (including the shared-spec cross-check) and the Python package with its notebooks.
+# On every branch: the app's checks (including the shared-spec cross-check) and the Python package with its notebooks,
+# on the oldest Python the package supports (3.10) and the one Colab runs (3.12); keep pyproject.toml's classifiers in step.
 on:
   push:
   pull_request:
@@ -29,4 +30,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install "./python[test]"
       - run: python -m ipykernel install --user --name python3
-      - run: pytest -q python/tests
+      - run: pytest -q -n 4 python/tests

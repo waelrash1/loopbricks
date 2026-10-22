@@ -57,7 +57,7 @@
         "id": "shipping",
         "name": "Shipments",
         "from": "inv",
-        "eq": "MIN(Shipping, Inventory / DT)",
+        "eq": "MIN(Shipping, Inventory / Minimum_shipping_time)",
         "x": 719,
         "y": 150
       },
@@ -162,6 +162,13 @@
         "eq": "(Desired_inventory - Inventory) / Time_to_correct_inventory",
         "x": 80,
         "y": 515
+      },
+      {
+        "id": "minShip",
+        "name": "Minimum shipping time",
+        "eq": "1",
+        "x": 860,
+        "y": 300
       }
     ]
   },

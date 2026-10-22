@@ -15,8 +15,7 @@
         "name": "Result",
         "init": "50",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [

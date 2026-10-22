@@ -36,8 +36,8 @@ const fishery: Model = {
   unitY: "kt of fish / boats",
   lede: "Fish regrow fastest at half the carrying capacity. Boats are bought while fishing pays, and leave only as they wear out.",
   stocks: [
-    { id: "fish", label: "Fish stock (kt)", init: K, scale: K, color: C.acc },
-    { id: "fleet", label: "Fleet (boats)", init: 10, scale: 500, color: C.acc2 },
+    { id: "fish", label: "Fish stock (kt)", init: K, scale: K, color: C.acc , floor: true },
+    { id: "fleet", label: "Fleet (boats)", init: 10, scale: 500, color: C.acc2 , floor: true },
   ],
   params: [
     { id: "r", label: "Fish regrowth rate", min: 10, max: 60, step: 1, value: 30, unit: "%/yr" },

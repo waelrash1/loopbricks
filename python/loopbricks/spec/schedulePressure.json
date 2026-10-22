@@ -23,8 +23,7 @@
         "name": "elapsed",
         "init": "0",
         "x": 160,
-        "y": 300,
-        "nonNegative": true
+        "y": 300
       }
     ],
     "flows": [

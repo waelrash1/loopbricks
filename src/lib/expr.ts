@@ -39,6 +39,7 @@ const FUNCS: Record<string, [number, number]> = {
   STEP: [2, 2],
   PULSE: [3, 3],
   RAMP: [2, 2],
+  TABLE: [5, 999], // TABLE(x, x1, y1, x2, y2, ...): checked further in tableArgs
   TIME: [0, 0],
 };
 export const FUNCTION_NAMES = Object.keys(FUNCS);
@@ -185,6 +186,7 @@ export function parse(src: string): Node {
           }
         }
         expect(")", open);
+        if (upper === "TABLE") tableArgs(args, t.p);
         const [lo, hi] = range;
         if (args.length < lo || args.length > hi) {
           const want = lo === hi ? `${lo}` : hi > 10 ? `at least ${lo}` : `${lo} to ${hi}`;
@@ -209,6 +211,31 @@ export function parse(src: string): Node {
     throw new ExprError(`Unexpected ${show(t)} ${at(t.p)}; is an operator missing?`, t.p);
   }
   return e;
+}
+
+// a plain number, or a minus sign and a number
+const literal = (n: Node): number | undefined => (n.k === "num" ? n.v : n.k === "neg" && n.a.k === "num" ? -n.a.v : undefined);
+
+// TABLE's points must be numbers, in pairs, at least two, with x increasing
+function tableArgs(args: Node[], p: number) {
+  const pts = args.slice(1);
+  if (pts.length % 2) throw new ExprError(`TABLE needs a y for every x: after the input, give the points as x, y pairs (${at(p)})`, p);
+  if (pts.length < 4) throw new ExprError(`TABLE needs an input and at least 2 points: TABLE(input, x1, y1, x2, y2, ...) (${at(p)})`, p);
+  const nums = pts.map(literal);
+  if (nums.some((v) => v === undefined)) throw new ExprError(`TABLE points must be plain numbers, not names or formulas (${at(p)})`, p);
+  for (let j = 2; j < nums.length; j += 2)
+    if (!(nums[j]! > nums[j - 2]!)) throw new ExprError(`TABLE x values must increase: ${nums[j]} comes after ${nums[j - 2]} (${at(p)})`, p);
+}
+
+// piecewise linear between the points, flat beyond the ends (as Vensim lookups behave)
+export function table(x: number, xs: number[], ys: number[]): number {
+  if (Number.isNaN(x)) return NaN;
+  const n = xs.length - 1;
+  if (x <= xs[0]) return ys[0];
+  if (x >= xs[n]) return ys[n];
+  let i = 0;
+  while (x >= xs[i + 1]) i++;
+  return ys[i] + ((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i])) * (x - xs[i]);
 }
 
 type Fn = (s: Scope) => number;
@@ -269,6 +296,11 @@ function build(n: Node): Fn {
             return t(s) >= start - 1e-9 && t(s) < start + w - 1e-9 ? f[0](s) : 0;
           };
         case "RAMP": return (s) => (t(s) > f[1](s) ? f[0](s) * (t(s) - f[1](s)) : 0);
+        case "TABLE": {
+          const pts = n.args.slice(1).map((a) => literal(a)!);
+          const xs = pts.filter((_, j) => j % 2 === 0), ys = pts.filter((_, j) => j % 2 === 1);
+          return (s) => table(f[0](s), xs, ys);
+        }
       }
       throw new Error("unknown function " + n.f);
     }

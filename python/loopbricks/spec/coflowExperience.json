@@ -23,8 +23,7 @@
         "name": "Average experience",
         "init": "8",
         "x": 410,
-        "y": 205,
-        "nonNegative": true
+        "y": 205
       }
     ],
     "flows": [

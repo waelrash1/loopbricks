@@ -10,16 +10,14 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      {"id":"actual","name":"Actual quantity","init":"100","x":410,"y":50,"nonNegative":true},
-      {"id":"perceived","name":"Perceived quantity","init":"100","x":410,"y":130,"nonNegative":true},
-      {"id":"historical","name":"Historical quantity","init":"100","x":410,"y":210,"nonNegative":true},
-      {"id":"extrapolatedDisp","name":"Extrapolated quantity","init":"Extrapolation","x":560,"y":330,"nonNegative":true}
+      {"id":"actual","name":"Actual quantity","init":"100","x":410,"y":50},
+      {"id":"perceived","name":"Perceived quantity","init":"100","x":410,"y":130},
+      {"id":"historical","name":"Historical quantity","init":"100","x":410,"y":210}
     ],
     "flows": [
       {"id":"changeInActual","name":"Change in actual quantity","to":"actual","eq":"Actual_quantity * (Growth_of_actual_quantity / 100)","x":193,"y":50},
       {"id":"perceiving","name":"Change in perceived quantity","to":"perceived","eq":"(Actual_quantity - Perceived_quantity) / MAX(0.1, Time_to_perceive_quantity)","x":193,"y":130},
-      {"id":"changeInHistorical","name":"Change in historical quantity","to":"historical","eq":"(Perceived_quantity - Historical_quantity) / Trend_duration","x":193,"y":210},
-      {"id":"track_extrapolatedDisp","name":"Tracking extrapolation","to":"extrapolatedDisp","eq":"(Extrapolation - Extrapolated_quantity) / DT","x":450,"y":330}
+      {"id":"changeInHistorical","name":"Change in historical quantity","to":"historical","eq":"(Perceived_quantity - Historical_quantity) / Trend_duration","x":193,"y":210}
     ],
     "vars": [
       {"id":"growth","name":"Growth of actual quantity","eq":"3","units":"%/year","x":80,"y":420},
@@ -28,7 +26,8 @@
       {"id":"forecastHorizon","name":"Forecast horizon","eq":"5","units":"year","x":500,"y":420},
       {"id":"duration","name":"Trend duration","eq":"MAX(0.1, Duration_over_which_to_calculate_trend)","x":640,"y":420},
       {"id":"fractionalTrend","name":"Fractional trend","eq":"(Perceived_quantity - Historical_quantity) / (MAX(0.000001, Historical_quantity) * Trend_duration)","x":780,"y":420},
-      {"id":"extrapolated","name":"Extrapolation","eq":"Perceived_quantity * (1 + Fractional_trend * (Time_to_perceive_quantity + Forecast_horizon))","x":80,"y":500}
+      {"id":"extrapolated","name":"Extrapolation","eq":"Perceived_quantity * (1 + Fractional_trend * (Time_to_perceive_quantity + Forecast_horizon))","x":80,"y":500},
+      {"id":"extrapolatedDisp","name":"Extrapolated quantity","eq":"Extrapolation","x":560,"y":330}
     ]
   },
   "params": {

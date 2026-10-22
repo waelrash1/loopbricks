@@ -15,9 +15,9 @@ const sir: Model = {
   unitY: "people",
   lede: "Susceptible, infected, recovered: the Kermack–McKendrick structure behind every outbreak model.",
   stocks: [
-    { id: "s", label: "Susceptible", init: N - 10, scale: N, color: C.acc },
-    { id: "i", label: "Infected", init: 10, scale: N / 2, color: C.pink },
-    { id: "r", label: "Recovered or immune", init: 0, scale: N, color: C.good },
+    { id: "s", label: "Susceptible", init: N - 10, scale: N, color: C.acc , floor: true },
+    { id: "i", label: "Infected", init: 10, scale: N / 2, color: C.pink , floor: true },
+    { id: "r", label: "Recovered or immune", init: 0, scale: N, color: C.good , floor: true },
   ],
   params: [
     { id: "r0", label: "Basic reproduction number R₀", min: 0.5, max: 8, step: 0.1, value: 3, unit: "" },
@@ -75,9 +75,9 @@ const patientFlow: Model = {
   unitY: "patients",
   lede: "Patients queue in the emergency department for a bed, stay for treatment, then wait again for a place in community care.",
   stocks: [
-    { id: "wait", label: "Waiting in ED for a bed", init: 10, scale: 200, color: C.pink },
-    { id: "ward", label: "In hospital, needing care", init: 405, scale: 600, color: C.acc },
-    { id: "fit", label: "Medically fit, awaiting discharge", init: 45, scale: 300, color: C.acc2 },
+    { id: "wait", label: "Waiting in ED for a bed", init: 10, scale: 200, color: C.pink , floor: true },
+    { id: "ward", label: "In hospital, needing care", init: 405, scale: 600, color: C.acc , floor: true },
+    { id: "fit", label: "Medically fit, awaiting discharge", init: 45, scale: 300, color: C.acc2 , floor: true },
   ],
   params: [
     { id: "arrivals", label: "Emergency admissions", min: 50, max: 130, step: 1, value: 90, unit: "/day" },
@@ -141,10 +141,10 @@ const chronic: Model = {
   unitY: "people",
   lede: "A population moves from no risk, to at-risk, to diagnosed disease, to complications. Prevention acts early in the chain; care quality acts late.",
   stocks: [
-    { id: "well", label: "No risk factor", init: 7000, scale: 10000, color: C.good },
-    { id: "risk", label: "At risk", init: 2000, scale: 5000, color: C.acc },
-    { id: "dis", label: "With disease", init: 800, scale: 3000, color: C.acc2 },
-    { id: "comp", label: "With complications", init: 200, scale: 1500, color: C.pink },
+    { id: "well", label: "No risk factor", init: 7000, scale: 10000, color: C.good , floor: true },
+    { id: "risk", label: "At risk", init: 2000, scale: 5000, color: C.acc , floor: true },
+    { id: "dis", label: "With disease", init: 800, scale: 3000, color: C.acc2 , floor: true },
+    { id: "comp", label: "With complications", init: 200, scale: 1500, color: C.pink , floor: true },
   ],
   params: [
     { id: "onset", label: "Risk-factor onset", min: 0, max: 8, step: 0.1, value: 3, unit: "%/yr" },

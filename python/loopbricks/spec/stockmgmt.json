@@ -24,7 +24,7 @@
         "units": "units/week"
       },
       { "id": "acquisition", "name": "Acquisition", "from": "sl", "to": "inv", "eq": "Supply_line / Acquisition_delay", "x": 510, "y": 230, "units": "units/week" },
-      { "id": "sales", "name": "Sales", "from": "inv", "eq": "MIN(Demand, Inventory / DT)", "x": 820, "y": 230, "units": "units/week" }
+      { "id": "sales", "name": "Sales", "from": "inv", "eq": "MIN(Demand, Inventory / Minimum_shipping_time)", "x": 820, "y": 230, "units": "units/week" }
     ],
     "vars": [
       { "id": "demand", "name": "Demand", "eq": "10", "x": 820, "y": 370, "units": "units/week" },
@@ -32,7 +32,8 @@
       { "id": "adj", "name": "Inventory adjustment time", "eq": "4", "x": 300, "y": 80, "units": "week" },
       { "id": "acq", "name": "Acquisition delay", "eq": "6", "x": 470, "y": 370, "units": "week" },
       { "id": "slw", "name": "Supply line weight", "eq": "1", "x": 120, "y": 370, "units": "" },
-      { "id": "dsl", "name": "Desired supply line", "eq": "Demand * Acquisition_delay", "x": 300, "y": 370, "units": "units" }
+      { "id": "dsl", "name": "Desired supply line", "eq": "Demand * Acquisition_delay", "x": 300, "y": 370, "units": "units" },
+      { "id": "minShip", "name": "Minimum shipping time", "eq": "1", "x": 980, "y": 370, "units": "week" }
     ]
   },
   "params": {

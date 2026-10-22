@@ -34,9 +34,9 @@ export const MODELS_F: Record<string, Model> = {
     unitY: "kt of fish / boats",
     lede: "Two fleets fish one stock. Each grows while its boats pay, and each boat's catch falls as the shared stock falls. Nobody chooses the collapse; the structure does.",
     stocks: [
-      { id: "res", label: "Fish stock (kt)", init: 90, scale: 100, color: C.good },
-      { id: "fa", label: "Fleet A (boats)", init: 4, scale: 80, color: C.acc },
-      { id: "fb", label: "Fleet B (boats)", init: 4, scale: 80, color: C.acc2 },
+      { id: "res", label: "Fish stock (kt)", init: 90, scale: 100, color: C.good, floor: true },
+      { id: "fa", label: "Fleet A (boats)", init: 4, scale: 80, color: C.acc, floor: true },
+      { id: "fb", label: "Fleet B (boats)", init: 4, scale: 80, color: C.acc2, floor: true },
     ],
     params: [
       { id: "r", label: "Regrowth rate", min: 0.1, max: 1, step: 0.05, value: 0.4, unit: "/yr" },
@@ -127,8 +127,8 @@ export const MODELS_F: Record<string, Model> = {
     unitY: "problems / capability index",
     lede: "Quick fixes make problems disappear for now, but patched problems come back, and every hour spent firefighting is an hour not spent on the capability that would stop problems at the source.",
     stocks: [
-      { id: "prob", label: "Open problems", init: 73, scale: 300, color: C.pink },
-      { id: "patched", label: "Patched problems", init: 292, scale: 700, color: "#8b98a9", chartHidden: true },
+      { id: "prob", label: "Open problems", init: 73, scale: 300, color: C.pink, floor: true },
+      { id: "patched", label: "Patched problems", init: 292, scale: 700, color: "#8b98a9", chartHidden: true, floor: true },
       { id: "cap", label: "Capability (0–100)", init: 53, scale: 100, color: C.good },
     ],
     params: [

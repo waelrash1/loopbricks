@@ -957,7 +957,7 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
         ))}
       </ol>
       <p className="mt-4 text-[12.5px] text-muted-foreground leading-[1.5]">
-        Functions: MIN, MAX, ABS, EXP, LN, SQRT, IF(condition, then, else), STEP(height, time), PULSE(height, start, width), RAMP(slope, start) and TIME. Compare with &lt; &lt;= &gt; &gt;= = &lt;&gt;.
+        Functions: MIN, MAX, ABS, EXP, LN, SQRT, IF(condition, then, else), STEP(height, time), PULSE(height, start, width), RAMP(slope, start), TABLE(input, x1, y1, x2, y2, ...) for a lookup through points (straight lines between them, flat beyond the ends) and TIME. Compare with &lt; &lt;= &gt; &gt;= = &lt;&gt;.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <button onClick={() => onOpen("/learn/stocks-flows")} className={btn}>

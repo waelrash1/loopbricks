@@ -25,10 +25,10 @@ const boomBust: Model = {
   unitY: "thousand units",
   lede: "Word of mouth drives sales of a new durable up fast, then saturation brings them down to replacement demand. Capacity ordered at the peak keeps arriving after it.",
   stocks: [
-    { id: "pot", label: "Potential buyers", init: 990, scale: 1000, color: C.acc2 },
-    { id: "own", label: "Owners", init: 10, scale: 1000, color: C.good },
-    { id: "onOrder", label: "Capacity on order", init: 2.3, scale: 400, color: C.pink },
-    { id: "cap", label: "Capacity (units/yr)", init: 17, scale: 400, color: C.acc },
+    { id: "pot", label: "Potential buyers", init: 990, scale: 1000, color: C.acc2 , floor: true },
+    { id: "own", label: "Owners", init: 10, scale: 1000, color: C.good , floor: true },
+    { id: "onOrder", label: "Capacity on order", init: 2.3, scale: 400, color: C.pink , floor: true },
+    { id: "cap", label: "Capacity (units/yr)", init: 17, scale: 400, color: C.acc , floor: true },
     { id: "dem", label: "Forecast sales (units/yr)", init: 17, scale: 400, color: C.acc2 },
   ],
   params: [

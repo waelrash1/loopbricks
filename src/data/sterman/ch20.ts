@@ -254,9 +254,9 @@ export const CHAPTER: StudyChapter = {
     {
       prompt:
         "Open Capacity Utilization and compare <b>Demand &lt; capacity</b> with <b>Demand &gt; capacity</b>. In the second, read the production rate the curve allows and what happens to inventory. Why is utilisation a poor signal for price?",
-      hint: "With capacity 15 and demand 25, production saturates just under 15 and inventory runs to zero, whatever the size of the gap.",
+      hint: "With capacity 15 and demand 25, production saturates just under 15 and inventory falls to the little that can be shipped, whatever the size of the gap.",
       answer:
-        "With demand 15 and capacity 25, production settles at 15 and inventory near 92, with spare capacity. With demand 25 and capacity 15, production saturates at about 14.9, just under capacity, and inventory runs to zero by about week 5 and stays there, while 10 units a week of demand go unmet. Utilisation tops out near its maximum whether demand is 16 or 40: once the plant is flat out, utilisation stops changing and carries no information about how large the excess demand is. Inventory coverage, backlog or delivery delay keep moving with the size of the gap, so they are the signals that should drive price.",
+        "With demand 15 and capacity 25, production settles at 15 and inventory near 92, with spare capacity. With demand 25 and capacity 15, production saturates at about 14.9, just under capacity, and inventory falls to about 15 by week 5 and stays there, so sales are held to production and about 10 units a week of demand go unmet. Utilisation tops out near its maximum whether demand is 16 or 40: once the plant is flat out, utilisation stops changing and carries no information about how large the excess demand is. Inventory coverage, backlog or delivery delay keep moving with the size of the gap, so they are the signals that should drive price.",
       link: { label: "Open capacity utilisation", hash: "/m/capacityUtil" },
     },
     {

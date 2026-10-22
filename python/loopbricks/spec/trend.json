@@ -10,8 +10,8 @@
     "T": 60,
     "dt": 0.1,
     "stocks": [
-      { "id": "input", "name": "Actual", "init": "100", "x": 295, "y": 150, "nonNegative": true },
-      { "id": "ppv", "name": "Perceived", "init": "100", "x": 585, "y": 150, "nonNegative": true }
+      { "id": "input", "name": "Actual", "init": "100", "x": 295, "y": 150 },
+      { "id": "ppv", "name": "Perceived", "init": "100", "x": 585, "y": 150 }
     ],
     "flows": [
       { "id": "grow", "name": "Growth", "to": "input", "eq": "Actual * (True_growth / 100)", "x": 135, "y": 150 },

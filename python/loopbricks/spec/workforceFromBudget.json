@@ -17,14 +17,6 @@
         "x": 395,
         "y": 150,
         "nonNegative": true
-      },
-      {
-        "id": "desiredDisp",
-        "name": "Desired people",
-        "init": "Affordable_workforce",
-        "x": 260,
-        "y": 320,
-        "nonNegative": true
       }
     ],
     "flows": [
@@ -35,14 +27,6 @@
         "eq": "(Affordable_workforce - Workforce) / Time_to_adjust_workforce",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "desiredTrack",
-        "name": "Desired people tracking",
-        "to": "desiredDisp",
-        "eq": "(Affordable_workforce - Desired_people) / DT",
-        "x": 110,
-        "y": 320
       }
     ],
     "vars": [
@@ -80,6 +64,13 @@
         "eq": "Workforce * Average_wage",
         "x": 230,
         "y": 450
+      },
+      {
+        "id": "desiredDisp",
+        "name": "Desired people",
+        "eq": "Affordable_workforce",
+        "x": 260,
+        "y": 320
       }
     ]
   },

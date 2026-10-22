@@ -15,16 +15,7 @@
         "name": "Anchor",
         "init": "100",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
-      },
-      {
-        "id": "valueDisp",
-        "name": "Value",
-        "init": "Produced_value",
-        "x": 160,
-        "y": 300,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [
@@ -35,14 +26,6 @@
         "eq": "(Anchor_target - Anchor) / Anchor_lag",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "updValue",
-        "name": "Updating value display",
-        "to": "valueDisp",
-        "eq": "(Produced_value - Value) / DT",
-        "x": 60,
-        "y": 300
       }
     ],
     "vars": [
@@ -87,6 +70,13 @@
         "eq": "(1 - Protection) * Produced_value + Protection * Fundamental",
         "x": 100,
         "y": 490
+      },
+      {
+        "id": "valueDisp",
+        "name": "Value",
+        "eq": "Produced_value",
+        "x": 160,
+        "y": 300
       }
     ]
   },

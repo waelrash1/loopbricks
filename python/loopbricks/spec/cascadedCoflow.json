@@ -41,22 +41,6 @@
         "x": 440,
         "y": 285,
         "nonNegative": true
-      },
-      {
-        "id": "avg1",
-        "name": "Avg cost stage 1",
-        "init": "Cost_per_unit_1",
-        "x": 720,
-        "y": 285,
-        "nonNegative": true
-      },
-      {
-        "id": "avg2",
-        "name": "Avg cost stage 2",
-        "init": "Cost_per_unit_2",
-        "x": 1000,
-        "y": 285,
-        "nonNegative": true
       }
     ],
     "flows": [
@@ -125,22 +109,6 @@
         "eq": "Completion * Cost_per_unit_2",
         "x": 540,
         "y": 285
-      },
-      {
-        "id": "updAvg1",
-        "name": "Updating avg 1",
-        "to": "avg1",
-        "eq": "(Cost_per_unit_1 - Avg_cost_stage_1) / DT",
-        "x": 620,
-        "y": 285
-      },
-      {
-        "id": "updAvg2",
-        "name": "Updating avg 2",
-        "to": "avg2",
-        "eq": "(Cost_per_unit_2 - Avg_cost_stage_2) / DT",
-        "x": 900,
-        "y": 285
       }
     ],
     "vars": [
@@ -185,6 +153,20 @@
         "eq": "cost_in_2 / MAX(WIP_stage_2, 1e-6)",
         "x": 100,
         "y": 475
+      },
+      {
+        "id": "avg1",
+        "name": "Avg cost stage 1",
+        "eq": "Cost_per_unit_1",
+        "x": 720,
+        "y": 285
+      },
+      {
+        "id": "avg2",
+        "name": "Avg cost stage 2",
+        "eq": "Cost_per_unit_2",
+        "x": 1000,
+        "y": 285
       }
     ]
   },

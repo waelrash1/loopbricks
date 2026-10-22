@@ -15,16 +15,7 @@
         "name": "Fatigue",
         "init": "1",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
-      },
-      {
-        "id": "relOutput",
-        "name": "Output vs normal",
-        "init": "Relative_output",
-        "x": 160,
-        "y": 300,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [
@@ -35,14 +26,6 @@
         "eq": "(Overtime - Fatigue) / Time_to_fatigue",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "updRelOutput",
-        "name": "Updating output display",
-        "to": "relOutput",
-        "eq": "(Relative_output - Output_vs_normal) / DT",
-        "x": 60,
-        "y": 300
       }
     ],
     "vars": [
@@ -94,6 +77,13 @@
         "eq": "Workforce * Normal_productivity * Relative_output",
         "x": 260,
         "y": 490
+      },
+      {
+        "id": "relOutput",
+        "name": "Output vs normal",
+        "eq": "Relative_output",
+        "x": 160,
+        "y": 300
       }
     ]
   },

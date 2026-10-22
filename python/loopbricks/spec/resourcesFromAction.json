@@ -17,14 +17,6 @@
         "x": 395,
         "y": 150,
         "nonNegative": true
-      },
-      {
-        "id": "requiredDisp",
-        "name": "Resources required",
-        "init": "Resources_needed",
-        "x": 260,
-        "y": 320,
-        "nonNegative": true
       }
     ],
     "flows": [
@@ -35,14 +27,6 @@
         "eq": "(Resources_needed - Resources) / Time_to_acquire_resources",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "requiredTrack",
-        "name": "Resources required tracking",
-        "to": "requiredDisp",
-        "eq": "(Resources_needed - Resources_required) / DT",
-        "x": 110,
-        "y": 320
       }
     ],
     "vars": [
@@ -80,6 +64,13 @@
         "eq": "Resources * Resource_ability_to_create_flow",
         "x": 230,
         "y": 450
+      },
+      {
+        "id": "requiredDisp",
+        "name": "Resources required",
+        "eq": "Resources_needed",
+        "x": 260,
+        "y": 320
       }
     ]
   },

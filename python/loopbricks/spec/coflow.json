@@ -11,22 +11,21 @@
     "dt": 0.1,
     "stocks": [
       { "id": "people", "name": "Headcount", "init": "48", "x": 210, "y": 150, "nonNegative": true },
-      { "id": "totExp", "name": "Total experience", "init": "288", "x": 545, "y": 150, "nonNegative": true },
-      { "id": "avgExp", "name": "Avg experience", "init": "Total_experience / MAX(Headcount, 0.000001)", "x": 700, "y": 150, "nonNegative": true }
+      { "id": "totExp", "name": "Total experience", "init": "288", "x": 545, "y": 150, "nonNegative": true }
     ],
     "flows": [
       { "id": "hireFlow", "name": "Hires", "to": "people", "eq": "Hiring", "x": 95, "y": 150 },
       { "id": "quitFlow", "name": "Attrition", "from": "people", "eq": "Headcount / Avg_tenure", "x": 325, "y": 150 },
       { "id": "expHired", "name": "Experience hired", "to": "totExp", "eq": "Hiring * Hire_experience", "x": 545, "y": 40 },
       { "id": "expGained", "name": "Experience gained", "to": "totExp", "eq": "Headcount * 1", "x": 430, "y": 150 },
-      { "id": "expLost", "name": "Experience lost", "from": "totExp", "eq": "Attrition * Experience_per_head", "x": 545, "y": 260 },
-      { "id": "avgAdj", "name": "Average experience adjustment", "to": "avgExp", "eq": "(Total_experience / MAX(Headcount, 0.000001) - Avg_experience) / DT", "x": 700, "y": 60 }
+      { "id": "expLost", "name": "Experience lost", "from": "totExp", "eq": "Attrition * Experience_per_head", "x": 545, "y": 260 }
     ],
     "vars": [
       { "id": "hire", "name": "Hiring", "eq": "8", "x": 80, "y": 370 },
       { "id": "tenure", "name": "Avg tenure", "eq": "6", "x": 250, "y": 430 },
       { "id": "hireExp", "name": "Hire experience", "eq": "0", "x": 420, "y": 370 },
-      { "id": "avg", "name": "Experience per head", "eq": "Total_experience / MAX(Headcount, 0.000001)", "x": 590, "y": 430 }
+      { "id": "avg", "name": "Experience per head", "eq": "Total_experience / MAX(Headcount, 0.000001)", "x": 590, "y": 430 },
+      { "id": "avgExp", "name": "Avg experience", "eq": "Experience_per_head", "x": 700, "y": 150 }
     ]
   },
   "params": {

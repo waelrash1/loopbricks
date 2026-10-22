@@ -11,13 +11,11 @@
     "dt": 0.1,
     "stocks": [
       {"id":"made","name":"Made by one worker","init":"0","x":410,"y":150,"nonNegative":true},
-      {"id":"ref","name":"At normal PDY","init":"0","x":560,"y":330,"nonNegative":true},
-      {"id":"pdy","name":"Productivity shown","init":"Productivity","x":760,"y":330,"nonNegative":true}
+      {"id":"ref","name":"At normal PDY","init":"0","x":560,"y":330,"nonNegative":true}
     ],
     "flows": [
       {"id":"producing","name":"Producing one worker","to":"made","eq":"Productivity","x":193,"y":150},
-      {"id":"atNormal","name":"Producing at normal PDY","to":"ref","eq":"Normal_productivity","x":450,"y":330},
-      {"id":"track_pdy","name":"Tracking productivity","to":"pdy","eq":"(Productivity - Productivity_shown) / DT","x":650,"y":330}
+      {"id":"atNormal","name":"Producing at normal PDY","to":"ref","eq":"Normal_productivity","x":450,"y":330}
     ],
     "vars": [
       {"id":"normalPDY","name":"Normal productivity","eq":"5","units":"/p·month","x":80,"y":420},
@@ -29,7 +27,8 @@
       {"id":"ePressure","name":"Effect of schedule pressure","eq":"MAX(0.7, MIN(1.3, 1 + 0.4 * (Schedule_pressure - 1)))","x":80,"y":500},
       {"id":"eAdequacy","name":"Effect of work adequacy","eq":"MAX(0, MIN(1, Work_adequacy))","x":220,"y":500},
       {"id":"eSkill","name":"Effect of average skill","eq":"MAX(0.4, MIN(1.3, 0.4 + 0.6 * Average_skill))","x":360,"y":500},
-      {"id":"pdyNow","name":"Productivity","eq":"Normal_productivity * Effect_of_fatigue * Effect_of_schedule_pressure * Effect_of_work_adequacy * Effect_of_average_skill","x":500,"y":500}
+      {"id":"pdyNow","name":"Productivity","eq":"Normal_productivity * Effect_of_fatigue * Effect_of_schedule_pressure * Effect_of_work_adequacy * Effect_of_average_skill","x":500,"y":500},
+      {"id":"pdy","name":"Productivity shown","eq":"Productivity","x":760,"y":330}
     ]
   },
   "params": {

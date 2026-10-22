@@ -21,10 +21,15 @@ import { ARCHETYPES } from "@/data/learn/archetypes";
 import { OBJECTIVES, QUIZ } from "@/data/learn/quiz";
 import { STEPS } from "@/data/learn/steps";
 import { MODULE_CONTENT } from "@/data/learn";
-import { sampleModel } from "@/data/apps/sim";
+import { SKIN_BASE, sampleModel } from "@/data/apps/sim";
 import { CAL_DATA, CAL_FIXED, CAL_MODEL, CAL_TRUTH, calHoldout, calRef, monteCarlo, overshoots, policyTest } from "@/lib/labs";
 import { beerCost, beerPeak, beerRun, fireRun, fireScore, fishProfit, fishRun, goodOrder } from "@/lib/games";
 const errs: string[] = [];
+// molecules whose lesson is an unprotected outflow: the floor is meant to catch it here, and nowhere else
+const CLIP_LESSONS: Record<string, string> = {
+  doingWorkCascade: "constant crews draw on a stage regardless of what it holds: an empty stage shows the flaw",
+  reducingBacklog: "producing never checks the work left; the overdrawn stock counts what the floor removed",
+};
 const keys = GROUPS.flatMap((g) => g.keys);
 const all = Object.keys(MODELS);
 if (new Set(keys).size !== keys.length) errs.push("duplicate key in GROUPS");
@@ -42,9 +47,14 @@ for (const k of all) {
   const runs = [initParams(m), ...(PRESETS[k] ?? []).map((p) => ({ ...initParams(m), ...p.params })), { ...initParams(m), ...(LESSONS[k]?.preset ?? {}) }];
   for (const p of runs) {
     let s = freshState(m, p);
+    let clipped = false;
     for (let i = 0; i < 60 / DT; i++) {
       const r = stepOnce(m, s, p, DT);
       s = r.state;
+      if (r.clipped.length && !clipped && !(k in CLIP_LESSONS)) {
+        clipped = true;
+        errs.push(`${k}: the floor holds ${r.clipped.join(", ")} at zero at t = ${+((i + 1) * DT).toFixed(1)} with ${JSON.stringify(p)}: protect the outflow (e.g. MIN(desired, stock / minimum time)) instead of relying on the clip`);
+      }
       m.diagram.flows.forEach((f) => !Number.isFinite(r.rates[f.id]) && errs.push(`${k}: rate ${f.id} not finite`));
       if (Object.values(s).some((v) => !Number.isFinite(v))) { errs.push(`${k}: non-finite state`); break; }
     }
@@ -79,8 +89,13 @@ for (const d of DOMAINS) {
         else if (v < p.min || v > p.max) errs.push(`${id}: preset "${pr.label}" puts ${pid}=${v} outside the slider`);
       });
       const pp = { ...initParams(m), ...pr.params };
-      let st = freshState(m, pp);
-      for (let i = 0; i < (d.stop[c.sim] * 2) / DT; i++) st = stepOnce(m, st, pp, DT).state;
+      let st = freshState(m, pp), clip = "";
+      for (let i = 0; i < (d.stop[c.sim] * 2) / DT; i++) {
+        const r = stepOnce(m, st, pp, DT);
+        st = r.state;
+        clip ||= r.clipped.join(", ");
+      }
+      if (clip && !(SKIN_BASE[c.sim] in CLIP_LESSONS)) errs.push(`${id}: preset "${pr.label}" holds ${clip} at zero: protect the outflow instead of relying on the floor`);
       if (Object.values(st).some((v) => !Number.isFinite(v))) errs.push(`${id}: preset "${pr.label}" goes non-finite`);
     }
     const run = runnerFor(d, c);
@@ -255,6 +270,28 @@ import { TEMPLATES, fromJSON, simulate as bSimulate, template as bTemplate, toJS
     errs.push("expr: an unknown name should throw");
   } catch (e) {
     if (!String(e).includes('Unknown name "x"')) errs.push(`expr: unknown name message: ${e}`);
+  }
+  // TABLE lookups: the same cases as python/tests/test_expr.py, which must give the same numbers
+  {
+    const tableCases: [string, number, number][] = [
+      ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", -5, 0], ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 0, 0], ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 2.5, 0.25],
+      ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 10, 1], ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 15, 0.75], ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 20, 0.5],
+      ["TABLE(x, 0, 0, 10, 1, 20, 0.5)", 1e9, 0.5], ["TABLE(x, -1, 2, 1, -2)", 0.5, -1], ["TABLE(x / 2, -1, 2, 1, -2)", -4, 2],
+    ];
+    for (const [src, x, want] of tableCases) {
+      const got = ev(src, { x });
+      if (got !== want) errs.push(`expr: ${src} at x = ${x} gave ${got}, expected ${want}`);
+    }
+    if (!Number.isNaN(ev("TABLE(x, 0, 0, 1, 1)", { x: NaN }))) errs.push("expr: TABLE of NaN should be NaN");
+    if (!exprCompile("TABLE(TIME, 0, 0, 1, 1)").usesTime) errs.push("expr: TABLE(TIME, ...) should count as using time");
+    const tableErrors: [string, string][] = [
+      ["TABLE(x, 0, 1)", "at least 2 points"], ["TABLE(x, 0, 1, 2)", "a y for every x"], ["TABLE(x, 0, 1, a, 2)", "plain numbers"],
+      ["TABLE(x, 0, 1, 0, 2)", "must increase"], ["TABLE(x, 2, 1, 1, 2)", "must increase"], ["TABLE + 1", "is a function"],
+    ];
+    for (const [src, hint] of tableErrors) {
+      const r = exprTry(src);
+      if (r.ok || !r.error.message.includes(hint)) errs.push(`expr: "${src}" should fail with "${hint}", got ${r.ok ? "no error" : r.error.message}`);
+    }
   }
   // every template is clean, runs, and gives the textbook behaviour
   for (const t of TEMPLATES) {

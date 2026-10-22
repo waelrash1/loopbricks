@@ -4,9 +4,21 @@ import { MODELS_C } from "@/data/extra/batchC";
 import { MODELS_E } from "@/data/extra/batchE";
 import { MODELS_F } from "@/data/extra/batchF";
 import { MODELS_D } from "@/data/extra/batchD";
-import { DT, type Vars } from "@/sim/engine";
+import type { Vars } from "@/sim/engine";
 
-export type Stock = { id: string; label: string; init: number; scale: number; color: string; hidden?: boolean; chartHidden?: boolean };
+// floor: a physical quantity that cannot go below zero (people, inventory, work, water), held there by the engine.
+// derived: not integrated but worked out from the state each step, an auxiliary shown on the chart like a stock.
+export type Stock = {
+  id: string;
+  label: string;
+  init: number;
+  scale: number;
+  color: string;
+  hidden?: boolean;
+  chartHidden?: boolean;
+  floor?: boolean;
+  derived?: (s: Vars, p: Vars, r: Vars) => number;
+};
 export type Param = { id: string; label: string; min: number; max: number; step: number; value: number; unit: string };
 export type FlowGeo = { id: string; pts: [number, number][]; from?: string; to?: string; max: number; color?: string };
 export type StockGeo = { x: number; y: number; w: number; h: number };
@@ -22,7 +34,7 @@ export type Model = {
   lede: string;
   stocks: Stock[];
   // starting values worked out from the parameters (p), the fixed starting values (s) and the rates at those (r):
-  // a supply line that starts full, or a display stock that starts at the value it shows
+  // a supply line that starts full
   initFrom?: (p: Vars, s: Vars, r: Vars) => Vars;
   params: Param[];
   rates: (s: Vars, p: Vars) => Vars;
@@ -33,6 +45,8 @@ export type Model = {
 };
 
 const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" };
+// fastest a warehouse can ship out what it holds (weeks): sales ease off as inventory runs low instead of overdrawing it
+const MIN_SHIP_TIME = 1;
 
 export const MODELS: Record<string, Model> = {
   bathtub: {
@@ -41,13 +55,14 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "yr",
     unitY: "units",
     lede: "One stock, one inflow, one outflow: the atom of system dynamics. Every other molecule is built from this.",
-    stocks: [{ id: "level", label: "Level", init: 50, scale: 200, color: C.acc }],
+    stocks: [{ id: "level", label: "Level", init: 50, scale: 200, color: C.acc, floor: true }],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 30, step: 0.5, value: 10, unit: "/yr" },
       { id: "outflow", label: "Outflow", min: 0, max: 30, step: 0.5, value: 8, unit: "/yr" },
+      { id: "minDrain", label: "Minimum draining time", min: 0.25, max: 5, step: 0.25, value: 0.25, unit: "yr" },
     ],
-    // the tub can only drain what is in it plus what is pouring in, so an empty tub stays empty instead of flickering
-    rates: (s, p) => ({ in: p.inflow, out: Math.min(p.outflow, s.level / DT + p.inflow) }),
+    // the drain takes what pours in plus what is in the tub over a minimum draining time, so the level eases to empty
+    rates: (s, p) => ({ in: p.inflow, out: Math.min(p.outflow, s.level / p.minDrain + p.inflow) }),
     derivs: (_s, _p, r) => ({ level: r.in - r.out }),
     diagram: {
       stocks: { level: { x: 350, y: 95, w: 120, h: 120 } },
@@ -83,7 +98,7 @@ export const MODELS: Record<string, Model> = {
     </ul>
     <h4>The key lesson</h4>
     <p>Set inflow above outflow → the level rises <i>forever</i>; there is nothing to stop it. The level keeps climbing even while the inflow is <b>falling</b>, as long as inflow stays above outflow. Misreading this, assuming a stock falls when its inflow falls, is the classic "stock-flow failure" Sterman documented even in trained adults.</p>
-    <p class="small">Physical stocks should not go negative; here the drain stops at empty: a first hint of first-order feedback, formalized in Decay and the Protected-Level molecules.</p>
+    <p class="small">Physical stocks should not go negative; here the drain can take no more than the level over a <b>minimum draining time</b> (plus what is pouring in), so it eases off as the tub empties: a first hint of first-order feedback, formalized in Decay and the Protected-Level molecules.</p>
     <div class="worked"><h4>Worked example</h4>
     A reservoir holds 50 Mm³. Inflow (rain + rivers) is 10 Mm³/yr and withdrawals 8 Mm³/yr, so it gains 2 Mm³/yr and reaches <b>70 Mm³ after 10 years</b>. Raise withdrawals to 12 Mm³/yr and it instead <i>falls</i> 2 Mm³/yr, even though the inflow never changed. The level tracks the <b>net</b> flow, not either flow alone.</div>
     <h4>References</h4>
@@ -102,9 +117,9 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "Material accumulates at several points in series; each stage drains into the next with a delay. This is how time-lags are built.",
     stocks: [
-      { id: "l1", label: "Stage 1", init: 60, scale: 70, color: C.acc },
-      { id: "l2", label: "Stage 2", init: 0, scale: 70, color: C.acc2 },
-      { id: "l3", label: "Stage 3", init: 0, scale: 70, color: C.good },
+      { id: "l1", label: "Stage 1", init: 60, scale: 70, color: C.acc, floor: true },
+      { id: "l2", label: "Stage 2", init: 0, scale: 70, color: C.acc2, floor: true },
+      { id: "l3", label: "Stage 3", init: 0, scale: 70, color: C.good, floor: true },
     ],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 20, step: 0.5, value: 0, unit: "/mo" },
@@ -177,8 +192,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "qty",
     lede: "Material changes form, and units, as it flows between stocks: ore becomes metal, orders become product.",
     stocks: [
-      { id: "raw", label: "Raw (tons)", init: 100, scale: 120, color: C.acc2 },
-      { id: "fin", label: "Finished (units)", init: 0, scale: 160, color: C.good },
+      { id: "raw", label: "Raw (tons)", init: 100, scale: 120, color: C.acc2, floor: true },
+      { id: "fin", label: "Finished (units)", init: 0, scale: 160, color: C.good, floor: true },
     ],
     params: [
       { id: "feed", label: "Feed in", min: 0, max: 30, step: 0.5, value: 10, unit: "t/mo" },
@@ -244,8 +259,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "One inflow divides between destinations by a fraction: the basis of allocation, routing, and market share.",
     stocks: [
-      { id: "a", label: "Channel A", init: 0, scale: 120, color: C.acc },
-      { id: "b", label: "Channel B", init: 0, scale: 120, color: C.pink },
+      { id: "a", label: "Channel A", init: 0, scale: 120, color: C.acc, floor: true },
+      { id: "b", label: "Channel B", init: 0, scale: 120, color: C.pink, floor: true },
     ],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 30, step: 0.5, value: 14, unit: "/mo" },
@@ -318,8 +333,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "A chain where material can leak out mid-stream instead of always advancing: the structure behind funnels and yield loss.",
     stocks: [
-      { id: "l1", label: "Stage 1", init: 80, scale: 90, color: C.acc },
-      { id: "l2", label: "Stage 2", init: 0, scale: 60, color: C.good },
+      { id: "l1", label: "Stage 1", init: 80, scale: 90, color: C.acc, floor: true },
+      { id: "l2", label: "Stage 2", init: 0, scale: 60, color: C.good, floor: true },
     ],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 20, step: 0.5, value: 0, unit: "/mo" },
@@ -389,7 +404,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "yr",
     unitY: "units",
     lede: "Outflow proportional to the stock itself: the first closed loop. The stock falls fast when full, slowly when nearly empty: exponential decline.",
-    stocks: [{ id: "q", label: "Stock", init: 100, scale: 110, color: C.acc }],
+    stocks: [{ id: "q", label: "Stock", init: 100, scale: 110, color: C.acc, floor: true }],
     params: [{ id: "tau", label: "Decay time τ", min: 1, max: 20, step: 0.5, value: 5, unit: "yr" }],
     rates: (s, p) => ({ out: s.q / p.tau }),
     derivs: (_s, _p, r) => ({ q: -r.out }),
@@ -436,7 +451,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "units",
     lede: "A stock fed by a steady inflow and drained in proportion to itself settles where inflow balances outflow, and the average time a unit stays is τ.",
-    stocks: [{ id: "q", label: "In service", init: 0, scale: 60, color: C.acc }],
+    stocks: [{ id: "q", label: "In service", init: 0, scale: 60, color: C.acc, floor: true }],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 20, step: 0.5, value: 8, unit: "/mo" },
       { id: "tau", label: "Avg residence τ", min: 1, max: 12, step: 0.5, value: 5, unit: "mo" },
@@ -492,9 +507,9 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "A physical thing genuinely takes time to traverse: mail, shipping, a pipeline. Output is a delayed, conservation-respecting echo of the input.",
     stocks: [
-      { id: "l1", label: "In transit ①", init: 0, scale: 40, color: C.acc },
-      { id: "l2", label: "In transit ②", init: 0, scale: 40, color: C.acc2 },
-      { id: "l3", label: "In transit ③", init: 0, scale: 40, color: C.good },
+      { id: "l1", label: "In transit ①", init: 0, scale: 40, color: C.acc, floor: true },
+      { id: "l2", label: "In transit ②", init: 0, scale: 40, color: C.acc2, floor: true },
+      { id: "l3", label: "In transit ③", init: 0, scale: 40, color: C.good, floor: true },
     ],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 16, step: 0.5, value: 8, unit: "/wk" },
@@ -567,9 +582,9 @@ export const MODELS: Record<string, Model> = {
     lede: "A cascade through age or maturity classes: cohorts ageing into the next bracket while some leave. The structure behind every population pyramid.",
     stocks: [
       // in balance for the default 20 births a year (births × time in each class), so presets show a change from rest
-      { id: "young", label: "Youth (0-18)", init: 360, scale: 600, color: C.acc },
-      { id: "adult", label: "Working (18-65)", init: 900, scale: 1200, color: C.acc2 },
-      { id: "old", label: "Elderly (65+)", init: 300, scale: 400, color: C.good },
+      { id: "young", label: "Youth (0-18)", init: 360, scale: 600, color: C.acc, floor: true },
+      { id: "adult", label: "Working (18-65)", init: 900, scale: 1200, color: C.acc2, floor: true },
+      { id: "old", label: "Elderly (65+)", init: 300, scale: 400, color: C.good, floor: true },
     ],
     params: [
       { id: "births", label: "Births", min: 0, max: 40, step: 1, value: 20, unit: "/yr" },
@@ -641,7 +656,7 @@ export const MODELS: Record<string, Model> = {
     unitY: "level",
     lede: "Exponential averaging of a noisy or shifting signal: perception lags reality. First-order chases smoothly; higher-order responds in an S-shape.",
     stocks: [
-      { id: "input", label: "Input signal", init: 30, scale: 100, color: "#8b98a9" },
+      { id: "input", label: "Input signal", init: 30, scale: 100, color: "#8b98a9", derived: (_s, p) => p.target },
       { id: "s1", label: "1st-order smooth", init: 30, scale: 100, color: C.acc },
       { id: "m1", label: "", init: 30, scale: 100, color: C.acc2, hidden: true },
       { id: "m2", label: "", init: 30, scale: 100, color: C.acc2, hidden: true },
@@ -655,11 +670,10 @@ export const MODELS: Record<string, Model> = {
       adj1: Math.abs(s.input - s.s1) / p.tau,
       adj3: Math.abs(s.m2 - s.s3) / (p.tau / 3),
     }),
-    // input snaps to the target (one DT) so it reads as a step the smooths then chase.
+    // the input is the target itself: a step from 30, where the smooths start, which they then chase
     derivs: (s, p) => {
       const st = p.tau / 3;
       return {
-        input: (p.target - s.input) / 0.1,
         s1: (s.input - s.s1) / p.tau,
         m1: (s.input - s.m1) / st,
         m2: (s.m1 - s.m2) / st,
@@ -667,14 +681,14 @@ export const MODELS: Record<string, Model> = {
       };
     },
     diagram: {
+      // the input is information, not material: each smooth is adjusted by a flow from outside, steered by the input
       stocks: {
-        input: { x: 110, y: 95, w: 120, h: 110 },
         s1: { x: 470, y: 35, w: 160, h: 90 },
         s3: { x: 470, y: 175, w: 160, h: 90 },
       },
       flows: [
-        { id: "adj1", pts: [[230, 150], [360, 150], [360, 80], [470, 80]], from: "input", to: "s1", max: 12 },
-        { id: "adj3", pts: [[230, 150], [360, 150], [360, 220], [470, 220]], from: "input", to: "s3", max: 12, color: C.good },
+        { id: "adj1", pts: [[250, 80], [470, 80]], to: "s1", max: 12 },
+        { id: "adj3", pts: [[250, 220], [470, 220]], to: "s3", max: 12, color: C.good },
       ],
     },
     cld: {
@@ -776,8 +790,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "Ordering to refill a stock through an acquisition delay. Ignore what's already on order and you over-order: the root of oscillation and the bullwhip.",
     stocks: [
-      { id: "sl", label: "Supply line", init: 60, scale: 160, color: C.acc2 },
-      { id: "inv", label: "Inventory", init: 60, scale: 200, color: C.acc },
+      { id: "sl", label: "Supply line", init: 60, scale: 160, color: C.acc2, floor: true },
+      { id: "inv", label: "Inventory", init: 60, scale: 200, color: C.acc, floor: true },
     ],
     initFrom: (p) => ({ sl: p.demand * p.acq }), // the supply line starts full for current demand, whatever the delay
     params: [
@@ -792,7 +806,7 @@ export const MODELS: Record<string, Model> = {
       const desiredSL = p.demand * p.acq;
       // the weight scales the whole supply-line gap (Sterman 2000, ch. 17), so inventory reaches its goal for any weight
       const orders = Math.max(0, p.demand + (p.desInv - s.inv) / p.adj + (p.slw * (desiredSL - s.sl)) / p.adj);
-      return { orders, acquisition, sales: Math.min(p.demand, s.inv / DT) }; // cannot sell what is not in stock
+      return { orders, acquisition, sales: Math.min(p.demand, s.inv / MIN_SHIP_TIME) }; // cannot sell what is not in stock
     },
     derivs: (_s, _p, r) => ({ sl: r.orders - r.acquisition, inv: r.acquisition - r.sales }),
     diagram: {
@@ -910,11 +924,10 @@ export const MODELS: Record<string, Model> = {
     lede: "An attribute, skill, quality, age, cost, rides along with material as it flows. Track the total and divide to get the average.",
     stocks: [
       // in balance at the defaults: 8 hires a year staying 6 years on average is 48 people averaging 6 years
-      { id: "people", label: "Headcount", init: 48, scale: 120, color: C.acc, chartHidden: true },
-      { id: "totExp", label: "Total experience", init: 288, scale: 2000, color: C.acc2, chartHidden: true },
-      { id: "avgExp", label: "Avg experience", init: 6, scale: 12, color: C.good },
+      { id: "people", label: "Headcount", init: 48, scale: 120, color: C.acc, chartHidden: true, floor: true },
+      { id: "totExp", label: "Total experience", init: 288, scale: 2000, color: C.acc2, chartHidden: true, floor: true },
+      { id: "avgExp", label: "Avg experience", init: 6, scale: 12, color: C.good, derived: (s) => s.totExp / Math.max(s.people, 1e-6) },
     ],
-    initFrom: (_p, s) => ({ avgExp: s.totExp / Math.max(s.people, 1e-6) }), // the display stock starts at the value it shows
     params: [
       { id: "hire", label: "Hiring", min: 0, max: 20, step: 0.5, value: 8, unit: "/yr" },
       { id: "tenure", label: "Avg tenure", min: 2, max: 20, step: 0.5, value: 6, unit: "yr" },
@@ -928,7 +941,6 @@ export const MODELS: Record<string, Model> = {
       return {
         people: p.hire - quit,
         totExp: p.hire * p.hireExp + s.people * 1 - quit * avg,
-        avgExp: (s.totExp / Math.max(s.people, 1e-6) - s.avgExp) / 0.1,
       };
     },
     diagram: {
@@ -981,7 +993,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "yr",
     unitY: "population",
     lede: "The first reinforcing loop: more begets more. Births feed back to grow the very stock that produces them: accelerating, compounding growth.",
-    stocks: [{ id: "pop", label: "Population", init: 100, scale: 1200, color: C.good }],
+    stocks: [{ id: "pop", label: "Population", init: 100, scale: 1200, color: C.good, floor: true }],
     params: [
       { id: "birth", label: "Birth rate", min: 0, max: 12, step: 0.5, value: 5, unit: "%/yr" },
       { id: "death", label: "Death rate", min: 0, max: 12, step: 0.5, value: 2, unit: "%/yr" },
@@ -1037,7 +1049,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "yr",
     unitY: "population",
     lede: "A reinforcing loop meets a balancing one: growth that is exponential at first, then bends over and saturates at a carrying capacity, the S-curve.",
-    stocks: [{ id: "pop", label: "Population", init: 10, scale: 240, color: C.acc }],
+    stocks: [{ id: "pop", label: "Population", init: 10, scale: 240, color: C.acc, floor: true }],
     params: [
       { id: "r", label: "Growth rate", min: 1, max: 40, step: 1, value: 18, unit: "%/yr" },
       { id: "K", label: "Carrying capacity", min: 50, max: 400, step: 10, value: 200, unit: "" },
@@ -1097,8 +1109,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "people",
     lede: "Adoption spreads by two channels: a steady trickle of innovators, plus word-of-mouth where each adopter recruits more, an epidemic of ideas.",
     stocks: [
-      { id: "pot", label: "Potential", init: 1000, scale: 1000, color: C.acc2 },
-      { id: "adopt", label: "Adopters", init: 0, scale: 1000, color: C.good },
+      { id: "pot", label: "Potential", init: 1000, scale: 1000, color: C.acc2, floor: true },
+      { id: "adopt", label: "Adopters", init: 0, scale: 1000, color: C.good, floor: true },
     ],
     params: [
       { id: "p", label: "Innovation p", min: 0, max: 5, step: 0.1, value: 1, unit: "%" },
@@ -1157,7 +1169,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "units",
     lede: "A hard limit imposed with MIN(): a flow runs at its desired rate until headroom shrinks, then throttles so the stock approaches a cap without overshooting.",
-    stocks: [{ id: "q", label: "Stock", init: 10, scale: 120, color: C.acc }],
+    stocks: [{ id: "q", label: "Stock", init: 10, scale: 120, color: C.acc, floor: true }],
     params: [
       { id: "base", label: "Desired inflow", min: 0, max: 30, step: 1, value: 14, unit: "/wk" },
       { id: "ceil", label: "Ceiling", min: 20, max: 120, step: 5, value: 100, unit: "" },
@@ -1211,8 +1223,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "customers",
     lede: "Demand is split by relative attractiveness, and when attractiveness grows with size, the bigger player pulls ahead until it locks in the market.",
     stocks: [
-      { id: "a", label: "Product A", init: 105, scale: 400, color: C.acc },
-      { id: "b", label: "Product B", init: 95, scale: 400, color: C.pink },
+      { id: "a", label: "Product A", init: 105, scale: 400, color: C.acc, floor: true },
+      { id: "b", label: "Product B", init: 95, scale: 400, color: C.pink, floor: true },
     ],
     params: [
       { id: "inflow", label: "New customers", min: 5, max: 40, step: 1, value: 20, unit: "/mo" },
@@ -1282,7 +1294,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "units",
     lede: "The mirror of a ceiling: a stock drains toward a minimum and the outflow throttles so it never crosses the floor, MAX() instead of MIN().",
-    stocks: [{ id: "q", label: "Stock", init: 100, scale: 110, color: C.acc }],
+    stocks: [{ id: "q", label: "Stock", init: 100, scale: 110, color: C.acc, floor: true }],
     params: [
       { id: "base", label: "Desired outflow", min: 0, max: 30, step: 1, value: 14, unit: "/wk" },
       { id: "floor", label: "Floor", min: 0, max: 90, step: 5, value: 30, unit: "" },
@@ -1334,7 +1346,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "units",
     lede: "Keep a stock non-negative by multiplying its outflow by a smooth effect that fades to zero as the stock empties: gentler and more accurate than IF-THEN-ELSE.",
-    stocks: [{ id: "level", label: "Inventory", init: 100, scale: 120, color: C.acc }],
+    stocks: [{ id: "level", label: "Inventory", init: 100, scale: 120, color: C.acc, floor: true }],
     params: [
       { id: "inflow", label: "Replenishment", min: 0, max: 15, step: 0.5, value: 4, unit: "/wk" },
       { id: "desiredOut", label: "Desired draining", min: 0, max: 25, step: 0.5, value: 12, unit: "/wk" },
@@ -1392,7 +1404,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "units",
     lede: "Cap the outflow at the most the stock can physically supply: you cannot drain faster than Level ÷ fastest-draining-time, so it never goes negative.",
-    stocks: [{ id: "level", label: "On hand", init: 80, scale: 100, color: C.acc }],
+    stocks: [{ id: "level", label: "On hand", init: 80, scale: 100, color: C.acc, floor: true }],
     params: [
       { id: "inflow", label: "Replenishment", min: 0, max: 15, step: 0.5, value: 3, unit: "/wk" },
       { id: "desiredOut", label: "Desired draining", min: 0, max: 25, step: 0.5, value: 10, unit: "/wk" },
@@ -1447,7 +1459,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "mo",
     unitY: "orders",
     lede: "Orders pile into a backlog; you ship them at the rate needed to clear in a target time: capped by capacity. The backlog can never be shipped negative.",
-    stocks: [{ id: "backlog", label: "Backlog", init: 60, scale: 130, color: C.acc2 }],
+    stocks: [{ id: "backlog", label: "Backlog", init: 60, scale: 130, color: C.acc2, floor: true }],
     params: [
       { id: "orders", label: "Order rate", min: 0, max: 25, step: 1, value: 12, unit: "/mo" },
       { id: "shipTime", label: "Desired ship time", min: 1, max: 10, step: 0.5, value: 3, unit: "mo" },
@@ -1503,8 +1515,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "Ship to clear a backlog, but you can only ship what's in stock. Shipping draws down inventory and tapers as inventory runs low: two coupled balancing loops.",
     stocks: [
-      { id: "backlog", label: "Backlog", init: 30, scale: 120, color: C.acc2 },
-      { id: "inventory", label: "Inventory", init: 100, scale: 160, color: C.acc },
+      { id: "backlog", label: "Backlog", init: 30, scale: 120, color: C.acc2, floor: true },
+      { id: "inventory", label: "Inventory", init: 100, scale: 160, color: C.acc, floor: true },
     ],
     params: [
       { id: "orders", label: "Order rate", min: 0, max: 25, step: 1, value: 12, unit: "/mo" },
@@ -1570,7 +1582,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "units",
     lede: "Production rises with desired output but bends over as it nears capacity: a smooth utilization curve, the graceful cousin of a hard ceiling.",
-    stocks: [{ id: "inventory", label: "Inventory", init: 50, scale: 200, color: C.acc }],
+    stocks: [{ id: "inventory", label: "Inventory", init: 50, scale: 200, color: C.acc, floor: true }],
     params: [
       { id: "capacity", label: "Capacity", min: 10, max: 40, step: 1, value: 20, unit: "/wk" },
       { id: "demand", label: "Demand", min: 0, max: 40, step: 1, value: 18, unit: "/wk" },
@@ -1581,7 +1593,7 @@ export const MODELS: Record<string, Model> = {
       const desired = p.demand + (p.targetInv - s.inventory) / p.adj;
       const indicated = Math.max(0, desired) / p.capacity;
       const util = 1 - Math.exp(-1.3 * indicated);
-      return { prod: p.capacity * util, sales: p.demand };
+      return { prod: p.capacity * util, sales: Math.min(p.demand, s.inventory / MIN_SHIP_TIME) }; // cannot ship what is not in stock
     },
     derivs: (_s, _p, r) => ({ inventory: r.prod - r.sales }),
     diagram: {
@@ -1617,7 +1629,7 @@ export const MODELS: Record<string, Model> = {
       <li><b>Operations</b>: factory production vs. installed capacity; server utilization.</li>
     </ul>
     <div class="worked"><h4>Worked example</h4>
-    Capacity 20/wk, demand 18/wk: desired ≈ 18, indicated ≈ 0.9, utilization ≈ 1 − e^(−1.17) ≈ 0.69, production ≈ 14/wk, already short of demand, so inventory drifts down and pushes desired (hence utilization) higher. Raise capacity and production rises to meet demand; push demand past capacity and output saturates while inventory drains.</div>
+    Capacity 20/wk, demand 18/wk: desired ≈ 18, indicated ≈ 0.9, utilization ≈ 1 − e^(−1.17) ≈ 0.69, production ≈ 14/wk, already short of demand, so inventory drifts down and pushes desired (hence utilization) higher. Raise capacity and production rises to meet demand; push demand past capacity and output saturates while inventory drains until sales are limited by what is on the shelf (inventory over a 1-week minimum shipping time).</div>
     <h4>References</h4>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Capacity Utilization / Ceiling.</li>
@@ -1746,9 +1758,8 @@ export const MODELS: Record<string, Model> = {
     lede: "Judge a value relative to a slowly-drifting anchor, but if the anchor chases the value it produces, expectations become self-fulfilling and drift without limit.",
     stocks: [
       { id: "anchor", label: "Anchor", init: 100, scale: 260, color: C.acc2 },
-      { id: "valueDisp", label: "Value", init: 100, scale: 260, color: C.acc, chartHidden: false },
+      { id: "valueDisp", label: "Value", init: 100, scale: 260, color: C.acc, chartHidden: false, derived: (_s, _p, r) => r.value },
     ],
-    initFrom: (_p, _s, r) => ({ valueDisp: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "pressure", label: "Adjustment pressure", min: 0.5, max: 2, step: 0.05, value: 1, unit: "×" },
       { id: "timeToChange", label: "Anchor lag", min: 1, max: 24, step: 1, value: 6, unit: "mo" },
@@ -1757,7 +1768,7 @@ export const MODELS: Record<string, Model> = {
       const value = s.anchor * p.pressure;
       return { value, changeAnchor: (value - s.anchor) / p.timeToChange };
     },
-    derivs: (s, p, r) => ({ anchor: r.changeAnchor, valueDisp: (r.value - s.valueDisp) / 0.1 }),
+    derivs: (s, p, r) => ({ anchor: r.changeAnchor }),
     diagram: {
       stocks: { anchor: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "changeAnchor", pts: [[40, 150], [330, 150]], to: "anchor", max: 18 }],
@@ -1805,9 +1816,8 @@ export const MODELS: Record<string, Model> = {
     lede: "Prices are sticky: they ease toward an indicated price (set by cost and market pressure) over time rather than jumping, a smooth applied to price.",
     stocks: [
       { id: "price", label: "Price", init: 10, scale: 26, color: C.good },
-      { id: "indicatedDisp", label: "Indicated price", init: 10, scale: 26, color: C.acc2, chartHidden: false },
+      { id: "indicatedDisp", label: "Indicated price", init: 10, scale: 26, color: C.acc2, chartHidden: false, derived: (_s, _p, r) => r.indicated },
     ],
-    initFrom: (_p, _s, r) => ({ indicatedDisp: r.indicated }), // the display stock starts at the value it shows
     params: [
       { id: "refPrice", label: "Reference price", min: 5, max: 20, step: 0.5, value: 10, unit: "$" },
       { id: "pressure", label: "Market pressure", min: 0.5, max: 2, step: 0.05, value: 1, unit: "×" },
@@ -1817,7 +1827,7 @@ export const MODELS: Record<string, Model> = {
       const indicated = p.refPrice * p.pressure;
       return { indicated, changing: (indicated - s.price) / p.tau };
     },
-    derivs: (s, p, r) => ({ price: r.changing, indicatedDisp: (r.indicated - s.indicatedDisp) / 0.1 }),
+    derivs: (s, p, r) => ({ price: r.changing }),
     diagram: {
       stocks: { price: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "changing", pts: [[40, 150], [330, 150]], to: "price", max: 6 }],
@@ -1865,9 +1875,8 @@ export const MODELS: Record<string, Model> = {
     lede: "Overtime lifts output now but builds fatigue that erodes productivity later: push too hard and total output falls below normal. The backfire of crunch.",
     stocks: [
       { id: "fatigue", label: "Fatigue", init: 1, scale: 2, color: C.pink },
-      { id: "relOutput", label: "Output (× normal)", init: 1, scale: 1.6, color: C.good, chartHidden: false },
+      { id: "relOutput", label: "Output (× normal)", init: 1, scale: 1.6, color: C.good, chartHidden: false, derived: (_s, _p, r) => r.relOut },
     ],
-    initFrom: (_p, _s, r) => ({ relOutput: r.relOut }), // the display stock starts at the value it shows
     params: [
       { id: "overtime", label: "Overtime", min: 1, max: 1.6, step: 0.05, value: 1, unit: "×" },
       { id: "timeToFatigue", label: "Time to fatigue", min: 1, max: 12, step: 0.5, value: 4, unit: "wk" },
@@ -1879,7 +1888,7 @@ export const MODELS: Record<string, Model> = {
       const relOut = p.overtime * effect;
       return { gettingFatigued: (p.overtime - s.fatigue) / p.timeToFatigue, relOut, output: p.workforce * p.normalPDY * relOut };
     },
-    derivs: (s, _p, r) => ({ fatigue: r.gettingFatigued, relOutput: (r.relOut - s.relOutput) / 0.1 }),
+    derivs: (s, _p, r) => ({ fatigue: r.gettingFatigued }),
     diagram: {
       stocks: { fatigue: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "gettingFatigued", pts: [[40, 150], [330, 150]], to: "fatigue", max: 0.6 }],
@@ -1926,9 +1935,9 @@ export const MODELS: Record<string, Model> = {
     unitY: "tasks",
     lede: "Work gets done, but a fraction is done wrong, hides as undiscovered rework, and flows back. The reason projects are '90% done' for half their life.",
     stocks: [
-      { id: "workToDo", label: "Work to do", init: 1000, scale: 1000, color: C.acc2 },
-      { id: "undiscovered", label: "Undiscovered rework", init: 0, scale: 500, color: C.pink },
-      { id: "workDone", label: "Work done", init: 0, scale: 1000, color: C.good },
+      { id: "workToDo", label: "Work to do", init: 1000, scale: 1000, color: C.acc2, floor: true },
+      { id: "undiscovered", label: "Undiscovered rework", init: 0, scale: 500, color: C.pink, floor: true },
+      { id: "workDone", label: "Work done", init: 0, scale: 1000, color: C.good, floor: true },
     ],
     params: [
       { id: "capacity", label: "Work capacity", min: 20, max: 200, step: 5, value: 90, unit: "/wk" },
@@ -2002,7 +2011,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "wk",
     unitY: "tasks",
     lede: "Divide work remaining by the work rate to estimate time to finish, but if scope creeps as fast as you work, the finish line never arrives.",
-    stocks: [{ id: "workRemaining", label: "Work remaining", init: 500, scale: 600, color: C.acc }],
+    stocks: [{ id: "workRemaining", label: "Work remaining", init: 500, scale: 600, color: C.acc, floor: true }],
     params: [
       { id: "workRate", label: "Work rate", min: 10, max: 80, step: 5, value: 30, unit: "/wk" },
       { id: "scopeCreep", label: "Scope creep", min: 0, max: 40, step: 1, value: 0, unit: "/wk" },
@@ -2058,9 +2067,9 @@ export const MODELS: Record<string, Model> = {
     lede: "An aging chain carrying a productivity coflow: rookies, experienced and veterans each produce differently, so rapid hiring can raise headcount yet cut output per person.",
     stocks: [
       // start in equilibrium for the default parameters (hiring 20/yr: 20×3, 20×25, 20×8), so any change seen is caused by a slider
-      { id: "rookies", label: "Rookies", init: 60, scale: 400, color: C.acc },
-      { id: "experienced", label: "Experienced", init: 500, scale: 800, color: C.acc2 },
-      { id: "gray", label: "Veterans", init: 160, scale: 300, color: C.good },
+      { id: "rookies", label: "Rookies", init: 60, scale: 400, color: C.acc, floor: true },
+      { id: "experienced", label: "Experienced", init: 500, scale: 800, color: C.acc2, floor: true },
+      { id: "gray", label: "Veterans", init: 160, scale: 300, color: C.good, floor: true },
     ],
     params: [
       { id: "hiring", label: "Hiring", min: 0, max: 40, step: 1, value: 20, unit: "/yr" },
@@ -2135,7 +2144,7 @@ export const MODELS: Record<string, Model> = {
     timeUnit: "yr",
     unitY: "people",
     lede: "Move the workforce toward a desired level by hiring or firing, but the adjustment takes time, so the actual workforce always trails the target.",
-    stocks: [{ id: "workforce", label: "Workforce", init: 40, scale: 110, color: C.acc }],
+    stocks: [{ id: "workforce", label: "Workforce", init: 40, scale: 110, color: C.acc, floor: true }],
     params: [
       { id: "desired", label: "Desired workforce", min: 0, max: 100, step: 1, value: 60, unit: "" },
       { id: "tHire", label: "Time to hire/fire", min: 0.5, max: 12, step: 0.5, value: 4, unit: "yr" },
@@ -2254,14 +2263,13 @@ export const MODELS: Record<string, Model> = {
     unitY: "$/unit",
     lede: "An attribute riding along a multi-stage chain, as units flow through and value is added at each stage, the average attribute builds up stage by stage.",
     stocks: [
-      { id: "wip1", label: "WIP stage 1", init: 32, scale: 60, color: C.acc, chartHidden: true },
-      { id: "wip2", label: "WIP stage 2", init: 0, scale: 60, color: C.acc2, chartHidden: true },
-      { id: "attr1", label: "cost in 1", init: 32, scale: 200, color: C.acc, hidden: true },
-      { id: "attr2", label: "cost in 2", init: 0, scale: 200, color: C.acc2, hidden: true },
-      { id: "avg1", label: "Avg cost · stage 1", init: 1, scale: 8, color: C.acc },
-      { id: "avg2", label: "Avg cost · stage 2", init: 1, scale: 8, color: C.good },
+      { id: "wip1", label: "WIP stage 1", init: 32, scale: 60, color: C.acc, chartHidden: true, floor: true },
+      { id: "wip2", label: "WIP stage 2", init: 0, scale: 60, color: C.acc2, chartHidden: true, floor: true },
+      { id: "attr1", label: "cost in 1", init: 32, scale: 200, color: C.acc, hidden: true, floor: true },
+      { id: "attr2", label: "cost in 2", init: 0, scale: 200, color: C.acc2, hidden: true, floor: true },
+      { id: "avg1", label: "Avg cost · stage 1", init: 1, scale: 8, color: C.acc, derived: (_s, _p, r) => r.a1 },
+      { id: "avg2", label: "Avg cost · stage 2", init: 1, scale: 8, color: C.good, derived: (_s, _p, r) => r.a2 },
     ],
-    initFrom: (_p, _s, r) => ({ avg1: r.a1, avg2: r.a2 }), // the display stock starts at the value it shows
     params: [
       { id: "input", label: "Input", min: 0, max: 20, step: 0.5, value: 8, unit: "/wk" },
       { id: "tau", label: "Stage time", min: 1, max: 10, step: 0.5, value: 4, unit: "wk" },
@@ -2280,8 +2288,6 @@ export const MODELS: Record<string, Model> = {
       wip2: r.f12 - r.f23,
       attr1: r.costIn + r.accr1 - r.cost12,
       attr2: r.cost12 + r.accr2 - r.cost23,
-      avg1: (r.a1 - s.avg1) / 0.1,
-      avg2: (r.a2 - s.avg2) / 0.1,
     }),
     diagram: {
       stocks: { wip1: { x: 150, y: 95, w: 110, h: 100 }, wip2: { x: 470, y: 95, w: 110, h: 100 } },
@@ -2334,8 +2340,8 @@ export const MODELS: Record<string, Model> = {
     unitY: "tasks",
     lede: "Resources do work at rate = workforce × productivity, draining a backlog and building completed output. The engine that turns people into accomplishment.",
     stocks: [
-      { id: "backlog", label: "Backlog", init: 600, scale: 700, color: C.acc2 },
-      { id: "output", label: "Completed", init: 0, scale: 700, color: C.good },
+      { id: "backlog", label: "Backlog", init: 600, scale: 700, color: C.acc2, floor: true },
+      { id: "output", label: "Completed", init: 0, scale: 700, color: C.good, floor: true },
     ],
     params: [
       { id: "workforce", label: "Workforce", min: 0, max: 50, step: 1, value: 20, unit: "ppl" },
@@ -2392,7 +2398,7 @@ export const MODELS: Record<string, Model> = {
     unitY: "tasks",
     lede: "A fixed deadline plus work remaining creates schedule pressure: the closer the date and the more work left, the harder the team pushes, self-pacing toward the deadline.",
     stocks: [
-      { id: "workRemaining", label: "Work remaining", init: 400, scale: 450, color: C.acc },
+      { id: "workRemaining", label: "Work remaining", init: 400, scale: 450, color: C.acc, floor: true },
       { id: "clock", label: "elapsed", init: 0, scale: 50, color: C.acc, hidden: true },
     ],
     params: [
@@ -2454,9 +2460,9 @@ export const MODELS: Record<string, Model> = {
     unitY: "units",
     lede: "One inflow divided across many channels by relative weights that always sum to the whole: the N-way generalization of Split Flow.",
     stocks: [
-      { id: "chA", label: "Channel A", init: 0, scale: 120, color: C.acc },
-      { id: "chB", label: "Channel B", init: 0, scale: 120, color: C.acc2 },
-      { id: "chC", label: "Channel C", init: 0, scale: 120, color: C.good },
+      { id: "chA", label: "Channel A", init: 0, scale: 120, color: C.acc, floor: true },
+      { id: "chB", label: "Channel B", init: 0, scale: 120, color: C.acc2, floor: true },
+      { id: "chC", label: "Channel C", init: 0, scale: 120, color: C.good, floor: true },
     ],
     params: [
       { id: "inflow", label: "Inflow", min: 0, max: 30, step: 1, value: 15, unit: "/mo" },
@@ -2534,9 +2540,8 @@ export const MODELS: Record<string, Model> = {
     lede: "Tie the drifting anchor partly to a credible fundamental and the runaway spiral is cured: the same structure, now stable. Protection is the fix for self-reference.",
     stocks: [
       { id: "anchor", label: "Anchor", init: 100, scale: 280, color: C.acc2 },
-      { id: "valueDisp", label: "Value", init: 100, scale: 280, color: C.acc, chartHidden: false },
+      { id: "valueDisp", label: "Value", init: 100, scale: 280, color: C.acc, chartHidden: false, derived: (_s, _p, r) => r.value },
     ],
-    initFrom: (_p, _s, r) => ({ valueDisp: r.value }), // the display stock starts at the value it shows
     params: [
       { id: "pressure", label: "Adjustment pressure", min: 0.5, max: 2, step: 0.05, value: 1.2, unit: "×" },
       { id: "fundamental", label: "Fundamental", min: 50, max: 150, step: 5, value: 100, unit: "" },
@@ -2548,7 +2553,7 @@ export const MODELS: Record<string, Model> = {
       const target = (1 - p.protection) * value + p.protection * p.fundamental;
       return { value, changeAnchor: (target - s.anchor) / p.timeToChange };
     },
-    derivs: (s, p, r) => ({ anchor: r.changeAnchor, valueDisp: (r.value - s.valueDisp) / 0.1 }),
+    derivs: (s, p, r) => ({ anchor: r.changeAnchor }),
     diagram: {
       stocks: { anchor: { x: 330, y: 90, w: 130, h: 120 } },
       flows: [{ id: "changeAnchor", pts: [[40, 150], [330, 150]], to: "anchor", max: 18 }],

@@ -15,16 +15,7 @@
         "name": "Underlying price",
         "init": "10",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
-      },
-      {
-        "id": "priceDisp",
-        "name": "Price",
-        "init": "Current_price",
-        "x": 260,
-        "y": 320,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [
@@ -35,14 +26,6 @@
         "eq": "(Current_price - Underlying_price) / Time_to_change_underlying_price",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "priceTrack",
-        "name": "Price tracking",
-        "to": "priceDisp",
-        "eq": "(Current_price - Price) / DT",
-        "x": 110,
-        "y": 320
       }
     ],
     "vars": [
@@ -108,6 +91,13 @@
         "eq": "Underlying_price * Pressure_to_change_price",
         "x": 680,
         "y": 450
+      },
+      {
+        "id": "priceDisp",
+        "name": "Price",
+        "eq": "Current_price",
+        "x": 260,
+        "y": 320
       }
     ]
   },

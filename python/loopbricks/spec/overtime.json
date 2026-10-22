@@ -11,13 +11,11 @@
     "dt": 0.1,
     "stocks": [
       {"id":"done","name":"Work accomplished","init":"0","x":410,"y":85,"nonNegative":true},
-      {"id":"shortfall","name":"Work fallen behind","init":"0","x":410,"y":205,"nonNegative":true},
-      {"id":"ot","name":"Overtime shown","init":"Overtime","x":560,"y":330,"nonNegative":true}
+      {"id":"shortfall","name":"Work fallen behind","init":"0","x":410,"y":205,"nonNegative":true}
     ],
     "flows": [
       {"id":"accomplishing","name":"Accomplishing","to":"done","eq":"Workers * Productivity * Overtime","x":193,"y":85},
-      {"id":"fallingBehind","name":"Falling behind","to":"shortfall","eq":"MAX(0, Desired_accomplishing_rate - Accomplishing)","x":193,"y":205},
-      {"id":"track_ot","name":"Tracking overtime","to":"ot","eq":"(Overtime - Overtime_shown) / DT","x":450,"y":330}
+      {"id":"fallingBehind","name":"Falling behind","to":"shortfall","eq":"MAX(0, Desired_accomplishing_rate - Accomplishing)","x":193,"y":205}
     ],
     "vars": [
       {"id":"desiredRate","name":"Desired accomplishing rate","eq":"60","units":"/week","x":80,"y":420},
@@ -26,7 +24,8 @@
       {"id":"maxOvertime","name":"Overtime limit","eq":"1.3","x":500,"y":420},
       {"id":"desiredPeople","name":"Desired people","eq":"Desired_accomplishing_rate / MAX(Productivity, 0.000001)","x":640,"y":420},
       {"id":"indicated","name":"Indicated overtime","eq":"Desired_people / MAX(Workers, 0.000001)","x":780,"y":420},
-      {"id":"overtimeV","name":"Overtime","eq":"MIN(Overtime_limit, Indicated_overtime)","x":80,"y":500}
+      {"id":"overtimeV","name":"Overtime","eq":"MIN(Overtime_limit, Indicated_overtime)","x":80,"y":500},
+      {"id":"ot","name":"Overtime shown","eq":"Overtime","x":560,"y":330}
     ]
   },
   "params": {

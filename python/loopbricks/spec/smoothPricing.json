@@ -15,16 +15,7 @@
         "name": "Price",
         "init": "10",
         "x": 395,
-        "y": 150,
-        "nonNegative": true
-      },
-      {
-        "id": "indicatedDisp",
-        "name": "Indicated price",
-        "init": "Indicated_price_signal",
-        "x": 160,
-        "y": 300,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [
@@ -35,14 +26,6 @@
         "eq": "(Indicated_price_signal - Price) / Price_adj_time",
         "x": 185,
         "y": 150
-      },
-      {
-        "id": "updIndicated",
-        "name": "Updating indicated display",
-        "to": "indicatedDisp",
-        "eq": "(Indicated_price_signal - Indicated_price) / DT",
-        "x": 60,
-        "y": 300
       }
     ],
     "vars": [
@@ -73,6 +56,13 @@
         "eq": "Reference_price * Market_pressure",
         "x": 580,
         "y": 420
+      },
+      {
+        "id": "indicatedDisp",
+        "name": "Indicated price",
+        "eq": "Indicated_price_signal",
+        "x": 160,
+        "y": 300
       }
     ]
   },

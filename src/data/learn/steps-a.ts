@@ -91,7 +91,7 @@ export const STEPS_A: Record<string, Step[]> = {
       lead: "The picture of a tub and the integral say the same thing: keep a running total of in minus out.",
       ideas: ["A stock and flow map is an integral equation in pictures"],
       formulation: "Accumulation: the four equivalent forms",
-      run: { molecule: "bathtub", T: 10, params: { inflow: 3, outflow: 12 }, look: "A net outflow of 9 a year drains the level from 50 to empty in about 5.6 years, and then it can fall no further." },
+      run: { molecule: "bathtub", T: 10, params: { inflow: 3, outflow: 12 }, look: "A net outflow of 9 a year drains the level from 50 in a straight line until only about 2 is left at year 5.3. From then on the drain can take no more than the level over the minimum draining time, so it eases off and the tub is all but empty (below 0.01) by year 6.4 without ever going below zero." },
       exercises: [1],
     },
     {

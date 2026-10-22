@@ -32,7 +32,7 @@
         "id": "outflow",
         "name": "Using up",
         "from": "level",
-        "eq": "MIN(outFlow, Level / DT)",
+        "eq": "MIN(outFlow, Level / Minimum_draining_time)",
         "x": 628,
         "y": 155
       }
@@ -86,6 +86,13 @@
         "eq": "Replacement_fraction * outFlow",
         "x": 380,
         "y": 285
+      },
+      {
+        "id": "minDrain",
+        "name": "Minimum draining time",
+        "eq": "1",
+        "x": 530,
+        "y": 285
       }
     ]
   },
@@ -109,6 +116,11 @@
       "min": 0,
       "max": 1,
       "step": 0.05
+    },
+    "minDrain": {
+      "min": 0.25,
+      "max": 5,
+      "step": 0.25
     }
   },
   "presets": [

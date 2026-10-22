@@ -12,7 +12,7 @@
     "stocks": [
       {"id":"prob","name":"Open problems","init":"73","x":295,"y":210,"nonNegative":true},
       {"id":"patched","name":"Patched problems","init":"292","x":585,"y":215,"nonNegative":true},
-      {"id":"cap","name":"Capability","init":"53","x":585,"y":65,"nonNegative":true}
+      {"id":"cap","name":"Capability","init":"53","x":585,"y":65}
     ],
     "flows": [
       {"id":"arise","name":"Problems arising","to":"prob","eq":"Problem_load * (1.5 - Capability / 100)","x":135,"y":215},

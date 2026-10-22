@@ -15,16 +15,7 @@
         "name": "Value in use",
         "init": "100",
         "x": 405,
-        "y": 150,
-        "nonNegative": true
-      },
-      {
-        "id": "ind",
-        "name": "Algebraic value",
-        "init": "Value",
-        "x": 260,
-        "y": 320,
-        "nonNegative": true
+        "y": 150
       }
     ],
     "flows": [
@@ -35,14 +26,6 @@
         "eq": "(Value - Value_in_use) / 2",
         "x": 190,
         "y": 150
-      },
-      {
-        "id": "indTrack",
-        "name": "Algebraic value tracking",
-        "to": "ind",
-        "eq": "(Value - Algebraic_value) / DT",
-        "x": 110,
-        "y": 320
       }
     ],
     "vars": [
@@ -101,6 +84,13 @@
         "eq": "Anchor * Adjustment_1 * Adjustment_2 * Adjustment_3",
         "x": 530,
         "y": 450
+      },
+      {
+        "id": "ind",
+        "name": "Algebraic value",
+        "eq": "Value",
+        "x": 260,
+        "y": 320
       }
     ]
   },
