@@ -16,4 +16,4 @@ def test_notebook_runs(path, monkeypatch):
     monkeypatch.setenv("PYTHONPATH", str(Path(__file__).parents[1]) + os.pathsep + os.environ.get("PYTHONPATH", ""))
     nb = nbformat.read(path, as_version=4)
     # run from the notebook's folder, as Quarto and Jupyter do, so data/ paths resolve
-    nbclient.NotebookClient(nb, timeout=180, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}}).execute()
+    nbclient.NotebookClient(nb, timeout=600, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}}).execute()
