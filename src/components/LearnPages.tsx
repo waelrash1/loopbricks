@@ -184,7 +184,7 @@ export function CheckPage({ go }: { go: (h: string) => void }) {
                           "flex items-start gap-2.5 rounded-[8px] border border-border px-3 py-2 text-[14.5px]",
                           taking && "cursor-pointer hover:bg-muted",
                           !taking && j === q.answer && "border-[var(--viz-good)] bg-[var(--viz-good)]/10",
-                          !taking && j === picked && j !== q.answer && "border-[#c2255c] bg-[#c2255c]/10"
+                          !taking && j === picked && j !== q.answer && "border-[var(--viz-pink)] bg-[var(--viz-pink)]/10"
                         )}
                       >
                         <input type="radio" name={`d${i}`} disabled={!taking} checked={picked === j} onChange={() => setAns((a) => Object.assign([...a], { [i]: j }))} className="mt-1" />

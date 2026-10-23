@@ -81,7 +81,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
   const key = "px-1.5 py-0.5 rounded-[5px] bg-white/10 text-[11px] font-semibold text-white";
   // the control box: the one dark surface, so it reads as the thing you operate
   return (
-    <div ref={panel} id="controls-panel" tabIndex={-1} aria-label="Controls" role="region" className="focus:outline-none rounded-card bg-panel text-white p-5 shadow-[0_3px_0_hsl(216_52%_8%)] scroll-mt-24">
+    <div ref={panel} id="controls-panel" tabIndex={-1} aria-label="Controls" role="region" className="focus:outline-none rounded-card bg-panel text-white border border-white/10 p-5 shadow-[0_3px_0_hsl(216_52%_8%)] scroll-mt-24">
       {!panelInView && (
         <div role="toolbar" aria-label="Quick controls" className="lg:hidden print:hidden fixed bottom-0 inset-x-0 z-30 bg-panel text-white px-4 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] flex items-center gap-3 shadow-[0_-6px_20px_-8px_hsl(216_52%_8%/0.5)]">
           <Button onClick={sim.toggle} className="min-w-[96px] h-11">

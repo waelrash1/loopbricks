@@ -49,7 +49,7 @@ function RefLink({ k }: { k: string }) {
   );
 }
 
-const levelTone: Record<Level, string> = { Starter: "bg-accent/40", Intermediate: "bg-muted", Advanced: "bg-foreground text-white" };
+const levelTone: Record<Level, string> = { Starter: "bg-accent/40", Intermediate: "bg-muted", Advanced: "bg-foreground text-background" };
 const LevelTag = ({ l }: { l: Level }) => <span className={cn("inline-block rounded-[5px] px-1.5 py-0.5 text-[11px] font-bold", levelTone[l])}>{l}</span>;
 
 function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
@@ -75,7 +75,7 @@ function Backing({ domain, c }: { domain: Domain; c: AppCase }) {
   return (
     <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
       {r.length > 0 && (
-        <span className={cn("inline-flex items-center gap-1 font-semibold", ok === r.length ? "text-[#0a6b48]" : "text-[var(--viz-pink)]")}>
+        <span className={cn("inline-flex items-center gap-1 font-semibold", ok === r.length ? "text-[var(--good-ink)]" : "text-[var(--viz-pink)]")}>
           <Check size={13} strokeWidth={3} aria-hidden />
           {ok} of {r.length} checks pass
         </span>
@@ -393,7 +393,7 @@ function ModelChecks({ domain, c }: { domain: Domain; c: AppCase }) {
       <ul className="mt-2 space-y-2 text-[15px] leading-[1.5]">
         {results.map((r) => (
           <li key={r.claim} className="flex gap-2.5 items-start">
-            <span className={cn("grid place-items-center w-5 h-5 rounded-[5px] shrink-0 mt-0.5 text-white", r.ok ? "bg-[var(--viz-good)]" : "bg-[var(--viz-pink)]")}>
+            <span className={cn("grid place-items-center w-5 h-5 rounded-[5px] shrink-0 mt-0.5 text-card", r.ok ? "bg-[var(--viz-good)]" : "bg-[var(--viz-pink)]")}>
               {r.ok ? <Check size={13} aria-label="Passes" /> : <X size={13} aria-label="Fails" />}
             </span>
             {r.claim}

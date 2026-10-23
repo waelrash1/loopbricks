@@ -9,7 +9,7 @@ export default function MiniDiagram({ model }: { model: Model }) {
       {model.diagram.flows.map((fl) => {
         const a0 = fl.pts[0];
         const aN = fl.pts[fl.pts.length - 1], { u0, uN } = endDirs(fl.pts);
-        const col = fl.color ?? "#2545ff", sh = flowShape(fl.pts, 30, 22, fl.to ? 0 : 16);
+        const col = fl.color ?? "var(--viz-acc)", sh = flowShape(fl.pts, 30, 22, fl.to ? 0 : 16);
         const [vx, vy] = midpoint(fl.pts);
         return (
           <g key={fl.id}>

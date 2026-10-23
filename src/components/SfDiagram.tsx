@@ -3,7 +3,7 @@ import { flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
 
 // A static stock-and-flow diagram in standard notation, for teaching pages.
 // Same pipes, valves and clouds as the live simulator; information links are thin arrows.
-const PIPE = "#2545ff", INFO = "#6b74a6";
+const PIPE = "var(--viz-acc)", INFO = "var(--viz-info)";
 const CLOUD_D = "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z";
 const BOX = { w: 120, h: 64 };
 type P = [number, number];
@@ -72,7 +72,7 @@ export default function SfDiagram({ d }: { d: Sf }) {
           <g key={i}>
             <path d={x.path} fill="none" stroke={INFO} strokeWidth={1.4} markerEnd="url(#sfd-info)" />
             {x.l.sign && (
-              <text x={x.sx} y={x.sy} textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight={700} fill={x.l.sign === "+" ? "#0f8a5f" : "#c2255c"}>
+              <text x={x.sx} y={x.sy} textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight={700} fill={x.l.sign === "+" ? "var(--viz-good)" : "var(--viz-pink)"}>
                 {x.l.sign}
               </text>
             )}
@@ -118,8 +118,8 @@ export default function SfDiagram({ d }: { d: Sf }) {
       ))}
       {(d.loops ?? []).map((l) => (
         <g key={l.label}>
-          <circle cx={l.x} cy={l.y} r={10} fill="hsl(var(--card))" stroke={l.type === "R" ? "#d9480f" : "#2545ff"} strokeWidth={1.3} />
-          <text x={l.x} y={l.y + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill={l.type === "R" ? "#d9480f" : "#2545ff"}>
+          <circle cx={l.x} cy={l.y} r={10} fill="hsl(var(--card))" stroke={l.type === "R" ? "var(--viz-acc2)" : "var(--viz-acc)"} strokeWidth={1.3} />
+          <text x={l.x} y={l.y + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill={l.type === "R" ? "var(--viz-acc2)" : "var(--viz-acc)"}>
             {l.label}
           </text>
         </g>

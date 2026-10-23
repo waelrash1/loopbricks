@@ -15,6 +15,8 @@ const niceMax = (v: number) => {
   return ([1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((m) => n <= m) ?? 10) * p;
 };
 const cssVar = (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// series colours are CSS variables ("var(--viz-acc)") so they follow the theme; a canvas needs the hex behind them
+const ink = (c: string) => (c.startsWith("var(") ? cssVar(c.slice(4, -1)) : c);
 const hexA = (hex: string, a: number) => {
   const h = hex.replace("#", "");
   const r = parseInt(h.slice(0, 2), 16),
@@ -234,7 +236,7 @@ export default function TimeSeriesChart({
         model.stocks.forEach((st) => {
           const ys = r.series[st.id];
           if (!ys || st.hidden || st.chartHidden) return;
-          ctx.strokeStyle = hexA(st.color, 0.8);
+          ctx.strokeStyle = hexA(ink(st.color), 0.8);
           ctx.lineWidth = 1.8;
           ctx.setLineDash(dash);
           ctx.beginPath();
@@ -246,7 +248,7 @@ export default function TimeSeriesChart({
       // reference data: hollow dots in the colour of the stock they describe
       refs.forEach((r) => {
         const st = model.stocks.find((x) => x.id === r.stock);
-        ctx.strokeStyle = st?.color ?? muted;
+        ctx.strokeStyle = st ? ink(st.color) : muted;
         ctx.fillStyle = paper;
         ctx.lineWidth = 1.8;
         r.points.forEach(([t, v]) => {
@@ -259,7 +261,7 @@ export default function TimeSeriesChart({
       // the previous run, dashed and faint, under the current one
       prev?.series.forEach((h, i) => {
         if (h.length < 2 || model.stocks[i]?.hidden || model.stocks[i]?.chartHidden) return;
-        ctx.strokeStyle = hexA(model.stocks[i].color, 0.55);
+        ctx.strokeStyle = hexA(ink(model.stocks[i].color), 0.55);
         ctx.lineWidth = 1.6;
         ctx.setLineDash([5, 4]);
         ctx.beginPath();
@@ -269,7 +271,7 @@ export default function TimeSeriesChart({
       });
       history.series.forEach((h, i) => {
         if (h.length < 2 || model.stocks[i].hidden || model.stocks[i].chartHidden) return;
-        const color = model.stocks[i].color;
+        const color = ink(model.stocks[i].color);
         const lastX = X(history.times[h.length - 1]);
         const lastY = Y(h[h.length - 1]);
         // area fill
@@ -293,7 +295,7 @@ export default function TimeSeriesChart({
           j ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
         });
         ctx.stroke();
-        // leading dot, ringed in white so it reads over other series
+        // leading dot, ringed in the paper colour so it reads over other series
         ctx.fillStyle = color;
         ctx.strokeStyle = paper;
         ctx.lineWidth = 2;
@@ -315,9 +317,17 @@ export default function TimeSeriesChart({
     });
     ro.observe(c);
     redraw.current = () => last && draw(last);
+    // the theme lives in CSS, so repaint when it changes: a pick in the footer or the system setting
+    const repaint = () => redraw.current();
+    const mo = new MutationObserver(repaint);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const mq = matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener("change", repaint);
     const unsubscribe = subscribe(draw);
     return () => {
       ro.disconnect();
+      mo.disconnect();
+      mq.removeEventListener("change", repaint);
       unsubscribe();
     };
   }, [model, subscribe, minimal]);

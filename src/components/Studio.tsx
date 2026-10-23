@@ -196,7 +196,7 @@ function SortDrill({ c, onSolved }: { c: StudioCase; onSolved: () => void }) {
               <span className="text-[15px]">
                 {v.name}
                 {checked && (
-                  <span className={cn("ml-2 text-[13px] font-semibold", ok ? "text-[#0f8a5f]" : "text-[#c2255c]")}>
+                  <span className={cn("ml-2 text-[13px] font-semibold", ok ? "text-[var(--viz-good)]" : "text-[var(--viz-pink)]")}>
                     {ok ? `Right, in ${v.unit}` : pick[v.name] ? `Not ${pick[v.name].toLowerCase()}` : "Not answered"}
                   </span>
                 )}

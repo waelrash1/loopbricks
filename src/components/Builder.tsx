@@ -657,11 +657,16 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     if (!svg) throw new Error("open the Diagram view first.");
     const clone = svg.cloneNode(true) as SVGSVGElement;
     const src = [svg, ...Array.from(svg.querySelectorAll("*"))], dst = [clone, ...Array.from(clone.querySelectorAll("*"))];
+    // the file goes on white paper, so read the light theme's colours whatever is on screen
+    const root = document.documentElement, theme = root.dataset.theme;
+    root.dataset.theme = "light";
     src.forEach((n, i) => {
       const d = dst[i], cs = getComputedStyle(n);
       for (const a of ["fill", "stroke"]) if (n.getAttribute(a)?.includes("var(")) d.setAttribute(a, cs.getPropertyValue(a));
       for (const a of ["tabindex", "role", "aria-label", "aria-pressed", "style", "class"]) d.removeAttribute(a);
     });
+    if (theme) root.dataset.theme = theme;
+    else delete root.dataset.theme;
     clone.querySelectorAll("[data-skip]").forEach((n) => n.remove());
     const b = bounds(model) ?? HOME, pad = 24, v = { x: b.x - pad, y: b.y - pad, w: b.w + pad * 2, h: b.h + pad * 2 };
     const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -747,7 +752,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
       <g aria-hidden pointerEvents="none" data-skip>
         <title>{list.map((i) => i.msg).join("\n")}</title>
         <circle cx={x} cy={y} r={8} fill={isErr ? BAD : WARN} stroke={CARD} strokeWidth={1.5} />
-        <text x={x} y={y + 4} textAnchor="middle" fontSize={11} fontWeight={800} fill="#fff">
+        <text x={x} y={y + 4} textAnchor="middle" fontSize={11} fontWeight={800} fill={CARD}>
           !
         </text>
       </g>

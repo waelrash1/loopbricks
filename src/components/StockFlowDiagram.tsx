@@ -6,7 +6,7 @@ import type { Vars } from "@/sim/engine";
 import { endDirs, flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
 
 const NS = "http://www.w3.org/2000/svg";
-const ACC = "#2545ff";
+const ACC = "var(--viz-acc)";
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
 // point on a box border in the direction of (tx,ty)
@@ -298,8 +298,8 @@ export default function StockFlowDiagram({
         >
           <defs>
             {/* information arrows: thin line, small fixed-size head */}
-            <marker id="info-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#6b74a6" /></marker>
-            <marker id="fb-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#d9480f" /></marker>
+            <marker id="info-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="var(--viz-info)" /></marker>
+            <marker id="fb-arrow" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="var(--viz-acc2)" /></marker>
           </defs>
 
           {/* clouds + pipes */}
@@ -322,7 +322,7 @@ export default function StockFlowDiagram({
           {/* information / feedback connectors */}
           {showInfluences &&
             layout.conns.map((c, i) => (
-              <path key={i} d={c.d} fill="none" stroke={c.kind === "fb" ? "#d9480f" : "#6b74a6"} strokeWidth={1.3} strokeOpacity={0.75} markerEnd={`url(#${c.kind === "fb" ? "fb" : "info"}-arrow)`} />
+              <path key={i} d={c.d} fill="none" stroke={c.kind === "fb" ? "var(--viz-acc2)" : "var(--viz-info)"} strokeWidth={1.3} strokeOpacity={0.75} markerEnd={`url(#${c.kind === "fb" ? "fb" : "info"}-arrow)`} />
             ))}
 
           {/* stocks */}
@@ -357,8 +357,8 @@ export default function StockFlowDiagram({
           {layout.conns.map((c, i) =>
             c.loop ? (
               <g key={i}>
-                <circle cx={c.bx} cy={c.by} r={9} fill="hsl(var(--card))" stroke={c.loop === "R" ? "#d9480f" : "#2545ff"} strokeWidth={1.2} />
-                <text x={c.bx} y={c.by + 3.6} textAnchor="middle" fontSize={FS.badge} fontWeight={700} fill={c.loop === "R" ? "#d9480f" : "#2545ff"}>{c.loop}</text>
+                <circle cx={c.bx} cy={c.by} r={9} fill="hsl(var(--card))" stroke={c.loop === "R" ? "var(--viz-acc2)" : "var(--viz-acc)"} strokeWidth={1.2} />
+                <text x={c.bx} y={c.by + 3.6} textAnchor="middle" fontSize={FS.badge} fontWeight={700} fill={c.loop === "R" ? "var(--viz-acc2)" : "var(--viz-acc)"}>{c.loop}</text>
               </g>
             ) : null
           )}

@@ -44,7 +44,7 @@ export type Model = {
   desc: string;
 };
 
-const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" };
+const C = { acc: "var(--viz-acc)", acc2: "var(--viz-acc2)", good: "var(--viz-good)", pink: "var(--viz-pink)" };
 // fastest a warehouse can ship out what it holds (weeks): sales ease off as inventory runs low instead of overdrawing it
 const MIN_SHIP_TIME = 1;
 

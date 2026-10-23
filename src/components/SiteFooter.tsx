@@ -1,5 +1,39 @@
+import { useState } from "react";
 import { Mail, MapPin } from "lucide-react";
 import { BrickMark } from "@/components/TopBar";
+
+// System follows the device; Light or Dark is remembered here and applied by index.html before the first paint
+function ThemePicker() {
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("theme") ?? "system";
+    } catch {
+      return "system";
+    }
+  });
+  const pick = (t: string) => {
+    setTheme(t);
+    const root = document.documentElement;
+    if (t === "system") delete root.dataset.theme;
+    else root.dataset.theme = t;
+    try {
+      if (t === "system") localStorage.removeItem("theme");
+      else localStorage.setItem("theme", t);
+    } catch {
+      /* private window: the choice lasts until the page closes */
+    }
+  };
+  return (
+    <label className="mt-4 inline-flex items-center gap-2 text-muted-foreground">
+      Theme
+      <select value={theme} onChange={(e) => pick(e.target.value)} className="h-9 rounded-[7px] border border-input bg-card px-2 text-foreground font-semibold">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+  );
+}
 
 // Who made LoopBricks and how to reach them: on every page.
 export default function SiteFooter() {
@@ -41,6 +75,7 @@ export default function SiteFooter() {
           <p className="mt-2 text-muted-foreground">
             <a href="./book/" className="tlink font-semibold">Read the book</a>, <i>System Dynamics with Python</i>. Looking for the earlier version? <a href="./v1/" className="tlink font-semibold">Open LoopBricks 1.0</a>
           </p>
+          <ThemePicker />
         </div>
       </div>
     </footer>

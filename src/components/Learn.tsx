@@ -188,7 +188,7 @@ function TrackSwitch() {
             ["manager", "Manager"],
           ] as const
         ).map(([k, label]) => (
-          <button key={k} role="radio" aria-checked={t === k} onClick={() => set(k)} className={cn("h-8 max-sm:min-h-11 px-3.5 rounded-[7px] text-[13px] font-semibold", t === k ? "bg-accent" : "text-muted-foreground hover:bg-muted")}>
+          <button key={k} role="radio" aria-checked={t === k} onClick={() => set(k)} className={cn("h-8 max-sm:min-h-11 px-3.5 rounded-[7px] text-[13px] font-semibold", t === k ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")}>
             {label}
           </button>
         ))}
@@ -591,7 +591,7 @@ function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => v
             role="tab"
             aria-selected={t === k}
             onClick={() => setTab(k)}
-            className={cn("h-8 max-sm:min-h-11 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-muted")}
+            className={cn("h-8 max-sm:min-h-11 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")}
           >
             {label}
           </button>
@@ -824,7 +824,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
                   aria-hidden
                   className={cn(
                     "absolute left-0 top-0 grid place-items-center w-9 h-9 rounded-[9px] text-[15px] font-bold tabular-nums border-2 transition-colors",
-                    k === active ? "bg-accent border-accent-edge" : "bg-background border-border text-muted-foreground"
+                    k === active ? "bg-accent border-accent-edge text-accent-foreground" : "bg-background border-border text-muted-foreground"
                   )}
                 >
                   {k + 1}

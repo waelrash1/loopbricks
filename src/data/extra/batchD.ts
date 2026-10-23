@@ -7,7 +7,7 @@ import type { FlowMeta } from "@/data/diagramMeta";
 import type { Lesson } from "@/data/lessons";
 import type { Preset } from "@/data/presets";
 
-const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" }; // same series palette as molecules.ts
+const C = { acc: "var(--viz-acc)", acc2: "var(--viz-acc2)", good: "var(--viz-good)", pink: "var(--viz-pink)" }; // same series palette as molecules.ts
 
 // Fastest a backlog can be worked off, however many people are assigned to it (weeks).
 const MIN_TASK_TIME = 0.5;

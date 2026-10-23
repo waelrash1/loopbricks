@@ -91,7 +91,7 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
     download(`${modelKey}-runs.csv`, [head, ...rows].map((r) => r.map(q).join(",")).join("\n"), "text/csv");
   };
 
-  // the chart as a picture, on white so it pastes cleanly into slides and reports
+  // the chart as a picture, on its own paper colour so the axis text stays readable
   const exportPng = (btn: HTMLElement) => {
     const c = btn.closest("[data-runs-host]")?.querySelector("canvas");
     if (!c) return;
@@ -99,7 +99,7 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
     out.width = c.width;
     out.height = c.height;
     const g = out.getContext("2d")!;
-    g.fillStyle = "#fff";
+    g.fillStyle = `hsl(${getComputedStyle(c).getPropertyValue("--card")})`;
     g.fillRect(0, 0, out.width, out.height);
     g.drawImage(c, 0, 0);
     out.toBlob((b) => b && download(`${modelKey}-chart.png`, b, "image/png"));

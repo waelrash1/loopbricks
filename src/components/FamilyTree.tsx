@@ -87,14 +87,14 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] min-w-0">
             <div className="flex items-center gap-2">
               <dt className="sr-only">Selected</dt>
-              <dd className="rounded-[7px] bg-accent px-2.5 py-1 font-bold shadow-[0_2px_0_hsl(var(--accent-edge))]" title={MODELS[sel].lede}>
+              <dd className="rounded-[7px] bg-accent text-accent-foreground px-2.5 py-1 font-bold shadow-[0_2px_0_hsl(var(--accent-edge))]" title={MODELS[sel].lede}>
                 {MODELS[sel].name}
               </dd>
             </div>
             {(
               [
-                ["Built from", parentsOf(sel), "bg-foreground text-white"],
-                ["Used in", childrenOf(sel), "bg-[#fbe7a1]"],
+                ["Built from", parentsOf(sel), "bg-foreground text-background"],
+                ["Used in", childrenOf(sel), "bg-accent/35"],
               ] as const
             ).map(([label, keys, tone]) => (
               <div key={label} className="flex flex-wrap items-center gap-1.5">
@@ -186,8 +186,8 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
             const { x, y } = pos[k];
             const st = state(k);
             const ls = lines(MODELS[k].name);
-            const fill = st === "focus" ? "hsl(var(--accent))" : st === "up" ? "hsl(var(--foreground))" : st === "down" ? "#fbe7a1" : "hsl(var(--card))";
-            const ink = st === "up" ? "#fff" : "hsl(var(--foreground))";
+            const fill = st === "focus" ? "hsl(var(--accent))" : st === "up" ? "hsl(var(--foreground))" : st === "down" ? "hsl(var(--accent) / 0.35)" : "hsl(var(--card))";
+            const ink = st === "up" ? "hsl(var(--background))" : st === "focus" ? "hsl(var(--accent-foreground))" : "hsl(var(--foreground))";
             return (
               <g
                 key={k}
@@ -225,7 +225,7 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
                   </text>
                 ))}
                 {seen.has(k) && (
-                  <circle cx={x + NODE_W - 10} cy={y + 10} r={3.5} fill={st === "up" ? "#fff" : "var(--viz-good)"}>
+                  <circle cx={x + NODE_W - 10} cy={y + 10} r={3.5} fill={st === "up" ? "hsl(var(--background))" : "var(--viz-good)"}>
                     <title>Opened before</title>
                   </circle>
                 )}

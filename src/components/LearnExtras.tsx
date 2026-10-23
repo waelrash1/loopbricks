@@ -180,7 +180,8 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
     const [sx, sy] = clip(a, cx, cy), [ex2, ey] = clip(b, cx, cy);
     return { d: `M ${sx} ${sy} Q ${cx} ${cy} ${ex2} ${ey}`, mx: (sx + 2 * cx + ex2) / 4 + nx * 10, my: (sy + 2 * cy + ey) / 4 + ny * 10 };
   };
-  const col = (l: UL) => (!checked ? "hsl(var(--foreground))" : { right: "#0f8a5f", sign: "#c77700", extra: "#c2255c" }[status(l)]);
+  const TONE = { right: "var(--viz-good)", sign: "hsl(var(--accent-text))", extra: "var(--viz-pink)", fg: "hsl(var(--foreground))" };
+  const tone = (l: UL) => (checked ? status(l) : "fg");
 
   return (
     <>
@@ -192,17 +193,17 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
         <div className="sheet">
           <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none" role="img" aria-label="Your causal loop diagram">
             <defs>
-              {["#0f8a5f", "#c77700", "#c2255c", "fg"].map((c) => (
-                <marker key={c} id={`dl-${c.replace("#", "")}`} markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-                  <path d="M0,0 L9,4 L0,8 Z" fill={c === "fg" ? "hsl(var(--foreground))" : c} />
+              {Object.entries(TONE).map(([k, c]) => (
+                <marker key={k} id={`dl-${k}`} markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L9,4 L0,8 Z" fill={c} />
                 </marker>
               ))}
             </defs>
             {links.map((l) => {
-              const g = geo(l), c = col(l);
+              const g = geo(l), t = tone(l), c = TONE[t];
               return (
                 <g key={key(l)}>
-                  <path d={g.d} fill="none" stroke={c} strokeWidth={2} strokeDasharray={checked && status(l) === "extra" ? "5 4" : undefined} markerEnd={`url(#dl-${c.startsWith("#") ? c.slice(1) : "fg"})`} />
+                  <path d={g.d} fill="none" stroke={c} strokeWidth={2} strokeDasharray={checked && status(l) === "extra" ? "5 4" : undefined} markerEnd={`url(#dl-${t})`} />
                   <text
                     x={g.mx}
                     y={g.my}
@@ -277,7 +278,7 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
             <ul className="text-[13.5px] grid gap-1">
               {links.map((l) => (
                 <li key={key(l)} className="flex items-center justify-between gap-2">
-                  <span className={cn(checked && { right: "text-[#0f8a5f]", sign: "text-[#c77700]", extra: "text-[#c2255c]" }[status(l)])}>
+                  <span className={cn(checked && { right: "text-[var(--viz-good)]", sign: "text-accent-text", extra: "text-[var(--viz-pink)]" }[status(l)])}>
                     {label(l.from)} → {label(l.to)} ({l.sign}){checked && { right: "", sign: ": check the sign", extra: ": not in the model" }[status(l)]}
                   </span>
                   <button aria-label={`Remove ${label(l.from)} to ${label(l.to)}`} onClick={() => (setLinks((ls) => ls.filter((x) => key(x) !== key(l))), setChecked(false))} className="text-muted-foreground hover:text-foreground">

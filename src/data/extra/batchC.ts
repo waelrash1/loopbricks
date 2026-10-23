@@ -7,7 +7,7 @@ import type { FlowMeta } from "@/data/diagramMeta";
 import type { Lesson } from "@/data/lessons";
 import type { Preset } from "@/data/presets";
 
-const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" }; // same series palette as molecules.ts
+const C = { acc: "var(--viz-acc)", acc2: "var(--viz-acc2)", good: "var(--viz-good)", pink: "var(--viz-pink)" }; // same series palette as molecules.ts
 
 const EPS = 1e-6; // divide-by-zero guard
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));

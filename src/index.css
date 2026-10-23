@@ -5,9 +5,10 @@
 @tailwind utilities;
 
 /* Assembly instructions: pale instruction-sheet blue, navy ink, brick yellow.
-   Light only, on purpose: it reads as a printed booklet, and the series colours in the data are fixed hexes.
+   Dark mode is the same booklet at night: deep navy sheet, light ink, the same yellow bricks.
    Colours are H S L triples so Tailwind opacity modifiers work. */
 :root {
+  color-scheme: light;
   --background: 208 33% 93%; /* #e6edf3 instruction sheet */
   --foreground: 216 52% 15%; /* #13233b navy ink */
   --card: 220 50% 99%; /* #fbfcfe the sheet diagrams sit on */
@@ -38,6 +39,69 @@
   --viz-good: #0f8a5f; /* positive polarity, correct answer */
   --viz-pink: #c2255c; /* negative polarity, wrong answer */
   --viz-info: #6b74a6;
+  --viz-r-chip: #c2410c; /* R tag fill: a shade darker than --viz-acc2 so its 11px label passes */
+  --good-ink: #0a5c40; /* right-answer text on a green tint */
+  --bad-ink: #8f1a43;
+}
+
+/* Dark: system setting unless the reader picked light; or picked dark. Screen only, so print stays light. */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: 215 49% 10%; /* #0d1726 */
+    --foreground: 208 33% 93%; /* #e6edf3 */
+    --card: 218 47% 15%; /* #15223a */
+    --muted: 219 44% 22%; /* #203152 */
+    --muted-foreground: 215 23% 72%; /* #a6b4c8 */
+    --link: 208 33% 93%;
+    --secondary: 219 44% 22%;
+    --accent-edge: 46 100% 30%; /* #9a7600 */
+    --accent-text: 47 93% 67%; /* #f9d65c, 11:1 on cards */
+    --border: 219 35% 27%; /* #2c3d5c */
+    --edge: 219 55% 6%; /* #070d18 */
+    --input: 216 19% 51%; /* #6a7d99 */
+    --ink: 208 33% 93%;
+    --heading: 208 33% 93%;
+    --ring: 47 92% 53%;
+    --panel: 218 51% 22%; /* #1c3156, a bluer tone than the cards */
+    --viz-acc: #7f95ff;
+    --viz-acc2: #ff8f5a;
+    --viz-good: #40c98f;
+    --viz-pink: #ff7aa3;
+    --viz-info: #a3abdb;
+    --viz-r-chip: #ff8f5a;
+    --good-ink: #40c98f;
+    --bad-ink: #ff7aa3;
+  }
+}
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --background: 215 49% 10%;
+    --foreground: 208 33% 93%;
+    --card: 218 47% 15%;
+    --muted: 219 44% 22%;
+    --muted-foreground: 215 23% 72%;
+    --link: 208 33% 93%;
+    --secondary: 219 44% 22%;
+    --accent-edge: 46 100% 30%;
+    --accent-text: 47 93% 67%;
+    --border: 219 35% 27%;
+    --edge: 219 55% 6%;
+    --input: 216 19% 51%;
+    --ink: 208 33% 93%;
+    --heading: 208 33% 93%;
+    --ring: 47 92% 53%;
+    --panel: 218 51% 22%;
+    --viz-acc: #7f95ff;
+    --viz-acc2: #ff8f5a;
+    --viz-good: #40c98f;
+    --viz-pink: #ff7aa3;
+    --viz-info: #a3abdb;
+    --viz-r-chip: #ff8f5a;
+    --good-ink: #40c98f;
+    --bad-ink: #ff7aa3;
+  }
 }
 
 @layer base {
@@ -113,10 +177,10 @@
 .prose-sd .refs li { margin: 4px 0; }
 
 /* B / R tags: the same letters and colours the diagrams use */
-.chip { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; color: #fff; font-size: 11px; font-weight: 800; font-stretch: 112%; margin-right: 4px; }
+.chip { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; color: hsl(var(--card)); font-size: 11px; font-weight: 800; font-stretch: 112%; margin-right: 4px; }
 .chipB { background: var(--viz-acc); }
-.chipR { background: #c2410c; } /* a shade darker than the diagram colour: white 11px text needs 4.5:1 */
+.chipR { background: var(--viz-r-chip); }
 
 /* quiz answer states (lesson panel) */
-.is-right { border-color: var(--viz-good) !important; background: color-mix(in srgb, var(--viz-good) 12%, white) !important; color: #0a5c40; --edge-c: var(--viz-good); }
-.is-wrong { border-color: var(--viz-pink) !important; background: color-mix(in srgb, var(--viz-pink) 9%, white) !important; color: #8f1a43; --edge-c: var(--viz-pink); }
+.is-right { border-color: var(--viz-good) !important; background: color-mix(in srgb, var(--viz-good) 12%, hsl(var(--card))) !important; color: var(--good-ink); --edge-c: var(--viz-good); }
+.is-wrong { border-color: var(--viz-pink) !important; background: color-mix(in srgb, var(--viz-pink) 9%, hsl(var(--card))) !important; color: var(--bad-ink); --edge-c: var(--viz-pink); }

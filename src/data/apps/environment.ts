@@ -6,7 +6,7 @@ import type { FlowMeta } from "@/data/diagramMeta";
 import type { AppCase, DataSource, Domain, Ref } from "@/data/apps/types";
 import { built, skins, type Skin } from "@/data/apps/sim";
 
-const C = { acc: "#2545ff", acc2: "#d9480f", good: "#0f8a5f", pink: "#c2255c" };
+const C = { acc: "var(--viz-acc)", acc2: "var(--viz-acc2)", good: "var(--viz-good)", pink: "var(--viz-pink)" };
 
 export const THEMES = ["Climate and atmosphere", "Renewable resources and water", "Growth and limits", "Energy and transport"] as const;
 

@@ -121,7 +121,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
           )}
           {s.formula && <pre className="mt-4 rounded-[8px] bg-card border border-border px-4 py-3 text-[13.5px] font-mono whitespace-pre-wrap [overflow-wrap:anywhere]">{s.formula}</pre>}
           {s.table && (
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 overflow-x-auto" tabIndex={0} role="region" aria-label="Table, scroll sideways">
               <table className="w-full text-[14px] leading-[1.5] border-collapse">
                 <thead>
                   <tr className="text-left">
@@ -155,7 +155,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
                 ))}
               </ol>
               {s.example.data && (
-                <div className="mt-3 overflow-x-auto">
+                <div className="mt-3 overflow-x-auto" tabIndex={0} role="region" aria-label="Table, scroll sideways">
                   <table className="text-[13.5px] tabular-nums border-collapse">
                     <thead>
                       <tr>
