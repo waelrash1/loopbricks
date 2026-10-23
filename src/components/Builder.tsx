@@ -1211,10 +1211,10 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                       <Shuffle size={15} aria-hidden className="shrink-0 mt-0.5 text-muted-foreground" /> This model uses random numbers. With a seed in each RANDOM_ function, the same seed repeats the run exactly; change the seed for a different run.
                     </p>
                   )}
-                  <Results model={run.model} res={run.res} />
+                  <Results model={run.model} res={run.res} plot={model.plot} onPlot={(plot) => setModel((m) => ({ ...m, plot }))} />
                 </>
               )}
-              {!run && <p className="mt-4 text-[14px] text-muted-foreground">Press Run to simulate the model. Each stock is plotted over time, one line per element of an array.</p>}
+              {!run && <p className="mt-4 text-[14px] text-muted-foreground">Press Run to simulate the model. Stocks are plotted over time, one line per element of an array; choose more to plot after the run.</p>}
             </div>
           </section>
 
@@ -2113,13 +2113,39 @@ function PythonView({ model, slug, full, onExport, onNote }: { model: BModel; sl
 
 // ===================================================================================================
 const MAX_SERIES = 24, MAX_LEGEND = 12, MAX_COLS = 6;
-function Results({ model, res }: { model: BModel; res: RunResult }) {
-  // one series per stock, or per element of an arrayed stock (values keyed "id[element]")
-  const all = model.stocks
+function Results({ model, res, plot, onPlot }: { model: BModel; res: RunResult; plot?: string[]; onPlot: (ids: string[]) => void }) {
+  // what can be plotted: every stock, flow and auxiliary (constants are flat lines); chosen ids are saved with the model
+  const plottable = elements(model).filter((e) => e.kind !== "var" || !isConstant(e) || e.data);
+  const chosen = plot?.length ? plottable.filter((e) => plot.includes(e.id)) : plottable.filter((e) => e.kind === "stock");
+  const toggle = (id: string) => {
+    const ids = chosen.map((e) => e.id);
+    onPlot(ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
+  };
+  const picker = (
+    <div className="mt-4 flex flex-wrap items-center gap-1.5" role="group" aria-label="Choose what to plot">
+      <span className="text-[13px] font-semibold mr-1">Plot</span>
+      {plottable.map((e) => {
+        const on = chosen.some((c) => c.id === e.id);
+        return (
+          <button key={e.id} onClick={() => toggle(e.id)} aria-pressed={on} className={cn("h-7 px-2.5 rounded-full border text-[12.5px] font-semibold", on ? "bg-accent/30 border-accent-edge" : "bg-card border-border text-muted-foreground hover:text-foreground")}>
+            {e.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+  // one series per element, or per element of an array (values keyed "id[element]")
+  const all = chosen
     .flatMap((s) => series(model, s).map((x) => ({ ...x, units: s.units, ys: res.values[x.key] })))
     .filter((l) => l.ys?.length)
     .map((l, i) => ({ ...l, color: SERIES[i % SERIES.length], dash: i >= SERIES.length ? "6 3" : undefined }));
-  if (!all.length) return <p className="mt-4 text-[14px] text-muted-foreground">The run worked, but there are no stocks to plot. Add a stock.</p>;
+  if (!all.length)
+    return (
+      <>
+        {picker}
+        <p className="mt-3 text-[14px] text-muted-foreground">{plottable.length ? "Choose something to plot above." : "The run worked, but there is nothing to plot yet. Add a stock."}</p>
+      </>
+    );
   const lines = all.slice(0, MAX_SERIES), cols = all.slice(0, MAX_COLS);
   const vals = lines.flatMap((l) => l.ys);
   const lo = Math.min(0, ...vals), hi = Math.max(...vals, lo + 1e-9);
@@ -2134,7 +2160,9 @@ function Results({ model, res }: { model: BModel; res: RunResult }) {
     return best;
   });
   return (
-    <div className="mt-4 grid xl:grid-cols-[minmax(0,1fr)_minmax(0,300px)] gap-5 items-start">
+    <>
+    {picker}
+    <div className="mt-3 grid xl:grid-cols-[minmax(0,1fr)_minmax(0,300px)] gap-5 items-start">
       <div className="min-w-0">
         <svg viewBox={`0 0 ${CW} ${CH}`} className="w-full h-auto" role="img" aria-label={`${model.name}: ${lines.map((l) => l.label).join(", ")} over ${t1} ${model.timeUnit}`}>
           {[lo, (lo + hi) / 2, hi].map((v) => (
@@ -2175,7 +2203,7 @@ function Results({ model, res }: { model: BModel; res: RunResult }) {
       <div className="overflow-x-auto min-w-0">
         <table className="w-full text-[13px] tabular-nums">
           <caption className="text-left text-[12.5px] text-muted-foreground pb-1">
-            Stock values at five times{all.length > MAX_COLS ? ` (first ${MAX_COLS} of ${all.length} series)` : ""}
+            Values at five times{all.length > MAX_COLS ? ` (first ${MAX_COLS} of ${all.length} series)` : ""}
           </caption>
           <thead>
             <tr className="border-b border-border">
@@ -2206,6 +2234,7 @@ function Results({ model, res }: { model: BModel; res: RunResult }) {
         </table>
       </div>
     </div>
+    </>
   );
 }
 

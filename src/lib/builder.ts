@@ -16,7 +16,8 @@ export type BDim = { name: string; elements: string[]; of?: string };
 // automatically; a drawn arrow that the target's equation does not use is flagged.
 export type BLink = { from: string; to: string };
 // start: the start time (default 0); T is the stop time. saveEvery: how often results are kept (default dt).
-export type BModel = { name: string; timeUnit: string; T: number; dt: number; start?: number; saveEvery?: number; stocks: BStock[]; flows: BFlow[]; vars: BVar[]; dims?: BDim[]; links?: BLink[] };
+// plot: the element ids drawn in the results chart (default: every stock).
+export type BModel = { name: string; timeUnit: string; T: number; dt: number; start?: number; saveEvery?: number; plot?: string[]; stocks: BStock[]; flows: BFlow[]; vars: BVar[]; dims?: BDim[]; links?: BLink[] };
 export type Kind = "stock" | "flow" | "var";
 export type Element = (BStock & { kind: "stock" }) | (BFlow & { kind: "flow" }) | (BVar & { kind: "var" });
 export type Field = "name" | "eq" | "init" | "from" | "to" | "units" | "settings" | "dim" | "data"; // dim: an element's dimension, or (with no id) the dimension list; data: a variable's time series
@@ -133,6 +134,7 @@ export function removeElement(m: BModel, id: string): BModel {
     flows: m.flows.filter((f) => f.id !== id).map((f) => ({ ...f, from: f.from === id ? undefined : f.from, to: f.to === id ? undefined : f.to })),
     vars: m.vars.filter((v) => v.id !== id),
     ...(m.links ? { links: m.links.filter((l) => l.from !== id && l.to !== id) } : {}),
+    ...(m.plot ? { plot: m.plot.filter((p) => p !== id) } : {}),
   };
 }
 
@@ -722,6 +724,7 @@ export function fromJSON(text: string): BModel {
     vars: (m.vars as unknown[]).map(rec).map((v) => ({ id: id(v.id, "variable"), name: str(v.name), eq: str(v.eq), x: num(v.x, 300), y: num(v.y, 320), units: opt(v.units), ...extra(v), ...data(v) })),
     ...(dims ? { dims } : {}),
     ...(links ? { links } : {}),
+    ...(Array.isArray(m.plot) ? { plot: m.plot.filter((x): x is string => typeof x === "string") } : {}),
   };
 }
 
@@ -858,10 +861,11 @@ export const TEMPLATES: Template[] = [
       vars: [
         { id: "v1", name: "Orders", eq: "10 + STEP(10, 5)", x: 260, y: 200, units: "units/week" },
         { id: "v2", name: "Delay time", eq: "4", x: 490, y: 340, units: "weeks" },
-        { id: "v3", name: "Deliveries first order", eq: "DELAY1(Orders, delay_time)", x: 260, y: 340, units: "units/week", note: "The same delay with one stock: deliveries start rising at once and creep up. Compare it with Deliveries." },
+        { id: "v3", name: "Deliveries first order", eq: "DELAY1(Orders, delay_time)", x: 260, y: 340, units: "units/week", note: "The same delay with one stock: deliveries start rising at once and creep up. Compare it with Deliveries. Its curve is the same as Perceived orders: a first-order material delay and first-order smoothing follow the same path; the delay conserves what is in transit, the smooth is only a belief." },
         { id: "v4", name: "Perceived orders", eq: "SMOOTH(Orders, delay_time)", x: 260, y: 80, units: "units/week", note: "An information delay: the belief closes part of its gap to the real orders each week." },
         { id: "v5", name: "Order trend", eq: "TREND(Orders, delay_time, 0)", x: 490, y: 80, units: "1/week", note: "How fast orders are growing, as a fraction per week, against their smoothed level." },
       ],
+      plot: ["v1", "f1", "v3", "v4"],
     },
   },
   {
