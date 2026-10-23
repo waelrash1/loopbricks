@@ -15,7 +15,7 @@ import { NotebookLinks } from "@/components/PythonPanel";
 import { notebookForModule } from "@/lib/notebook";
 import { ModuleReadings } from "@/components/Readings";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 const sub = "heading text-[22px] md:text-[24px]";
 // a page reference into Sterman (2000), the main source of the topic notes
 const pg = (p?: string) =>
@@ -139,7 +139,7 @@ const LEVELS: { level: Level; blurb: string }[] = [
 export const PRACTICE: [string, string, string][] = [
   ["Decision games", "Run a supply chain, a fishery or a firefighting team, week by week, and see what your decisions do.", "/learn/games"],
   ["Draw the loops", "Connect variables with signed links and check your diagram against a model answer.", "/learn/draw"],
-  ["Modelling studio", "Turn a messy brief into a problem statement, a boundary, a causal loop diagram and a stock and flow map, with a model answer at each step.", "/learn/studio"],
+  ["Modelling studio", "Practice briefs: turn a messy situation into a problem statement, a boundary, a causal loop diagram and a stock and flow map, with a model answer at each step.", "/learn/studio"],
   ["Build a model", "Lay out stocks and flows, write the equations, and run your own model.", "/learn/build"],
   ["Capstone projects", "Take one problem from client brief to policy advice, stage by stage.", "/learn/projects"],
   ["Mixed review", "Questions drawn across the modules you have finished.", "/learn/review"],
@@ -188,7 +188,7 @@ function TrackSwitch() {
             ["manager", "Manager"],
           ] as const
         ).map(([k, label]) => (
-          <button key={k} role="radio" aria-checked={t === k} onClick={() => set(k)} className={cn("h-8 px-3.5 rounded-[7px] text-[13px] font-semibold", t === k ? "bg-accent" : "text-muted-foreground hover:bg-muted")}>
+          <button key={k} role="radio" aria-checked={t === k} onClick={() => set(k)} className={cn("h-8 max-sm:min-h-11 px-3.5 rounded-[7px] text-[13px] font-semibold", t === k ? "bg-accent" : "text-muted-foreground hover:bg-muted")}>
             {label}
           </button>
         ))}
@@ -283,7 +283,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
             ["Reference modes", "/methods/reference-modes"],
             ["Machine learning and AI", "/methods/ml-ai"],
           ].map(([label, hash]) => (
-            <button key={hash} onClick={() => onOpen(hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+            <button key={hash} onClick={() => onOpen(hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
               {label}
             </button>
           ))}
@@ -503,11 +503,11 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
       </div>
       {phase === "predict" ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          <button onClick={() => setPhase("shown")} disabled={sketch.length < 3} className="brick brick-y h-9 px-3.5 text-[13px] font-semibold disabled:opacity-50">
+          <button onClick={() => setPhase("shown")} disabled={sketch.length < 3} className="brick brick-y h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold disabled:opacity-50">
             Run and compare
           </button>
           {sketch.length > 0 && (
-            <button onClick={() => setSketch([])} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+            <button onClick={() => setSketch([])} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
               Clear sketch
             </button>
           )}
@@ -548,14 +548,14 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {changed && (
-              <button onClick={() => setP(base)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+              <button onClick={() => setP(base)} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
                 Reset
               </button>
             )}
-            <button onClick={() => (setSketch([]), setP(base), setPhase("predict"), setPredict(true))} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+            <button onClick={() => (setSketch([]), setP(base), setPhase("predict"), setPredict(true))} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
               Predict again
             </button>
-            <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 px-3 text-[12.5px] font-semibold">
+            <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
               Open {m.name} in the simulator
             </button>
           </div>
@@ -591,7 +591,7 @@ function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => v
             role="tab"
             aria-selected={t === k}
             onClick={() => setTab(k)}
-            className={cn("h-8 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-muted")}
+            className={cn("h-8 max-sm:min-h-11 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-muted")}
           >
             {label}
           </button>
@@ -676,6 +676,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
       </div>
     );
   const [prev, next] = [MODULE_CONTENT[i - 1], MODULE_CONTENT[i + 1]];
+  const stepKey = (k: number) => `done:step/${id}/${k}`;
   const isDone = seen.has(doneKey(id));
   const used = new Set(steps.flatMap((s) => s.step.exercises ?? []));
   const usedEx = new Set(steps.map((s) => s.step.example));
@@ -711,7 +712,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
           </details>
         )}
         {x.link && (
-          <button onClick={() => onOpen(x.link!.hash)} className="brick brick-w mt-3 h-9 px-3.5 text-[13px] font-semibold">
+          <button onClick={() => onOpen(x.link!.hash)} className="brick brick-w mt-3 h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
             {x.link.label}
           </button>
         )}
@@ -722,27 +723,28 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
   // jump to any step, or step through; the same control sits on the workbench and, on phones, at the bottom
   const stepper = (
     <div className="flex items-center gap-2">
-      <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-9 h-9 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+      <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-9 max-sm:min-w-11 h-9 max-sm:min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
         <ChevronLeft size={16} />
       </button>
       <label className="flex-1 min-w-0">
         <span className="sr-only">Go to step</span>
-        <select value={active} onChange={(e) => goStep(+e.target.value)} className="w-full h-9 rounded-btn border border-border bg-card px-2.5 text-[13.5px] font-semibold text-foreground truncate">
+        <select value={active} onChange={(e) => goStep(+e.target.value)} className="w-full h-9 max-sm:min-h-11 rounded-btn border border-border bg-card px-2.5 text-[13.5px] font-semibold text-foreground truncate">
           {steps.map((s, k) => (
             <option key={s.step.title} value={k}>
               Step {k + 1} of {steps.length}: {s.step.title}
+              {seen.has(stepKey(k)) ? " (done)" : ""}
             </option>
           ))}
         </select>
       </label>
-      <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-9 h-9 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+      <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-9 max-sm:min-w-11 h-9 max-sm:min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
         <ChevronRight size={16} />
       </button>
     </div>
   );
 
   return (
-    <article className="max-w-[1320px] mx-auto px-4 md:px-8 pt-6 md:pt-8">
+    <article className="page pt-6 md:pt-8">
       <p className="text-sm text-muted-foreground mb-6">
         <button onClick={onIndex} className="hover:text-foreground">
           Learn
@@ -756,7 +758,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             Module {i + 1} of {MODULE_CONTENT.length}, about {m.minutes} min
             <Clock size={13} aria-hidden />
           </p>
-          <h1 className="display text-[32px] md:text-[46px] max-w-[20ch] mt-2 hyphens-auto">{m.def.title}</h1>
+          <h1 className="display text-[32px] md:text-[46px] max-w-[20ch] mt-2">{m.def.title}</h1>
           <p className="mt-4 text-[18px] leading-[1.6] text-foreground/85 max-w-[60ch]">{m.def.summary}</p>
           {m.def.prereqs.length > 0 && (
             <p className="mt-5 text-[14px] text-muted-foreground">
@@ -773,14 +775,22 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             </p>
           )}
           <nav aria-label="Steps in this module" className="mt-8 border-t border-border pt-5 print:hidden max-w-[60ch]">
-            <p className="heading text-[16px]">The module in {steps.length} steps</p>
+            <p className="heading text-[16px]">
+              The module in {steps.length} steps
+              <span className="ml-2 text-[13px] font-normal text-muted-foreground">{steps.filter((_, k) => seen.has(stepKey(k))).length} done</span>
+            </p>
             <ol className="mt-2 grid gap-y-1 text-[14.5px]">
               {steps.map((s, k) => (
                 <li key={s.step.title}>
-                  <button onClick={() => goStep(k)} className="text-left hover:text-foreground text-foreground/80 flex gap-2">
-                    <span className="tabular-nums text-muted-foreground w-5 shrink-0">{k + 1}</span>
+                  <a
+                    href={`#/learn/${id}`}
+                    onClick={(e) => (e.preventDefault(), goStep(k))}
+                    className="inline-flex gap-2 py-0.5 text-foreground/85 hover:text-foreground hover:underline underline-offset-2"
+                  >
+                    <span className="tabular-nums font-semibold text-accent-text w-5 shrink-0">{k + 1}</span>
                     {s.step.title}
-                  </button>
+                    {seen.has(stepKey(k)) && <Check size={14} strokeWidth={3} aria-label="done" className="shrink-0 mt-1 text-[var(--viz-good)]" />}
+                  </a>
                 </li>
               ))}
             </ol>
@@ -850,7 +860,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
                     </dl>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {a.cases.map((c) => (
-                        <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                        <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
                           {c.label}
                         </button>
                       ))}
@@ -859,14 +869,14 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
                   </div>
                 )}
                 {example && (
-                  <aside className="mt-5 max-w-[62ch] border-l-4 border-accent-edge pl-4">
+                  <div className="mt-5 max-w-[62ch] border-l-4 border-accent-edge pl-4">
                     <p className="text-[12.5px] font-semibold text-muted-foreground">From practice</p>
                     <h3 className="heading text-[15.5px] mt-0.5">
                       {example.title}
                       {pg(example.pages)}
                     </h3>
                     <p className="mt-1 text-[15px] leading-[1.6]">{example.text}</p>
-                  </aside>
+                  </div>
                 )}
                 {/* on narrow screens the workbench sits inside each step */}
                 <div className="lg:hidden mt-5">
@@ -877,6 +887,19 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
                     {s.step.exercises.map(exercise)}
                   </div>
                 ) : null}
+                <button
+                  onClick={() => markSeen(stepKey(k))}
+                  disabled={seen.has(stepKey(k))}
+                  className="brick brick-w mt-6 h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold inline-flex items-center gap-1.5 print:hidden"
+                >
+                  {seen.has(stepKey(k)) ? (
+                    <>
+                      <Check size={14} strokeWidth={3} aria-hidden className="text-[var(--viz-good)]" /> Step {k + 1} done
+                    </>
+                  ) : (
+                    `Mark step ${k + 1} as done`
+                  )}
+                </button>
               </li>
             );
           })}
@@ -897,13 +920,13 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             {restExamples.length > 0 && (
               <div className="mt-4 grid md:grid-cols-2 gap-4">
                 {restExamples.map((x) => (
-                  <aside key={x.title} className="border-l-4 border-accent-edge pl-4">
+                  <div key={x.title} className="border-l-4 border-accent-edge pl-4">
                     <h3 className="heading text-[15.5px]">
                       {x.title}
                       {pg(x.pages)}
                     </h3>
                     <p className="mt-1 text-[15px] leading-[1.6]">{x.text}</p>
-                  </aside>
+                  </div>
                 ))}
               </div>
             )}
@@ -949,7 +972,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             <h2 className="heading text-[17px]">Go deeper</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {m.def.deeper.map((d) => (
-                <button key={d.hash} onClick={() => onOpen(d.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                <button key={d.hash} onClick={() => onOpen(d.hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
                   {d.label}
                 </button>
               ))}
@@ -1011,7 +1034,7 @@ export function LearnPanel({ molecule, onModule }: { molecule: string; onModule:
             <p className="heading text-[16px]">Archetype{arch.length > 1 ? "s" : ""} this molecule runs</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {arch.map((a) => (
-                <button key={a.id} onClick={() => onModule("archetypes", `arch-${a.id}`)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                <button key={a.id} onClick={() => onModule("archetypes", `arch-${a.id}`)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
                   {a.name}
                 </button>
               ))}

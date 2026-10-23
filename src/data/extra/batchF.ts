@@ -101,17 +101,17 @@ export const MODELS_F: Record<string, Model> = {
     },
     desc: `<p>A renewable resource regrows fastest at half its carrying capacity (logistic growth). Two users harvest it. Each one's capital grows while its boats earn more than they cost and shrinks when they earn less. The catch per boat depends on the <b>shared</b> stock, so each fleet's expansion lowers everyone's returns. The archetype is Hardin's tragedy of the commons; the formulation is the standard open-access fishery of bioeconomics.</p>
     <div class="eq">Fish = INTEG(regrowth − catch, 90) ; regrowth = r × Fish × (1 − Fish / 100)<br>catch per boat = CatchFull × Fish / 100 ; catch = (FleetA + FleetB) × catch per boat (capped by the limit if one is set)<br>FleetA = INTEG(FleetA × growthA × (catch per boat / BreakEven − 1), 4) ; Fleet B likewise</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Whenever several actors draw on one stock that regrows (fish, grazing land, groundwater, antibiotic effectiveness, a shared IT budget, a team's attention) and each actor's reward comes from its own use while the cost is shared. The lever is in the structure, not in any one actor's restraint: try the catch limit.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Fisheries</b>: fleets build boats in the good years and the stock collapses, as in the Grand Banks cod fishery.</li>
       <li><b>Healthcare</b>: every prescriber benefits from an antibiotic, while resistance is shared by all.</li>
       <li><b>Organisations</b>: teams all draw on one shared platform or specialist group until queues make it useless to everyone.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     With r = 0.4 the largest sustainable catch is <code>r × 100 / 4 = 10</code> kt a year, at a stock of 50. A boat breaks even when it catches 0.25 kt, which happens when the stock is <code>0.25 / 1 × 100 = 25</code>. Open access therefore drives the stock towards 25, half the best level, and the overshoot on the way takes it to about 9 within ten years. Stop Fleet B expanding and the stock still falls to about 9: Fleet A simply takes the catch B left. Set a total catch limit of 8 and the stock holds near 72 with a steady catch of 8, more than open access lands on average.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hardin, G. (1968). The tragedy of the commons. <i>Science</i>, 162(3859), 1243-1248.</li>
       <li>Senge, P. M. (1990). <i>The Fifth Discipline</i>. Doubleday. Appendix 2, system archetypes.</li>
@@ -191,17 +191,17 @@ export const MODELS_F: Record<string, Model> = {
     },
     desc: `<p>A team faces a steady flow of problems. It can <b>patch</b> them quickly or <b>fix</b> them properly. A patch makes the problem disappear from the open list at once, but after a while the patch fails and the problem returns. A proper fix is slower and depends on the team's <b>capability</b> (skills, tools, maintained equipment), which is built with whatever capacity is left after firefighting, and fades if not maintained. This is Senge's shifting-the-burden archetype, and the capability trap that Repenning and Sterman found in manufacturing and product development.</p>
     <div class="eq">quick fixes = MIN(Share × OpenProblems, Capacity) ; resurfacing = Patched / TimeUntilPatchFails<br>fundamental fixes = (1 − Share) × OpenProblems × Capability/100 / 2 wk<br>Capability = INTEG((1 − quick fixes / Capacity) × (100 − Capability) / TimeToBuild − Capability / 25 wk, 53)<br>problems arising = Load × (1.5 − Capability/100)</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Whenever a fast, visible remedy competes with a slow one for the same people or money: firefighting against preventive maintenance, overtime against hiring and training, painkillers against physiotherapy, short-term loans against restructuring. Watch the first weeks after a policy change, then the next year: the two tell opposite stories.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Manufacturing</b>: reactive repairs crowd out preventive maintenance, so breakdowns rise (the DuPont maintenance case).</li>
       <li><b>Healthcare</b>: agency staff cover shortages while recruitment and training of permanent staff stall.</li>
       <li><b>Software</b>: hot-fixes ship on time while technical debt builds and slows every later change.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     The model starts in balance: half the problems are patched, 73 are open and capability is 53. Raise the share patched to 0.8 and open problems <b>fall</b> to about 63 within 8 weeks: the policy looks right. But capability erodes (about 28 by week 40) because firefighting takes more of the team, fewer problems are fixed at the source, and by week 48 the quick fixes need the whole team. After that problems climb without limit, past 750 by week 104. Lower the share to 0.2 instead and open problems <b>rise</b> to about 84 at first, then fall to 32 as capability grows to 66: worse before better.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Senge, P. M. (1990). <i>The Fifth Discipline</i>. Doubleday. Appendix 2, system archetypes.</li>
       <li>Repenning, N. P. &amp; Sterman, J. D. (2001). Nobody ever gets credit for fixing problems that never happened. <i>California Management Review</i>, 43(4), 64-88.</li>

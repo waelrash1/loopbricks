@@ -19,7 +19,7 @@ import {
   Play,
   Plus,
   Redo2,
-  Scan,
+  Focus,
   Search,
   Shuffle,
   Sigma,
@@ -83,8 +83,9 @@ const CLOUD_D = "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z";
 const wrap = "max-w-[1320px] mx-auto px-4 md:px-8";
 const input = "w-full h-9 rounded-[8px] border border-input bg-card px-2.5 text-[14px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const mono = "font-mono text-[13px]";
-const btn = "brick brick-w h-9 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-50";
-const ibtn = "brick brick-w h-9 w-9 inline-flex items-center justify-center disabled:opacity-50";
+// on phones every button is at least 44px for touch
+const btn = "brick brick-w h-9 max-sm:min-h-11 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-50";
+const ibtn = "brick brick-w h-9 w-9 max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center disabled:opacity-50";
 const summaryCls = "list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none";
 const popover = "absolute max-sm:left-0 max-sm:right-0 max-sm:w-auto max-sm:max-w-none z-40 mt-2 rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_hsl(var(--foreground)/0.14)]";
 const DIM_RE = /^[\p{L}_][\p{L}\p{N}_]*$/u;
@@ -238,7 +239,11 @@ function bounds(m: BModel): VB | null {
   for (const e of els) {
     if (e.kind === "stock") add(e.x, e.y, boxW(labelOf(e)) / 2 + 8, BOX_H / 2 + 8);
     else if (e.kind === "flow") add(e.x, e.y, e.from && e.to ? 60 : CLOUD_GAP + 50, e.from && e.to ? 40 : CLOUD_GAP + 30);
-    else add(e.x, e.y, Math.max(40, labelOf(e).length * 3.6 + 10), 42);
+    else {
+      // label below and to the right of the node
+      const lw = labelOf(e).length * 6.4;
+      add(e.x + lw / 2 + 2, e.y + 14, lw / 2 + 16, 28);
+    }
   }
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
@@ -270,7 +275,7 @@ function freeSpot(m: BModel, vb: VB, prefer?: P): P {
 const KIND_LABEL = { stock: "Stock", flow: "Flow", var: "Variable" } as const;
 const kindOf = (e: Element) => (e.kind === "var" ? (e.data ? "Data" : isConstant(e) ? "Constant" : "Auxiliary") : KIND_LABEL[e.kind]);
 
-type ExportKind = "py" | "req" | "ipynb" | "python" | "pysd" | "pysdnb" | "json" | "xmile" | "csv" | "md" | "svg";
+type ExportKind = "py" | "req" | "ipynb" | "python" | "pysd" | "pysdnb" | "json" | "xmile" | "csv" | "md" | "svg" | "copy";
 
 // ===================================================================================================
 export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
@@ -432,15 +437,28 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     select(id);
     setNote(`Duplicated as ${name}.`);
   };
+  // a change that throws work away happens at once, with Undo on a toast for a few seconds
+  const [toast, setToast] = useState<{ msg: string; at: number; whole?: boolean } | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 8000);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+  const undoToast = () => {
+    undo();
+    if (toast?.whole) setVb(viewFor(modelRef.current)), select(null);
+    setToast(null);
+  };
   const loadTemplate = (id: string) => {
     const t = TEMPLATES.find((x) => x.id === id)!;
-    if (elements(model).length && !window.confirm(`Replace your current model with the ${t.label} template? You can undo this.`)) return;
+    const had = elements(model).length > 0;
     const m = template(id);
     update(() => m);
     setVb(viewFor(m));
     select(null);
     setRun(null);
-    setNote(`Loaded the ${t.label} template.`);
+    if (had) setToast({ msg: `Replaced your model with the ${t.label} template.`, at: Date.now(), whole: true });
+    else setNote(`Loaded the ${t.label} template.`);
   };
 
   // dimensions (arrays)
@@ -460,7 +478,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     );
   const deleteDim = (name: string) => {
     const n = arrayedOver(name);
-    if (n && !window.confirm(`${plural(n, "element")} ${n === 1 ? "is" : "are"} arrayed over ${name}. Delete the dimension and drop it from ${n === 1 ? "that element" : "those elements"}?`)) return;
+    setToast({ msg: `Deleted the dimension ${name}${n ? ` and dropped it from ${plural(n, "element")}` : ""}.`, at: Date.now() });
     update((m) =>
       mapAll(
         { ...m, dims: (m.dims ?? []).filter((d) => d.name !== name).map((d) => (d.of === name ? { ...d, of: undefined } : d)) },
@@ -532,10 +550,11 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     return () => void (document.body.style.overflow = o);
   }, [full]);
 
-  // menus are <details>: close them on a click outside or Esc
-  const closeMenus = () => {
+  // menus are <details>: close them on a click outside or Esc; from the keyboard, focus goes back to the menu's button
+  const closeMenus = (refocus = false) => {
     const open = document.querySelectorAll<HTMLDetailsElement>("details[data-menu][open]");
     open.forEach((d) => (d.open = false));
+    if (refocus && open.length) open[open.length - 1].querySelector("summary")?.focus();
     return open.length > 0;
   };
   useEffect(() => {
@@ -548,12 +567,24 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   const keyRef = useRef<(e: KeyboardEvent) => void>(() => {});
   keyRef.current = (e) => {
     const typing = isTyping(e.target), mod = e.metaKey || e.ctrlKey, k = e.key.toLowerCase();
+    // full screen keeps the keyboard inside the workspace: Tab wraps around
+    if (e.key === "Tab" && full && wsRef.current) {
+      const ws = wsRef.current, a = document.activeElement;
+      const list = Array.from(ws.querySelectorAll<HTMLElement | SVGElement>("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex='-1'])")).filter((n) => n.getClientRects().length > 0);
+      if (!list.length) return;
+      const first = list[0], last = list[list.length - 1];
+      if (!ws.contains(a) || (e.shiftKey ? a === first : a === last)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
+      return;
+    }
     if (e.key === "Escape") {
-      if (closeMenus() || typing) return;
+      if (closeMenus(true) || typing) return;
       if (linking) return select(null);
       if (adding) return setAdding(null);
+      if (full) return void toggleFull();
       if (sel) return select(null);
-      if (full === "overlay") setFull(null);
       return;
     }
     if (typing || e.altKey) return;
@@ -643,7 +674,8 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     return `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(clone)}\n`;
   };
   const exportAs = (what: ExportKind) => {
-    closeMenus();
+    closeMenus(true);
+    if (what === "copy") return void copy();
     try {
       const py = `${slug}.py`, nb = `${slug}.ipynb`;
       if (what === "py") save(py, pythonScript(model), "text/x-python"), setNote(`Downloaded ${py}. Run it with: pip install -r requirements.txt, then python ${py}`);
@@ -659,7 +691,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         setNote(`Downloading ${py}, requirements.txt and ${nb}. If your browser asks, allow several downloads.`);
       } else if (what === "pysd") save(`${slug}_pysd.py`, pysdScript(model), "text/x-python"), setNote(`Downloaded ${slug}_pysd.py. Run it with: pip install pysd matplotlib, then python ${slug}_pysd.py`);
       else if (what === "pysdnb") save(`${slug}_pysd.ipynb`, pysdNotebook(model), "application/x-ipynb+json"), setNote(`Downloaded ${slug}_pysd.ipynb. It installs PySD in its first cell; open it in Jupyter or Colab.`);
-      else if (what === "json") save(`${slug}.json`, toJSON(model), "application/json"), setNote("Downloaded the model file. Import JSON loads it back.");
+      else if (what === "json") save(`${slug}.json`, toJSON(model), "application/json"), setNote("Downloaded the model file. Open model loads it back.");
       else if (what === "xmile") save(`${slug}.xmile`, xmile(model), "application/xml"), setNote(`Downloaded ${slug}.xmile. Open it in Stella, or import it into Vensim.`);
       else if (what === "csv") {
         if (!run?.res.ok) throw new Error("run the model first.");
@@ -682,7 +714,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   const importFile = async (f: File | undefined) => {
     if (fileRef.current) fileRef.current.value = "";
     if (!f) return;
-    if (elements(model).length && !window.confirm(`Replace your current model with ${f.name}? You can undo this.`)) return;
+    const had = elements(model).length > 0;
     try {
       const text = await f.text();
       const { model: m, warnings } = /\.json$/i.test(f.name) ? { model: fromJSON(text), warnings: [] as string[] } : importModel(f.name, text);
@@ -691,7 +723,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
       select(null);
       setRun(null);
       setOpened({ file: f.name, warnings, error: "" });
-      setNote(`Opened "${m.name}". Undo puts your previous model back.`);
+      if (had) setToast({ msg: `Replaced your model with ${m.name || f.name}.`, at: Date.now(), whole: true });
     } catch (e) {
       setOpened({ file: f.name, warnings: [], error: errText(e) });
     }
@@ -756,20 +788,25 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
 
       {/* templates and files */}
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        <span className="text-[14px] font-semibold mr-1">Start from</span>
+        <span className="hidden sm:inline text-[14px] font-semibold mr-1">Start from</span>
         {TEMPLATES.map((t) => (
-          <button key={t.id} onClick={() => loadTemplate(t.id)} title={t.blurb} className={btn}>
+          <button key={t.id} onClick={() => loadTemplate(t.id)} title={t.blurb} className={cn(btn, "max-sm:hidden")}>
             {t.label}
           </button>
         ))}
+        <select value="" onChange={(e) => e.target.value && loadTemplate(e.target.value)} aria-label="Start from a template" className={cn(input, "sm:hidden h-11 flex-1 min-w-0 font-semibold")}>
+          <option value="">Start from a template...</option>
+          {TEMPLATES.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
+          ))}
+        </select>
         <span className="hidden sm:block w-px h-7 bg-border mx-1" aria-hidden />
         <button onClick={() => fileRef.current?.click()} className={btn} title="Open a model: this builder's .json, XMILE from Stella or iThink (.xmile, .stmx, .itmx, .xml) or Vensim (.mdl)">
           <Upload size={15} aria-hidden /> Open model...
         </button>
         <input ref={fileRef} type="file" accept=".json,.xmile,.stmx,.itmx,.xml,.mdl,application/json,application/xml,text/xml" className="sr-only" tabIndex={-1} aria-label="Open a model file" onChange={(e) => importFile(e.target.files?.[0])} />
-        <button onClick={copy} className={btn} title="Copy every equation as plain text">
-          <ClipboardCopy size={15} aria-hidden /> Copy equations
-        </button>
       </div>
 
       {/* the workspace: what goes full screen */}
@@ -779,8 +816,9 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         aria-label="Builder workspace"
         role="region"
       >
-        <div role="toolbar" aria-label="Builder tools" className="relative flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div role="group" aria-label="Add" className="flex flex-wrap gap-1.5">
+        <div className="relative">
+        <div role="toolbar" aria-label="Builder tools" className="flex flex-wrap items-center gap-x-3 gap-y-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:-mx-4 max-sm:px-4 max-sm:pb-1 [&>*]:shrink-0">
+          <div role="group" aria-label="Add" className="flex flex-wrap max-sm:flex-nowrap gap-1.5">
             <button onClick={addStock} className={btn} title="Add a stock: something that accumulates">
               <Box size={15} aria-hidden /> Add stock
             </button>
@@ -817,7 +855,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
             </button>
           </div>
           {sep}
-          <div role="group" aria-label="Zoom" className="flex gap-1.5">
+          <div role="group" aria-label="Zoom" className="flex gap-1.5 max-sm:order-1">
             <button onClick={() => zoomAt(1.25)} disabled={view !== "diagram" || vb.w >= MAX_W} className={ibtn} aria-label="Zoom out" title="Zoom out (minus key)">
               <ZoomOut size={16} aria-hidden />
             </button>
@@ -828,7 +866,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
               <ZoomIn size={16} aria-hidden />
             </button>
             <button onClick={fit} disabled={view !== "diagram" || !elements(model).length} className={ibtn} aria-label="Fit the model in view" title="Fit to model (0)">
-              <Scan size={16} aria-hidden />
+              <Focus size={16} aria-hidden />
             </button>
           </div>
           {sep}
@@ -838,7 +876,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
             </summary>
             <ExportMenu onPick={exportAs} canCsv={!!run?.res.ok} />
           </details>
-          <button onClick={toggleFull} className={btn} aria-pressed={!!full} title={full ? "Exit full screen (Esc)" : "Fill the screen with the canvas, editor and results"}>
+          <button onClick={toggleFull} className={cn(btn, "max-sm:order-1")} aria-pressed={!!full} title={full ? "Exit full screen (Esc)" : "Fill the screen with the canvas, editor and results"}>
             {full ? <Minimize size={15} aria-hidden /> : <Maximize size={15} aria-hidden />} {full ? "Exit full screen" : "Full screen"}
           </button>
           <details data-menu className="sm:relative">
@@ -855,12 +893,13 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
               }}
             />
           </details>
-          <details data-menu className="sm:relative">
+          <details data-menu className="sm:relative max-sm:order-1">
             <summary className={cn(ibtn, summaryCls)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts">
               <Keyboard size={16} aria-hidden />
             </summary>
             <Shortcuts />
           </details>
+        </div>
         </div>
         <p aria-live="polite" className="mt-2 min-h-[20px] text-[13.5px] text-muted-foreground">
           {note}
@@ -905,8 +944,8 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
               </label>
               <div className="flex rounded-[8px] border border-border p-0.5 bg-background" role="group" aria-label="View">
                 {(["diagram", "equations", "python"] as const).map((v) => (
-                  <button key={v} aria-pressed={view === v} onClick={() => setView(v)} className={cn("h-8 px-3 rounded-[6px] text-[13px] font-semibold capitalize", view === v ? "bg-card shadow-sm" : "text-muted-foreground")}>
-                    {v}
+                  <button key={v} aria-pressed={view === v} onClick={() => setView(v)} className={cn("h-8 max-sm:h-11 px-3 rounded-[6px] text-[13px] font-semibold", view === v ? "bg-card shadow-sm" : "text-muted-foreground")}>
+                    {v[0].toUpperCase() + v.slice(1)}
                   </button>
                 ))}
               </div>
@@ -1079,19 +1118,20 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                         <circle data-skip={on ? true : undefined} cx={v.x} cy={v.y + 6} r={on ? 22 : 18} fill={on ? "hsl(var(--accent) / 0.35)" : "transparent"} stroke={on ? "hsl(var(--accent-edge))" : "none"} strokeWidth={2} />
                         {v.dim && <circle cx={v.x + 3.5} cy={v.y + 3.5} r={k ? 4.5 : 6.5} fill={CARD} stroke={INFO} strokeOpacity={0.6} strokeWidth={1.2} />}
                         <circle cx={v.x} cy={v.y} r={k ? 4.5 : 6.5} fill={k ? INFO : CARD} stroke={errCount(v.id) ? BAD : INFO} strokeWidth={1.4} />
-                        <text x={v.x} y={v.y + 20} textAnchor="middle" fontSize={11.5} fill={INK}>
+                        {/* the name sits below and to the right, clear of arrows that arrive from below */}
+                        <text x={v.x + 9} y={v.y + 19} fontSize={11.5} fill={INK}>
                           {labelOf(v)}
                         </text>
                         {k && (
-                          <text x={v.x} y={v.y + 33} textAnchor="middle" fontSize={10.5} fill={QUIET}>
+                          <text x={v.x + 9} y={v.y + 32} fontSize={10.5} fill={QUIET}>
                             = {v.eq.trim()}
                           </text>
                         )}
                         {v.data && (
                           <g aria-hidden>
                             <title>{`Data: ${plural(v.data.length, "point")}`}</title>
-                            <rect x={v.x - 14} y={v.y + 25} width={28} height={13} rx={3} fill={CARD} stroke={INFO} strokeWidth={1} />
-                            <text x={v.x} y={v.y + 34.5} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={INFO}>
+                            <rect x={v.x + 9} y={v.y + 25} width={28} height={13} rx={3} fill={CARD} stroke={INFO} strokeWidth={1} />
+                            <text x={v.x + 23} y={v.y + 34.5} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={INFO}>
                               data
                             </text>
                           </g>
@@ -1114,7 +1154,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
           </section>
 
           {/* side panel */}
-          <aside className={cn("sheet min-w-0 lg:sticky", full ? "lg:top-4" : "lg:top-24")} aria-label="Edit the selected element">
+          <section className={cn("sheet min-w-0 lg:sticky", full ? "lg:top-4" : "lg:top-24")} aria-label="Edit the selected element">
             {linking ? (
               <div>
                 <h2 className="heading text-[18px]">Add an information link</h2>
@@ -1155,7 +1195,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                 </p>
               </div>
             )}
-          </aside>
+          </section>
         </div>
 
         <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start">
@@ -1223,6 +1263,17 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
 
           <HowTo onOpen={onOpen} />
         </div>
+        {toast && (
+          <div role="status" className="fixed z-[110] bottom-4 left-1/2 -translate-x-1/2 w-[min(92vw,520px)] rounded-[10px] bg-foreground text-background px-4 py-2.5 text-[14px] flex items-center gap-3 shadow-[0_8px_24px_hsl(var(--foreground)/0.3)]">
+            <span className="flex-1 min-w-0">{toast.msg}</span>
+            <button onClick={undoToast} className="shrink-0 h-9 max-sm:h-11 px-3 rounded-[6px] font-semibold underline underline-offset-2 hover:bg-background/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-background">
+              Undo
+            </button>
+            <button onClick={() => setToast(null)} className="shrink-0 h-9 w-9 max-sm:h-11 max-sm:w-11 grid place-items-center rounded-[6px] hover:bg-background/15" aria-label="Dismiss">
+              <X size={15} aria-hidden />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1230,30 +1281,69 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
 
 // ===================================================================================================
 function ExportMenu({ onPick, canCsv }: { onPick: (k: ExportKind) => void; canCsv: boolean }) {
-  const items: { k: ExportKind; label: string; hint: string; off?: boolean }[] = [
-    { k: "py", label: "Python script (.py)", hint: "Commented code with numpy and matplotlib" },
-    { k: "req", label: "requirements.txt", hint: "The packages the script needs" },
-    { k: "ipynb", label: "Jupyter notebook (.ipynb)", hint: "Explanation, code and a plot; opens in Colab" },
-    { k: "python", label: "Everything for Python", hint: "The script, requirements.txt and the notebook" },
-    { k: "pysd", label: "PySD script (.py)", hint: "Runs the model with PySD, the open Python engine for Vensim and Stella models" },
-    { k: "pysdnb", label: "PySD notebook (.ipynb)", hint: "The same with PySD, explained step by step" },
-    { k: "json", label: "Model file (.json)", hint: "Load it back with Import JSON" },
-    { k: "xmile", label: "XMILE for Stella or Vensim (.xmile)", hint: "The open standard for system dynamics" },
-    { k: "csv", label: "Results (.csv)", hint: canCsv ? "Every value from the last run" : "Run the model first", off: !canCsv },
-    { k: "md", label: "Equations document (.md)", hint: "Every element with its equation, units and notes" },
-    { k: "svg", label: "Diagram image (.svg)", hint: "The canvas as a picture for slides or documents" },
+  // the menu scrolls inside the window: its height stops short of the bottom edge wherever it opens
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current, d = el?.closest("details");
+    const h = () => el && d?.open && (el.style.maxHeight = `${Math.max(200, window.innerHeight - el.getBoundingClientRect().top - 16)}px`);
+    d?.addEventListener("toggle", h);
+    return () => d?.removeEventListener("toggle", h);
+  }, []);
+  type Item = { k: ExportKind; label: string; hint: string; off?: boolean };
+  const groups: [string, Item[]][] = [
+    [
+      "Python",
+      [
+        { k: "py", label: "Python script (.py)", hint: "Commented code with numpy and matplotlib" },
+        { k: "req", label: "requirements.txt", hint: "The packages the script needs" },
+        { k: "ipynb", label: "Jupyter notebook (.ipynb)", hint: "Explanation, code and a plot; opens in Colab" },
+        { k: "python", label: "Everything for Python", hint: "The script, requirements.txt and the notebook" },
+      ],
+    ],
+    [
+      "PySD",
+      [
+        { k: "pysd", label: "PySD script (.py)", hint: "Runs the model with PySD, the open Python engine for Vensim and Stella models" },
+        { k: "pysdnb", label: "PySD notebook (.ipynb)", hint: "The same with PySD, explained step by step" },
+      ],
+    ],
+    [
+      "Model",
+      [
+        { k: "json", label: "Model file (.json)", hint: "Open it again with Open model" },
+        { k: "xmile", label: "XMILE for Stella or Vensim (.xmile)", hint: "The open standard for system dynamics" },
+        { k: "md", label: "Equations document (.md)", hint: "Every element with its equation, units and notes" },
+        { k: "copy", label: "Copy equations to clipboard", hint: "Every equation as plain text" },
+      ],
+    ],
+    [
+      "Results",
+      [
+        { k: "csv", label: "Results (.csv)", hint: canCsv ? "Every value from the last run" : "Run the model first", off: !canCsv },
+        { k: "svg", label: "Diagram image (.svg)", hint: "The canvas as a picture for slides or documents" },
+      ],
+    ],
   ];
   return (
-    <ul className={cn(popover, "right-0 w-[300px] max-w-[calc(100vw-40px)] grid gap-0.5")} aria-label="Export formats">
-      {items.map((i) => (
-        <li key={i.k}>
-          <button onClick={() => onPick(i.k)} disabled={i.off} className="w-full text-left rounded-[6px] px-2.5 py-1.5 hover:bg-background focus-visible:bg-background disabled:opacity-50 disabled:hover:bg-transparent">
-            <span className="block text-[13.5px] font-semibold">{i.label}</span>
-            <span className="block text-[12px] text-muted-foreground">{i.hint}</span>
-          </button>
-        </li>
+    <div ref={ref} className={cn(popover, "right-0 w-[300px] max-w-[calc(100vw-40px)] max-h-[70vh] overflow-y-auto overscroll-contain")}>
+      {groups.map(([title, items], g) => (
+        <div key={title} role="group" aria-labelledby={`bld-exp-${g}`} className={cn(g > 0 && "mt-1 border-t border-border pt-1")}>
+          <p id={`bld-exp-${g}`} className="px-2.5 pt-1 pb-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {title}
+          </p>
+          <ul className="grid gap-0.5">
+            {items.map((i) => (
+              <li key={i.k}>
+                <button onClick={() => onPick(i.k)} disabled={i.off} className="w-full text-left rounded-[6px] px-2.5 py-1.5 max-sm:min-h-11 hover:bg-background focus-visible:bg-background disabled:opacity-50 disabled:hover:bg-transparent">
+                  <span className="block text-[13.5px] font-semibold">{i.label}</span>
+                  <span className="block text-[12px] text-muted-foreground">{i.hint}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -1498,12 +1588,12 @@ function ChecksList({ issues, model, onSelect }: { issues: Issue[]; model: BMode
   const ne = issues.filter((i) => i.level === "error").length, nw = issues.length - ne;
   return (
     <div className="mt-4 border-t border-border pt-3" aria-live="polite">
-      <h3 className="heading text-[15px]">
+      <h2 className="heading text-[15px]">
         Checks{" "}
         <span className="font-normal text-[13px] text-muted-foreground">
           {issues.length ? `${ne} error${ne === 1 ? "" : "s"}, ${nw} warning${nw === 1 ? "" : "s"}` : "no problems found"}
         </span>
-      </h3>
+      </h2>
       {issues.length > 0 && <IssueItems issues={sorted} model={model} onSelect={onSelect} />}
     </div>
   );
@@ -1534,7 +1624,7 @@ function NameField({ el, onRename, invalid }: { el: Element; onRename: (n: strin
   );
 }
 
-const chip = "rounded-[6px] border border-border bg-background px-1.5 py-0.5 text-[12px] font-mono hover:border-foreground/40";
+const chip = "rounded-[6px] border border-border bg-background px-1.5 py-0.5 max-sm:min-h-11 max-sm:px-2.5 text-[12px] font-mono hover:border-foreground/40";
 
 function Inspector({
   el,
@@ -1655,7 +1745,7 @@ function Inspector({
                 {el.kind === "stock" ? "Initial value" : el.kind === "flow" ? "Equation (a rate per time unit)" : "Equation, or a number for a constant"}
               </label>
               <details data-menu className="sm:relative shrink-0">
-                <summary className={cn(btn, summaryCls, "h-7 px-2 text-[12px]")} title="Insert a function at the cursor">
+                <summary className={cn(btn, summaryCls, "h-7 max-sm:h-11 px-2 text-[12px]")} title="Insert a function at the cursor">
                   <Sigma size={13} aria-hidden /> Functions
                 </summary>
                 <FunctionRef className="right-0" hint="Click one to insert it at the cursor." onPick={(n, sig) => {
@@ -1678,15 +1768,27 @@ function Inspector({
               aria-describedby="bld-el-issues bld-eq-hint"
               className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.5] resize-y", has(exprField) && "border-[var(--viz-pink)]")}
             />
-            <p id="bld-eq-hint" aria-live="polite" className="mt-0.5 min-h-[18px] text-[12px] leading-[1.45] text-muted-foreground">
-              {fn && (
-                <>
-                  <code className="font-mono text-[12px] text-foreground">{fn[1]}</code> {fn[2]}
-                </>
+            <div id="bld-eq-hint" aria-live="polite" className="mt-0.5 min-h-[18px] text-[12px] leading-[1.45] text-muted-foreground">
+              {issues.some((i) => i.field === exprField) && (
+                <ul className="grid gap-0.5 mb-0.5">
+                  {issues
+                    .filter((i) => i.field === exprField)
+                    .map((i, k) => (
+                      <li key={k} className="flex gap-1.5 text-foreground">
+                        {i.level === "error" ? <AlertCircle size={13} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : <AlertTriangle size={13} aria-hidden className="shrink-0 mt-0.5 text-accent-text" />}
+                        {i.msg}
+                      </li>
+                    ))}
+                </ul>
               )}
-            </p>
+              {fn && (
+                <p>
+                  <code className="font-mono text-[12px] text-foreground">{fn[1]}</code> {fn[2]}
+                </p>
+              )}
+            </div>
             {el.kind === "var" && (
-              <button onClick={() => setDataOpen(true)} className={cn(btn, "mt-1 h-8 text-[12.5px]")} title="Give this variable a time series from a CSV instead of an equation">
+              <button onClick={() => setDataOpen(true)} className={cn(btn, "mt-1 h-8 max-sm:h-11 text-[12.5px]")} title="Give this variable a time series from a CSV instead of an equation">
                 <Table2 size={14} aria-hidden /> Use data
               </button>
             )}
@@ -1706,11 +1808,11 @@ function Inspector({
             <div className="mt-1 flex flex-wrap gap-1">
               {inputs.map(({ el: o, used }) => (
                 <span key={o.id} className={cn("inline-flex items-stretch rounded-[6px] border bg-background", used ? "border-[var(--viz-info)]" : "border-dashed border-accent-edge")}>
-                  <button onClick={() => insert(refName(o.name))} className="px-1.5 py-0.5 text-[12px] font-mono hover:underline" title={used ? "Used by the equation" : "Not used by the equation yet"}>
+                  <button onClick={() => insert(refName(o.name))} className="px-1.5 py-0.5 max-sm:min-h-11 max-sm:px-2.5 text-[12px] font-mono hover:underline" title={used ? "Used by the equation" : "Not used by the equation yet"}>
                     {refName(o.name)}
                     {!used && <span className="sr-only"> (not used yet)</span>}
                   </button>
-                  <button onClick={() => onUnlink(o.id)} className="px-1 border-l border-border text-muted-foreground hover:text-foreground" aria-label={`Remove the link from ${o.name}`} title="Remove this link">
+                  <button onClick={() => onUnlink(o.id)} className="px-1 max-sm:min-w-11 grid place-items-center border-l border-border text-muted-foreground hover:text-foreground" aria-label={`Remove the link from ${o.name}`} title="Remove this link">
                     <X size={12} aria-hidden />
                   </button>
                 </span>
@@ -1766,7 +1868,7 @@ function Inspector({
                         {n}
                         <span className="font-normal text-muted-foreground"> {d ? `(${d.elements.length})` : "(missing)"}</span>
                       </span>
-                      <button onClick={() => onPatch({ dim: dimJoin(chosen.filter((c) => c.n !== n).map((c) => c.n)) })} className="px-1 border-l border-border text-muted-foreground hover:text-foreground" aria-label={`Remove the dimension ${n}`} title="Remove">
+                      <button onClick={() => onPatch({ dim: dimJoin(chosen.filter((c) => c.n !== n).map((c) => c.n)) })} className="px-1 max-sm:min-w-11 max-sm:min-h-11 grid place-items-center border-l border-border text-muted-foreground hover:text-foreground" aria-label={`Remove the dimension ${n}`} title="Remove">
                         <X size={12} aria-hidden />
                       </button>
                     </span>
@@ -2302,7 +2404,7 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
     ["Take it further", "Arrays repeat a structure over a dimension such as regions. Export as Python or a notebook to keep experimenting in code."],
   ];
   return (
-    <aside className="sheet min-w-0" aria-labelledby="bld-how">
+    <section className="sheet min-w-0" aria-labelledby="bld-how">
       <h2 id="bld-how" className="heading text-[18px]">
         How to build a model
       </h2>
@@ -2328,6 +2430,6 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
           Method guide
         </button>
       </div>
-    </aside>
+    </section>
   );
 }

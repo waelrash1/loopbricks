@@ -687,10 +687,10 @@ export const CASES: AppCase[] = [
     sim: "bedBlocking",
     presets: [
       { label: "No new policy", params: { postUp: 0, avoid: 0, outUp: 0 } },
-      { label: "Policy 1: 20% more post-acute beds", params: { postUp: 20, avoid: 0, outUp: 0 } },
-      { label: "Policy 2: 15% of admissions avoided", params: { postUp: 0, avoid: 15, outUp: 0 } },
-      { label: "Policy 3: 10% faster long-term discharge", params: { postUp: 0, avoid: 0, outUp: 10 } },
-      { label: "Policy 5: all three together", params: { postUp: 20, avoid: 15, outUp: 10 } },
+      { label: "20% more post-acute beds", params: { postUp: 20, avoid: 0, outUp: 0 } },
+      { label: "15% of admissions avoided", params: { postUp: 0, avoid: 15, outUp: 0 } },
+      { label: "10% faster long-term discharge", params: { postUp: 0, avoid: 0, outUp: 10 } },
+      { label: "All three together", params: { postUp: 20, avoid: 15, outUp: 10 } },
     ],
     map: [
       ["Stock: Waiting in ED for a bed", "Older emergency patients admitted but not yet in a ward"],
@@ -706,7 +706,7 @@ export const CASES: AppCase[] = [
     evidence: [
       "Rashwan, Abo-Hamad and Arisha (2015) modelled the flow of older patients through Irish acute hospitals and post-acute care, to evaluate the stock and flow interventions that Irish health executives had proposed for delayed discharges, with the projected growth of the older population built in.",
       "In the earlier national model for the HSE (Rashwan et al. 2013), about 600 to 700 patients a month were waiting for post-acute care, 75% of them for a nursing home and 90% aged 65 or over; at about EUR 850 a night per acute bed, 600 delayed patients cost about EUR 510,000 a day.",
-      "With no policy change, 24.3% of acute beds ended up blocked. Adding 20% post-acute beds left 15.7% blocked; avoiding 15% of admissions left 12.7%; combining both with 10% faster discharge from long-term care cut blocked beds to 1.7% and acute occupancy to about 76% (Rashwan et al. 2013, figure 6).",
+      "With no policy change, 24.3% of acute beds ended up blocked. Adding 20% post-acute beds left 15.7% blocked; avoiding 15% of admissions left 12.7%; combining both with 10% faster discharge from long-term care cut blocked beds to 1.7% and acute occupancy to about 76% (Rashwan et al. 2013, figure 6). The paper numbers these policies 1, 2, 3 and 5; its policy 4 (more beds plus fewer admissions, without faster discharge) is left out here.",
       "The papers' conclusion: stock interventions such as more post-acute beds have a temporary effect, because new capacity fills as demand grows; flow interventions work when combined with them.",
     ],
     validation:
@@ -715,9 +715,9 @@ export const CASES: AppCase[] = [
       "A capacity increase moves the bottleneck in time, not out of the system: new post-acute beds fill as the older population grows, and blocking returns. Changing the flows (fewer avoidable admissions, faster moves home) keeps working as long as it keeps pace with demand, and a mix of stock and flow policies lasts longest.",
     tryThis: [
       "Run No new policy. In which year does the share of acute beds blocked pass 20%, and what happens to the ED queue after that?",
-      "Run Policy 1. Blocking falls, but read the share in year 5 and year 10. How long did the 20% more beds last?",
-      "Compare Policies 1, 2 and 3 at year 10. Which single policy holds longest, and why does each one fade?",
-      "Run Policy 5. Then set growth in older demand to 6% a year. Does the combination still hold?",
+      "Run 20% more post-acute beds. Blocking falls, but read the share in year 5 and year 10. How long did the 20% more beds last?",
+      "Compare the three single policies at year 10. Which single policy holds longest, and why does each one fade?",
+      "Run All three together. Then set growth in older demand to 6% a year. Does the combination still hold?",
     ],
     data: [
       ["Older emergency admissions", "HIPE national hospital activity data (Healthcare Pricing Office)"],

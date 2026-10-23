@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
-import { groupOf, search } from "@/data/catalog";
-import { searchApps } from "@/data/apps";
+import { groupOf, search, useApps } from "@/data/catalog";
 import { cn } from "@/lib/utils";
 
 // two studs on a brick
@@ -25,19 +24,22 @@ const NAV: [Section, string, string][] = [
 
 const navLink = (active: boolean) =>
   cn(
-    "relative h-11 sm:h-16 inline-flex items-center text-[15px] font-semibold",
+    "relative h-16 inline-flex items-center text-[14px] sm:text-[15px] font-semibold",
     active ? "text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-t after:bg-accent" : "text-muted-foreground hover:text-foreground"
   );
 
 export default function TopBar({ section, go, onSelect, onCase }: { section: Section; go: (hash: string) => void; onSelect: (k: string) => void; onCase: (domain: string, id: string) => void }) {
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
+  // on a phone the box folds into an icon so the header stays one row
+  const [open, setOpen] = useState(false);
   const box = useRef<HTMLInputElement>(null);
+  const apps = useApps(open || !!query);
   // molecules first, then healthcare cases; each knows how to open itself
   const results = query.trim()
     ? [
         ...search(query).map(({ key, via }) => ({ id: "m:" + key, label: MODELS[key].name, sub: via ? `Covers ${via}` : groupOf(key), go: () => onSelect(key) })),
-        ...searchApps(query).map(({ domain, c }) => ({ id: `c:${domain.id}/${c.id}`, label: c.title, sub: `${domain.short}: ${c.theme}`, go: () => onCase(domain.id, c.id) })),
+        ...(apps?.searchApps(query) ?? []).map(({ domain, c }) => ({ id: `c:${domain.id}/${c.id}`, label: c.title, sub: `${domain.short}: ${c.theme}`, go: () => onCase(domain.id, c.id) })),
       ].slice(0, 9)
     : [];
 
@@ -48,11 +50,15 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
       const cmdK = e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey);
       if (!cmdK && (e.key !== "/" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")) return;
       e.preventDefault();
+      setOpen(true);
       box.current?.focus();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  useEffect(() => {
+    if (open) box.current?.focus();
+  }, [open]);
 
   const pick = (r: (typeof results)[number]) => {
     setQuery("");
@@ -62,23 +68,26 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
 
   return (
     <header className="print:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 flex flex-wrap items-center gap-x-6 xl:gap-x-8">
-        <a href="#/" onClick={(e) => (e.preventDefault(), go("/"))} className="h-16 flex items-center gap-2.5 rounded-btn" aria-label="LoopBricks home">
+      <div className="page flex flex-wrap sm:flex-nowrap items-center gap-x-2 sm:gap-x-6 xl:gap-x-8">
+        <a href="#/" onClick={(e) => (e.preventDefault(), go("/"))} className="h-16 flex items-center gap-2.5 rounded-btn shrink-0" aria-label="LoopBricks home">
           <BrickMark />
-          <span className="heading text-[19px]">LoopBricks</span>
+          <span className="heading text-[19px] hidden md:inline">LoopBricks</span>
         </a>
-        <nav aria-label="Main" className="flex gap-6 order-3 sm:order-none max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+        <nav aria-label="Main" className="flex gap-3 sm:gap-6 min-w-0 flex-1 sm:flex-none overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV.map(([id, label, hash]) => (
             <a key={id} href={"#" + hash} onClick={(e) => (e.preventDefault(), go(hash))} aria-current={section === id ? "page" : undefined} className={navLink(section === id)}>
               {label}
             </a>
           ))}
           <a href="./book/" className={cn(navLink(false), "gap-1.5")}>
-            <BookOpen size={16} aria-hidden /> Book
+            <BookOpen size={16} aria-hidden className="hidden sm:block" /> Book
           </a>
         </nav>
 
-        <div className="relative ml-auto w-full sm:w-[220px] xl:w-[280px] order-4 sm:order-none pb-3 sm:pb-0">
+        <button onClick={() => setOpen(true)} aria-label="Search molecules and cases" aria-expanded={open} className={cn("sm:hidden ml-auto grid place-items-center w-11 h-11 rounded-btn shrink-0", open && "hidden")}>
+          <Search size={19} aria-hidden />
+        </button>
+        <div className={cn("relative ml-auto w-full sm:w-[220px] xl:w-[280px] pb-3 sm:pb-0 sm:block", !open && "hidden")}>
           <label>
             <span className="sr-only">Search molecules and cases</span>
             <Search size={16} aria-hidden className="absolute left-3 top-[20px] sm:top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -88,6 +97,8 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
               role="combobox"
               aria-expanded={results.length > 0}
               aria-controls="search-results"
+              aria-autocomplete="list"
+              aria-activedescendant={results[cursor] ? `search-opt-${cursor}` : undefined}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -99,7 +110,7 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
                 if (e.key === "Enter" && results[cursor]) pick(results[cursor]);
                 if (e.key === "Escape") setQuery("");
               }}
-              onBlur={() => setQuery("")}
+              onBlur={() => (setQuery(""), setOpen(false))}
               placeholder="Search molecules and cases"
               className="w-full h-10 rounded-btn border border-border bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
             />
@@ -113,6 +124,8 @@ export default function TopBar({ section, go, onSelect, onCase }: { section: Sec
                 results.map((r, i) => (
                   <button
                     key={r.id}
+                    id={`search-opt-${i}`}
+                    tabIndex={-1}
                     role="option"
                     aria-selected={i === cursor}
                     onMouseEnter={() => setCursor(i)}

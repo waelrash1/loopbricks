@@ -18,11 +18,11 @@ import Tabs from "@/components/Tabs";
 
 type Nav = { onDomain: (d: string) => void; onCase: (d: string, c: string) => void };
 
-const wrap = "max-w-[1320px] mx-auto px-4 md:px-8";
+const wrap = "page";
 const h2 = "heading text-[26px] md:text-[30px]";
 const sub = "heading text-[19px]";
 const hint = "text-[13px] text-muted-foreground";
-const smallBrick = "brick brick-w h-9 px-3.5 text-[13px] font-semibold whitespace-nowrap";
+const smallBrick = "brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold whitespace-nowrap";
 const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
 function RefLink({ k }: { k: string }) {
@@ -278,7 +278,7 @@ export function DomainLibrary({ domain, onCase }: { domain: Domain; onCase: Nav[
               key={t ?? "all"}
               aria-pressed={theme === t}
               onClick={() => setTheme(t)}
-              className={cn("brick shrink-0 h-8 px-3 text-[13px] font-semibold whitespace-nowrap", theme === t ? "brick-y" : "brick-w")}
+              className={cn("brick shrink-0 h-8 max-sm:min-h-11 px-3 text-[13px] font-semibold whitespace-nowrap", theme === t ? "brick-y" : "brick-w")}
             >
               {t ?? "All themes"}
             </button>
@@ -441,7 +441,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
             </div>
           ))}
         </dl>
-        <h3 className="mt-6 text-[13px] text-muted-foreground mb-2">Built from these molecules</h3>
+        <h3 className="mt-6 text-[13px] text-muted-foreground mb-2">Built from these molecules (small reusable structures from the library)</h3>
         <div className="flex flex-wrap gap-2">
           {c.molecules.map((k) => (
             <button key={k} onClick={() => onOpen(k)} className={smallBrick}>
@@ -509,6 +509,10 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <p className="text-sm text-muted-foreground mb-6">
+        <a href="#/apps" className="hover:text-foreground">
+          Cases
+        </a>
+        <span aria-hidden className="mx-2">/</span>
         <button onClick={() => onDomain(domain.id)} className="hover:text-foreground">
           {domain.short}
         </button>
@@ -521,7 +525,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           <Printer size={15} aria-hidden /> Print as a worksheet
         </button>
       </div>
-      <h1 className="display text-[30px] md:text-[44px] max-w-[30ch] mt-3 hyphens-auto [overflow-wrap:anywhere]">{c.title}</h1>
+      <h1 className="display text-[30px] md:text-[44px] max-w-[30ch] mt-3 [overflow-wrap:anywhere]">{c.title}</h1>
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{c.summary}</p>
       <p className="mt-6 max-w-[70ch] rounded-card bg-card border-l-4 border-accent px-5 py-4 text-[16px] leading-[1.55]">
         <b>The question: </b>

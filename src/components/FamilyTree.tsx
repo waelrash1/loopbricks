@@ -82,7 +82,7 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
     <div className="flex flex-col lg:h-full min-h-0">
       {/* one row: the title, then either a one-line guide or the selected brick's links; no card over the map */}
       <div className="shrink-0 mb-2 flex flex-wrap items-center gap-x-4 gap-y-2 min-h-[40px]">
-        <h1 className="heading text-[24px] md:text-[28px]">How the molecules connect</h1>
+        <h2 className="heading text-[24px] md:text-[28px]">How the molecules connect</h2>
         {sel ? (
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] min-w-0">
             <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function FamilyTree({ initial, onOpen }: { initial?: string; onOp
             key={t ?? "all"}
             aria-pressed={fam === t}
             onClick={() => (setFam(t), setSel(undefined))}
-            className={cn("brick shrink-0 h-8 px-3 text-[12.5px] font-semibold whitespace-nowrap", fam === t ? "brick-y" : "brick-w")}
+            className={cn("brick shrink-0 h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold whitespace-nowrap", fam === t ? "brick-y" : "brick-w")}
           >
             {t ?? "All families"}
           </button>

@@ -885,7 +885,7 @@ export const TEMPLATES: Template[] = [
       stocks: [{ id: "s1", name: "Water", init: "0", x: 470, y: 200, units: "litres" }],
       flows: [
         { id: "f1", name: "Faucet", to: "s1", eq: "10", x: 260, y: 200, units: "litres/minute" },
-        { id: "f2", name: "Drain", from: "s1", eq: "Water / drain_time", x: 680, y: 200, units: "litres/minute" },
+        { id: "f2", name: "Drain", from: "s1", eq: "Water / Drain_time", x: 680, y: 200, units: "litres/minute" },
       ],
       vars: [{ id: "v1", name: "Drain time", eq: "5", x: 740, y: 320, units: "minutes" }],
     },
@@ -901,8 +901,8 @@ export const TEMPLATES: Template[] = [
       dt: 0.25,
       stocks: [{ id: "s1", name: "Population", init: "1000", x: 470, y: 200, units: "people" }],
       flows: [
-        { id: "f1", name: "Births", to: "s1", eq: "Population * birth_fraction", x: 260, y: 200, units: "people/year" },
-        { id: "f2", name: "Deaths", from: "s1", eq: "Population * death_fraction", x: 680, y: 200, units: "people/year" },
+        { id: "f1", name: "Births", to: "s1", eq: "Population * Birth_fraction", x: 260, y: 200, units: "people/year" },
+        { id: "f2", name: "Deaths", from: "s1", eq: "Population * Death_fraction", x: 680, y: 200, units: "people/year" },
       ],
       vars: [
         { id: "v1", name: "Birth fraction", eq: "0.03", x: 200, y: 320, units: "1/year" },
@@ -920,28 +920,28 @@ export const TEMPLATES: Template[] = [
       T: 80,
       dt: 0.25,
       stocks: [
-        { id: "s1", name: "Supply line", init: "desired_supply_line", x: 360, y: 240, units: "units" },
-        { id: "s2", name: "Inventory", init: "desired_inventory", x: 680, y: 240, units: "units" },
+        { id: "s1", name: "Supply line", init: "Desired_supply_line", x: 360, y: 240, units: "units" },
+        { id: "s2", name: "Inventory", init: "Desired_inventory", x: 680, y: 240, units: "units" },
       ],
       flows: [
         {
           id: "f1",
           name: "Orders",
           to: "s1",
-          eq: "MAX(0, demand + (desired_inventory - Inventory) / inventory_adjustment_time + (desired_supply_line - Supply_line) / supply_line_adjustment_time)",
+          eq: "MAX(0, Demand + (Desired_inventory - Inventory) / Inventory_adjustment_time + (Desired_supply_line - Supply_line) / Supply_line_adjustment_time)",
           x: 170,
           y: 240,
           units: "units/week",
         },
-        { id: "f2", name: "Acquisition", from: "s1", to: "s2", eq: "Supply_line / acquisition_delay", x: 520, y: 240, units: "units/week" },
-        { id: "f3", name: "Shipments", from: "s2", eq: "demand", x: 860, y: 240, units: "units/week" },
+        { id: "f2", name: "Acquisition", from: "s1", to: "s2", eq: "Supply_line / Acquisition_delay", x: 520, y: 240, units: "units/week" },
+        { id: "f3", name: "Shipments", from: "s2", eq: "Demand", x: 860, y: 240, units: "units/week" },
       ],
       vars: [
         { id: "v1", name: "Demand", eq: "10 + STEP(5, 10)", x: 860, y: 400, units: "units/week" },
         { id: "v2", name: "Desired inventory", eq: "100", x: 560, y: 80, units: "units" },
         { id: "v3", name: "Inventory adjustment time", eq: "4", x: 300, y: 80, units: "weeks" },
         { id: "v4", name: "Acquisition delay", eq: "6", x: 470, y: 350, units: "weeks" },
-        { id: "v5", name: "Desired supply line", eq: "demand * acquisition_delay", x: 270, y: 410, units: "units" },
+        { id: "v5", name: "Desired supply line", eq: "Demand * Acquisition_delay", x: 270, y: 410, units: "units" },
         { id: "v6", name: "Supply line adjustment time", eq: "8", x: 110, y: 380, units: "weeks" },
       ],
     },
@@ -958,8 +958,8 @@ export const TEMPLATES: Template[] = [
       dims: [{ name: "Region", elements: ["North", "South", "East"] }],
       stocks: [{ id: "s1", name: "Population", init: "1000, 600, 300", x: 470, y: 200, units: "people", dim: "Region", note: "One stock per region: a list gives each region its own starting value." }],
       flows: [
-        { id: "f1", name: "Births", to: "s1", eq: "Population * birth_fraction", x: 260, y: 200, units: "people/year", dim: "Region", note: "Element by element: births in the North use the North's population and birth fraction." },
-        { id: "f2", name: "Deaths", from: "s1", eq: "Population * death_fraction", x: 680, y: 200, units: "people/year", dim: "Region" },
+        { id: "f1", name: "Births", to: "s1", eq: "Population * Birth_fraction", x: 260, y: 200, units: "people/year", dim: "Region", note: "Element by element: births in the North use the North's population and birth fraction." },
+        { id: "f2", name: "Deaths", from: "s1", eq: "Population * Death_fraction", x: 680, y: 200, units: "people/year", dim: "Region" },
       ],
       vars: [
         { id: "v1", name: "Birth fraction", eq: "0.04, 0.03, 0.02", x: 200, y: 320, units: "1/year", dim: "Region" },
@@ -980,14 +980,14 @@ export const TEMPLATES: Template[] = [
       dt: 0.125,
       stocks: [{ id: "s1", name: "Delivered", init: "0", x: 700, y: 200, units: "units", note: "Everything received so far." }],
       flows: [
-        { id: "f1", name: "Deliveries", to: "s1", eq: "DELAY3(Orders, delay_time)", x: 490, y: 200, units: "units/week", note: "Three stocks in a row, each holding a third of the delay: what was ordered arrives bunched around the delay time later." },
+        { id: "f1", name: "Deliveries", to: "s1", eq: "DELAY3(Orders, Delay_time)", x: 490, y: 200, units: "units/week", note: "Three stocks in a row, each holding a third of the delay: what was ordered arrives bunched around the delay time later." },
       ],
       vars: [
         { id: "v1", name: "Orders", eq: "10 + STEP(10, 5)", x: 260, y: 200, units: "units/week" },
         { id: "v2", name: "Delay time", eq: "4", x: 490, y: 340, units: "weeks" },
-        { id: "v3", name: "Deliveries first order", eq: "DELAY1(Orders, delay_time)", x: 260, y: 340, units: "units/week", note: "The same delay with one stock: deliveries start rising at once and creep up. Compare it with Deliveries. Its curve is the same as Perceived orders: a first-order material delay and first-order smoothing follow the same path; the delay conserves what is in transit, the smooth is only a belief." },
-        { id: "v4", name: "Perceived orders", eq: "SMOOTH(Orders, delay_time)", x: 260, y: 80, units: "units/week", note: "An information delay: the belief closes part of its gap to the real orders each week." },
-        { id: "v5", name: "Order trend", eq: "TREND(Orders, delay_time, 0)", x: 490, y: 80, units: "1/week", note: "How fast orders are growing, as a fraction per week, against their smoothed level." },
+        { id: "v3", name: "Deliveries first order", eq: "DELAY1(Orders, Delay_time)", x: 260, y: 340, units: "units/week", note: "The same delay with one stock: deliveries start rising at once and creep up. Compare it with Deliveries. Its curve is the same as Perceived orders: a first-order material delay and first-order smoothing follow the same path; the delay conserves what is in transit, the smooth is only a belief." },
+        { id: "v4", name: "Perceived orders", eq: "SMOOTH(Orders, Delay_time)", x: 260, y: 80, units: "units/week", note: "An information delay: the belief closes part of its gap to the real orders each week." },
+        { id: "v5", name: "Order trend", eq: "TREND(Orders, Delay_time, 0)", x: 490, y: 80, units: "1/week", note: "How fast orders are growing, as a fraction per week, against their smoothed level." },
       ],
       plot: ["v1", "f1", "v3", "v4"],
     },
@@ -1005,8 +1005,8 @@ export const TEMPLATES: Template[] = [
       saveEvery: 1,
       stocks: [{ id: "s1", name: "Reservoir", init: "300", x: 520, y: 200, units: "megalitres" }],
       flows: [
-        { id: "f1", name: "Inflow", to: "s1", eq: "Rainfall * catchment * (1 + noise)", x: 300, y: 200, units: "megalitres/year" },
-        { id: "f2", name: "Release", from: "s1", eq: "Reservoir / residence_time", x: 740, y: 200, units: "megalitres/year" },
+        { id: "f1", name: "Inflow", to: "s1", eq: "Rainfall * Catchment * (1 + Noise)", x: 300, y: 200, units: "megalitres/year" },
+        { id: "f2", name: "Release", from: "s1", eq: "Reservoir / Residence_time", x: 740, y: 200, units: "megalitres/year" },
       ],
       vars: [
         { id: "v1", name: "Rainfall", eq: "", data: [[2020, 600], [2022, 750], [2025, 520], [2028, 680], [2030, 640]], x: 200, y: 330, units: "mm/year", note: "A data series: measured values at a few times, with straight lines between them." },

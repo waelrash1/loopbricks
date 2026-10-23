@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ExternalLink, Search } from "lucide-react";
+import { Check, ExternalLink, Pause, Play, Search } from "lucide-react";
 import { useSeen } from "@/lib/progress";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { GROUP_BLURB, search } from "@/data/catalog";
@@ -24,7 +24,7 @@ const slug = (title: string) => "fam-" + title.toLowerCase().replace(/[^a-z]+/g,
 
 // The hero is the product: a real molecule, running. Stock management with the supply line ignored
 // overshoots and oscillates, which is the most recognisable behaviour in the whole catalogue.
-export function LiveDemo({ onOpen }: { onOpen: () => void }) {
+export function LiveDemo() {
   const model = MODELS[DEMO];
   const sim = useSimulation(model);
   const { applyParams, play, reset, setSpeed, setStopTime, subscribe } = sim;
@@ -48,16 +48,20 @@ export function LiveDemo({ onOpen }: { onOpen: () => void }) {
   }, [applyParams, play, reset, setSpeed, setStopTime, subscribe]);
 
   return (
-    <figure className="sheet min-w-0 shadow-[0_3px_0_hsl(var(--edge))]">
+    <figure className="sheet min-w-0 shadow-[0_3px_0_hsl(var(--edge))] relative">
+      {/* anything that moves on its own for more than five seconds needs a way to stop it */}
+      <button onClick={sim.toggle} aria-label={sim.running ? "Pause the animation" : "Play the animation"} className="brick brick-w absolute right-3 top-3 z-10 grid place-items-center w-11 h-11 sm:w-9 sm:h-9">
+        {sim.running ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
+      </button>
       <StockFlowDiagram model={model} modelKey={DEMO} subscribe={subscribe} running={sim.running} showInfluences={false} />
       <div className="mt-2 border-t border-border pt-3">
         <TimeSeriesChart model={model} subscribe={subscribe} height={150} minimal />
       </div>
       <figcaption className="mt-3 text-[13px] leading-[1.5] text-muted-foreground">
         Running now:{" "}
-        <button onClick={onOpen} className="tlink font-semibold text-foreground">
+        <a href={`#/m/${DEMO}`} className="tlink font-semibold text-foreground">
           Stock Management
-        </button>{" "}
+        </a>{" "}
         with the supply line ignored. Orders already on the way get ordered again, so inventory overshoots.
       </figcaption>
     </figure>
@@ -77,7 +81,7 @@ function LoopTag({ k }: { k: string }) {
 }
 
 // The library: every molecule by family, with a filter and a switch to the family tree.
-export default function MoleculeMap({ onSelect, onTree, missing }: { onSelect: (k: string) => void; onTree: () => void; missing?: string }) {
+export default function MoleculeMap({ onTree, missing }: { onTree: () => void; missing?: string }) {
   const total = Object.keys(MODELS).length;
   const seen = useSeen();
   const [q, setQ] = useState("");
@@ -87,7 +91,7 @@ export default function MoleculeMap({ onSelect, onTree, missing }: { onSelect: (
   const jump = (title: string) => document.getElementById(slug(title))?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 md:px-8 pt-8 md:pt-12">
+    <div className="page pt-8 md:pt-12">
       {missing && (
         <p role="alert" className="sheet mb-6 text-[15px]">
           There is no molecule called &ldquo;{missing}&rdquo;. Pick one below, or filter by name.
@@ -133,7 +137,7 @@ export default function MoleculeMap({ onSelect, onTree, missing }: { onSelect: (
               const m = MODELS[k];
               return (
                 <li key={k} className="min-w-0">
-                  <button onClick={() => onSelect(k)} className="brick brick-w group flex flex-col h-full w-full text-left p-3">
+                  <a href={`#/m/${k}`} className="brick brick-w group flex flex-col h-full w-full text-left p-3">
                     <div className="h-[84px] w-full rounded-[7px] bg-background p-2">
                       <MiniDiagram model={m} />
                     </div>
@@ -144,8 +148,8 @@ export default function MoleculeMap({ onSelect, onTree, missing }: { onSelect: (
                       </span>
                       <LoopTag k={k} />
                     </div>
-                    <p className="px-1 pb-1 text-[13px] text-muted-foreground leading-[1.5] mt-1 line-clamp-2">{m.lede}</p>
-                  </button>
+                    <p className="px-1 text-[13px] text-muted-foreground leading-[1.5] mt-1 line-clamp-2">{m.lede}</p>
+                  </a>
                 </li>
               );
             })}

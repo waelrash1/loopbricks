@@ -9,7 +9,7 @@ import { STUDIO } from "@/data/learn/studio";
 import { ALL_CASES, REFS } from "@/data/apps";
 import { DoiLink } from "@/components/Readings";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 
 type Entry = { key: string; r: MethodRef; where: { label: string; hash: string }[] };
 

@@ -455,7 +455,7 @@ export function SensitivityLab() {
             xLabel="Week"
           />
           <p className="mt-2 text-[13px] text-muted-foreground">
-            Up to 40 runs of each kind. <span style={{ color: ORANGE }}>Orange</span>: overshoots. <span style={{ color: GREEN }}>Green</span>: settles smoothly.
+            Up to 40 runs of each kind. <span className="font-semibold text-foreground" style={{ borderBottom: `3px solid ${ORANGE}` }}>Orange</span>: overshoots. <span className="font-semibold text-foreground" style={{ borderBottom: `3px solid ${GREEN}` }}>Green</span>: settles smoothly.
           </p>
         </div>
       </Step>

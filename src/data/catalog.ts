@@ -1,4 +1,5 @@
 // Navigation metadata derived from the molecule data: tour order, family tree, group blurbs, search aliases.
+import { useEffect, useState } from "react";
 import { GROUPS, MODELS } from "@/data/molecules";
 import { LINEAGE_A } from "@/data/extra/batchA";
 import { LINEAGE_B } from "@/data/extra/batchB";
@@ -97,13 +98,27 @@ export const groupOf = (key: string) => GROUPS.find((g) => g.keys.includes(key))
 export const parentsOf = (key: string) => (LINEAGE[key] ?? []).filter((p) => MODELS[p]);
 export const childrenOf = (key: string) => TOUR.filter((k) => (LINEAGE[k] ?? []).includes(key));
 
-// Case-insensitive match on name, long title and book aliases. Returns the alias that matched, if any.
+// The cases and the methods are large chunks of data, so each loads on first use, not with the app.
+function lazyData<T>(load: () => Promise<T>) {
+  let cache: T | undefined;
+  return (enabled = true) => {
+    const [m, setM] = useState(cache);
+    useEffect(() => {
+      if (enabled && !m) load().then((x) => setM((cache = x)));
+    }, [enabled, m]);
+    return m;
+  };
+}
+export const useApps = lazyData(() => import("@/data/apps"));
+export const useMethods = lazyData(() => import("@/data/methods"));
+
+// Case-insensitive match on name, long title, family and book aliases. Returns the alias that matched, if any.
 export function search(query: string): { key: string; via?: string }[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   return TOUR.flatMap((key) => {
     const m = MODELS[key];
-    if (m.name.toLowerCase().includes(q) || m.title.toLowerCase().includes(q)) return [{ key }];
+    if (m.name.toLowerCase().includes(q) || m.title.toLowerCase().includes(q) || groupOf(key).toLowerCase().includes(q)) return [{ key }];
     const via = (ALIASES[key] ?? []).find((a) => a.toLowerCase().includes(q));
     return via ? [{ key, via }] : [];
   });

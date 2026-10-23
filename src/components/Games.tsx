@@ -32,7 +32,7 @@ import {
 } from "@/lib/games";
 import { cn } from "@/lib/utils";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 const QUIET = "hsl(var(--muted-foreground))", GRID = "hsl(var(--border))", INK = "hsl(var(--foreground))";
 const BLUE = "var(--viz-acc)", ORANGE = "var(--viz-acc2)", GREEN = "var(--viz-good)", PINK = "var(--viz-pink)";
 const STAGE_COLORS = [BLUE, ORANGE, GREEN, PINK];
@@ -226,7 +226,7 @@ const Restart = ({ onClick, label = "Start again" }: { onClick: () => void; labe
 const Links = ({ onOpen, links }: { onOpen: (hash: string) => void; links: [string, string][] }) => (
   <div className="mt-4 flex flex-wrap gap-2">
     {links.map(([label, hash]) => (
-      <button key={hash} onClick={() => onOpen(hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+      <button key={hash} onClick={() => onOpen(hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
         {label}
       </button>
     ))}
@@ -236,7 +236,7 @@ function Segmented<T extends string>({ label, value, options, onChange }: { labe
   return (
     <div role="group" aria-label={label} className="flex flex-wrap gap-2">
       {options.map(([v, text]) => (
-        <button key={v} aria-pressed={value === v} onClick={() => onChange(v)} className={cn("brick h-9 px-3.5 text-[13px] font-semibold", value === v ? "brick-y" : "brick-w")}>
+        <button key={v} aria-pressed={value === v} onClick={() => onChange(v)} className={cn("brick h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold", value === v ? "brick-y" : "brick-w")}>
           {text}
         </button>
       ))}

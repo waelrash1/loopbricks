@@ -76,17 +76,17 @@ export const MODELS_E: Record<string, Model> = {
     },
     desc: `<p><b>Productivity</b>: "PDY" in the early Pugh-Roberts project models: is the speed at which a single worker (or machine, or other resource) produces. Hines formulates it as a multivariate anchoring-and-adjustment: start from a <b>normal productivity</b> and multiply by one effect for each condition that moves it. The four effects he shows are illustrative but common in project models: fatigue, schedule pressure, work adequacy and average skill. Whether the work is done <i>correctly</i> is a separate question, answered by the Quality molecule, which has the same structure with different functions. The book version has no stock; here one worker's output is accumulated next to a reference line at normal productivity so the combined effect is visible.</p>
     <div class="eq">Productivity = NormalProductivity × EffectOfFatigue × EffectOfSchedulePressure × EffectOfWorkAdequacy × EffectAverageSkill</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Use it wherever the rate of work per person <b>responds to working conditions</b> rather than staying fixed: it supplies the productivity term of Producing. Each effect is a function you define, passing through 1 at the normal value of its input. The functions used here are simple straight lines with limits: replace them with your own tables.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Healthcare</b>: patients seen per clinician per day, lower after weeks of long shifts and higher when the waiting room is full.</li>
       <li><b>Sustainability</b>: retrofits completed per installer crew, limited by crew experience and by whether enough surveyed homes are ready to work on.</li>
       <li><b>Projects</b>: drawings or lines of code per engineer during a deadline push.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     Normal productivity is 5 widgets per person per month. Fatigue 1.3 gives an effect of <code>1 − 0.5 × 0.3 = 0.85</code>; schedule pressure 1.2 gives <code>1 + 0.4 × 0.2 = 1.08</code>; work adequacy 1 gives 1; average skill 0.8 gives <code>0.4 + 0.6 × 0.8 = 0.88</code>. Productivity = <code>5 × 0.85 × 1.08 × 1 × 0.88 ≈ 4.04</code>. Over 60 months one worker makes about <b>242</b> widgets against <b>300</b> at normal productivity. Set work adequacy to 0 and productivity is 0, whatever the other effects say: multiplied effects let any one of them stop the work.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Productivity (PDY) (parent: Multivariate Anchoring and Adjustment).</li>
       <li>Abdel-Hamid, T. &amp; Madnick, S. E. (1991). <i>Software Project Dynamics: An Integrated Approach</i>. Prentice Hall.</li>
@@ -141,17 +141,17 @@ export const MODELS_E: Record<string, Model> = {
     },
     desc: `<p>"Fatigue" is an abstract idea, and working hard wears people down only gradually. Hines' formulation handles both points at once: <b>fatigue is a smooth of overtime</b>. It starts at 1 (a normal day) and moves toward whatever overtime is being worked; the <b>time to get fatigued</b> is the lag between starting to work at some overtime level and feeling its full effect. Because fatigue is measured in the same units as overtime, the effect function is easy to parameterise: ask what productivity would be after working at each overtime level <i>for a very long time</i>. The function here is a straight line through (1, 1) whose slope you set with the strength slider. Hines draws one two-way flow, GettingFatigued; it is shown here as two one-way flows, getting fatigued and recovering.</p>
     <div class="eq">Fatigue = INTEG( (Overtime − Fatigue) / TimeToGetFatigued, 1 );&nbsp; Effect of fatigue on PDY = f( Fatigue )</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Use it wherever <b>sustained extra effort has a delayed cost</b>. Feed overtime in from the Overtime molecule and send the effect out to Productivity or, through a different function, to Quality. On its own it has one input and one output, which makes it a convenient building block.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Healthcare</b>: ward staff covering vacancies with extra shifts: output per hour slips over the following weeks, not on the first long day.</li>
       <li><b>Sustainability</b>: field crews working extended hours through a planting or harvest season.</li>
       <li><b>Projects</b>: a software or construction team in a prolonged crunch.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     Overtime steps to 1.5 and stays there; time to get fatigued is 3 months. Fatigue starts at 1 and covers about 63% of the gap in the first 3 months: <code>1 + 0.5 × 0.63 ≈ 1.32</code>, and it is within 0.01 of 1.5 by month 12. With strength 0.6 the effect is <code>1 − 0.6 × (Fatigue − 1)</code>: about <b>0.81</b> at month 3 and settling at <code>1 − 0.6 × 0.5 = 0.70</code>. So people working 50% more hours end up 30% less productive per hour: <code>1.5 × 0.70 = 1.05</code> of normal output for 1.5 times the hours.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Effect of Fatigue (parents: Smooth (first order), Univariate Anchoring and Adjustment).</li>
     </ul>`,
@@ -217,17 +217,17 @@ export const MODELS_E: Record<string, Model> = {
     },
     desc: `<p>How much overtime does the work call for? Overtime is measured as a fraction of a normal day. If there were no limits it would simply be the number of workers we wish we had divided by the number we do have: the <b>indicated overtime</b>. In practice overtime is limited by the hours in a day, by management policy and by what people are willing to do, and the <b>overtime function</b> represents that limit. Desired people comes from the Desired Workforce from Workflow molecule: the rate at which work must be accomplished, divided by productivity. The book version has no stock; the two stocks here accumulate what the workers accomplish at the resulting overtime and how much of the desired work flow they miss.</p>
     <div class="eq">Overtime = f( IndicatedOvertime );&nbsp; IndicatedOvertime = DesiredPeople / Workers;&nbsp; DesiredPeople = DesiredAccomplishingRate / productivity</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Use it in project and service models where <b>hours flex before headcount does</b>. Overtime responds at once, while the Workforce molecule adjusts slowly, so the two are normally used together. Hines' caveat, if the workforce can be zero, protect the division in indicated overtime. His technical note: any formulation of "people needed to get the work done" will serve as desired people. The function here is the simplest one: <code>MIN(overtime limit, indicated overtime)</code>.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Healthcare</b>: a ward needing 15 nurses' worth of care with 10 on the roster: extra shifts cover part of the gap, up to what working-time rules allow.</li>
       <li><b>Sustainability</b>: storm-repair crews on extended days after a flood, limited by safe working hours.</li>
       <li><b>Projects</b>: an engineering team behind schedule, asked for evenings and weekends before any hiring is approved.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     The schedule needs 60 tasks/wk and each person does 4 tasks/wk in a normal week, so desired people = <code>60 ÷ 4 = 15</code>. With 10 workers, indicated overtime = <code>15 ÷ 10 = 1.5</code>. The limit is 1.3, so overtime = <b>1.3</b> and the team accomplishes <code>10 × 4 × 1.3 = 52</code> tasks/wk: 8 short. After 60 weeks 3,120 tasks are done and 480 have fallen behind. Raise the limit to 1.5 or more, or the workforce to 15, and nothing falls behind.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Overtime (parents: Workforce, Univariate Anchoring and Adjustment, Desired Workforce from Workflow).</li>
       <li>Lyneis, J. M. &amp; Ford, D. N. (2007). "System dynamics applied to project management: a survey, assessment, and directions for future research." <i>System Dynamics Review</i> 23(2-3): 157-189.</li>
@@ -273,17 +273,17 @@ export const MODELS_E: Record<string, Model> = {
     },
     desc: `<p>The plainest statement of how work gets done: <b>workers times their productivity yields what they accomplish or produce</b>. It is the Action from Resource molecule with the resource named "workers" and the ability named "productivity". Hines lists it separately because so much is built on it: fill a stock with it and you have Building Inventory by Doing Work, drain a stock with it and you have Reducing Backlog by Doing Work, turn it around and you have Desired Workforce from Workflow and Estimated Productivity. The book version has no stock; a simple counter of drawings produced is added here.</p>
     <div class="eq">producing = workers × productivity</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Use it for <b>any flow that people (or machines) generate by working</b>. Keep workers and productivity as separate variables even when both are constant, because each has its own causes: workers change through hiring and attrition, productivity through skill, fatigue and pressure. Check the units: people × drawings/person/month = drawings/month.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Healthcare</b>: vaccinations given per month = vaccinators × vaccinations per vaccinator.</li>
       <li><b>Sustainability</b>: homes insulated per month = installer crews × homes per crew.</li>
       <li><b>Operations</b>: production in Forrester's market-growth and workforce-inventory models = workforce × productivity.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     10 workers each produce 2 drawings a month, so producing = <code>10 × 2 = 20</code> drawings/mo: 400 drawings after 20 months and 1,200 after 60, a straight line. Halve the workers to 5 and double productivity to 4 and nothing changes: <code>5 × 4 = 20</code>. Set workers to 0 and producing is 0 however productive they would have been.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Producing (parent: Action from Resource).</li>
       <li>Forrester, J. W. (1968). "Market Growth as Influenced by Capital Investment." <i>Industrial Management Review</i>.</li>
@@ -334,17 +334,17 @@ export const MODELS_E: Record<string, Model> = {
     },
     desc: `<p>Take a stock of work to do and make its outflow a Producing molecule, that is the whole structure. <b>Work to do declines</b>, and if workers and productivity are constant it declines linearly. Hines states the caveat plainly: nothing in this molecule prevents work to do from going negative. In Vensim the stock would simply carry on below zero. This simulator holds physical stocks such as work to do at zero (and says so under the chart), so a second counter is added here: <b>overdrawn</b>: showing how far below zero the molecule's own arithmetic has gone. There is no inflow of new work in the book version, and none here.</p>
     <div class="eq">WorkToDo = INTEG( −producing );&nbsp; producing = workers × productivity</div>
-    <div class="whenbox"><h4>When to use it</h4>
+    <div class="whenbox"><h3>When to use it</h3>
     Use it as the core of any <b>backlog, queue or project scope worked off by people</b>, and as the starting point for Estimated Remaining Duration (work to do ÷ producing). Use it unprotected only where you are sure the stock cannot run out within the run; otherwise go on to Level Protected by PDY. Its mirror image, filling a stock with a producing molecule, is Building Inventory by Doing Work.</div>
-    <h4>Real-world examples</h4>
+    <h3>Real-world examples</h3>
     <ul>
       <li><b>Healthcare</b>: a waiting list of elective cases worked off by a surgical team.</li>
       <li><b>Sustainability</b>: a register of homes awaiting retrofit, cleared by installer crews.</li>
       <li><b>Projects</b>: remaining tasks in a design phase, the classic project-model stock.</li>
     </ul>
-    <div class="worked"><h4>Worked example</h4>
+    <div class="worked"><h3>Worked example</h3>
     10 workers at 4 tasks per person per month produce <code>10 × 4 = 40</code> tasks/mo. Starting from 1,200 tasks, work to do is <code>1200 − 40 × 15 = 600</code> at month 15 and reaches zero at month <code>1200 ÷ 40 = 30</code>. The workers do not stop: by month 40 the equation gives <code>1200 − 40 × 40 = −400</code>, shown here as work to do 0 with <b>400</b> overdrawn, and by month 60 the overdraft is 1,200. Double the workers to 20 and the stock empties in 15 months instead.</div>
-    <h4>References</h4>
+    <h3>References</h3>
     <ul class="refs">
       <li>Hines, J. <i>Molecules of Structure</i>, Reducing Backlog by Doing Work (parent: Producing; used by Estimated Remaining Duration and Level Protected by PDY).</li>
     </ul>`,

@@ -7,6 +7,11 @@ import { PRESETS_D } from "@/data/extra/batchD";
 // Scenario presets per molecule: one-click interesting parameter sets.
 export type Preset = { label: string; params: Record<string, number> };
 
+// What to do once the default run settles, for molecules whose run goes flat quickly.
+export const HINTS: Record<string, string> = {
+  material: "Once the pipe fills, press Burst (P) to send a pulse through",
+};
+
 export const PRESETS: Record<string, Preset[]> = {
   bathtub: [
     { label: "Filling", params: { inflow: 14, outflow: 6 } },

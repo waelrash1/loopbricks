@@ -15,7 +15,7 @@ export const SYLLABUS: Week[] = [
   {
     week: 3,
     modules: ["loops"],
-    activity: "Loop-drawing exercises: students draw causal loop diagrams for two short stories, label link and loop polarity, and swap them for peer review. We close with the policy resistance case. Seminar: Richardson (1986) on problems with causal loop diagrams. For homework, students complete one case in the modelling studio at /learn/studio up to the causal loop diagram.",
+    activity: "Loop-drawing exercises: students draw causal loop diagrams for two short stories, label link and loop polarity, and swap them for peer review. We close with the policy resistance case. Seminar: Richardson (1986) on problems with causal loop diagrams. For homework, students complete one practice brief in the modelling studio at /learn/studio up to the causal loop diagram.",
   },
   {
     week: 4,
@@ -45,7 +45,7 @@ export const SYLLABUS: Week[] = [
   {
     week: 9,
     modules: ["process"],
-    activity: "Studio workshop: in pairs, students work a second studio case from brief to stock and flow map and compare their boundary charts. Seminar: the Coyle (2000) and Homer and Oliva (2001) exchange on qualitative and quantitative modelling. Capstone kickoff at /learn/projects: teams choose a project, draw the reference mode and write a model boundary chart. Proposals are due at the end of the week.",
+    activity: "Studio workshop: in pairs, students work a second practice brief from brief to stock and flow map and compare their boundary charts. Seminar: the Coyle (2000) and Homer and Oliva (2001) exchange on qualitative and quantitative modelling. Capstone kickoff at /learn/projects: teams choose a project, draw the reference mode and write a model boundary chart. Proposals are due at the end of the week.",
   },
   {
     week: 10,
@@ -66,7 +66,7 @@ export const SYLLABUS: Week[] = [
 
 export const ASSESSMENT: { item: string; weight: number; detail: string }[] = [
   { item: "Before-and-after test", weight: 5, detail: "Completing both sittings of the test at /learn/check earns the marks; the score itself is not graded." },
-  { item: "Diagram exercises and studio cases", weight: 15, detail: "Loop-drawing and stock and flow exercises from weeks 2 and 3, and two modelling studio cases written up from brief to stock and flow map, marked for a clear purpose, a defensible boundary, correct polarities and units." },
+  { item: "Diagram exercises and practice briefs", weight: 15, detail: "Loop-drawing and stock and flow exercises from weeks 2 and 3, and two modelling studio practice briefs written up from brief to stock and flow map, marked for a clear purpose, a defensible boundary, correct polarities and units." },
   { item: "Decision game reflections", weight: 15, detail: "Short written debriefs after the beer, fishery and firefighting games, explaining the outcome through feedback structure." },
   { item: "Modelling labs", weight: 25, detail: "Two lab assignments in the model builder and case simulators, from first-order dynamics to delays and diffusion." },
   { item: "Capstone project", weight: 40, detail: "A team project from /learn/projects: proposal (10), model with documented tests (15), and final presentation and report (15)." },

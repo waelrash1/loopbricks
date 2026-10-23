@@ -3,7 +3,7 @@ import { METHOD_PAGES, METHOD_REFS, type MethodPage } from "@/data/methods";
 import { cn } from "@/lib/utils";
 import { CalibrationLab, SensitivityLab } from "@/components/Labs";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 
 function Refs({ keys }: { keys: string[] }) {
   return (
@@ -29,20 +29,25 @@ function Refs({ keys }: { keys: string[] }) {
 
 export function MethodsIndex({ onPage, onBook }: { onPage: (id: string) => void; onBook: () => void }) {
   return (
-    <div className={`${wrap} pt-10 md:pt-14`}>
+    <div className={`${wrap} pt-6 md:pt-8`}>
+      <p className="text-sm text-muted-foreground mb-6">
+        <button onClick={onBook} className="hover:text-foreground">
+          Learn
+        </button>
+        <span aria-hidden className="mx-2">/</span>
+        <span className="text-foreground font-semibold">Methods</span>
+      </p>
       <h1 className="display text-[38px] md:text-[52px] max-w-[20ch]">Methods for real models</h1>
       <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[60ch]">
-        How to frame a problem with a reference mode, test a model until you trust it, measure its fit to data, and where machine learning and AI help.
+        How to frame a problem with a reference mode (a sketch of the behaviour over time you want to explain), test a model until you trust it, measure its fit to data, and where machine learning and AI help.
       </p>
-      <button onClick={onBook} className="brick brick-y mt-8 w-full text-left p-6 grid md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
-        <span>
-          <span className="heading block text-[22px]">Learn system dynamics: the full curriculum</span>
-          <span className="block mt-1.5 text-[15px] leading-[1.55] max-w-[70ch]">
-            Eighteen modules from foundations to modelling practice, with diagrams, equations, archetypes, exercises you run here, and self-checks.
-          </span>
-        </span>
-        <span className="text-[15px] font-semibold whitespace-nowrap">Open the curriculum</span>
-      </button>
+      <p className="mt-4 text-[15px] text-muted-foreground max-w-[70ch]">
+        New to system dynamics? Start with the{" "}
+        <button onClick={onBook} className="tlink font-semibold text-foreground">
+          Course
+        </button>
+        : modules from foundations to modelling practice, with diagrams, equations, exercises you run here, and self-checks.
+      </p>
       <h2 className="heading text-[22px] mt-12">The learning path</h2>
       <ol className="mt-5 grid md:grid-cols-2 gap-4">
         {METHOD_PAGES.map((p, i) => (
@@ -73,20 +78,24 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
   return (
     <article className={`${wrap} pt-6 md:pt-8`}>
       <p className="text-sm text-muted-foreground mb-6">
+        <button onClick={() => onOpen("/learn")} className="hover:text-foreground">
+          Learn
+        </button>
+        <span aria-hidden className="mx-2">/</span>
         <button onClick={() => onPage("")} className="hover:text-foreground">
           Methods
         </button>
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground font-semibold">{p.title}</span>
       </p>
-      <h1 className="display text-[34px] md:text-[48px] max-w-[22ch] hyphens-auto">{p.title}</h1>
+      <h1 className="display text-[34px] md:text-[48px] max-w-[22ch]">{p.title}</h1>
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[64ch]">{p.summary}</p>
 
       {p.tryIt && (
         <div className="mt-6 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[75ch]">
           <p className="heading text-[16px]">Try it in LoopBricks</p>
           <p className="mt-1 text-[15px] leading-[1.6]">{p.tryIt.text}</p>
-          <button onClick={() => onOpen(p.tryIt!.hash)} className="brick brick-y mt-3 h-9 px-4 text-[13.5px] font-semibold">
+          <button onClick={() => onOpen(p.tryIt!.hash)} className="brick brick-y mt-3 h-9 max-sm:min-h-11 px-4 text-[13.5px] font-semibold">
             {p.tryIt.label}
           </button>
         </div>
@@ -172,7 +181,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
                 </div>
               )}
               {s.example.link && (
-                <button onClick={() => onOpen(s.example!.link!.hash)} className="brick brick-w mt-3 h-9 px-4 text-[13px] font-semibold">
+                <button onClick={() => onOpen(s.example!.link!.hash)} className="brick brick-w mt-3 h-9 max-sm:min-h-11 px-4 text-[13px] font-semibold">
                   {s.example.link.label}
                 </button>
               )}

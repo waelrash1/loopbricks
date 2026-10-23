@@ -35,15 +35,15 @@ export default function LessonPanel({
   return (
     <section className="mb-10">
       {/* every step of the tour, like the step strip in a building-set booklet: click one to jump */}
-      <div className="flex items-center justify-between gap-4 mb-3">
+      <div className="flex items-center justify-between gap-4 mb-6 sm:mb-3">
         <p className="text-sm text-muted-foreground">
           Step {idx + 1} of {total}
         </p>
-        <button onClick={onExit} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-btn">
+        <button onClick={onExit} className="h-11 -mr-2 px-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-btn">
           <X size={14} aria-hidden /> Exit tour
         </button>
       </div>
-      <ol aria-label="Tour steps" className="flex flex-wrap gap-[3px] mb-10">
+      <ol aria-label="Tour steps" className="hidden sm:flex flex-wrap gap-[3px] mb-10">
         {lessons.map((name, i) => (
           <li key={i}>
             <button

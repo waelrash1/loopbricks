@@ -7,7 +7,7 @@ import { markSeen, useSeen } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { loadModel, saveModel, type BModel } from "@/lib/builder";
 
-const wrap = "max-w-[1180px] mx-auto px-4 md:px-8";
+const wrap = "page";
 const load = <T,>(k: string, d: T): T => {
   try {
     const v = localStorage.getItem(k);
@@ -24,10 +24,10 @@ const save = (k: string, v: unknown) => {
   }
 };
 
-// The stages of a case, in the order of the modelling process (Sterman 2000, ch. 3).
+// The stages of a practice brief, in the order of the modelling process (Sterman 2000, ch. 3).
 const STAGES = [
   ["brief", "The situation", "Read the brief, the people involved and the evidence."],
-  ["articulate", "Articulate the problem", "Behaviour over time, purpose, horizon and reference mode."],
+  ["articulate", "Articulate the problem", "Behaviour over time, purpose, horizon and reference mode: the pattern over time the model must explain."],
   ["boundary", "Set the boundary", "What the model explains, takes as given and leaves out."],
   ["loops", "Draw the feedback", "A causal loop diagram, checked against a model answer."],
   ["stocks", "Map stocks and flows", "Sort the variables, then write the equations."],
@@ -63,7 +63,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
       <Crumb go={go} />
       <h1 className="display text-[32px] md:text-[44px] max-w-[18ch]">Modelling studio</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
-        Practise the part of modelling that textbooks cover least: turning a messy situation into a clear problem, a defensible boundary and a feedback structure. Each case gives you
+        Practise the part of modelling that textbooks cover least: turning a messy situation into a clear problem, a defensible boundary and a feedback structure. Each practice brief gives you
         a brief, people who disagree and some data. You work through the first steps of the modelling process and compare your answer with a model answer at every step.
       </p>
 
@@ -79,7 +79,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
         ))}
       </ol>
 
-      <h2 className="heading text-[22px] mt-12">Cases</h2>
+      <h2 className="heading text-[22px] mt-12">Practice briefs</h2>
       <div className="mt-4 grid md:grid-cols-2 gap-4">
         {STUDIO.map((c) => (
           <button key={c.id} onClick={() => go(`/learn/studio/${c.id}`)} className="brick brick-w text-left p-5 flex flex-col">
@@ -96,7 +96,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
         ))}
       </div>
       <p className="mt-6 text-[13.5px] text-muted-foreground max-w-[80ch]">
-        The organisations and figures in these cases are invented for practice. The structures follow published studies, listed at the end of each case and in the{" "}
+        The organisations and figures in these briefs are invented for practice. The structures follow published studies, listed at the end of each brief and in the{" "}
         <button onClick={() => go("/learn/references")} className="tlink font-semibold text-foreground">
           reading list
         </button>
@@ -208,7 +208,7 @@ function SortDrill({ c, onSolved }: { c: StudioCase; onSolved: () => void }) {
                     role="radio"
                     aria-checked={pick[v.name] === k}
                     onClick={() => (setPick({ ...pick, [v.name]: k }), setChecked(false))}
-                    className={cn("h-8 px-2.5 rounded-[6px] border text-[13px] font-semibold", pick[v.name] === k ? "bg-foreground text-background border-foreground" : "border-border hover:border-foreground/50")}
+                    className={cn("h-8 max-sm:min-h-11 px-2.5 rounded-[6px] border text-[13px] font-semibold", pick[v.name] === k ? "bg-foreground text-background border-foreground" : "border-border hover:border-foreground/50")}
                   >
                     {k}
                   </button>
@@ -224,7 +224,7 @@ function SortDrill({ c, onSolved }: { c: StudioCase; onSolved: () => void }) {
             setChecked(true);
             if (right === c.sorting.length) onSolved();
           }}
-          className="brick brick-y h-10 px-4 text-[14px] font-semibold"
+          className="brick brick-y h-10 max-sm:min-h-11 px-4 text-[14px] font-semibold"
         >
           Check my sorting
         </button>
@@ -303,16 +303,16 @@ export function starterModel(c: StudioCase): BModel {
 
 function BuildIt({ c, go }: { c: StudioCase; go: (h: string) => void }) {
   const open = () => {
-    if (loadModel() && !window.confirm("Replace the model in the builder with this case's stocks and flows? Export yours first if you want to keep it.")) return;
+    if (loadModel() && !window.confirm("Replace the model in the builder with this brief's stocks and flows? Export yours first if you want to keep it.")) return;
     saveModel(starterModel(c));
     go("/build");
   };
   return (
     <div className="sheet flex flex-wrap items-center justify-between gap-4">
       <p className="text-[15px] leading-[1.6] max-w-[70ch]">
-        <b>Build it.</b> Open the builder with this case&rsquo;s {c.stocks.length} stocks and their flows already laid out and connected. Add the constants, write an equation and a starting value for each element, run it, and compare your run with the reference mode in stage 1.
+        <b>Build it.</b> Open the builder with this brief&rsquo;s {c.stocks.length} stocks and their flows already laid out and connected. Add the constants, write an equation and a starting value for each element, run it, and compare your run with the reference mode in stage 1.
       </p>
-      <button onClick={open} className="brick brick-y h-10 px-4 text-[14px] font-semibold whitespace-nowrap">
+      <button onClick={open} className="brick brick-y h-10 max-sm:min-h-11 px-4 text-[14px] font-semibold whitespace-nowrap">
         Open in the builder
       </button>
     </div>
@@ -359,9 +359,9 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
     return (
       <div className={`${wrap} pt-10`}>
         <p className="sheet">
-          No studio case called “{id}”.{" "}
+          No practice brief called “{id}”.{" "}
           <button onClick={() => go("/learn/studio")} className="tlink font-semibold">
-            See all cases
+            See all practice briefs
           </button>
         </p>
       </div>
@@ -376,7 +376,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
       <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{c.title}</h1>
 
       <div className="mt-8 grid lg:grid-cols-[220px_minmax(0,1fr)] gap-8 lg:gap-12">
-        <nav aria-label="Stages of this case" className="hidden lg:block print:hidden">
+        <nav aria-label="Stages of this brief" className="hidden lg:block print:hidden">
           <ol className="sticky top-24 grid gap-1 border-l-2 border-border">
             {STAGES.map(([sid, title], i) => (
               <li key={sid}>
@@ -453,7 +453,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
             <p className="text-[15.5px] leading-[1.65] max-w-[72ch]">{c.cldTask}</p>
             <DrawBoard cld={c.cld} title={c.title} solvedKey={`done:studio-cld/${c.id}`} stacked />
             <Answer
-              label="In two or three sentences, state your dynamic hypothesis: which loops produce the reference mode, and which dominates when?"
+              label="In two or three sentences, state your dynamic hypothesis: which loops produce the reference mode, and which one dominates (drives the behaviour) at each stage?"
               value={notes.hypothesis ?? ""}
               onChange={(v) => setNote("hypothesis", v)}
               model={<p className="cld-cap" dangerouslySetInnerHTML={{ __html: c.cld.caption }} />}
@@ -501,7 +501,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
               <h3 className="heading text-[18px]">Run something similar</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {c.related.map((r) => (
-                  <button key={r.hash} onClick={() => go(r.hash)} className="brick brick-w h-9 px-3.5 text-[13px] font-semibold">
+                  <button key={r.hash} onClick={() => go(r.hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
                     {r.label}
                   </button>
                 ))}
@@ -517,7 +517,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
             </div>
             <div className="flex flex-wrap items-center gap-3 print:hidden">
               <button onClick={() => markSeen(`done:studio/${id}`)} disabled={done} className={cn("brick h-11 px-5 text-[15px] font-semibold", done ? "brick-w" : "brick-y")}>
-                {done ? "Marked as done" : "Mark this case as done"}
+                {done ? "Marked as done" : "Mark this brief as done"}
               </button>
               <button onClick={() => window.print()} className="brick brick-w h-11 px-4 text-[14px] font-semibold inline-flex items-center gap-1.5">
                 <Printer size={15} aria-hidden /> Print with my answers

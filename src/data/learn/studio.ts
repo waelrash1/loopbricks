@@ -1,5 +1,5 @@
-// The modelling studio: practice cases for the first half of the modelling process, where most students struggle.
-// Each case starts from a messy brief, people who disagree and a table of evidence, and asks the student to
+// The modelling studio: practice briefs for the first half of the modelling process, where most students struggle.
+// Each brief starts from a messy brief, people who disagree and a table of evidence, and asks the student to
 // articulate the problem, set the boundary, draw the causal loop diagram (checked against a model answer), sort
 // the variables into stocks, flows and auxiliaries, and write the stock and flow equations.
 // The organisations and figures are invented for teaching; the structures follow the studies in `refs`.
@@ -251,8 +251,8 @@ export const STUDIO: StudioCase[] = [
       { q: "Adjust inventory more slowly (a longer adjustment time).", hint: "Slower correction damps the swing but leaves shelves short for longer. What is the trade-off for a perishable product?" },
     ],
     critique: [
-      "Lee, Padmanabhan and Whang (1997) explain the bullwhip with rational causes such as order batching and price changes; this case puts the cause in the ordering rule. How would you design a study to tell the explanations apart in this chain?",
-      "The case assumes the factory always has capacity. If capacity is tight, deliveries slow when orders surge, the lead time lengthens and buyers order even more. Where would that loop sit in your diagram?",
+      "Lee, Padmanabhan and Whang (1997) explain the bullwhip with rational causes such as order batching and price changes; this brief puts the cause in the ordering rule. How would you design a study to tell the explanations apart in this chain?",
+      "The brief assumes the factory always has capacity. If capacity is tight, deliveries slow when orders surge, the lead time lengthens and buyers order even more. Where would that loop sit in your diagram?",
     ],
     refs: ["sterman1989", "lee1997", "croson2006", "sterman2000"],
     related: [
@@ -304,7 +304,7 @@ export const STUDIO: StudioCase[] = [
     boundary: {
       endogenous: ["Work remaining", "Undiscovered rework", "Schedule pressure", "Overtime", "Fatigue", "Error rate", "Staff and their experience"],
       exogenous: ["Project scope", "Deadline", "Hiring limits and contractor availability"],
-      excluded: ["Client requirement changes (a separate case)", "Individual developer skills", "Budget and penalties beyond their effect on pressure"],
+      excluded: ["Client requirement changes (a separate brief)", "Individual developer skills", "Budget and penalties beyond their effect on pressure"],
     },
     cldTask: "Draw the structure that keeps the project at 90%. Include the two ways managers try to speed up, and the side effect of each.",
     cld: {
@@ -492,7 +492,7 @@ export const STUDIO: StudioCase[] = [
     ],
     critique: [
       "The productivity dashboard is a measurement problem as much as a staffing one. How would you show the board that a rising productivity figure can be a symptom of decline?",
-      "Oliva and Sterman (2001) add the erosion of the standard itself, which turns a temporary adjustment into a permanent loss. What evidence in this case would tell you the standard has eroded?",
+      "Oliva and Sterman (2001) add the erosion of the standard itself, which turns a temporary adjustment into a permanent loss. What evidence in this brief would tell you the standard has eroded?",
     ],
     refs: ["olivaSterman2001", "repenningSterman2001", "homer1985", "sterman2000"],
     related: [

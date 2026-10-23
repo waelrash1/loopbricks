@@ -9,7 +9,7 @@ import { cldSize, loopsIn, nodeBox } from "@/lib/cldGeometry";
 import { markSeen, useSeen } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 type Cld = Model["cld"];
 
 function Crumb({ onIndex, here }: { onIndex: () => void; here: string }) {
@@ -48,7 +48,7 @@ export function ReviewPage({ onIndex, onModule }: { onIndex: () => void; onModul
         Eight questions drawn at random from {done.length >= 2 ? `the ${done.length} modules you have finished` : "the foundation modules (finish two modules to review your own)"}. Mixing topics makes you decide which idea applies, which is
         what real problems ask of you.
       </p>
-      <button onClick={() => setRound((r) => r + 1)} className="brick brick-w mt-4 h-9 px-3.5 text-[13px] font-semibold inline-flex items-center gap-2">
+      <button onClick={() => setRound((r) => r + 1)} className="brick brick-w mt-4 h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold inline-flex items-center gap-2">
         <Shuffle size={14} aria-hidden /> New set
       </button>
       <QuizBlock key={round} quiz={pick.map((x) => x.q) as Quiz[]} />
@@ -91,6 +91,7 @@ export function DrawIndex({ onDraw, onIndex }: { onDraw: (id: string) => void; o
       {["System archetypes", "Molecules"].map((g) => (
         <section key={g} className="mt-10">
           <h2 className="heading text-[22px]">{g}</h2>
+          {g === "Molecules" && <p className="mt-1 text-[14.5px] text-muted-foreground max-w-[70ch]">Molecules are the small, reusable model structures in the LoopBricks library, such as a stock that drains away or a loop that closes a gap to a goal.</p>}
           <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {DRAW_EXERCISES.filter((x) => x.group === g).map((x) => (
               <button key={x.id} onClick={() => onDraw(x.id)} className="brick brick-w text-left p-4">
@@ -141,7 +142,7 @@ export function DrawPage({ id, onIndex, onAll }: { id: string; onIndex: () => vo
   );
 }
 
-// The drawing surface on its own: used by the loop-drawing pages and by the modelling studio cases.
+// The drawing surface on its own: used by the loop-drawing pages and by the modelling studio practice briefs.
 export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title: string; solvedKey?: string; stacked?: boolean }) {
   const [links, setLinks] = useState<UL[]>([]);
   const [from, setFrom] = useState<string | null>(null);
@@ -242,7 +243,7 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
             {(["from", "to"] as const).map((f) => (
               <label key={f} className="grid gap-1">
                 <span className="font-semibold">{f === "from" ? "From" : "To"}</span>
-                <select value={form[f]} onChange={(e) => setForm({ ...form, [f]: e.target.value })} className="rounded-[6px] border border-border bg-background px-2 py-1.5">
+                <select value={form[f]} onChange={(e) => setForm({ ...form, [f]: e.target.value })} className="rounded-[6px] border border-border bg-background px-2 py-1.5 max-sm:min-h-11">
                   <option value="">Choose</option>
                   {cld.vars.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -254,21 +255,21 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
             ))}
             <label className="grid gap-1">
               <span className="font-semibold">Sign</span>
-              <select value={form.sign} onChange={(e) => setForm({ ...form, sign: e.target.value as UL["sign"] })} className="rounded-[6px] border border-border bg-background px-2 py-1.5">
+              <select value={form.sign} onChange={(e) => setForm({ ...form, sign: e.target.value as UL["sign"] })} className="rounded-[6px] border border-border bg-background px-2 py-1.5 max-sm:min-h-11">
                 <option value="+">+</option>
                 <option value="−">−</option>
               </select>
             </label>
-            <button className="brick brick-w h-9 px-3 font-semibold">Add link</button>
+            <button className="brick brick-w h-9 max-sm:min-h-11 px-3 font-semibold">Add link</button>
           </form>
         </div>
 
         <div className="grid gap-3 content-start">
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => (setChecked(true), allRight && solvedKey && markSeen(solvedKey))} disabled={!links.length} className="brick brick-y h-10 px-4 text-[14px] font-semibold disabled:opacity-50">
+            <button onClick={() => (setChecked(true), allRight && solvedKey && markSeen(solvedKey))} disabled={!links.length} className="brick brick-y h-10 max-sm:min-h-11 px-4 text-[14px] font-semibold disabled:opacity-50">
               Check my diagram
             </button>
-            <button onClick={() => (setLinks([]), setChecked(false), setReveal(false))} className="brick brick-w h-10 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5">
+            <button onClick={() => (setLinks([]), setChecked(false), setReveal(false))} className="brick brick-w h-10 max-sm:min-h-11 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5">
               <RotateCcw size={14} aria-hidden /> Start again
             </button>
           </div>
@@ -305,7 +306,7 @@ export function DrawBoard({ cld, title, solvedKey, stacked }: { cld: Cld; title:
               </p>
             </div>
           )}
-          <button onClick={() => setReveal((v) => !v)} className="text-left text-[13.5px] font-semibold underline underline-offset-2">
+          <button onClick={() => setReveal((v) => !v)} className="text-left text-[13.5px] font-semibold underline underline-offset-2 max-sm:min-h-11">
             {reveal ? "Hide the model answer" : "Show the model answer"}
           </button>
           {reveal && (

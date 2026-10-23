@@ -57,6 +57,10 @@ function Readout({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) 
   );
 }
 
+// "/wk" reads as "per week" to a screen reader
+const spoken = (v: number, unit = "") =>
+  `${v} ${unit.replace(/\bwk\b/g, "week").replace(/\bmo\b/g, "month").replace(/\byr\b/g, "year").replace(/\bppl\b/g, "people").replace(/·/g, " ").replace(/\//g, " per ")}`.replace(/\s+/g, " ").trim();
+
 function Clock({ model, subscribe }: { model: Model; subscribe: (fn: FrameCb) => () => void }) {
   const el = useRef<HTMLSpanElement>(null);
   useEffect(() => subscribe(({ t }) => el.current && (el.current.textContent = `${t.toFixed(1)} ${model.timeUnit}`)), [model, subscribe]);
@@ -77,18 +81,25 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
   const key = "px-1.5 py-0.5 rounded-[5px] bg-white/10 text-[11px] font-semibold text-white";
   // the control box: the one dark surface, so it reads as the thing you operate
   return (
-    <div ref={panel} className="rounded-card bg-panel text-white p-5 shadow-[0_3px_0_hsl(216_52%_8%)] scroll-mt-24">
+    <div ref={panel} id="controls-panel" tabIndex={-1} aria-label="Controls" role="region" className="focus:outline-none rounded-card bg-panel text-white p-5 shadow-[0_3px_0_hsl(216_52%_8%)] scroll-mt-24">
       {!panelInView && (
         <div role="toolbar" aria-label="Quick controls" className="lg:hidden print:hidden fixed bottom-0 inset-x-0 z-30 bg-panel text-white px-4 pt-2.5 pb-[max(10px,env(safe-area-inset-bottom))] flex items-center gap-3 shadow-[0_-6px_20px_-8px_hsl(216_52%_8%/0.5)]">
-          <Button size="sm" onClick={sim.toggle} className="min-w-[96px]">
+          <Button onClick={sim.toggle} className="min-w-[96px] h-11">
             {sim.running ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}
             {sim.running ? "Pause" : "Play"}
           </Button>
-          <button onClick={sim.reset} aria-label="Reset" className="grid place-items-center w-9 h-9 rounded-[8px] bg-white/10">
+          <button onClick={sim.reset} aria-label="Reset" className="grid place-items-center w-11 h-11 rounded-[8px] bg-white/10">
             <RotateCcw size={16} aria-hidden />
           </button>
           <Clock model={model} subscribe={sim.subscribe} />
-          <button onClick={() => panel.current?.scrollIntoView({ behavior: "smooth", block: "start" })} className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold text-white/85">
+          <button
+            aria-controls="controls-panel"
+            onClick={() => {
+              panel.current?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+              panel.current?.focus({ preventScroll: true });
+            }}
+            className="ml-auto inline-flex items-center gap-1 h-11 px-2 text-[13px] font-semibold text-white/85"
+          >
             Controls <ChevronUp size={15} aria-hidden />
           </button>
         </div>
@@ -104,7 +115,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
                 sim.applyParams(p.params);
                 sim.reset();
               }}
-              className="text-xs font-semibold px-2.5 py-1.5 rounded-[7px] bg-white/10 hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="min-h-11 lg:min-h-0 text-xs font-semibold px-2.5 py-1.5 rounded-[7px] bg-white/10 hover:bg-accent hover:text-accent-foreground transition-colors"
             >
               {p.label}
             </button>
@@ -121,7 +132,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
               {pr.unit}
             </span>
           </div>
-          <Slider aria-label={pr.label} min={pr.min} max={pr.max} step={pr.step} value={[sim.params[pr.id]]} onValueChange={([v]) => sim.setParam(pr.id, v)} />
+          <Slider aria-label={pr.label} aria-valuetext={spoken(sim.params[pr.id], pr.unit)} min={pr.min} max={pr.max} step={pr.step} value={[sim.params[pr.id]]} onValueChange={([v]) => sim.setParam(pr.id, v)} />
         </div>
       ))}
 
@@ -146,7 +157,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
           <span>Speed</span>
           <span className={val}>{sim.speed}×</span>
         </div>
-        <Slider aria-label="Speed" min={1} max={20} step={1} value={[sim.speed]} onValueChange={([v]) => sim.setSpeed(v)} />
+        <Slider aria-label="Speed" aria-valuetext={`${sim.speed} times`} min={1} max={20} step={1} value={[sim.speed]} onValueChange={([v]) => sim.setSpeed(v)} />
       </div>
 
       <div className="mt-4">
@@ -154,7 +165,7 @@ export default function Controls({ model, sim, presets }: { model: Model; sim: S
           <span>Stop at</span>
           <span className={val}>{sim.stopTime === 0 ? "Never" : `${sim.stopTime} ${model.timeUnit}`}</span>
         </div>
-        <Slider aria-label="Stop at" min={0} max={Math.max(60, sim.stopTime)} step={1} value={[sim.stopTime]} onValueChange={([v]) => sim.setStopTime(v)} />
+        <Slider aria-label="Stop at" aria-valuetext={sim.stopTime === 0 ? "Never" : spoken(sim.stopTime, model.timeUnit)} min={0} max={Math.max(60, sim.stopTime)} step={1} value={[sim.stopTime]} onValueChange={([v]) => sim.setStopTime(v)} />
       </div>
 
       <Readout model={model} subscribe={sim.subscribe} />

@@ -1,6 +1,5 @@
-/* one variable family; unicode-range keeps the download to latin */
+/* one variable family; unicode-range keeps the download to latin. Italics are only short body phrases (book titles), so the browser slants the upright face */
 @import "@fontsource-variable/archivo/wdth.css";
-@import "@fontsource-variable/archivo/wdth-italic.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -46,7 +45,9 @@
   html { scroll-padding-top: 88px; }
   body { @apply bg-background text-foreground font-sans antialiased; font-size: 15px; font-variant-numeric: tabular-nums; }
   :focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 2px; }
-  h1, h2, h3 { text-wrap: balance; }
+  h1, h2, h3 { text-wrap: balance; hyphens: manual; }
+  /* after a route change focus lands on the page heading for screen readers; it is not a control, so no ring */
+  main h1:focus { outline: none; }
   p, li { text-wrap: pretty; }
   ::selection { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
   @media (prefers-reduced-motion: reduce) {
@@ -71,6 +72,10 @@
   /* a printed panel: what a diagram or chart sits on */
   .sheet { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 16px; }
   @media (min-width: 768px) { .sheet { padding: 20px 22px; } }
+  /* one page width and gutter for every view, so pages share a left edge */
+  .page { max-width: 1320px; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+  @media (min-width: 768px) { .page { padding-left: 2rem; padding-right: 2rem; } }
+
   .sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 12px; }
 }
 
@@ -93,8 +98,8 @@
 /* authored explanation HTML */
 .prose-sd { line-height: 1.65; max-width: 68ch; font-size: 16px; }
 .prose-sd p { margin: 12px 0; }
-.prose-sd h4 { margin: 32px 0 6px; font-stretch: 112%; font-weight: 700; font-size: 20px; }
-.prose-sd h4:first-child { margin-top: 0; }
+.prose-sd h3, .prose-sd h4 { margin: 32px 0 6px; font-stretch: 112%; font-weight: 700; font-size: 20px; }
+.prose-sd h3:first-child, .prose-sd h4:first-child { margin-top: 0; }
 .prose-sd ul { margin: 8px 0; padding-left: 20px; list-style: disc; }
 .prose-sd li { margin: 6px 0; }
 .prose-sd li::marker { color: hsl(var(--accent-edge)); }
@@ -102,7 +107,7 @@
 .prose-sd .eq { font-family: var(--font-mono); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; overflow-x: auto; margin: 14px 0; }
 .prose-sd .whenbox { background: hsl(var(--card)); border-left: 4px solid hsl(var(--accent)); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
 .prose-sd .worked { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; }
-.prose-sd .whenbox h4, .prose-sd .worked h4 { margin: 0 0 4px; font-size: 17px; }
+.prose-sd .whenbox h3, .prose-sd .worked h3, .prose-sd .whenbox h4, .prose-sd .worked h4 { margin: 0 0 4px; font-size: 17px; }
 .prose-sd .small { font-size: 13px; color: hsl(var(--muted-foreground)); }
 .prose-sd .refs { font-size: 13.5px; color: hsl(var(--muted-foreground)); padding-left: 18px; }
 .prose-sd .refs li { margin: 4px 0; }
@@ -110,7 +115,7 @@
 /* B / R tags: the same letters and colours the diagrams use */
 .chip { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; color: #fff; font-size: 11px; font-weight: 800; font-stretch: 112%; margin-right: 4px; }
 .chipB { background: var(--viz-acc); }
-.chipR { background: var(--viz-acc2); }
+.chipR { background: #c2410c; } /* a shade darker than the diagram colour: white 11px text needs 4.5:1 */
 
 /* quiz answer states (lesson panel) */
 .is-right { border-color: var(--viz-good) !important; background: color-mix(in srgb, var(--viz-good) 12%, white) !important; color: #0a5c40; --edge-c: var(--viz-good); }

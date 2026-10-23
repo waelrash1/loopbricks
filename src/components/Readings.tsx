@@ -58,14 +58,14 @@ export function ModuleReadings({ id, go }: { id: string; go: (h: string) => void
             </div>
           )}
         </div>
-        <aside className="rounded-card bg-card border-l-4 border-accent px-5 py-4 self-start">
+        <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4 self-start">
           <h3 className="heading text-[16px]">Seminar questions</h3>
           <ol className="mt-2 grid gap-3 list-decimal pl-5 text-[15px] leading-[1.6]">
             {r.seminar.map((q) => (
               <li key={q}>{q}</li>
             ))}
           </ol>
-        </aside>
+        </div>
       </div>
       <p className="mt-4 text-[13.5px] text-muted-foreground">
         Every source in the course is on the{" "}

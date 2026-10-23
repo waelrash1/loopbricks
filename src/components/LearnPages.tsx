@@ -10,7 +10,7 @@ import { doneKey } from "@/components/Learn";
 import { markSeen, useSeen } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 
-const wrap = "max-w-[1100px] mx-auto px-4 md:px-8";
+const wrap = "page";
 // small per-browser stores; every read and write tolerates blocked storage
 const load = <T,>(k: string, d: T): T => {
   try {
@@ -42,7 +42,7 @@ const Links = ({ items, go }: { items?: { label: string; hash: string }[]; go: (
   items?.length ? (
     <span className="flex flex-wrap gap-1.5 mt-2">
       {items.map((s) => (
-        <button key={s.hash} onClick={() => go(s.hash)} className="rounded-[6px] bg-background border border-border px-2 py-0.5 text-[12.5px] font-semibold hover:bg-muted">
+        <button key={s.hash} onClick={() => go(s.hash)} className="rounded-[6px] bg-background border border-border px-2 py-0.5 max-sm:min-h-11 text-[12.5px] font-semibold hover:bg-muted">
           {s.label}
         </button>
       ))}
@@ -231,7 +231,7 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
       <Crumb go={go} here="For instructors" />
       <h1 className="display text-[32px] md:text-[44px]">For instructors</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
-        A suggested 12-week course built on the modules, labs, games, studio cases and projects here, with weekly readings, an assessment scheme, links to assign modules, and a way for students to hand in their
+        A suggested 12-week course built on the modules, labs, games, modelling studio practice briefs and capstone projects here, with weekly readings, an assessment scheme, links to assign modules, and a way for students to hand in their
         progress. Everything runs in the browser; nothing is sent to a server.
       </p>
 
@@ -441,7 +441,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
         <p className="sheet">
           No project called “{id}”.{" "}
           <button onClick={() => go("/learn/projects")} className="tlink font-semibold">
-            See all projects
+            See all capstone projects
           </button>
         </p>
       </div>
@@ -468,7 +468,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
         <span className="text-[14px] text-muted-foreground">
           {ticked} of {total} checks ticked
         </span>
-        <button onClick={() => window.print()} className="brick brick-w h-9 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5">
+        <button onClick={() => window.print()} className="brick brick-w h-9 max-sm:min-h-11 px-3 text-[13px] font-semibold inline-flex items-center gap-1.5">
           <Printer size={14} aria-hidden /> Print or save as PDF
         </button>
       </div>

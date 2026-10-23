@@ -27,10 +27,10 @@ export function NotebookLinks({ file, title }: { file: string; title: string }) 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-[14px] font-semibold mr-1">{title}</span>
-      <a href={colabUrl(file)} target="_blank" rel="noreferrer" className="brick brick-y h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
+      <a href={colabUrl(file)} target="_blank" rel="noreferrer" className="brick brick-y h-8 max-sm:min-h-11 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
         <ExternalLink size={13} aria-hidden /> Open in Colab
       </a>
-      <a href={rawUrl(file)} download={file} onClick={(e) => download(e, file)} className="brick brick-w h-8 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
+      <a href={rawUrl(file)} download={file} onClick={(e) => download(e, file)} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12px] font-semibold inline-flex items-center gap-1.5">
         <Download size={13} aria-hidden /> Download
       </a>
     </div>
