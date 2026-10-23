@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "check": "esbuild scripts/check.ts --bundle --platform=node --alias:@=./src --log-level=error | node",
     "test:builder": "esbuild scripts/builder-test.ts --bundle --platform=node --alias:@=./src --log-level=error | node",
+    "test:import": "esbuild scripts/import-test.ts --bundle --platform=node --alias:@=./src --log-level=error | node",
     "golden": "esbuild scripts/golden.ts --bundle --platform=node --alias:@=./src --log-level=error | node",
     "specs": "node scripts/spec-index.mjs && npm run golden",
     "spec-verify": "esbuild scripts/spec-verify.ts --bundle --platform=node --alias:@=./src --log-level=error --outfile=node_modules/.cache/spec-verify.cjs && node node_modules/.cache/spec-verify.cjs",

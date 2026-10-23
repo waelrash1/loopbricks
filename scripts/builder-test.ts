@@ -1,5 +1,6 @@
-// Model builder tests: arrays, links, JSON, and every export. The Python script and notebook are run with python3
-// (numpy, pandas, matplotlib) and must give the same final stocks as the app. Run with: npm run test:builder
+// Model builder tests: arrays, links, JSON, functions with memory, data, and every export. The Python script and
+// notebook are run with python3 (numpy, pandas, matplotlib) and must give the same final stocks as the app (random
+// models only roughly, as numpy draws other numbers). Run with: npm run test:builder
 import { execFile } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -52,6 +53,64 @@ const sink: BModel = {
   links: [{ from: "v7", to: "v6" }],
 };
 
+// every function added for PySD parity, data with and without extrapolation, a start time, a save interval, two
+// dimensions (one transposed) and a subrange
+const every: BModel = {
+  name: "Every function",
+  timeUnit: "week",
+  start: 2,
+  T: 14,
+  dt: 0.25,
+  saveEvery: 0.5,
+  dims: [
+    { name: "Region", elements: ["North", "South", "East"] },
+    { name: "Coastal", elements: ["North", "South"], of: "Region" },
+    { name: "Age", elements: ["Young", "Old"] },
+  ],
+  stocks: [
+    { id: "s1", name: "Population", init: "10, 20, 30, 40, 50, 60", x: 0, y: 0, dim: "Region, Age" },
+    { id: "s2", name: "Harbour", init: "SUM(Population) / 10 + Base", x: 0, y: 0, dim: "Coastal" },
+    { id: "s3", name: "Tank", init: "5", x: 0, y: 0 },
+    { id: "s4", name: "Cohort", init: "1", x: 0, y: 0, dim: "Age, Region" },
+  ],
+  flows: [
+    { id: "f1", name: "Births", to: "s1", eq: "Population * birth_rate + DELAY1(Population * 0.01, 2) + DELAYN(Population * 0.01, 3, 4, 0.5) + 0.01 * Cohort", x: 0, y: 0, dim: "Region, Age" },
+    { id: "f2", name: "Deaths", from: "s1", eq: "SMOOTHN(Population * 0.02, 2, 2) + SMOOTH3(Population * 0.01, 3, 1) + DELAY3(Population * 0.01, 1 + TIME / 10)", x: 0, y: 0, dim: "Region, Age" },
+    { id: "f3", name: "Landing", to: "s2", eq: "Base * 0.1 + SMOOTH(Harbour, 2) * 0.05 + DELAY_FIXED(Base + TIME, 1.5, 3)", x: 0, y: 0, dim: "Coastal" },
+    { id: "f4", name: "Fill", to: "s3", eq: "DELAY3(Signal, 2) + DELAY1(Signal, 1, 4) + Rainfall + Demand + Maths * 0.01 + Trend_of_signal + Forecast_signal * 0.1 + First_signal + Total * 0.001 + Late", x: 0, y: 0 },
+    { id: "f5", name: "Drain", from: "s3", eq: "Tank / 4 + INITIAL(Tank) * 0.01", x: 0, y: 0 },
+    { id: "f6", name: "Ageing", to: "s4", eq: "Population * 0.01", x: 0, y: 0, dim: "Age, Region" },
+  ],
+  vars: [
+    { id: "v1", name: "Base", eq: "1, 2, 3", x: 0, y: 0, dim: "Region" },
+    { id: "v2", name: "Birth rate", eq: "0.01, 0.02, 0.03", x: 0, y: 0, dim: "Region" },
+    { id: "v3", name: "Signal", eq: "5 + STEP(2, 4) + RAMP(0.3, 8) + SIN(TIME) + COS(TIME / 2) + TAN(0.1 * TIME)", x: 0, y: 0 },
+    { id: "v4", name: "Maths", eq: "LOG(8, 2) + POWER(2, 3) + INT(-2.5) + INT(2.5) + MODULO(-7, 3) + MODULO(7, 3) + ARCSIN(0.5) + ARCCOS(0.5) + ARCTAN(1) + PI() + ZIDZ(1, 0) + ZIDZ(1, 4) + XIDZ(1, 0, 7) + XIDZ(3, 2, 7) + TABLE_EXTRAP(TIME, 3, 1, 5, 2) + TABLE_EXTRAP(-TIME, 0, 0, 1, 1)", x: 0, y: 0 },
+    { id: "v5", name: "Trend of signal", eq: "TREND(Signal, 3, 0.05)", x: 0, y: 0 },
+    { id: "v6", name: "Forecast signal", eq: "FORECAST(Signal, 3, 2)", x: 0, y: 0 },
+    { id: "v7", name: "First signal", eq: "INITIAL(Signal)", x: 0, y: 0 },
+    { id: "v8", name: "Rainfall", eq: "", data: [[0, 1], [5, 3], [10, 2]], x: 0, y: 0 },
+    { id: "v9", name: "Demand", eq: "", data: [[3, 2], [6, 4], [8, 3]], extrapolate: true, x: 0, y: 0 },
+    { id: "v10", name: "Total", eq: "SUM(Population) + PROD(Base) + MEAN(Harbour) + VMIN(Population) + VMAX(Population)", x: 0, y: 0 },
+    { id: "v11", name: "Trend check", eq: "TREND(Signal, 3, 0)", x: 0, y: 0 },
+    { id: "v12", name: "Late", eq: "DELAY_FIXED(TIME, 1.5, -1)", x: 0, y: 0 },
+  ],
+};
+// random numbers, arrayed and not, seeded and not
+const noise: BModel = {
+  name: "Noise",
+  timeUnit: "day",
+  T: 200,
+  dt: 1,
+  dims: [{ name: "Patch", elements: ["A", "B"] }],
+  stocks: [{ id: "s1", name: "Level", init: "0", x: 0, y: 0, dim: "Patch" }],
+  flows: [{ id: "f1", name: "Change", to: "s1", eq: "RANDOM_UNIFORM(0, 1) + RANDOM_NORMAL(-1, 1, 0, 0.5, 42)", x: 0, y: 0, dim: "Patch" }],
+  vars: [{ id: "v1", name: "U", eq: "RANDOM_UNIFORM(0, 1, 7)", x: 0, y: 0 }],
+};
+// one CSV line as cells (labels of arrays over two dimensions hold a comma, so they come quoted)
+const cells = (line: string) => [...line.matchAll(/("(?:[^"]|"")*"|[^,]*)(?:,|$)/g)].slice(0, -1).map((x) => x[1].replace(/^"|"$/g, "").replace(/""/g, '"'));
+const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
+
 // ---------------------------------------------------------------------------------------------------
 // arrays and links in the app
 {
@@ -98,12 +157,79 @@ const sink: BModel = {
   if (renamed.links?.length !== 1 || renamed.vars[2].eq !== "SUM(People)" || validate(renamed).issues.length) fail(`rename: links should survive and SUM(Population) become SUM(People): ${issues(renamed)}`);
   if (removeElement(regions, "v3").links?.length !== 0) fail("remove: links to a removed element should go");
   // JSON keeps dims, links, dim and note
-  for (const mm of [regions, sink]) if (canon(fromJSON(toJSON(mm))) !== canon(mm)) fail(`${mm.name}: JSON round trip changed the model`);
+  for (const mm of [regions, sink, every, noise]) if (canon(fromJSON(toJSON(mm))) !== canon(mm)) fail(`${mm.name}: JSON round trip changed the model`);
+
+  // the new rules
+  m = clone(every);
+  m.flows[0].eq = "DELAYN(Population, 3, 2.5)";
+  m.vars[3].eq = "DELAY_FIXED(Signal, Signal, 0)";
+  m.vars[4].eq = "SMOOTHN(Signal, 3, Signal)";
+  m.vars[7].data = [[0, 1]];
+  m.vars[8].data = [[0, 1], [0, 2]];
+  m.vars[11].data = [[0, 1], [1, NaN]];
+  m.start = 20;
+  m.saveEvery = 0.3;
+  m.dims![1].elements = ["North", "West"];
+  m.stocks[0].init = "1, 2, 3";
+  m.stocks[2].dim = "Region, Region";
+  m.vars.push({ id: "v20", name: "Wide", eq: "Harbour", x: 0, y: 0, dim: "Region" });
+  expect("new rules", m, [
+    "error f1 eq: Equation: the order of DELAYN must be a whole number of at least 1",
+    "error v4 eq: Equation: DELAY_FIXED needs a fixed delay time",
+    "error v5 eq: Equation: the order of SMOOTHN must be a whole number",
+    "error v8 data: Data: give at least 2 points",
+    "error v9 data: Data: the times must increase, but 0 comes after 0.",
+    "error v12 data: Data: every point must be a time and a value, both plain numbers.",
+    "error - settings: Stop time must be a number after the start time (20).",
+    "error - settings: Save every must be a whole number of time steps (dt = 0.25)",
+    'error - dim: Dimension Coastal: "West" is not an element of Region',
+    "error s1 init: Initial value: Region, Age has 6 elements",
+    "error s3 dim: It lists Region twice",
+    "error v20 eq: Harbour is an array over Coastal, but this is over Region.",
+  ]);
+  m = clone(every);
+  m.dims![1].of = "Regions";
+  expect("unknown parent", m, ['error - dim: Dimension Coastal is a subrange of "Regions", but there is no dimension called that.']);
+  // a delay or smooth is a stock, so it breaks a loop; TREND reads its input at once, so it does not
+  m = clone(template("bathtub"));
+  m.vars.push({ id: "v8", name: "a", eq: "DELAY1(b, 2, 0) + SMOOTH(b, 3, 1)", x: 0, y: 0 }, { id: "v9", name: "b", eq: "a + 1", x: 0, y: 0 });
+  if (validate(m).issues.some((i) => i.level === "error") || !simulate(m).ok) fail(`a loop through DELAY1 and SMOOTH should run: ${issues(m)}`);
+  m.vars[1].eq = "TREND(b, 2, 0)";
+  expect("loop through TREND", m, ["error v8 eq: Circular definition: b → a → b."]);
+
+  // the app's numbers for what PySD does not check on its own
+  const ev = simulate(every, Number.MAX_SAFE_INTEGER);
+  if (!ev.ok) fail(`every: run failed: ${ev.issues.map((i) => i.msg).join("; ")}`);
+  else {
+    if (ev.times.length !== 25 || ev.times[0] !== 2 || ev.times[24] !== 14) fail(`every: times should run from 2 to 14 every 0.5, got ${ev.times.length} from ${ev.times[0]} to ${ev.times[ev.times.length - 1]}`);
+    if (series(every, every.stocks[0]).map((x) => x.key).join() !== "s1[North,Young],s1[North,Old],s1[South,Young],s1[South,Old],s1[East,Young],s1[East,Old]") fail("every: 2-D series keys");
+    if (series(every, every.stocks[0])[1].label !== "Population[North,Old]" || !ev.values["s4[Old,East]"] || !ev.values["s2[South]"] || Object.keys(ev.values).some((k) => k.includes("~"))) fail("every: values keys");
+    ev.times.forEach((t, i) => {
+      const late = ev.values.v12[i], want = t >= 3.5 - 1e-9 ? t - 1.5 : -1;
+      if (Math.abs(late - want) > 1e-9) fail(`every: DELAY_FIXED(TIME, 1.5, -1) at ${t} gave ${late}, expected ${want}`);
+      const f = ev.values.v6[i], g = ev.values.v3[i] * (1 + ev.values.v11[i] * 2);
+      if (Math.abs(f - g) > 1e-9) fail(`every: FORECAST should be input * (1 + TREND * horizon) at ${t}: ${f} vs ${g}`);
+      if (ev.values.v7[i] !== ev.values.v3[0]) fail("every: INITIAL should hold the first value");
+    });
+    const maths = ev.values.v4[0], t0 = 2;
+    const wantMaths = 3 + 8 - 2 + 2 - 1 + 1 + Math.asin(0.5) + Math.acos(0.5) + Math.atan(1) + Math.PI + 0 + 0.25 + 7 + 1.5 + 1 + 0.5 * (t0 - 3) + -t0;
+    if (Math.abs(maths - wantMaths) > 1e-9) fail(`every: Maths at the start gave ${maths}, expected ${wantMaths}`);
+    if (ev.values.v8[0] !== 1.8 || Math.abs(ev.values.v9[0] - 4 / 3) > 1e-12 || Math.abs(ev.values.v9[24]) > 1e-12) fail(`every: data at the start ${ev.values.v8[0]}, ${ev.values.v9[0]}; extrapolated or held at 14: ${ev.values.v9[24]}`);
+  }
+  // random: the same run twice, different streams per element, and the right spread
+  const n1 = simulate(noise, Number.MAX_SAFE_INTEGER), n2 = simulate(fromJSON(toJSON(noise)), Number.MAX_SAFE_INTEGER);
+  if (!n1.ok || JSON.stringify(n1.values) !== JSON.stringify(n2.values)) fail("noise: two runs with the same seeds should be the same");
+  else {
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    if (n1.values["f1[A]"].join() === n1.values["f1[B]"].join()) fail("noise: each element should draw its own numbers");
+    if (Math.abs(mean(n1.values.v1) - 0.5) > 0.08 || Math.abs(mean(n1.values["f1[A]"]) - 0.5) > 0.15) fail(`noise: means ${mean(n1.values.v1)}, ${mean(n1.values["f1[A]"])}`);
+    if (n1.values["f1[B]"].some((v) => v < -1 || v > 2)) fail("noise: RANDOM_NORMAL should stay within its limits");
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------
 // exports, for every template, the examples above and every shared spec
-const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), sink, ...Object.values(SPECS).map((s) => clone(s.model))];
+const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), sink, every, noise, ...Object.values(SPECS).map((s) => clone(s.model))];
 const root = mkdtempSync(join(tmpdir(), "loopbricks-builder-"));
 const py = (args: string[], cwd: string) => run("python3", args, { cwd, env: { ...process.env, MPLBACKEND: "Agg", PYTHONWARNINGS: "ignore" }, maxBuffer: 64 << 20 });
 const jobs: (() => Promise<void>)[] = [];
@@ -129,7 +255,7 @@ models.forEach((m, k) => {
   // CSV header and size
   const csv = resultsCsv(m, res).trim().split("\n");
   const labels = elements(m).flatMap((e) => series(m, e).map((x) => x.label));
-  if (csv[0] !== ["time", ...labels].join(",") || csv.length !== res.times.length + 1) fail(`${tag}: results CSV header or length`);
+  if (cells(csv[0]).join("|") !== ["time", ...labels].join("|") || csv.length !== res.times.length + 1) fail(`${tag}: results CSV header or length`);
   if (!markdownDoc(m).startsWith(`# ${m.name}`) || !requirementsTxt(m).includes("numpy>=")) fail(`${tag}: markdown or requirements`);
   // notebook shape
   const nb = JSON.parse(notebook(m));
@@ -143,6 +269,8 @@ models.forEach((m, k) => {
   xmileFiles.push(join(dir, `${s}.xmile`));
   // final stocks in the app
   const want = new Map(m.stocks.flatMap((st) => series(m, st)).map((x) => [x.label, res.values[x.key][res.values[x.key].length - 1]]));
+  // random models: numpy and PySD draw other numbers, so only the size of the result is compared
+  const tol = isRandom(m) ? 0.4 : 1e-6;
   jobs.push(async () => {
     try {
       await py([`${s}.py`], dir);
@@ -150,12 +278,12 @@ models.forEach((m, k) => {
       return fail(`${tag}: the Python script failed:\n${(e as { stderr?: string }).stderr ?? e}`);
     }
     const out = readFileSync(join(dir, `${s}-results.csv`), "utf8").trim().split("\n");
-    const head = out[0].split(","), last = out[out.length - 1].split(",").map(Number);
+    const head = cells(out[0]), last = cells(out[out.length - 1]).map(Number);
     if (out.length !== res.times.length + 1) fail(`${tag}: Python gave ${out.length - 1} rows, the app ${res.times.length}`);
     for (const [label, v] of want) {
       const j = head.indexOf(label), got = last[j];
       if (j < 0) fail(`${tag}: no column ${label} in the Python results`);
-      else if (!(Math.abs(got - v) <= 1e-6 * Math.max(1, Math.abs(v)))) fail(`${tag}: ${label} ends at ${got} in Python, ${v} in the app`);
+      else if (!(Math.abs(got - v) <= tol * Math.max(1, Math.abs(v)))) fail(`${tag}: ${label} ends at ${got} in Python, ${v} in the app`);
     }
     try {
       await py(["notebook.py"], dir);
@@ -170,10 +298,11 @@ models.forEach((m, k) => {
     const pnb = JSON.parse(pysdNotebook(m)).cells.filter((c: { cell_type: string }) => c.cell_type === "code").map((c: { source: string[] }) => c.source.join("")).join("\n\n");
     writeFileSync(join(pdir, "pysd_notebook.py"), pnb.replace(/plt\.show\(\)/g, "pass"));
     try {
-      await pysd(["-c", `import runpy, json\nns = runpy.run_path(${JSON.stringify(`${s}_pysd.py`)})\ndf = ns["model"].run()\njson.dump({c: float(df[c].iloc[-1]) for c in ns["STOCKS"]}, open("final.json", "w"))`], pdir);
-      const got = JSON.parse(readFileSync(join(pdir, "final.json"), "utf8")) as Record<string, number>;
+      await pysd(["-c", `import runpy, json\nns = runpy.run_path(${JSON.stringify(`${s}_pysd.py`)})\ndf = ns["model"].run(saveper=ns["SAVEPER"])\njson.dump({"rows": len(df), "first": float(df.index[0]), "final": {c: float(df[c].iloc[-1]) for c in ns["STOCKS"]}}, open("final.json", "w"))`], pdir);
+      const out = JSON.parse(readFileSync(join(pdir, "final.json"), "utf8")) as { rows: number; first: number; final: Record<string, number> };
+      if (out.rows !== res.times.length || out.first !== res.times[0]) fail(`${tag}: PySD kept ${out.rows} rows from ${out.first}, the app ${res.times.length} from ${res.times[0]}`);
       for (const [label, v] of want)
-        if (!(Math.abs(got[label] - v) <= 1e-6 * Math.max(1, Math.abs(v)))) fail(`${tag}: ${label} ends at ${got[label]} in PySD, ${v} in the app`);
+        if (!(Math.abs(out.final[label] - v) <= tol * Math.max(1, Math.abs(v)))) fail(`${tag}: ${label} ends at ${out.final[label]} in PySD, ${v} in the app`);
       await pysd(["pysd_notebook.py"], pdir);
     } catch (e) {
       fail(`${tag}: PySD failed:\n${((e as { stderr?: string }).stderr ?? String(e)).slice(-1500)}`);

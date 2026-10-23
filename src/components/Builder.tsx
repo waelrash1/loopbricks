@@ -19,6 +19,10 @@ import {
   Plus,
   Redo2,
   Scan,
+  Search,
+  Shuffle,
+  Sigma,
+  Table2,
   Trash2,
   Undo2,
   Upload,
@@ -58,7 +62,8 @@ import {
   series,
 } from "@/lib/builder";
 import { markdownDoc, notebook, pysdNotebook, pysdScript, pythonScript, requirementsTxt, resultsCsv, slug as slugOf, xmile } from "@/lib/exports";
-import { refName } from "@/lib/expr";
+import { FUNCTION_DOCS, refName } from "@/lib/expr";
+import { importModel } from "@/lib/importers";
 import { endDirs, flowShape, midpoint, shortenQ, valvePath } from "@/lib/flowGeom";
 import { cn } from "@/lib/utils";
 
@@ -82,8 +87,54 @@ const popover = "absolute max-sm:left-0 max-sm:right-0 max-sm:w-auto max-sm:max-
 const DIM_RE = /^[\p{L}_][\p{L}\p{N}_]*$/u;
 
 const boxW = (name: string) => Math.max(104, Math.min(230, name.length * 7.6 + 28));
-// the name as drawn: an arrayed element shows its dimension, Population[Region]
-const labelOf = (e: { name: string; dim?: string }) => (e.name || "(no name)") + (e.dim ? `[${e.dim}]` : "");
+// an element's dimensions, in order: "Region, Age" is ["Region", "Age"]
+const dimList = (dim?: string) => (dim ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const dimJoin = (list: string[]) => (list.length ? list.join(", ") : undefined);
+// the name as drawn: an arrayed element shows its dimensions, Population[Region,Age]
+const labelOf = (e: { name: string; dim?: string }) => (e.name || "(no name)") + (e.dim ? `[${dimList(e.dim).join(",")}]` : "");
+// the function reference: a signature's skeleton to insert ("SMOOTH(, )"), and a lookup by name for the hint
+const skeleton = (name: string, sig: string) => {
+  const m = /\((.*)\)/.exec(sig.replace(/\[[^\]]*\]/g, ""));
+  if (!m) return { text: name, caret: name.length };
+  const n = m[1].split(",").filter((a) => a.trim() && a.trim() !== "...").length;
+  return { text: `${name}(${Array(n).fill("").join(", ")})`, caret: name.length + 1 };
+};
+const DOC_BY_NAME = new Map(FUNCTION_DOCS.map((d) => [d[0], d]));
+// the function the caret is in: the name under it, or the innermost call whose brackets are still open
+function fnAt(text: string, caret: number) {
+  const word = /[\p{L}_][\p{L}\p{N}_]*$/u.exec(text.slice(0, caret))?.[0] ?? "";
+  const whole = (word + (/^[\p{L}\p{N}_]*/u.exec(text.slice(caret))?.[0] ?? "")).toUpperCase();
+  if (DOC_BY_NAME.has(whole)) return DOC_BY_NAME.get(whole);
+  let depth = 0;
+  for (let i = caret - 1; i >= 0; i--) {
+    if (text[i] === ")") depth++;
+    else if (text[i] === "(" && depth-- === 0) {
+      const name = /([\p{L}_][\p{L}\p{N}_]*)\s*$/u.exec(text.slice(0, i))?.[1]?.toUpperCase();
+      return name ? DOC_BY_NAME.get(name) : undefined;
+    }
+  }
+}
+const usesRandom = (m: BModel) => elements(m).some((e) => /\bRANDOM_/i.test(e.kind === "stock" ? e.init : e.eq));
+// a pasted or uploaded CSV: two columns, time and value; a header line is skipped; comma, tab or semicolon separated
+function parseCsv(text: string): { data: [number, number][]; extra: boolean } | { error: string } {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const data: [number, number][] = [];
+  let extra = false;
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i], sep = l.includes("\t") ? "\t" : l.includes(";") ? ";" : ",";
+    const cells = l.split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
+    const t = cells[0] === "" ? NaN : +cells[0], v = cells[1] === undefined || cells[1] === "" ? NaN : +cells[1];
+    if (i === 0 && cells.length >= 2 && !Number.isFinite(t) && !Number.isFinite(v)) continue; // a header
+    if (cells.length < 2) return { error: `Line ${i + 1}: expected two columns, time and value, separated by a comma, tab or semicolon.` };
+    if (!Number.isFinite(t)) return { error: `Line ${i + 1}: the time "${cells[0]}" is not a number.` };
+    if (!Number.isFinite(v)) return { error: `Line ${i + 1}: the value "${cells[1]}" is not a number.` };
+    if (data.length && t <= data[data.length - 1][0]) return { error: `Line ${i + 1}: the time ${t} does not come after ${data[data.length - 1][0]}. Times must increase down the column.` };
+    if (cells.length > 2) extra = true;
+    data.push([t, v]);
+  }
+  if (data.length < 2) return { error: data.length ? "Only one row of data: give at least two, so there is something to interpolate between." : "No data found. Paste two columns: time and value." };
+  return { data, extra };
+}
 const unit = (a: P, b: P): P => {
   const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
   return [(b[0] - a[0]) / d, (b[1] - a[1]) / d];
@@ -214,7 +265,7 @@ function freeSpot(m: BModel, vb: VB, prefer?: P): P {
 }
 
 const KIND_LABEL = { stock: "Stock", flow: "Flow", var: "Variable" } as const;
-const kindOf = (e: Element) => (e.kind === "var" ? (isConstant(e) ? "Constant" : "Auxiliary") : KIND_LABEL[e.kind]);
+const kindOf = (e: Element) => (e.kind === "var" ? (e.data ? "Data" : isConstant(e) ? "Constant" : "Auxiliary") : KIND_LABEL[e.kind]);
 
 type ExportKind = "py" | "req" | "ipynb" | "python" | "pysd" | "pysdnb" | "json" | "xmile" | "csv" | "md" | "svg";
 
@@ -230,6 +281,8 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   const [note, setNote] = useState("");
   const [vb, setVb] = useState<VB>(() => viewFor(model));
   const [full, setFull] = useState<"native" | "overlay" | null>(null);
+  const [opened, setOpened] = useState<{ file: string; warnings: string[]; error: string } | null>(null);
+  const insertRef = useRef<((text: string, caret?: number) => void) | null>(null); // the inspector's insert, for the toolbar's function reference
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<HTMLDivElement>(null);
@@ -394,12 +447,23 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     while (dims.some((d) => d.name.toLowerCase() === `dim${n}`)) n++;
     setDims((d) => [...d, { name: `Dim${n}`, elements: ["A", "B", "C"] }]);
   };
+  const arrayedOver = (name: string) => elements(model).filter((e) => dimList(e.dim).includes(name)).length;
   const renameDim = (old: string, name: string) =>
-    update((m) => mapAll({ ...m, dims: (m.dims ?? []).map((d) => (d.name === old ? { ...d, name } : d)) }, (e) => (e.dim === old ? { ...e, dim: name } : e)));
+    update((m) =>
+      mapAll(
+        { ...m, dims: (m.dims ?? []).map((d) => (d.name === old ? { ...d, name } : d.of === old ? { ...d, of: name } : d)) },
+        (e) => (dimList(e.dim).includes(old) ? { ...e, dim: dimJoin(dimList(e.dim).map((x) => (x === old ? name : x))) } : e),
+      ),
+    );
   const deleteDim = (name: string) => {
-    const n = elements(model).filter((e) => e.dim === name).length;
-    if (n && !window.confirm(`${plural(n, "element")} ${n === 1 ? "is" : "are"} arrayed over ${name}. Delete the dimension and make ${n === 1 ? "it a single value" : "them single values"}?`)) return;
-    update((m) => mapAll({ ...m, dims: (m.dims ?? []).filter((d) => d.name !== name) }, (e) => (e.dim === name ? { ...e, dim: undefined } : e)));
+    const n = arrayedOver(name);
+    if (n && !window.confirm(`${plural(n, "element")} ${n === 1 ? "is" : "are"} arrayed over ${name}. Delete the dimension and drop it from ${n === 1 ? "that element" : "those elements"}?`)) return;
+    update((m) =>
+      mapAll(
+        { ...m, dims: (m.dims ?? []).filter((d) => d.name !== name).map((d) => (d.of === name ? { ...d, of: undefined } : d)) },
+        (e) => (dimList(e.dim).includes(name) ? { ...e, dim: dimJoin(dimList(e.dim).filter((x) => x !== name)) } : e),
+      ),
+    );
   };
 
   // view: zoom and pan move the viewBox, so positions stay in model space
@@ -613,18 +677,21 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     }
   };
   const importFile = async (f: File | undefined) => {
+    if (fileRef.current) fileRef.current.value = "";
     if (!f) return;
+    if (elements(model).length && !window.confirm(`Replace your current model with ${f.name}? You can undo this.`)) return;
     try {
-      const m = fromJSON(await f.text());
+      const text = await f.text();
+      const { model: m, warnings } = /\.json$/i.test(f.name) ? { model: fromJSON(text), warnings: [] as string[] } : importModel(f.name, text);
       update(() => m);
       setVb(viewFor(m));
       select(null);
       setRun(null);
-      setNote(`Imported "${m.name}". Undo puts your previous model back.`);
+      setOpened({ file: f.name, warnings, error: "" });
+      setNote(`Opened "${m.name}". Undo puts your previous model back.`);
     } catch (e) {
-      setNote(`Import failed: ${errText(e)}`);
+      setOpened({ file: f.name, warnings: [], error: errText(e) });
     }
-    if (fileRef.current) fileRef.current.value = "";
   };
   const copy = async () => {
     try {
@@ -653,7 +720,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   };
   const ariaFor = (el: Element) => {
     const n = (byId.get(el.id) ?? []).length;
-    return `${kindOf(el)} ${labelOf(el)}${n ? `, ${n} problem${n > 1 ? "s" : ""}` : ""}${linking ? (linking.from ? ". Press Enter to link to it" : ". Press Enter to link from it") : ""}`;
+    return `${kindOf(el)} ${labelOf(el)}${el.kind === "var" && el.data ? ", from data" : ""}${n ? `, ${n} problem${n > 1 ? "s" : ""}` : ""}${linking ? (linking.from ? ". Press Enter to link to it" : ". Press Enter to link from it") : ""}`;
   };
   const elProps = (el: Element) => ({
     tabIndex: 0,
@@ -693,10 +760,10 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
           </button>
         ))}
         <span className="hidden sm:block w-px h-7 bg-border mx-1" aria-hidden />
-        <button onClick={() => fileRef.current?.click()} className={btn} title="Load a model file (.json) exported from this builder">
-          <Upload size={15} aria-hidden /> Import JSON
+        <button onClick={() => fileRef.current?.click()} className={btn} title="Open a model: this builder's .json, XMILE from Stella or iThink (.xmile, .stmx, .itmx, .xml) or Vensim (.mdl)">
+          <Upload size={15} aria-hidden /> Open model...
         </button>
-        <input ref={fileRef} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} aria-label="Import a model from a JSON file" onChange={(e) => importFile(e.target.files?.[0])} />
+        <input ref={fileRef} type="file" accept=".json,.xmile,.stmx,.itmx,.xml,.mdl,application/json,application/xml,text/xml" className="sr-only" tabIndex={-1} aria-label="Open a model file" onChange={(e) => importFile(e.target.files?.[0])} />
         <button onClick={copy} className={btn} title="Copy every equation as plain text">
           <ClipboardCopy size={15} aria-hidden /> Copy equations
         </button>
@@ -772,6 +839,20 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
             {full ? <Minimize size={15} aria-hidden /> : <Maximize size={15} aria-hidden />} {full ? "Exit full screen" : "Full screen"}
           </button>
           <details data-menu className="sm:relative">
+            <summary className={cn(ibtn, summaryCls)} aria-label="Functions" title="Functions: every function you can use in an equation">
+              <Sigma size={16} aria-hidden />
+            </summary>
+            <FunctionRef
+              className="right-0"
+              hint={selected ? `Click one to insert it into the equation of ${selected.name || "the selection"}.` : "Select an element, then click a function to insert it into its equation."}
+              onPick={(name, sig) => {
+                if (!insertRef.current) return setNote("Select an element first, then pick a function to insert it into its equation.");
+                const k = skeleton(name, sig);
+                insertRef.current(k.text, k.caret);
+              }}
+            />
+          </details>
+          <details data-menu className="sm:relative">
             <summary className={cn(ibtn, summaryCls)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts">
               <Keyboard size={16} aria-hidden />
             </summary>
@@ -781,6 +862,35 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         <p aria-live="polite" className="mt-2 min-h-[20px] text-[13.5px] text-muted-foreground">
           {note}
         </p>
+
+        {opened && (
+          <div role={opened.error ? "alert" : "status"} className={cn("mb-3 rounded-[8px] border px-3 py-2 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : "border-accent-edge bg-accent/20")}>
+            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : <AlertTriangle size={16} aria-hidden className={cn("shrink-0 mt-0.5", opened.warnings.length ? "text-accent-edge" : "text-muted-foreground")} />}
+            <div className="min-w-0 flex-1">
+              {opened.error ? (
+                <p>
+                  <b>Could not open {opened.file}.</b> {opened.error.replace(/^not implemented$/i, "Opening this kind of file is not ready yet; for now, open a .json model file saved from this builder.")} Your model has not changed.
+                </p>
+              ) : (
+                <>
+                  <p>
+                    <b>Opened {opened.file}.</b> {opened.warnings.length ? `${plural(opened.warnings.length, "thing")} to check:` : "Everything came across."}
+                  </p>
+                  {opened.warnings.length > 0 && (
+                    <ul className="mt-1 list-disc pl-5 grid gap-0.5 max-h-[160px] overflow-auto">
+                      {opened.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
+            </div>
+            <button onClick={() => setOpened(null)} className={cn(ibtn, "h-7 w-7 shrink-0")} aria-label="Dismiss this message" title="Dismiss">
+              <X size={14} aria-hidden />
+            </button>
+          </div>
+        )}
 
         <div className="mt-1 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start">
           {/* canvas */}
@@ -804,7 +914,16 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                   <ChevronDown size={14} aria-hidden />
                 </summary>
                 <div className={cn(popover, "right-0 w-[340px] max-w-[calc(100vw-40px)] p-3")}>
-                  <DimensionsEditor dims={dims} issues={chk.issues.filter((i) => i.field === "dim" && !i.id)} usage={(n) => elements(model).filter((e) => e.dim === n).length} onAdd={addDim} onRename={renameDim} onDelete={deleteDim} onElements={(n, els) => setDims((d) => d.map((x) => (x.name === n ? { ...x, elements: els } : x)))} />
+                  <DimensionsEditor
+                    dims={dims}
+                    issues={chk.issues.filter((i) => i.field === "dim" && !i.id)}
+                    usage={arrayedOver}
+                    onAdd={addDim}
+                    onRename={renameDim}
+                    onDelete={deleteDim}
+                    onElements={(n, els) => setDims((d) => d.map((x) => (x.name === n ? { ...x, elements: els } : x)))}
+                    onOf={(n, of) => setDims((d) => d.map((x) => (x.name === n ? { ...x, of } : x)))}
+                  />
                 </div>
               </details>
             </div>
@@ -951,7 +1070,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                     );
                   })}
                   {model.vars.map((v) => {
-                    const on = halo(v.id), k = isConstant(v);
+                    const on = halo(v.id), k = !v.data && isConstant(v);
                     return (
                       <g key={v.id} {...elProps({ ...v, kind: "var" })}>
                         <circle data-skip={on ? true : undefined} cx={v.x} cy={v.y + 6} r={on ? 22 : 18} fill={on ? "hsl(var(--accent) / 0.35)" : "transparent"} stroke={on ? "hsl(var(--accent-edge))" : "none"} strokeWidth={2} />
@@ -964,6 +1083,15 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                           <text x={v.x} y={v.y + 33} textAnchor="middle" fontSize={10.5} fill={QUIET}>
                             = {v.eq.trim()}
                           </text>
+                        )}
+                        {v.data && (
+                          <g aria-hidden>
+                            <title>{`Data: ${plural(v.data.length, "point")}`}</title>
+                            <rect x={v.x - 14} y={v.y + 25} width={28} height={13} rx={3} fill={CARD} stroke={INFO} strokeWidth={1} />
+                            <text x={v.x} y={v.y + 34.5} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={INFO}>
+                              data
+                            </text>
+                          </g>
                         )}
                         {badge(v.id, v.x + 10, v.y - 9)}
                       </g>
@@ -1012,6 +1140,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                 onDelete={() => remove(selected.id)}
                 onDuplicate={duplicate}
                 onUnlink={(from) => update((m) => ({ ...m, links: (m.links ?? []).filter((l) => !(l.from === from && l.to === selected.id)) }))}
+                insertRef={insertRef}
               />
             ) : (
               <div>
@@ -1034,12 +1163,20 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
             </h2>
             <div className="mt-3 flex flex-wrap items-end gap-3">
               <label className="text-[13px] font-semibold flex flex-col">
+                Start time
+                <input type="number" step="any" value={model.start ?? ""} placeholder="0" onChange={(e) => update((m) => ({ ...m, start: e.target.value === "" ? undefined : +e.target.value }), "set:start")} aria-describedby="bld-run-help" className={cn(input, "mt-1 w-[110px]")} />
+              </label>
+              <label className="text-[13px] font-semibold flex flex-col">
                 Stop time
                 <input type="number" min={0} step="any" value={Number.isFinite(model.T) ? model.T : ""} onChange={(e) => update((m) => ({ ...m, T: e.target.value === "" ? NaN : +e.target.value }), "set:T")} className={cn(input, "mt-1 w-[110px]")} />
               </label>
               <label className="text-[13px] font-semibold flex flex-col">
                 Time step (dt)
                 <input type="number" min={0} step="any" value={Number.isFinite(model.dt) ? model.dt : ""} onChange={(e) => update((m) => ({ ...m, dt: e.target.value === "" ? NaN : +e.target.value }), "set:dt")} className={cn(input, "mt-1 w-[110px]")} />
+              </label>
+              <label className="text-[13px] font-semibold flex flex-col">
+                Save every
+                <input type="number" min={0} step="any" value={model.saveEvery ?? ""} placeholder="every step" onChange={(e) => update((m) => ({ ...m, saveEvery: e.target.value === "" ? undefined : +e.target.value }), "set:saveEvery")} aria-describedby="bld-run-help" className={cn(input, "mt-1 w-[110px]")} />
               </label>
               <label className="text-[13px] font-semibold flex flex-col">
                 Time unit
@@ -1052,6 +1189,10 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                 {errors.length ? `${errors.length} problem${errors.length > 1 ? "s" : ""} to fix before it can run` : "Ready to run"}
               </span>
             </div>
+            <p id="bld-run-help" className="mt-2 text-[12.5px] text-muted-foreground max-w-[75ch]">
+              The run goes from the start time (0 if blank) to the stop time in steps of dt. Save every keeps a result only at that interval, a multiple of dt, to keep long runs light; leave it blank to keep every step.
+            </p>
+            {chk.issues.some((i) => i.field === "settings") && <IssueItems issues={chk.issues.filter((i) => i.field === "settings")} model={model} onSelect={() => {}} />}
             <div aria-live="polite">
               {run && !run.res.ok && (
                 <div className="mt-4 rounded-[8px] border border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)] px-4 py-3">
@@ -1065,6 +1206,11 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
               {run?.res.ok && (
                 <>
                   {stale && <p className="mt-3 text-[13px] rounded-[8px] bg-card border-l-4 border-accent px-3 py-2">You have changed the model since this run. Run again to see the effect.</p>}
+                  {usesRandom(run.model) && (
+                    <p className="mt-3 text-[13px] flex items-start gap-2 text-foreground/80">
+                      <Shuffle size={15} aria-hidden className="shrink-0 mt-0.5 text-muted-foreground" /> This model uses random numbers. With a seed in each RANDOM_ function, the same seed repeats the run exactly; change the seed for a different run.
+                    </p>
+                  )}
                   <Results model={run.model} res={run.res} />
                 </>
               )}
@@ -1140,6 +1286,49 @@ function Shortcuts() {
   );
 }
 
+// a searchable list of every function; picking one hands its name and signature to onPick and closes the menu
+function FunctionRef({ onPick, hint, className }: { onPick: (name: string, sig: string) => void; hint: string; className?: string }) {
+  const [q, setQ] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  // focus the search when the menu opens (the list is mounted while closed, so autoFocus would fire on page load)
+  useEffect(() => {
+    const d = searchRef.current?.closest("details");
+    const h = () => d?.open && searchRef.current?.focus();
+    d?.addEventListener("toggle", h);
+    return () => d?.removeEventListener("toggle", h);
+  }, []);
+  const k = q.trim().toLowerCase();
+  const list = k ? FUNCTION_DOCS.filter(([n, sig, d]) => n.toLowerCase().includes(k) || sig.toLowerCase().includes(k) || d.toLowerCase().includes(k)) : FUNCTION_DOCS;
+  return (
+    <div className={cn(popover, "w-[330px] max-w-[calc(100vw-40px)] p-2.5", className)}>
+      <label className="relative block">
+        <span className="sr-only">Search the functions</span>
+        <Search size={14} aria-hidden className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search: delay, random, lookup" className={cn(input, "pl-8 h-8")} ref={searchRef} />
+      </label>
+      <p className="mt-1.5 px-0.5 text-[12px] text-muted-foreground">{hint}</p>
+      <ul className="mt-1.5 grid gap-0.5 max-h-[300px] overflow-auto" aria-label="Functions">
+        {list.map(([n, sig, d]) => (
+          <li key={n}>
+            <button
+              onClick={(e) => {
+                onPick(n, sig);
+                const det = (e.currentTarget as HTMLElement).closest("details");
+                if (det) det.open = false;
+              }}
+              className="w-full text-left rounded-[6px] px-2 py-1.5 hover:bg-background focus-visible:bg-background"
+            >
+              <code className="block font-mono text-[12.5px] font-semibold">{sig}</code>
+              <span className="block text-[12px] text-muted-foreground leading-[1.4]">{d}</span>
+            </button>
+          </li>
+        ))}
+        {!list.length && <li className="px-2 py-2 text-[12.5px] text-muted-foreground">No function matches "{q}".</li>}
+      </ul>
+    </div>
+  );
+}
+
 function DimensionsEditor({
   dims,
   issues,
@@ -1148,6 +1337,7 @@ function DimensionsEditor({
   onRename,
   onDelete,
   onElements,
+  onOf,
 }: {
   dims: BDim[];
   issues: Issue[];
@@ -1156,14 +1346,25 @@ function DimensionsEditor({
   onRename: (old: string, name: string) => void;
   onDelete: (name: string) => void;
   onElements: (name: string, els: string[]) => void;
+  onOf: (name: string, of: string | undefined) => void;
 }) {
   return (
     <div>
       <h2 className="heading text-[15px]">Dimensions</h2>
-      <p className="mt-1 text-[12.5px] leading-[1.5] text-muted-foreground">A dimension lists the elements of an array, such as regions. Then choose Array over in an element's editor to give it one value per element.</p>
+      <p className="mt-1 text-[12.5px] leading-[1.5] text-muted-foreground">A dimension lists the elements of an array, such as regions. Then choose Array over in an element's editor to give it one value per element, or pick two dimensions for one value per combination. A subrange is a part of another dimension, such as the northern regions.</p>
       <ul className="mt-2 grid gap-3">
         {dims.map((d) => (
-          <DimRow key={d.name} dim={d} used={usage(d.name)} taken={(n) => dims.some((x) => x !== d && x.name.toLowerCase() === n.toLowerCase())} onRename={(n) => onRename(d.name, n)} onDelete={() => onDelete(d.name)} onElements={(e) => onElements(d.name, e)} />
+          <DimRow
+            key={d.name}
+            dim={d}
+            dims={dims}
+            used={usage(d.name)}
+            taken={(n) => dims.some((x) => x !== d && x.name.toLowerCase() === n.toLowerCase())}
+            onRename={(n) => onRename(d.name, n)}
+            onDelete={() => onDelete(d.name)}
+            onElements={(e) => onElements(d.name, e)}
+            onOf={(of) => onOf(d.name, of)}
+          />
         ))}
       </ul>
       {issues.length > 0 && (
@@ -1183,7 +1384,29 @@ function DimensionsEditor({
   );
 }
 
-function DimRow({ dim, used, taken, onRename, onDelete, onElements }: { dim: BDim; used: number; taken: (n: string) => boolean; onRename: (n: string) => void; onDelete: () => void; onElements: (e: string[]) => void }) {
+function DimRow({
+  dim,
+  dims,
+  used,
+  taken,
+  onRename,
+  onDelete,
+  onElements,
+  onOf,
+}: {
+  dim: BDim;
+  dims: BDim[];
+  used: number;
+  taken: (n: string) => boolean;
+  onRename: (n: string) => void;
+  onDelete: () => void;
+  onElements: (e: string[]) => void;
+  onOf: (of: string | undefined) => void;
+}) {
+  const parent = dim.of ? dims.find((d) => d.name.toLowerCase() === dim.of!.toLowerCase()) : undefined;
+  const pset = new Set(parent?.elements.map((x) => x.toLowerCase()));
+  const outside = parent ? dim.elements.filter((x) => !pset.has(x.toLowerCase())) : [];
+  const subErr = dim.of && !parent ? `There is no dimension called ${dim.of}.` : outside.length ? `${outside.join(", ")} ${outside.length === 1 ? "is" : "are"} not in ${parent!.name}. A subrange lists only elements of its parent.` : "";
   const joined = dim.elements.join(", ");
   const [name, setName] = useState(dim.name), [els, setEls] = useState(joined);
   useEffect(() => setName(dim.name), [dim.name]);
@@ -1212,8 +1435,24 @@ function DimRow({ dim, used, taken, onRename, onDelete, onElements }: { dim: BDi
         Elements, separated by commas
         <input value={els} onChange={(e) => setEls(e.target.value)} onBlur={commitEls} onKeyDown={(e) => e.key === "Enter" && commitEls()} className={cn(input, "mt-1 h-8 font-mono text-[13px]")} placeholder="North, South, East" />
       </label>
+      <label className="block mt-2 text-[12.5px] font-semibold">
+        Subrange of
+        <select value={dim.of ?? ""} onChange={(e) => onOf(e.target.value || undefined)} aria-invalid={!!subErr} className={cn(input, "mt-1 h-8", subErr && "border-[var(--viz-pink)]")}>
+          <option value="">None (a dimension of its own)</option>
+          {dims
+            .filter((d) => d !== dim && !d.of)
+            .map((d) => (
+              <option key={d.name} value={d.name}>
+                {d.name} ({d.elements.join(", ")})
+              </option>
+            ))}
+          {dim.of && !parent && <option value={dim.of}>{dim.of} (missing)</option>}
+        </select>
+      </label>
+      {subErr && <p className="mt-1 text-[12px] text-[var(--viz-pink)]">{subErr}</p>}
       <p className="mt-1 text-[12px] text-muted-foreground">
-        {plural(dim.elements.length, "element")}; {used ? `${plural(used, "model element")} arrayed over it` : "not used yet"}.
+        {plural(dim.elements.length, "element")}
+        {parent && !subErr ? `, part of ${parent.name}` : ""}; {used ? `${plural(used, "model element")} arrayed over it` : "not used yet"}.
       </p>
     </li>
   );
@@ -1304,6 +1543,7 @@ function Inspector({
   onDelete,
   onDuplicate,
   onUnlink,
+  insertRef,
 }: {
   el: Element;
   model: BModel;
@@ -1314,8 +1554,11 @@ function Inspector({
   onDelete: () => void;
   onDuplicate: () => void;
   onUnlink: (from: string) => void;
+  insertRef: React.MutableRefObject<((text: string, caret?: number) => void) | null>;
 }) {
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const [caret, setCaret] = useState<number | null>(null);
+  const [dataOpen, setDataOpen] = useState(false);
   const touched = useRef(false); // until the field has had the caret, insert at the end
   const has = (f: string) => issues.some((i) => i.field === f && i.level === "error");
   const exprField = el.kind === "stock" ? "init" : "eq";
@@ -1323,7 +1566,11 @@ function Inspector({
   const linked = new Set(inputs.map((i) => i.el.id));
   const others = elements(model).filter((e) => e.id !== el.id && e.name.trim() && !linked.has(e.id));
   const dims = model.dims ?? [];
-  const dim = dims.find((d) => d.name === el.dim);
+  const chosen = dimList(el.dim).map((n) => ({ n, d: dims.find((d) => d.name.toLowerCase() === n.toLowerCase()) }));
+  const known = chosen.every((c) => c.d) ? chosen.map((c) => c.d!) : [];
+  const combos = known.reduce((a, d) => a * d.elements.length, 1);
+  const isData = el.kind === "var" && !!el.data;
+  const fn = caret === null ? undefined : fnAt(exprVal, caret);
   const stockOpts = model.stocks.map((s) => (
     <option key={s.id} value={s.id}>
       {s.name || "(no name)"}
@@ -1332,18 +1579,30 @@ function Inspector({
   const stockUnits = (id?: string) => model.stocks.find((s) => s.id === id)?.units;
   const unitHint = el.kind === "flow" ? stockUnits(el.to) ?? stockUnits(el.from) : undefined;
   const net = el.kind === "stock" ? [...inflows(model, el.id).map((f) => refName(f.name)), ...outflows(model, el.id).map((f) => "- " + refName(f.name))].join(" + ").replace(/\+ - /g, "- ") : "";
-  // put a name in the equation where the caret is, with spaces around it where needed
-  const insert = (name: string) => {
+  // put a name (or a function skeleton) in the equation where the caret is, with spaces around it where needed;
+  // at names the caret lands after it, at a function inside its brackets
+  const insert = (name: string, at = name.length) => {
     const ta = taRef.current, v = exprVal;
     const s = touched.current && ta ? ta.selectionStart : v.length, e = touched.current && ta ? ta.selectionEnd : v.length;
     const before = v.slice(0, s), after = v.slice(e);
     const pre = before && !/[\s(,]$/.test(before) ? " " : "", post = after && !/^[\s),]/.test(after) ? " " : "";
     onPatch({ [exprField]: before + pre + name + post + after });
-    const caret = (before + pre + name).length;
+    const c = (before + pre).length + at;
+    touched.current = true;
     requestAnimationFrame(() => {
       ta?.focus();
-      ta?.setSelectionRange(caret, caret);
+      ta?.setSelectionRange(c, c);
+      setCaret(c);
     });
+  };
+  // lend insert to the toolbar's function reference while this editor is open (cleanups run before the next editor's effects)
+  useEffect(() => {
+    insertRef.current = isData ? null : insert;
+    return () => void (insertRef.current = null);
+  });
+  const trackCaret = () => {
+    touched.current = true;
+    setCaret(taRef.current?.selectionStart ?? null);
   };
   return (
     <div>
@@ -1384,22 +1643,60 @@ function Inspector({
             </label>
           </div>
         )}
-        <label className="block text-[13px] font-semibold">
-          {el.kind === "stock" ? "Initial value" : el.kind === "flow" ? "Equation (a rate per time unit)" : "Equation, or a number for a constant"}
-          <textarea
-            ref={taRef}
-            value={exprVal}
-            rows={el.kind === "stock" ? 1 : 3}
-            spellCheck={false}
-            onChange={(e) => onPatch({ [exprField]: e.target.value })}
-            onSelect={() => (touched.current = true)}
-            aria-invalid={has(exprField)}
-            aria-describedby="bld-el-issues"
-            className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.5] resize-y", has(exprField) && "border-[var(--viz-pink)]")}
-          />
-        </label>
-        {dim && <p className="-mt-1.5 text-[12px] text-muted-foreground">One expression for every element of {dim.name}, or a comma list with one value each, in order: {dim.elements.join(", ")}.</p>}
-        {inputs.length > 0 && (
+        {el.kind === "var" && (isData || dataOpen) ? (
+          <DataPanel v={el} onPatch={onPatch} onClose={() => setDataOpen(false)} />
+        ) : (
+          <div className="relative">
+            <div className="flex items-end justify-between gap-2">
+              <label htmlFor="bld-eq" className="text-[13px] font-semibold">
+                {el.kind === "stock" ? "Initial value" : el.kind === "flow" ? "Equation (a rate per time unit)" : "Equation, or a number for a constant"}
+              </label>
+              <details data-menu className="sm:relative shrink-0">
+                <summary className={cn(btn, summaryCls, "h-7 px-2 text-[12px]")} title="Insert a function at the cursor">
+                  <Sigma size={13} aria-hidden /> Functions
+                </summary>
+                <FunctionRef className="right-0" hint="Click one to insert it at the cursor." onPick={(n, sig) => {
+                    const k = skeleton(n, sig);
+                    insert(k.text, k.caret);
+                  }}
+                />
+              </details>
+            </div>
+            <textarea
+              id="bld-eq"
+              ref={taRef}
+              value={exprVal}
+              rows={el.kind === "stock" ? 1 : 3}
+              spellCheck={false}
+              onChange={(e) => (onPatch({ [exprField]: e.target.value }), setCaret(e.target.selectionStart))}
+              onSelect={trackCaret}
+              onBlur={() => setCaret(null)}
+              aria-invalid={has(exprField)}
+              aria-describedby="bld-el-issues bld-eq-hint"
+              className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.5] resize-y", has(exprField) && "border-[var(--viz-pink)]")}
+            />
+            <p id="bld-eq-hint" aria-live="polite" className="mt-0.5 min-h-[18px] text-[12px] leading-[1.45] text-muted-foreground">
+              {fn && (
+                <>
+                  <code className="font-mono text-[12px] text-foreground">{fn[1]}</code> {fn[2]}
+                </>
+              )}
+            </p>
+            {el.kind === "var" && (
+              <button onClick={() => setDataOpen(true)} className={cn(btn, "mt-1 h-8 text-[12.5px]")} title="Give this variable a time series from a CSV instead of an equation">
+                <Table2 size={14} aria-hidden /> Use data
+              </button>
+            )}
+          </div>
+        )}
+        {known.length > 0 && !isData && (
+          <p className="-mt-1.5 text-[12px] text-muted-foreground">
+            {known.length === 1
+              ? `One expression for every element of ${known[0].name}, or a comma list with one value each, in order: ${known[0].elements.join(", ")}.`
+              : `One expression for every combination of ${known.map((d) => d.name).join(" and ")} (${combos} values), or a comma list of ${combos} values, in order with ${known[known.length - 1].name} changing fastest.`}
+          </p>
+        )}
+        {inputs.length > 0 && !isData && (
           <div>
             <p className="text-[12px] text-muted-foreground">Linked inputs: click one to put it in the {el.kind === "stock" ? "initial value" : "equation"}</p>
             <div className="mt-1 flex flex-wrap gap-1">
@@ -1417,7 +1714,7 @@ function Inspector({
             </div>
           </div>
         )}
-        {others.length > 0 && (
+        {others.length > 0 && !isData && (
           <div>
             <p className="text-[12px] text-muted-foreground">Insert a name</p>
             <div className="mt-1 flex flex-wrap gap-1">
@@ -1437,7 +1734,7 @@ function Inspector({
             <span className="block mt-1 text-muted-foreground">A stock changes only through its flows: each time step it adds dt × (inflows − outflows).</span>
           </p>
         )}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2">
           <label className="block text-[13px] font-semibold min-w-0">
             Units
             <input
@@ -1447,18 +1744,53 @@ function Inspector({
               className={cn(input, "mt-1")}
             />
           </label>
-          <label className="block text-[13px] font-semibold min-w-0">
-            Array over
-            <select value={el.dim ?? ""} onChange={(e) => onPatch({ dim: e.target.value || undefined })} aria-invalid={has("dim")} className={cn(input, "mt-1", has("dim") && "border-[var(--viz-pink)]")} title={dims.length ? "Give it one value per element of a dimension" : "Add a dimension first, with Dimensions above the canvas"}>
-              <option value="">None</option>
-              {dims.map((d) => (
-                <option key={d.name} value={d.name}>
-                  {d.name} ({d.elements.length})
-                </option>
-              ))}
-              {el.dim && !dim && <option value={el.dim}>{el.dim} (missing)</option>}
-            </select>
-          </label>
+          <div className="min-w-0" role="group" aria-labelledby="bld-dim-label">
+            <p id="bld-dim-label" className="text-[13px] font-semibold">
+              Array over
+            </p>
+            {chosen.length > 0 && (
+              <ol className="mt-1 flex flex-wrap items-center gap-1" aria-label="Dimensions, in order">
+                {chosen.map(({ n, d }, i) => (
+                  <li key={n} className="flex items-center gap-1">
+                    {i > 0 && (
+                      <span aria-hidden className="text-[12px] text-muted-foreground">
+                        ×
+                      </span>
+                    )}
+                    <span className={cn("inline-flex items-stretch rounded-[6px] border bg-background", d ? "border-border" : "border-[var(--viz-pink)]")}>
+                      <span className="px-1.5 py-0.5 text-[12.5px] font-semibold">
+                        {n}
+                        <span className="font-normal text-muted-foreground"> {d ? `(${d.elements.length})` : "(missing)"}</span>
+                      </span>
+                      <button onClick={() => onPatch({ dim: dimJoin(chosen.filter((c) => c.n !== n).map((c) => c.n)) })} className="px-1 border-l border-border text-muted-foreground hover:text-foreground" aria-label={`Remove the dimension ${n}`} title="Remove">
+                        <X size={12} aria-hidden />
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {dims.some((d) => !chosen.some((c) => c.n.toLowerCase() === d.name.toLowerCase())) && (
+              <select
+                value=""
+                onChange={(e) => e.target.value && onPatch({ dim: dimJoin([...chosen.map((c) => c.n), e.target.value]) })}
+                aria-label={chosen.length ? "Add another dimension" : "Array over a dimension"}
+                aria-invalid={has("dim")}
+                className={cn(input, "mt-1", has("dim") && "border-[var(--viz-pink)]")}
+                title="Give it one value per element of a dimension; a second dimension gives one value per combination"
+              >
+                <option value="">{chosen.length ? "Add another dimension..." : "None: a single value"}</option>
+                {dims
+                  .filter((d) => !chosen.some((c) => c.n.toLowerCase() === d.name.toLowerCase()))
+                  .map((d) => (
+                    <option key={d.name} value={d.name}>
+                      {d.name} ({d.elements.length}){d.of ? `, part of ${d.of}` : ""}
+                    </option>
+                  ))}
+              </select>
+            )}
+            {chosen.length > 1 && <p className="mt-1 text-[12px] text-muted-foreground">Order matters: one value per combination, the last dimension changing fastest.</p>}
+          </div>
         </div>
         {issues
           .filter((i) => i.field === "dim")
@@ -1476,6 +1808,134 @@ function Inspector({
           {issues.some((i) => i.field !== "dim") && <IssueItems issues={issues.filter((i) => i.field !== "dim")} model={model} onSelect={() => {}} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+// a variable's time series: paste or upload a CSV, then a preview, a sparkline, extrapolation and a way back to an equation
+function DataPanel({ v, onPatch, onClose }: { v: BVar; onPatch: (p: Partial<BVar>) => void; onClose: () => void }) {
+  const [text, setText] = useState("");
+  const [msg, setMsg] = useState<{ error: boolean; text: string } | null>(null);
+  const [replacing, setReplacing] = useState(!v.data);
+  const upRef = useRef<HTMLInputElement>(null);
+  const apply = (src: string, from: string) => {
+    const r = parseCsv(src);
+    if ("error" in r) return setMsg({ error: true, text: r.error });
+    onPatch({ data: r.data });
+    setText("");
+    setReplacing(false);
+    setMsg({ error: false, text: `Read ${plural(r.data.length, "point")} from ${from}.${r.extra ? " Only the first two columns are used." : ""}` });
+  };
+  const data = v.data;
+  const sw = 120, sh = 32;
+  let spark = "";
+  if (data && data.length > 1) {
+    const t0 = data[0][0], t1 = data[data.length - 1][0], ys = data.map((d) => d[1]), lo = Math.min(...ys), hi = Math.max(...ys);
+    spark = data.map(([t, y]) => `${(((t - t0) / (t1 - t0 || 1)) * (sw - 4) + 2).toFixed(1)},${(sh - 3 - ((y - lo) / (hi - lo || 1)) * (sh - 6)).toFixed(1)}`).join(" ");
+  }
+  return (
+    <div className="rounded-[8px] border border-border p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[13px] font-semibold flex items-center gap-1.5">
+          <Table2 size={14} aria-hidden /> Data
+        </p>
+        {data ? (
+          <button onClick={() => (onPatch({ data: undefined, extrapolate: undefined }), onClose())} className={cn(btn, "h-7 px-2 text-[12px]")} title="Go back to the equation">
+            <Trash2 size={13} aria-hidden /> Remove data
+          </button>
+        ) : (
+          <button onClick={onClose} className={cn(btn, "h-7 px-2 text-[12px]")}>
+            Cancel
+          </button>
+        )}
+      </div>
+      {data && (
+        <>
+          <div className="mt-2 flex items-center gap-3">
+            <svg width={sw} height={sh} className="shrink-0 rounded-[4px] bg-background" role="img" aria-label={`Sparkline of ${plural(data.length, "point")}`}>
+              <polyline points={spark} fill="none" stroke={PIPE} strokeWidth={1.6} strokeLinejoin="round" />
+            </svg>
+            <p className="text-[12.5px] text-muted-foreground">
+              {plural(data.length, "point")}, time {fmt(data[0][0])} to {fmt(data[data.length - 1][0])}
+            </p>
+          </div>
+          <table className="mt-2 w-full text-[12.5px] tabular-nums">
+            <caption className="sr-only">The first rows of the data</caption>
+            <thead>
+              <tr className="border-b border-border">
+                <th scope="col" className="text-left font-semibold py-0.5">
+                  Time
+                </th>
+                <th scope="col" className="text-right font-semibold py-0.5">
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.slice(0, 5).map(([t, y], i) => (
+                <tr key={i} className="border-b border-border/60">
+                  <td className="py-0.5">{fmt(t)}</td>
+                  <td className="text-right py-0.5">{fmt(y)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.length > 5 && <p className="mt-0.5 text-[12px] text-muted-foreground">and {data.length - 5} more rows</p>}
+          <label className="mt-2 flex items-start gap-2 text-[12.5px]">
+            <input type="checkbox" checked={!!v.extrapolate} onChange={(e) => onPatch({ extrapolate: e.target.checked || undefined })} className="mt-0.5" />
+            <span>
+              <span className="font-semibold">Extrapolate beyond the data</span>
+              <span className="block text-muted-foreground">Otherwise the first and last values are held flat before and after the data.</span>
+            </span>
+          </label>
+          <p className="mt-2 text-[12px] text-muted-foreground">The variable takes the value at the current time, with straight lines between the points. Its equation is kept for when you remove the data.</p>
+          {!replacing && (
+            <button onClick={() => setReplacing(true)} className={cn(btn, "mt-2 h-8 text-[12.5px]")}>
+              Replace the data
+            </button>
+          )}
+        </>
+      )}
+      {replacing && (
+        <div className="mt-2">
+          <label className="block text-[12.5px] font-semibold">
+            Paste two columns: time and value
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} spellCheck={false} placeholder={"time, value\n0, 100\n10, 140\n20, 210"} className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.45] resize-y font-normal")} />
+          </label>
+          <p className="mt-1 text-[12px] text-muted-foreground">A header line is optional; comma, tab or semicolon separated; times must increase.</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button onClick={() => apply(text, "the pasted text")} disabled={!text.trim()} className="brick brick-y h-8 px-3 text-[12.5px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-50">
+              Use this data
+            </button>
+            <button onClick={() => upRef.current?.click()} className={cn(btn, "h-8 text-[12.5px]")}>
+              <Upload size={14} aria-hidden /> Upload CSV
+            </button>
+            {data && (
+              <button onClick={() => (setReplacing(false), setMsg(null))} className={cn(btn, "h-8 text-[12.5px]")}>
+                Cancel
+              </button>
+            )}
+            <input
+              ref={upRef}
+              type="file"
+              accept=".csv,.tsv,.txt,text/csv,text/plain"
+              className="sr-only"
+              tabIndex={-1}
+              aria-label="Upload a CSV file"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) apply(await f.text(), f.name);
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {msg && (
+        <p role={msg.error ? "alert" : "status"} className={cn("mt-2 text-[12.5px]", msg.error ? "text-[var(--viz-pink)]" : "text-muted-foreground")}>
+          {msg.text}
+        </p>
+      )}
     </div>
   );
 }
@@ -1776,7 +2236,7 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
         ))}
       </ol>
       <p className="mt-4 text-[12.5px] text-muted-foreground leading-[1.5]">
-        Functions: MIN, MAX, ABS, EXP, LN, SQRT, IF(condition, then, else), STEP(height, time), PULSE(height, start, width), RAMP(slope, start), TABLE(input, x1, y1, x2, y2, ...) for a lookup through points (straight lines between them, flat beyond the ends) and TIME. For arrays, SUM, MEAN, VMIN and VMAX take a name: SUM(Population). Compare with &lt; &lt;= &gt; &gt;= = &lt;&gt;.
+        Functions such as IF, STEP, TABLE, SMOOTH, DELAY3 and RANDOM_NORMAL: open Functions above the canvas, or next to an equation, for the full list with what each one does. Compare with &lt; &lt;= &gt; &gt;= = &lt;&gt;.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <button onClick={() => onOpen("/learn/stocks-flows")} className={btn}>

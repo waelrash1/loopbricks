@@ -1,20 +1,25 @@
 // The learner's own stock-and-flow model: its shape, checks, Euler simulation, templates and storage.
-import { NAME_RE, REDUCERS, RESERVED, evaluator, expand, nameKey, refName, renameRefs, slotKey, tryCompile, type Compiled, type Node, type Scope } from "@/lib/expr";
+import { NAME_RE, REDUCERS, RESERVED, SEED_ARG, STATEFUL, evaluator, expand, literal, nameKey, refName, renameRefs, slotKey, tryCompile, unparse, walk, type Compiled, type Node, type Scope } from "@/lib/expr";
 
-// dim: the name of a dimension in BModel.dims; the element then holds one value per element of that dimension (an array).
-// Its equation or initial value applies to every element; a comma list ("10, 20, 30") gives one value per element.
+// dim: the name of a dimension in BModel.dims, or several separated by commas ("Region, Age") for a multi-dimensional
+// array; the element then holds one value per combination. Its equation or initial value applies to every combination;
+// a comma list ("10, 20, 30") gives one value per combination in row-major order (last dimension fastest).
 export type BStock = { id: string; name: string; init: string; x: number; y: number; units?: string; nonNegative?: boolean; dim?: string; note?: string }; // nonNegative: a physical stock floored at zero, as in the app's molecules
 export type BFlow = { id: string; name: string; from?: string; to?: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string };
-export type BVar = { id: string; name: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string }; // an auxiliary, or a constant when eq is a number
+// data: a time series [time, value][] read from a CSV; the variable then takes the value interpolated at TIME (linear,
+// held flat outside the data unless extrapolate is true) and its eq is ignored.
+export type BVar = { id: string; name: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string; data?: [number, number][]; extrapolate?: boolean }; // an auxiliary, or a constant when eq is a number
 // A dimension (subscript range), e.g. { name: "Region", elements: ["North", "South"] }.
-export type BDim = { name: string; elements: string[] };
+// of: makes this dimension a subrange of another (its elements are a subset of that dimension's elements).
+export type BDim = { name: string; elements: string[]; of?: string };
 // An information arrow the modeller drew, from one element to another (by id). Arrows implied by equations are still drawn
 // automatically; a drawn arrow that the target's equation does not use is flagged.
 export type BLink = { from: string; to: string };
-export type BModel = { name: string; timeUnit: string; T: number; dt: number; stocks: BStock[]; flows: BFlow[]; vars: BVar[]; dims?: BDim[]; links?: BLink[] };
+// start: the start time (default 0); T is the stop time. saveEvery: how often results are kept (default dt).
+export type BModel = { name: string; timeUnit: string; T: number; dt: number; start?: number; saveEvery?: number; stocks: BStock[]; flows: BFlow[]; vars: BVar[]; dims?: BDim[]; links?: BLink[] };
 export type Kind = "stock" | "flow" | "var";
 export type Element = (BStock & { kind: "stock" }) | (BFlow & { kind: "flow" }) | (BVar & { kind: "var" });
-export type Field = "name" | "eq" | "init" | "from" | "to" | "units" | "settings" | "dim"; // dim: an element's dimension, or (with no id) the dimension list
+export type Field = "name" | "eq" | "init" | "from" | "to" | "units" | "settings" | "dim" | "data"; // dim: an element's dimension, or (with no id) the dimension list; data: a variable's time series
 export type Issue = { id?: string; field: Field; level: "error" | "warn"; msg: string };
 
 export const STORAGE_KEY = "loopbricks-builder";
@@ -30,17 +35,64 @@ const NUM = String.raw`\s*[-−]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*`;
 const LIST_RE = new RegExp(`^${NUM}(,${NUM})+$`);
 // "10, 20, 30": one number per element of an arrayed element's dimension
 export const parseList = (src: string): number[] | null => (LIST_RE.test(src) ? src.split(",").map((x) => +x.trim().replace("−", "-")) : null);
-// a number, or a list of numbers for an arrayed constant
-export const isConstant = (v: { eq: string }) => new RegExp(`^${NUM}$`).test(v.eq) || LIST_RE.test(v.eq);
+// a number, or a list of numbers for an arrayed constant (a data variable is never a constant)
+export const isConstant = (v: { eq: string; data?: unknown }) => !v.data && (new RegExp(`^${NUM}$`).test(v.eq) || LIST_RE.test(v.eq));
 export const inflows = (m: BModel, id: string) => m.flows.filter((f) => f.to === id);
 export const outflows = (m: BModel, id: string) => m.flows.filter((f) => f.from === id);
-// an element's dimension, matched by name as names are (case and spaces aside)
-export const dimOf = (m: BModel, e: { dim?: string }) => (e.dim ? m.dims?.find((d) => nameKey(d.name) === nameKey(e.dim!)) : undefined);
-// the series a run gives for an element: one for a single value, one per element of its dimension ("Population[North]")
+
+// dimensions: "Region, Age" names two; an element over both holds one value per combination
+export const dimNames = (dim?: string) => (dim ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const findDim = (m: BModel, name?: string) => (name ? m.dims?.find((d) => nameKey(d.name) === nameKey(name)) : undefined);
+// an element's dimensions in order, matched by name as names are (case and spaces aside); undefined for a single value
+export const axesOf = (m: BModel, e: { dim?: string }): BDim[] | undefined => {
+  const ds = dimNames(e.dim).map((n) => findDim(m, n));
+  return ds.length && ds.every(Boolean) ? (ds as BDim[]) : undefined;
+};
+// several dimensions as one: every combination in row-major order (last dimension fastest), named "North,Young"
+export const product = (ds: BDim[]): BDim =>
+  ds.length === 1 ? ds[0] : { name: ds.map((d) => d.name).join(", "), elements: ds.reduce<string[]>((acc, d) => acc.flatMap((a) => d.elements.map((x) => (a ? `${a},${x}` : x))), [""]) };
+// an element's dimension, or the product of its dimensions
+export const dimOf = (m: BModel, e: { dim?: string }) => {
+  const a = axesOf(m, e);
+  return a && product(a);
+};
+// a is the dimension b, or a subrange of it (following of)
+export function within(m: BModel, a: BDim, b: BDim) {
+  for (let d: BDim | undefined = a, i = 0; d && i < 20; d = findDim(m, d.of), i++) if (nameKey(d.name) === nameKey(b.name)) return true;
+  return false;
+}
+// Which element of X (over xa) an equation over mine reads at the combination at (one element name per dimension of
+// mine): X's dimensions are matched to mine by name, and a subrange of mine reads its parent on the shared elements.
+// ponytail: matching by dimension, as the equations have no subscripts; with a dimension twice (Region x Region) the first wins.
+export function pick(m: BModel, mine: BDim[], at: string[], xa: BDim[]): string | undefined {
+  const out: string[] = [];
+  for (const d of xa) {
+    const i = mine.findIndex((a) => within(m, a, d));
+    if (i < 0) return undefined;
+    out.push(at[i]);
+  }
+  return out.join(",");
+}
+// the series a run gives for an element: one for a single value, one per element of its dimensions ("Population[North]",
+// "Population[North,Young]")
 export const series = (m: BModel, e: { id: string; name: string; dim?: string }) => {
   const d = dimOf(m, e);
   return d ? d.elements.map((x) => ({ key: `${e.id}[${x}]`, label: `${e.name}[${x}]` })) : [{ key: e.id, label: e.name }];
 };
+// a data variable as the lookup over TIME it is
+export const dataEq = (v: BVar) => `${v.extrapolate ? "TABLE_EXTRAP" : "TABLE"}(TIME, ${v.data!.map(([t, y]) => `${t}, ${y}`).join(", ")})`;
+// the text an element is worked out from: a stock's initial value, a data variable's lookup, or the equation
+export const sourceOf = (e: Element) => (e.kind === "stock" ? e.init : e.kind === "var" && e.data ? dataEq(e) : e.eq);
+// a number known before the run: a plain number, or the name of a single-valued constant
+export function constNum(m: BModel, n: Node | undefined): number | undefined {
+  const v = n && literal(n);
+  if (v !== undefined || n?.k !== "name") return v;
+  const e = m.vars.find((x) => nameKey(x.name) === n.key);
+  return e && !e.dim && isConstant(e) && !parseList(e.eq) ? +e.eq.trim().replace("−", "-") : undefined;
+}
+// hidden elements (the stocks inside a DELAY3, say) have ids like "f1~2": the owner's id, a tilde, a number
+export const isHidden = (id: string) => id.includes("~");
+export const ownerOf = (id: string) => id.split("~")[0];
 
 export function newId(m: BModel, prefix: "s" | "f" | "v") {
   const used = new Set(elements(m).map((e) => e.id));
@@ -116,8 +168,11 @@ export type Checked = {
   byKey: Map<string, Element>;
   code: Map<string, Compiled>; // element id -> compiled equation (initial value for stocks)
   order: string[]; // flows and variables, each after everything it depends on
-  dims: Map<string, BDim>; // element id -> its dimension, for arrayed elements
+  dims: Map<string, BDim>; // element id -> its dimension (the product of its dimensions), for arrayed elements
+  axes: Map<string, BDim[]>; // element id -> its dimensions in order, for arrayed elements
   lists: Map<string, number[]>; // element id -> one value per element, when written as a list ("10, 20, 30")
+  model: BModel; // the model these describe
+  sim: Checked; // the model as it runs, stateful functions turned into hidden elements (see lower); itself when there are none
 };
 
 // every name an equation reads, with the reducer around it if any (SUM(X) reads X as a whole)
@@ -129,18 +184,31 @@ function reads(n: Node, f: (key: string, reducer?: string) => void) {
   else if (n.k === "call") n.args.forEach((a) => reads(a, f));
 }
 
-// Check the whole model. Errors stop a run; warnings do not.
-export function validate(m: BModel): Checked {
+const dataProblem = (d: unknown): string | undefined => {
+  if (!Array.isArray(d) || d.length < 2) return "Data: give at least 2 points (time, value), so there is a line to read between them.";
+  if (d.some((p) => !Array.isArray(p) || p.length !== 2 || !p.every((x) => typeof x === "number" && Number.isFinite(x)))) return "Data: every point must be a time and a value, both plain numbers.";
+  for (let i = 1; i < d.length; i++) if (!(d[i][0] > d[i - 1][0])) return `Data: the times must increase, but ${d[i][0]} comes after ${d[i - 1][0]}.`;
+};
+
+// Every check but the order of evaluation (see validate).
+function check(m: BModel) {
   const issues: Issue[] = [];
   const els = elements(m);
   const err = (id: string | undefined, field: Field, msg: string) => issues.push({ id, field, level: "error", msg });
   const warn = (id: string | undefined, field: Field, msg: string) => issues.push({ id, field, level: "warn", msg });
 
   // settings
-  if (!(m.T > 0) || !Number.isFinite(m.T)) err(undefined, "settings", "Stop time must be a number above 0.");
+  const start = m.start ?? 0, span = m.T - start;
+  if (!Number.isFinite(start)) err(undefined, "settings", "Start time must be a number.");
+  else if (!(m.T > start) || !Number.isFinite(m.T)) err(undefined, "settings", start ? `Stop time must be a number after the start time (${start}).` : "Stop time must be a number above 0.");
   if (!(m.dt > 0) || !Number.isFinite(m.dt)) err(undefined, "settings", "The time step (dt) must be a number above 0.");
-  else if (m.dt > m.T) err(undefined, "settings", "The time step (dt) is longer than the whole run.");
-  else if (m.T / m.dt > MAX_STEPS) err(undefined, "settings", `That is ${Math.round(m.T / m.dt).toLocaleString()} steps; use a larger dt (at most ${MAX_STEPS.toLocaleString()} steps).`);
+  else if (m.dt > span) err(undefined, "settings", "The time step (dt) is longer than the whole run.");
+  else if (span / m.dt > MAX_STEPS) err(undefined, "settings", `That is ${Math.round(span / m.dt).toLocaleString()} steps; use a larger dt (at most ${MAX_STEPS.toLocaleString()} steps).`);
+  if (m.saveEvery !== undefined && m.dt > 0) {
+    const k = m.saveEvery / m.dt;
+    if (!(m.saveEvery > 0) || !Number.isFinite(m.saveEvery)) err(undefined, "settings", "Save every must be a number above 0.");
+    else if (Math.abs(k - Math.round(k)) > 1e-9 * Math.max(1, k) || Math.round(k) < 1) err(undefined, "settings", `Save every must be a whole number of time steps (dt = ${m.dt}), such as ${m.dt}, ${2 * m.dt} or ${4 * m.dt}.`);
+  }
   if (!m.timeUnit.trim()) warn(undefined, "settings", "Name the time unit (for example weeks), so rates read as units per week.");
 
   // names
@@ -157,8 +225,6 @@ export function validate(m: BModel): Checked {
   }
 
   // dimensions
-  // ponytail: one dimension per element. Two or more (Region x Age) would need dim: string[], slot keys over the
-  // cross product and subscripts in equations; the flatten-to-slots design in simulate extends to that unchanged.
   const dimByKey = new Map<string, BDim>();
   for (const d of m.dims ?? []) {
     const k = nameKey(d.name);
@@ -171,14 +237,22 @@ export function validate(m: BModel): Checked {
       else if (seenEl.has(nameKey(x))) err(undefined, "dim", `Dimension ${d.name} lists "${x}" twice.`);
       seenEl.add(nameKey(x));
     }
+    if (d.of !== undefined) {
+      const p = findDim(m, d.of);
+      if (!p) err(undefined, "dim", `Dimension ${d.name} is a subrange of "${d.of}", but there is no dimension called that.`);
+      else if (within(m, p, d)) err(undefined, "dim", `Dimension ${d.name} cannot be a subrange of itself.`);
+      else for (const x of d.elements) if (!p.elements.some((y) => nameKey(y) === nameKey(x))) err(undefined, "dim", `Dimension ${d.name}: "${x}" is not an element of ${p.name}, so it cannot be in a subrange of it.`);
+    }
     if (k && !dimByKey.has(k)) dimByKey.set(k, d);
   }
-  const dims = new Map<string, BDim>();
+  const axes = new Map<string, BDim[]>(), dims = new Map<string, BDim>();
   for (const e of els) {
     if (!e.dim) continue;
-    const d = dimByKey.get(nameKey(e.dim));
-    if (d) dims.set(e.id, d);
-    else err(e.id, "dim", `There is no dimension called "${e.dim}".`);
+    const names = dimNames(e.dim), ds = names.map((n) => dimByKey.get(nameKey(n)));
+    const missing = names.filter((_, i) => !ds[i]), twice = names.find((n, i) => names.findIndex((x) => nameKey(x) === nameKey(n)) !== i);
+    if (missing.length) missing.forEach((n) => err(e.id, "dim", `There is no dimension called "${n}".`));
+    else if (twice) err(e.id, "dim", `It lists ${twice} twice: name each dimension once.`);
+    else axes.set(e.id, ds as BDim[]), dims.set(e.id, product(ds as BDim[]));
   }
 
   // equations
@@ -194,8 +268,15 @@ export function validate(m: BModel): Checked {
   };
   for (const e of els) {
     const field: Field = e.kind === "stock" ? "init" : "eq";
-    const src = e.kind === "stock" ? e.init : e.eq;
     const what = e.kind === "stock" ? "Initial value" : "Equation";
+    if (e.kind === "var" && e.data) {
+      const msg = dataProblem(e.data);
+      if (msg) {
+        err(e.id, "data", msg);
+        continue;
+      }
+    }
+    const src = sourceOf(e);
     if (!src.trim()) {
       err(e.id, field, e.kind === "stock" ? "Give it an initial value." : e.kind === "flow" ? "Write an equation for this flow (a rate)." : "Write an equation, or a number for a constant.");
       continue;
@@ -218,15 +299,28 @@ export function validate(m: BModel): Checked {
       if (!byKey.has(ref)) err(e.id, field, `${what} uses "${ref}", which is not in the model.${suggest(ref)}`);
       else if (byKey.get(ref)!.id === e.id && e.kind === "stock") err(e.id, field, "A stock's initial value can't refer to the stock itself.");
     }
-    // arrays: same dimension reads element by element, a single value broadcasts, anything else needs a reducer
-    const mine = dims.get(e.id), told = new Set<string>();
+    // functions with memory: orders and fixed delay times are known before the run
+    walk(r.c.ast, (n) => {
+      if (n.k !== "call") return;
+      if (n.f === "DELAYN" || n.f === "SMOOTHN") {
+        const k = constNum(m, n.args[2]);
+        if (!(k !== undefined && Number.isInteger(k) && k >= 1)) err(e.id, field, `${what}: the order of ${n.f} must be a whole number of at least 1, written as a number or the name of a constant, such as ${n.f}(input, 6, 3).`);
+      }
+      if (n.f === "DELAY_FIXED") {
+        const d = constNum(m, n.args[1]);
+        if (!(d !== undefined && d >= 0)) err(e.id, field, `${what}: DELAY_FIXED needs a fixed delay time, a number or the name of a constant (at least 0), such as DELAY_FIXED(input, 4, 0).`);
+      }
+    });
+    // arrays: matching dimensions read element by element, a single value broadcasts, anything else needs a reducer
+    const mine = axes.get(e.id), told = new Set<string>();
     reads(r.c.ast, (key, reducer) => {
-      const x = byKey.get(key), xd = x && dims.get(x.id);
+      const x = byKey.get(key), xa = x && axes.get(x.id), xd = x && dims.get(x.id);
       if (!x || told.has(key + (reducer ?? ""))) return;
       const X = refName(x.name);
       if (reducer && !xd && !x.dim) err(e.id, field, `${reducer}(${X}) needs an arrayed element, but ${X} is a single value.`);
       else if (!reducer && xd && !mine) err(e.id, field, `${X} is an array over ${xd.name}: use SUM(${X}) or MEAN(${X}).`);
-      else if (!reducer && xd && mine && mine !== xd) err(e.id, field, `${X} is an array over ${xd.name}, but this is over ${mine.name}. Only the same dimension can be used element by element; use SUM(${X}) or MEAN(${X}) for a single value.`);
+      else if (!reducer && xa && mine && pick(m, mine, mine.map((d) => d.elements[0]), xa) === undefined)
+        err(e.id, field, `${X} is an array over ${xd!.name}, but this is over ${dims.get(e.id)!.name}. Each of its dimensions must be one of these (or one these are a subrange of) to be read element by element; use SUM(${X}) or MEAN(${X}) for a single value.`);
       else return;
       told.add(key + (reducer ?? ""));
     });
@@ -242,6 +336,7 @@ export function validate(m: BModel): Checked {
 
   // flows: ends must exist, and a flow can't run from a cloud to a cloud
   const stockIds = new Set(m.stocks.map((s) => s.id));
+  const dk = (id: string) => (axes.get(id) ?? []).map((d) => nameKey(d.name)).join(",");
   for (const f of m.flows) {
     if (f.from && !stockIds.has(f.from)) err(f.id, "from", "It starts at a stock that no longer exists.");
     if (f.to && !stockIds.has(f.to)) err(f.id, "to", "It ends at a stock that no longer exists.");
@@ -249,45 +344,12 @@ export function validate(m: BModel): Checked {
     if (f.from && f.from === f.to) err(f.id, "to", "It starts and ends at the same stock, so it would change nothing.");
     for (const [end, sid] of [["from", f.from], ["to", f.to]] as const) {
       const st = m.stocks.find((x) => x.id === sid);
-      if (!st || dims.get(st.id) === dims.get(f.id) || (st.dim && !dims.has(st.id)) || (f.dim && !dims.has(f.id))) continue;
+      if (!st || dk(st.id) === dk(f.id) || (st.dim && !axes.has(st.id)) || (f.dim && !axes.has(f.id))) continue;
       const sd = dims.get(st.id);
       err(f.id, "dim", `It ${end === "from" ? "drains" : "fills"} ${st.name}, which is ${sd ? `an array over ${sd.name}` : "a single value"}, so the flow must be ${sd ? `over ${sd.name} too` : "a single value too"}.`);
     }
   }
   for (const s of m.stocks) if (!inflows(m, s.id).length && !outflows(m, s.id).length) warn(s.id, "init", "No flow fills or drains it, so it will never change.");
-
-  // circular definitions among flows and variables (stocks break every feedback loop, so they are not in this graph)
-  const rates = els.filter((e) => e.kind !== "stock");
-  const deps = new Map<string, string[]>();
-  for (const e of rates) {
-    const refs = code.get(e.id)?.refs ?? [];
-    deps.set(e.id, refs.map((k) => byKey.get(k)).filter((x): x is Element => !!x && x.kind !== "stock").map((x) => x.id));
-  }
-  // Tarjan's algorithm: components come out dependencies first, which is the evaluation order
-  const order: string[] = [];
-  const index = new Map<string, number>(), low = new Map<string, number>(), onStack = new Set<string>(), stack: string[] = [];
-  let n = 0;
-  const strong = (v: string) => {
-    index.set(v, n), low.set(v, n), n++;
-    stack.push(v), onStack.add(v);
-    for (const w of deps.get(v) ?? []) {
-      if (!index.has(w)) (strong(w), low.set(v, Math.min(low.get(v)!, low.get(w)!)));
-      else if (onStack.has(w)) low.set(v, Math.min(low.get(v)!, index.get(w)!));
-    }
-    if (low.get(v) === index.get(v)) {
-      const comp: string[] = [];
-      let w: string;
-      do (w = stack.pop()!), onStack.delete(w), comp.push(w);
-      while (w !== v);
-      const selfLoop = comp.length === 1 && (deps.get(v) ?? []).includes(v);
-      if (comp.length > 1 || selfLoop) {
-        const names = comp.reverse().map((id) => findElement(m, id)!.name);
-        const loop = [...names, names[0]].map(refName).join(" → ");
-        for (const id of comp) err(id, "eq", selfLoop ? "Its equation refers to itself. Only a stock can feed back on itself." : `Circular definition: ${loop}. Every feedback loop needs a stock in it.`);
-      } else order.push(v);
-    }
-  };
-  rates.forEach((e) => !index.has(e.id) && strong(e.id));
 
   // units: warnings only
   const unitOf = (id?: string) => m.stocks.find((s) => s.id === id)?.units?.trim();
@@ -302,46 +364,233 @@ export function validate(m: BModel): Checked {
       }
     }
   }
-  return { issues, byKey, code, order, dims, lists };
+  return { issues, byKey, code, dims, axes, lists };
+}
+
+// The order flows and variables are worked out in, and the circular definitions that make an order impossible.
+// Stocks break every feedback loop, so they are not in this graph.
+function orderOf(m: BModel, code: Map<string, Compiled>, byKey: Map<string, Element>) {
+  const rates = elements(m).filter((e) => e.kind !== "stock");
+  const deps = new Map<string, string[]>();
+  for (const e of rates) {
+    const refs = code.get(e.id)?.refs ?? [];
+    deps.set(e.id, refs.map((k) => byKey.get(k)).filter((x): x is Element => !!x && x.kind !== "stock").map((x) => x.id));
+  }
+  // Tarjan's algorithm: components come out dependencies first, which is the evaluation order
+  const order: string[] = [], loops: { ids: string[]; self: boolean }[] = [];
+  const index = new Map<string, number>(), low = new Map<string, number>(), onStack = new Set<string>(), stack: string[] = [];
+  let n = 0;
+  const strong = (v: string) => {
+    index.set(v, n), low.set(v, n), n++;
+    stack.push(v), onStack.add(v);
+    for (const w of deps.get(v) ?? []) {
+      if (!index.has(w)) (strong(w), low.set(v, Math.min(low.get(v)!, low.get(w)!)));
+      else if (onStack.has(w)) low.set(v, Math.min(low.get(v)!, index.get(w)!));
+    }
+    if (low.get(v) === index.get(v)) {
+      const comp: string[] = [];
+      let w: string;
+      do (w = stack.pop()!), onStack.delete(w), comp.push(w);
+      while (w !== v);
+      const self = comp.length === 1 && (deps.get(v) ?? []).includes(v);
+      if (comp.length > 1 || self) loops.push({ ids: comp.reverse(), self });
+      else order.push(v);
+    }
+  };
+  rates.forEach((e) => !index.has(e.id) && strong(e.id));
+  return { order, loops };
+}
+
+// A function with memory as plain stock-and-flow structure, the way Vensim and PySD define it, so the simulation, the
+// Python export and PySD all integrate it with the same Euler steps:
+//   DELAYN(input, D, n, init): n stocks in a row, each draining into the next at stock / (D / n); the input fills the
+//     first and the output is the last outflow. Each starts holding init * D / n (init defaults to the input).
+//     DELAY1 and DELAY3 are orders 1 and 3.
+//   SMOOTHN(input, T, n, init): n stocks, each closing its gap to the one before (the first to the input) at
+//     gap / (T / n); the output is the last. Each starts at init (default: the input). SMOOTH and SMOOTH3: orders 1, 3.
+//   TREND(input, A, g0): an average, a SMOOTH of the input over A starting at input / (1 + g0 * A);
+//     the output is ZIDZ(input - average, A * ABS(average)), so the trend starts at g0.
+//   FORECAST(input, A, H): input * (1 + TREND(input, A, 0) * H).
+//   INITIAL(x): a stock that starts at x and never moves.
+//   DELAY_FIXED(input, D, init): a pipeline of round(D / dt) stocks (at least 1), each taking the one before's value
+//     every step, so the output is exactly the input D ago; init before that.
+// A random function without a seed gets one fixed for its place in the model. keep: calls to leave in place (an
+// export that writes them as its own builtins).
+export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => boolean = () => false): BModel {
+  const taken = new Set(elements(m).map((e) => nameKey(e.name)));
+  const fresh = (base: string) => {
+    let n = base, k = 2;
+    while (taken.has(nameKey(n))) n = `${base} ${k++}`;
+    taken.add(nameKey(n));
+    return n;
+  };
+  const out: BModel = { ...m, stocks: [], flows: [], vars: [] };
+  let changed = false;
+  for (const e of elements(m)) {
+    const src = sourceOf(e), r = !(e.kind === "var" && e.data) && !parseList(src) ? tryCompile(src) : undefined;
+    let calls = 0, hid = 0, memo = 0, touched = false;
+    const ref = (name: string): Node => ({ k: "name", key: nameKey(name), raw: refName(name), p: 0 });
+    const num = (v: number): Node => ({ k: "num", v });
+    const bin = (op: string, a: Node, b: Node): Node => ({ k: "bin", op, a, b });
+    const call = (f: string, ...args: Node[]): Node => ({ k: "call", f, args });
+    const add = <T extends Kind>(kind: T, x: Record<string, unknown>) => {
+      const el = { id: `${e.id}~${++hid}`, x: e.x, y: e.y, ...(e.dim ? { dim: e.dim } : {}), ...x };
+      if (kind === "stock") out.stocks.push(el as BStock);
+      else if (kind === "flow") out.flows.push({ eq: "", ...el } as BFlow);
+      else out.vars.push(el as BVar);
+      return el.id;
+    };
+    const lowerCall = (n: Extract<Node, { k: "call" }>): Node => {
+      const F = n.f, a = n.args, k = ++memo;
+      const order = F === "DELAY1" || F === "SMOOTH" ? 1 : F === "DELAY3" || F === "SMOOTH3" ? 3 : F === "DELAYN" || F === "SMOOTHN" ? constNum(m, a[2]) : 1;
+      const fixed = F === "DELAY_FIXED" ? constNum(m, a[1]) : 0;
+      if (order === undefined || !Number.isInteger(order) || order < 1 || fixed === undefined || fixed < 0) return n; // validate has said why
+      const base = `${e.name} ${F.toLowerCase().replace("_", " ")}${k > 1 ? ` ${k}` : ""}`;
+      const note = (part: string) => `Part of ${F}(${a.map(unparse).join(", ")}) in ${e.name}: ${part}.`;
+      let inp = a[0];
+      // an input that is a formula gets its own auxiliary, so it is worked out once per step
+      if (F !== "INITIAL" && inp.k !== "name" && inp.k !== "num") {
+        const v = fresh(`${base} input`);
+        add("var", { name: v, eq: unparse(inp), note: note("its input") });
+        inp = ref(v);
+      }
+      const names = (what: string, n: number) => Array.from({ length: n }, (_, i) => fresh(n > 1 ? `${base} ${what} ${i + 1}` : `${base} ${what}`));
+      switch (F) {
+        case "DELAY1": case "DELAY3": case "DELAYN": {
+          const init = (F === "DELAYN" ? a[3] : a[2]) ?? inp, each = order === 1 ? a[1] : bin("/", a[1], num(order));
+          const st = names("stage", order), ids = st.map((s, i) => add("stock", { name: s, init: unparse(bin("*", init, each)), note: note(`stage ${i + 1} of ${order}, holding what is in transit`) }));
+          add("flow", { name: fresh(`${base} in`), to: ids[0], eq: unparse(inp), note: note("the input entering the delay") });
+          const outs = st.map((s, i) => fresh(`${base} out${order > 1 ? ` ${i + 1}` : ""}`));
+          outs.forEach((o, i) => add("flow", { name: o, from: ids[i], to: ids[i + 1], eq: unparse(bin("/", ref(st[i]), each)), note: note(i === order - 1 ? "the output: what leaves the last stage" : `from stage ${i + 1} to stage ${i + 2}`) }));
+          return ref(outs[order - 1]);
+        }
+        case "SMOOTH": case "SMOOTH3": case "SMOOTHN": {
+          const init = (F === "SMOOTHN" ? a[3] : a[2]) ?? inp, each = order === 1 ? a[1] : bin("/", a[1], num(order));
+          const st = names("stage", order), ids = st.map((s, i) => add("stock", { name: s, init: unparse(init), note: note(order > 1 ? `stage ${i + 1} of ${order}` : "the smoothed value") }));
+          st.forEach((s, i) => add("flow", { name: fresh(`${base} change${order > 1 ? ` ${i + 1}` : ""}`), to: ids[i], eq: unparse(bin("/", bin("-", i ? ref(st[i - 1]) : inp, ref(s)), each)), note: note("closing part of the gap each time unit") }));
+          return ref(st[order - 1]);
+        }
+        case "TREND": case "FORECAST": {
+          const A = a[1], avg = fresh(`${base} average`);
+          const id = add("stock", { name: avg, init: unparse(F === "TREND" ? bin("/", inp, bin("+", num(1), bin("*", a[2], A))) : inp), note: note("the input smoothed over the averaging time") });
+          add("flow", { name: fresh(`${base} change`), to: id, eq: unparse(bin("/", bin("-", inp, ref(avg)), A)), note: note("the average closing its gap to the input") });
+          const trend = call("ZIDZ", bin("-", inp, ref(avg)), bin("*", A, call("ABS", ref(avg))));
+          return F === "TREND" ? trend : bin("*", inp, bin("+", num(1), bin("*", trend, a[2])));
+        }
+        case "INITIAL": {
+          const v = fresh(`${base}`);
+          add("stock", { name: v, init: unparse(a[0]), note: note("the value at the start, held") });
+          return ref(v);
+        }
+        case "DELAY_FIXED": {
+          // ponytail: one stock per time step of the delay, so a long delay at a small dt makes a long model
+          const n = Math.round(Math.max(fixed / m.dt, 1) + 1e-6), st = names("slot", n);
+          const ids = st.map((s, i) => add("stock", { name: s, init: unparse(a[2]), note: note(`slot ${i + 1} of ${n} in the pipeline`) }));
+          st.forEach((s, i) => add("flow", { name: fresh(`${base} shift${n > 1 ? ` ${i + 1}` : ""}`), to: ids[i], eq: unparse(bin("/", bin("-", i ? ref(st[i - 1]) : inp, ref(s)), { k: "dt" })), note: note("moving the pipeline on one step") }));
+          return ref(st[n - 1]);
+        }
+      }
+      return n;
+    };
+    const rw = (n: Node): Node => {
+      if (n.k === "neg") return { k: "neg", a: rw(n.a) };
+      if (n.k === "bin") return { ...n, a: rw(n.a), b: rw(n.b) };
+      if (n.k !== "call") return n;
+      const c = ++calls, args = n.args.map(rw);
+      if (n.f in SEED_ARG && args.length === SEED_ARG[n.f]) (args.push(num(seedFor(e.id, c))), (touched = true));
+      const x = { ...n, args };
+      if (!STATEFUL.has(n.f) || keep(x)) return x;
+      touched = true;
+      return lowerCall(x);
+    };
+    const ast = r?.ok ? rw(r.c.ast) : undefined;
+    const text = ast && touched ? unparse(ast) : undefined;
+    changed ||= !!text;
+    if (e.kind === "stock") out.stocks.push({ ...m.stocks.find((x) => x.id === e.id)!, ...(text ? { init: text } : {}) });
+    else if (e.kind === "flow") out.flows.push({ ...m.flows.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}) });
+    else out.vars.push({ ...m.vars.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}) });
+  }
+  return changed ? out : m;
+}
+// a seed for a random call without one, fixed by where it sits: its element's id and its place in the equation
+const seedFor = (id: string, c: number) => {
+  let h = 7;
+  for (const ch of `${id}:${c}`) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
+  return h % 100000;
+};
+
+// Check the whole model. Errors stop a run; warnings do not. The checks read the model as written; the order of
+// evaluation (and so circular definitions) comes from the model as it runs, where a DELAY or SMOOTH is a stock and so
+// breaks a loop as any stock does.
+export function validate(m: BModel): Checked {
+  const base = check(m);
+  const low = lower(m);
+  const run = low === m ? base : check(low);
+  const { order, loops } = orderOf(low, run.code, run.byKey);
+  const sim: Checked = { ...run, order, model: low } as Checked;
+  sim.sim = sim;
+  const told = new Set<string>();
+  for (const { ids, self } of loops) {
+    const owners = [...new Set(ids.map(ownerOf))], names = owners.map((id) => findElement(m, id)!.name);
+    const loop = [...names, names[0]].map(refName).join(" → ");
+    for (const id of owners) {
+      if (told.has(id)) continue;
+      told.add(id);
+      const e = findElement(m, id)!;
+      base.issues.push({ id, field: e.kind === "stock" ? "init" : "eq", level: "error", msg: self || owners.length === 1 ? "Its equation refers to itself. Only a stock can feed back on itself." : `Circular definition: ${loop}. Every feedback loop needs a stock in it.` });
+    }
+  }
+  return { ...base, order: order.filter((id) => !isHidden(id)), model: m, sim };
 }
 
 // values: keyed by element id for single values, and by `${id}[${element}]` for each element of an arrayed one
+// (`${id}[North,Young]` over two dimensions). Hidden elements are not in it.
 export type RunResult = { ok: boolean; times: number[]; values: Record<string, number[]>; issues: Issue[] };
 
 // Euler integration: rates from the current stocks, then stock(t + dt) = stock(t) + dt * (inflows - outflows).
 // Arrays are flattened into slots, one per element, each a plain scalar equation (see expand), so the loop below
-// never needs to know about them.
+// never needs to know about them. A row is kept every saveEvery (and at the stop time).
 export function simulate(m: BModel, maxPoints = 1000): RunResult {
-  const chk = validate(m);
-  const errors = chk.issues.filter((i) => i.level === "error");
+  const top = validate(m);
+  const errors = top.issues.filter((i) => i.level === "error");
   const values: Record<string, number[]> = {};
   const times: number[] = [];
   if (errors.length) return { ok: false, times, values, issues: errors };
-  const els = elements(m);
-  const steps = Math.round(m.T / m.dt);
-  const stride = Math.max(1, Math.ceil(steps / maxPoints));
-  const s: Scope = { TIME: 0, DT: m.dt };
-  const elementsOf = (key: string) => chk.dims.get(chk.byKey.get(key)?.id ?? "")?.elements;
+  const chk = top.sim, low = chk.model, els = elements(low);
+  const start = m.start ?? 0, steps = Math.round((m.T - start) / m.dt), save = Math.max(1, Math.round((m.saveEvery ?? m.dt) / m.dt));
+  const stride = save * Math.max(1, Math.ceil(steps / save / maxPoints));
+  const s: Scope = { TIME: start, DT: m.dt };
+  const axesBy = (key: string) => chk.axes.get(chk.byKey.get(key)?.id ?? "");
+  const all = (key: string) => chk.dims.get(chk.byKey.get(key)?.id ?? "")?.elements;
   // slots: [values key, scope key, compiled rule] for each value an element holds
   type Slot = { vk: string; sk: string; at?: string; f: (s: Scope) => number };
   const slots = new Map<string, Slot[]>();
   for (const e of els) {
-    const key = nameKey(e.name), d = chk.dims.get(e.id), list = chk.lists.get(e.id), c = chk.code.get(e.id)!;
+    const key = nameKey(e.name), ax = chk.axes.get(e.id), d = chk.dims.get(e.id), list = chk.lists.get(e.id), c = chk.code.get(e.id)!;
     slots.set(
       e.id,
-      d
-        ? d.elements.map((x, j) => ({ vk: `${e.id}[${x}]`, sk: slotKey(key, x), at: x, f: list ? () => list[j] : evaluator(expand(c.ast, x, elementsOf)) }))
-        : [{ vk: e.id, sk: key, f: chk.dims.size && c.refs.some((k) => elementsOf(k)) ? evaluator(expand(c.ast, undefined, elementsOf)) : c.eval }],
+      ax && d
+        ? d.elements.map((x, j) => {
+            const at = x.split(",");
+            const pickAt = (k: string) => {
+              const xa = axesBy(k);
+              return xa && pick(low, ax, at, xa);
+            };
+            return { vk: `${e.id}[${x}]`, sk: slotKey(key, x), at: x, f: list ? () => list[j] : evaluator(expand(c.ast, pickAt, all), j) };
+          })
+        : [{ vk: e.id, sk: key, f: evaluator(chk.dims.size ? expand(c.ast, () => undefined, all) : c.ast) }],
     );
   }
-  slots.forEach((ss) => ss.forEach((sl) => (values[sl.vk] = [])));
-  const bad = (e: Element, sl: Slot, v: number, t: number): RunResult => {
-    const what = e.kind === "stock" ? (t === 0 ? "Its initial value" : "It") : "Its equation";
+  slots.forEach((ss, id) => !isHidden(id) && ss.forEach((sl) => (values[sl.vk] = [])));
+  const owner = (e: Element): Element => (isHidden(e.id) ? findElement(m, ownerOf(e.id))! : e);
+  const bad = (el: Element, sl: Slot, v: number, t: number): RunResult => {
+    const e = owner(el), hid = el !== e;
+    const what = e.kind === "stock" ? (t === start && !hid ? "Its initial value" : "It") : "Its equation";
     return {
       ok: false,
       times,
       values,
-      issues: [{ id: e.id, field: e.kind === "stock" ? "init" : "eq", level: "error", msg: `${what} gave ${v} at time ${+t.toFixed(6)}${sl.at ? ` for ${sl.at}` : ""}. Look for a division by zero, a root or log of a negative number, or explosive growth.` }],
+      issues: [{ id: e.id, field: e.kind === "stock" ? "init" : "eq", level: "error", msg: `${what} gave ${v} at time ${+t.toFixed(6)}${sl.at ? ` for ${sl.at}` : ""}${hid ? ` (inside ${el.name})` : ""}. Look for a division by zero, a root or log of a negative number, or explosive growth.` }],
     };
   };
 
@@ -349,7 +598,7 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
   const busy = new Set<string>(), done = new Set<string>();
   const initOf = (e: Element): string | null => {
     if (done.has(e.id)) return null;
-    if (busy.has(e.id)) return e.name;
+    if (busy.has(e.id)) return owner(e).name;
     busy.add(e.id);
     for (const r of chk.code.get(e.id)?.refs ?? []) {
       const d = chk.byKey.get(r)!;
@@ -362,21 +611,24 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
   };
   for (const e of els) {
     const loop = initOf(e);
-    if (loop) return { ok: false, times, values, issues: [{ id: e.id, field: e.kind === "stock" ? "init" : "eq", level: "error", msg: `Its initial value depends on itself through ${loop}. Give a stock a number to start from.` }] };
+    if (loop) {
+      const o = owner(e);
+      return { ok: false, times, values, issues: [{ id: o.id, field: o.kind === "stock" ? "init" : "eq", level: "error", msg: `Its initial value depends on itself through ${loop}. Give a stock a number to start from.` }] };
+    }
   }
-  for (const st of m.stocks) for (const sl of slots.get(st.id)!) if (!Number.isFinite(s[sl.sk])) return bad({ ...st, kind: "stock" }, sl, s[sl.sk], 0);
+  for (const st of low.stocks) for (const sl of slots.get(st.id)!) if (!Number.isFinite(s[sl.sk])) return bad({ ...st, kind: "stock" }, sl, s[sl.sk], start);
 
   const rates = chk.order.flatMap((id) => {
     const e = els.find((x) => x.id === id)!;
     return slots.get(id)!.map((sl) => ({ e, sl }));
   });
-  // a flow has its stocks' dimension, so slot j of a stock is filled by slot j of each of its flows
-  const stocks = m.stocks.flatMap((st) =>
-    slots.get(st.id)!.map((sl, j) => ({ st, sl, key: sl.sk, ins: inflows(m, st.id).map((f) => slots.get(f.id)![j].sk), outs: outflows(m, st.id).map((f) => slots.get(f.id)![j].sk) })),
+  // a flow has its stocks' dimensions, so slot j of a stock is filled by slot j of each of its flows
+  const stocks = low.stocks.flatMap((st) =>
+    slots.get(st.id)!.map((sl, j) => ({ st, sl, key: sl.sk, ins: inflows(low, st.id).map((f) => slots.get(f.id)![j].sk), outs: outflows(low, st.id).map((f) => slots.get(f.id)![j].sk) })),
   );
-  const all = [...slots.values()].flat();
+  const shown = [...slots].filter(([id]) => !isHidden(id)).flatMap(([, ss]) => ss);
   for (let i = 0; i <= steps; i++) {
-    const t = i * m.dt;
+    const t = start + i * m.dt;
     s.TIME = t;
     for (const r of rates) {
       const v = r.sl.f(s);
@@ -385,7 +637,7 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
     }
     if (i % stride === 0 || i === steps) {
       times.push(+t.toFixed(10));
-      for (const sl of all) values[sl.vk].push(s[sl.sk]);
+      for (const sl of shown) values[sl.vk].push(s[sl.sk]);
     }
     if (i === steps) break;
     const next = stocks.map(({ key, ins, outs }) => s[key] + m.dt * (ins.reduce((a, k) => a + s[k], 0) - outs.reduce((a, k) => a + s[k], 0)));
@@ -398,6 +650,11 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
 }
 
 // ---------------------------------------------------------------------------------------------------
+// a data series in words: "data, 4 points from time 2020 to 2030, straight lines between them"
+export const dataText = (v: BVar) => {
+  const d = v.data ?? [];
+  return `data, ${d.length} point${d.length === 1 ? "" : "s"}${d.length ? ` from time ${d[0][0]} to ${d[d.length - 1][0]}` : ""}, straight lines between them, ${v.extrapolate ? "continued along the end slopes" : "held flat"} beyond`;
+};
 // equations as text, stocks in INTEG form
 export function equationGroups(m: BModel) {
   const u = (x?: string) => (x?.trim() ? `  [${x.trim()}]` : "");
@@ -412,9 +669,9 @@ export function equationGroups(m: BModel) {
       }),
     },
     { title: "Flows", lines: m.flows.map((f) => `${lhs(f)} = ${f.eq.trim() || "?"}${u(f.units)}`) },
-    { title: "Auxiliaries and constants", lines: m.vars.map((v) => `${lhs(v)} = ${v.eq.trim() || "?"}${u(v.units)}`) },
-    { title: "Dimensions", lines: (m.dims ?? []).map((d) => `${d.name}: ${d.elements.join(", ")}`) },
-    { title: "Settings", lines: [`Time unit: ${m.timeUnit || "?"}`, `Stop time: ${m.T}`, `Time step (dt): ${m.dt}`, "Integration: Euler"] },
+    { title: "Auxiliaries and constants", lines: m.vars.map((v) => `${lhs(v)} = ${v.data ? dataText(v) : v.eq.trim() || "?"}${u(v.units)}`) },
+    { title: "Dimensions", lines: (m.dims ?? []).map((d) => `${d.name}: ${d.elements.join(", ")}${d.of ? ` (a subrange of ${d.of})` : ""}`) },
+    { title: "Settings", lines: [`Time unit: ${m.timeUnit || "?"}`, `Start time: ${m.start ?? 0}`, `Stop time: ${m.T}`, `Time step (dt): ${m.dt}`, `Save every: ${m.saveEvery ?? m.dt}`, "Integration: Euler"] },
   ].filter((g) => g.lines.length);
 }
 export const equationsText = (m: BModel) => [m.name, "", ...equationGroups(m).flatMap((g) => [`${g.title}:`, ...g.lines.map((l) => "  " + l), ""])].join("\n").trim() + "\n";
@@ -446,16 +703,23 @@ export function fromJSON(text: string): BModel {
   const opt = (v: unknown) => (typeof v === "string" && v ? v : undefined);
   const rec = (x: unknown) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {});
   const extra = (o: Record<string, unknown>) => ({ ...(opt(o.dim) ? { dim: opt(o.dim) } : {}), ...(opt(o.note) ? { note: opt(o.note) } : {}) });
-  const dims = Array.isArray(m.dims) ? m.dims.map(rec).map((d) => ({ name: str(d.name), elements: Array.isArray(d.elements) ? d.elements.map((x) => str(x)) : [] })) : undefined;
+  const dims = Array.isArray(m.dims) ? m.dims.map(rec).map((d) => ({ name: str(d.name), elements: Array.isArray(d.elements) ? d.elements.map((x) => str(x)) : [], ...(opt(d.of) ? { of: opt(d.of) } : {}) })) : undefined;
+  const data = (v: Record<string, unknown>) => ({
+    ...(Array.isArray(v.data) ? { data: v.data.map((p) => (Array.isArray(p) ? [num(p[0], NaN), num(p[1], NaN)] : [NaN, NaN]) as [number, number]) } : {}),
+    ...(v.extrapolate === true ? { extrapolate: true } : {}),
+  });
+  const optNum = (k: "start" | "saveEvery") => (m[k] !== undefined && m[k] !== null && Number.isFinite(num(m[k], NaN)) ? { [k]: num(m[k], 0) } : {});
   const links = Array.isArray(m.links) ? m.links.map(rec).map((l) => ({ from: str(l.from), to: str(l.to) })).filter((l) => l.from && l.to) : undefined;
   return {
     name: str(m.name, "Imported model"),
     timeUnit: str(m.timeUnit, "time"),
     T: num(m.T, 50),
     dt: num(m.dt, 0.25),
+    ...optNum("start"),
+    ...optNum("saveEvery"),
     stocks: (m.stocks as unknown[]).map(rec).map((s) => ({ id: id(s.id, "stock"), name: str(s.name), init: str(s.init, "0"), x: num(s.x, 200), y: num(s.y, 200), units: opt(s.units), nonNegative: s.nonNegative === true || undefined, ...extra(s) })),
     flows: (m.flows as unknown[]).map(rec).map((f) => ({ id: id(f.id, "flow"), name: str(f.name), from: opt(f.from), to: opt(f.to), eq: str(f.eq), x: num(f.x, 300), y: num(f.y, 200), units: opt(f.units), ...extra(f) })),
-    vars: (m.vars as unknown[]).map(rec).map((v) => ({ id: id(v.id, "variable"), name: str(v.name), eq: str(v.eq), x: num(v.x, 300), y: num(v.y, 320), units: opt(v.units), ...extra(v) })),
+    vars: (m.vars as unknown[]).map(rec).map((v) => ({ id: id(v.id, "variable"), name: str(v.name), eq: str(v.eq), x: num(v.x, 300), y: num(v.y, 320), units: opt(v.units), ...extra(v), ...data(v) })),
     ...(dims ? { dims } : {}),
     ...(links ? { links } : {}),
   };
@@ -576,6 +840,52 @@ export const TEMPLATES: Template[] = [
         { id: "v3", name: "Total population", eq: "SUM(Population)", x: 470, y: 380, units: "people", note: "SUM turns the array into one number." },
       ],
       links: [{ from: "s1", to: "v3" }],
+    },
+  },
+  {
+    id: "delays",
+    label: "Delays and smoothing",
+    blurb: "Orders step up in week 5. A material delay (DELAY3) delivers them bunched about the delay time later; a first-order delay (DELAY1) starts at once and creeps; smoothing (SMOOTH) is how slowly people believe the new level.",
+    model: {
+      name: "Delays and smoothing",
+      timeUnit: "week",
+      T: 30,
+      dt: 0.125,
+      stocks: [{ id: "s1", name: "Delivered", init: "0", x: 700, y: 200, units: "units", note: "Everything received so far." }],
+      flows: [
+        { id: "f1", name: "Deliveries", to: "s1", eq: "DELAY3(Orders, delay_time)", x: 490, y: 200, units: "units/week", note: "Three stocks in a row, each holding a third of the delay: what was ordered arrives bunched around the delay time later." },
+      ],
+      vars: [
+        { id: "v1", name: "Orders", eq: "10 + STEP(10, 5)", x: 260, y: 200, units: "units/week" },
+        { id: "v2", name: "Delay time", eq: "4", x: 490, y: 340, units: "weeks" },
+        { id: "v3", name: "Deliveries first order", eq: "DELAY1(Orders, delay_time)", x: 260, y: 340, units: "units/week", note: "The same delay with one stock: deliveries start rising at once and creep up. Compare it with Deliveries." },
+        { id: "v4", name: "Perceived orders", eq: "SMOOTH(Orders, delay_time)", x: 260, y: 80, units: "units/week", note: "An information delay: the belief closes part of its gap to the real orders each week." },
+        { id: "v5", name: "Order trend", eq: "TREND(Orders, delay_time, 0)", x: 490, y: 80, units: "1/week", note: "How fast orders are growing, as a fraction per week, against their smoothed level." },
+      ],
+    },
+  },
+  {
+    id: "data-noise",
+    label: "Data and noise",
+    blurb: "Rainfall comes from a data series, read off by straight lines between the points, with random noise on top. The run starts in 2020 and keeps one row a year.",
+    model: {
+      name: "Data and noise",
+      timeUnit: "year",
+      start: 2020,
+      T: 2030,
+      dt: 0.25,
+      saveEvery: 1,
+      stocks: [{ id: "s1", name: "Reservoir", init: "300", x: 520, y: 200, units: "megalitres" }],
+      flows: [
+        { id: "f1", name: "Inflow", to: "s1", eq: "Rainfall * catchment * (1 + noise)", x: 300, y: 200, units: "megalitres/year" },
+        { id: "f2", name: "Release", from: "s1", eq: "Reservoir / residence_time", x: 740, y: 200, units: "megalitres/year" },
+      ],
+      vars: [
+        { id: "v1", name: "Rainfall", eq: "", data: [[2020, 600], [2022, 750], [2025, 520], [2028, 680], [2030, 640]], x: 200, y: 330, units: "mm/year", note: "A data series: measured values at a few times, with straight lines between them." },
+        { id: "v2", name: "Catchment", eq: "0.2", x: 330, y: 80, units: "megalitres/mm" },
+        { id: "v3", name: "Noise", eq: "RANDOM_NORMAL(-0.3, 0.3, 0, 0.1)", x: 420, y: 330, note: "A new draw every time step: weather the data does not show. The same seed gives the same run every time." },
+        { id: "v4", name: "Residence time", eq: "2", x: 800, y: 330, units: "years" },
+      ],
     },
   },
   {

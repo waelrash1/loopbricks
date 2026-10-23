@@ -47,10 +47,90 @@ const FUNCS: Record<string, [number, number]> = {
   VMIN: [1, 1],
   VMAX: [1, 1],
 };
-export const REDUCERS = new Set(["SUM", "MEAN", "VMIN", "VMAX"]);
-export const FUNCTION_NAMES = Object.keys(FUNCS);
+// Added later, so a model may already use one of these as an element name (a spec has "Smooth3"): they are functions
+// only when called, name( ... ), and are not reserved.
+const MORE: Record<string, [number, number]> = {
+  LOG: [2, 2],
+  POWER: [2, 2],
+  INT: [1, 1],
+  MODULO: [2, 2],
+  SIN: [1, 1],
+  COS: [1, 1],
+  TAN: [1, 1],
+  ARCSIN: [1, 1],
+  ARCCOS: [1, 1],
+  ARCTAN: [1, 1],
+  PI: [0, 0],
+  ZIDZ: [2, 2],
+  XIDZ: [3, 3],
+  TABLE_EXTRAP: [5, 999],
+  INITIAL: [1, 1],
+  DELAY1: [2, 3],
+  DELAY3: [2, 3],
+  DELAYN: [3, 4],
+  DELAY_FIXED: [3, 3],
+  SMOOTH: [2, 3],
+  SMOOTH3: [2, 3],
+  SMOOTHN: [3, 4],
+  TREND: [3, 3],
+  FORECAST: [3, 3],
+  RANDOM_UNIFORM: [2, 3],
+  RANDOM_NORMAL: [4, 5],
+  PROD: [1, 1],
+};
+const ALL_FUNCS = { ...FUNCS, ...MORE };
+export const REDUCERS = new Set(["SUM", "MEAN", "VMIN", "VMAX", "PROD"]);
+// Functions with memory: each call holds hidden stocks, which the builder adds to the model before a run (see lower in
+// builder.ts). The evaluator never sees them.
+export const STATEFUL = new Set(["INITIAL", "DELAY1", "DELAY3", "DELAYN", "DELAY_FIXED", "SMOOTH", "SMOOTH3", "SMOOTHN", "TREND", "FORECAST"]);
+// the argument that holds a random function's seed
+export const SEED_ARG: Record<string, number> = { RANDOM_UNIFORM: 2, RANDOM_NORMAL: 4 };
+// The function reference shown in the builder: [name, signature, what it does]. CONTRACT for the builtins being added;
+// the engine implements every entry, the exports translate it, the importers map XMILE and Vensim names onto it.
+export const FUNCTION_DOCS: [string, string, string][] = [
+  ["MIN", "MIN(a, b, ...)", "The smallest of its arguments."],
+  ["MAX", "MAX(a, b, ...)", "The largest of its arguments."],
+  ["ABS", "ABS(x)", "Absolute value."],
+  ["EXP", "EXP(x)", "e to the power x."],
+  ["LN", "LN(x)", "Natural logarithm."],
+  ["LOG", "LOG(x, base)", "Logarithm to a base."],
+  ["SQRT", "SQRT(x)", "Square root."],
+  ["POWER", "POWER(a, b)", "a to the power b (same as a ^ b)."],
+  ["INT", "INT(x)", "The integer part, dropping the fraction: INT(-2.5) is -2."],
+  ["MODULO", "MODULO(a, b)", "The remainder of a divided by b, with the sign of a: a - b * INT(a / b)."],
+  ["SIN", "SIN(x)", "Sine of x in radians; also COS, TAN, ARCSIN, ARCCOS, ARCTAN."],
+  ["PI", "PI()", "3.14159..."],
+  ["ZIDZ", "ZIDZ(a, b)", "a / b, or 0 when b is 0."],
+  ["XIDZ", "XIDZ(a, b, x)", "a / b, or x when b is 0."],
+  ["IF", "IF(condition, then, else)", "then when the condition holds (is not 0), otherwise else."],
+  ["STEP", "STEP(height, time)", "0 before time, height from then on."],
+  ["PULSE", "PULSE(height, start, width)", "height from start for width, otherwise 0."],
+  ["RAMP", "RAMP(slope, start)", "0 before start, then rises by slope per time unit."],
+  ["TABLE", "TABLE(x, x1, y1, x2, y2, ...)", "A lookup: y at x, linear between points, flat beyond the ends."],
+  ["TABLE_EXTRAP", "TABLE_EXTRAP(x, x1, y1, ...)", "A lookup that continues the end slopes beyond the ends."],
+  ["INITIAL", "INITIAL(x)", "The value x had at the start of the run, held fixed."],
+  ["DELAY1", "DELAY1(input, delay time[, initial])", "A first-order material delay of the input."],
+  ["DELAY3", "DELAY3(input, delay time[, initial])", "A third-order material delay: the output arrives bunched."],
+  ["DELAYN", "DELAYN(input, delay time, order[, initial])", "A material delay of any order."],
+  ["DELAY_FIXED", "DELAY_FIXED(input, delay time, initial)", "The input exactly delay time ago (a pipeline)."],
+  ["SMOOTH", "SMOOTH(input, smoothing time[, initial])", "First-order exponential smoothing (an information delay)."],
+  ["SMOOTH3", "SMOOTH3(input, smoothing time[, initial])", "Third-order smoothing."],
+  ["SMOOTHN", "SMOOTHN(input, smoothing time, order[, initial])", "Smoothing of any order."],
+  ["TREND", "TREND(input, averaging time, initial trend)", "The fractional rate of change of the input."],
+  ["FORECAST", "FORECAST(input, averaging time, horizon)", "The input extrapolated horizon ahead from its trend."],
+  ["RANDOM_UNIFORM", "RANDOM_UNIFORM(min, max[, seed])", "A new random number each time step, between min and max; the same seed repeats the run."],
+  ["RANDOM_NORMAL", "RANDOM_NORMAL(min, max, mean, sd[, seed])", "Normal noise, cut off at min and max."],
+  ["SUM", "SUM(X)", "Adds up an array X over all its elements; also MEAN, VMIN, VMAX, PROD."],
+  ["MEAN", "MEAN(X)", "The average over an array."],
+  ["VMIN", "VMIN(X)", "The smallest element of an array."],
+  ["VMAX", "VMAX(X)", "The largest element of an array."],
+  ["PROD", "PROD(X)", "Multiplies an array's elements."],
+  ["TIME", "TIME", "The current time."],
+  ["DT", "DT", "The time step."],
+];
+export const FUNCTION_NAMES = Object.keys(ALL_FUNCS);
 // names an element may not take
-export const RESERVED = new Set(["time", "dt", "integ", ...FUNCTION_NAMES.map((f) => f.toLowerCase())]);
+export const RESERVED = new Set(["time", "dt", "integ", ...Object.keys(FUNCS).map((f) => f.toLowerCase())]);
 export const NAME_RE = /^[\p{L}_][\p{L}\p{N}_ ]*$/u;
 
 const OPS: Record<string, string> = { "+": "+", "-": "-", "−": "-", "–": "-", "*": "*", "×": "*", "·": "*", "/": "/", "÷": "/", "^": "^", "(": "(", ")": ")", ",": ",", "<": "<", ">": ">", "=": "=", "≤": "<=", "≥": ">=", "≠": "<>" };
@@ -181,7 +261,7 @@ export function parse(src: string): Node {
       const upper = t.raw.toUpperCase();
       if (!t.quoted && isOp("(")) {
         const open = toks[i++];
-        const range = FUNCS[upper];
+        const range = ALL_FUNCS[upper];
         if (!range) throw new ExprError(`Unknown function "${t.raw}" ${at(t.p)}. Functions: ${FUNCTION_NAMES.join(", ")}`, t.p);
         const args: Node[] = [];
         if (!isOp(")")) {
@@ -192,7 +272,7 @@ export function parse(src: string): Node {
           }
         }
         expect(")", open);
-        if (upper === "TABLE") tableArgs(args, t.p);
+        if (upper === "TABLE" || upper === "TABLE_EXTRAP") tableArgs(upper, args, t.p);
         const [lo, hi] = range;
         if (args.length < lo || args.length > hi) {
           const want = lo === hi ? `${lo}` : hi > 10 ? `at least ${lo}` : `${lo} to ${hi}`;
@@ -224,14 +304,14 @@ export function parse(src: string): Node {
 export const literal = (n: Node): number | undefined => (n.k === "num" ? n.v : n.k === "neg" && n.a.k === "num" ? -n.a.v : undefined);
 
 // TABLE's points must be numbers, in pairs, at least two, with x increasing
-function tableArgs(args: Node[], p: number) {
+function tableArgs(f: string, args: Node[], p: number) {
   const pts = args.slice(1);
-  if (pts.length % 2) throw new ExprError(`TABLE needs a y for every x: after the input, give the points as x, y pairs (${at(p)})`, p);
-  if (pts.length < 4) throw new ExprError(`TABLE needs an input and at least 2 points: TABLE(input, x1, y1, x2, y2, ...) (${at(p)})`, p);
+  if (pts.length % 2) throw new ExprError(`${f} needs a y for every x: after the input, give the points as x, y pairs (${at(p)})`, p);
+  if (pts.length < 4) throw new ExprError(`${f} needs an input and at least 2 points: ${f}(input, x1, y1, x2, y2, ...) (${at(p)})`, p);
   const nums = pts.map(literal);
-  if (nums.some((v) => v === undefined)) throw new ExprError(`TABLE points must be plain numbers, not names or formulas (${at(p)})`, p);
+  if (nums.some((v) => v === undefined)) throw new ExprError(`${f} points must be plain numbers, not names or formulas (${at(p)})`, p);
   for (let j = 2; j < nums.length; j += 2)
-    if (!(nums[j]! > nums[j - 2]!)) throw new ExprError(`TABLE x values must increase: ${nums[j]} comes after ${nums[j - 2]} (${at(p)})`, p);
+    if (!(nums[j]! > nums[j - 2]!)) throw new ExprError(`${f} x values must increase: ${nums[j]} comes after ${nums[j - 2]} (${at(p)})`, p);
 }
 
 // piecewise linear between the points, flat beyond the ends (as Vensim lookups behave)
@@ -244,9 +324,32 @@ export function table(x: number, xs: number[], ys: number[]): number {
   while (x >= xs[i + 1]) i++;
   return ys[i] + ((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i])) * (x - xs[i]);
 }
+// the same, but beyond the ends the first and last segments carry on (TABLE_EXTRAP, and data with extrapolate)
+export function tableExtrap(x: number, xs: number[], ys: number[]): number {
+  const n = xs.length - 1;
+  if (x < xs[0]) return ys[0] + ((ys[1] - ys[0]) / (xs[1] - xs[0])) * (x - xs[0]);
+  if (x > xs[n]) return ys[n] + ((ys[n] - ys[n - 1]) / (xs[n] - xs[n - 1])) * (x - xs[n]);
+  return table(x, xs, ys);
+}
+
+// Vensim's (and PySD's) ZIDZ and XIDZ treat a divisor below 1e-6 in size as zero
+export const SMALL = 1e-6;
+
+// A small seeded generator (mulberry32): the same seed gives the same numbers on every run and every machine.
+function rng(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 type Fn = (s: Scope) => number;
-function build(n: Node): Fn {
+// stream: which element of an array this is, so each element draws its own random numbers
+function build(n: Node, stream = 0): Fn {
   switch (n.k) {
     case "num": {
       const v = n.v;
@@ -265,11 +368,11 @@ function build(n: Node): Fn {
       };
     }
     case "neg": {
-      const a = build(n.a);
+      const a = build(n.a, stream);
       return (s) => -a(s);
     }
     case "bin": {
-      const a = build(n.a), b = build(n.b);
+      const a = build(n.a, stream), b = build(n.b, stream);
       switch (n.op) {
         case "+": return (s) => a(s) + b(s);
         case "-": return (s) => a(s) - b(s);
@@ -286,7 +389,7 @@ function build(n: Node): Fn {
       throw new Error("unknown operator " + n.op);
     }
     case "call": {
-      const f = n.args.map(build);
+      const f = n.args.map((a) => build(a, stream));
       const t = (s: Scope) => s.TIME ?? 0;
       switch (n.f) {
         case "MIN": return (s) => Math.min(...f.map((g) => g(s)));
@@ -295,6 +398,45 @@ function build(n: Node): Fn {
         case "EXP": return (s) => Math.exp(f[0](s));
         case "LN": return (s) => Math.log(f[0](s));
         case "SQRT": return (s) => Math.sqrt(f[0](s));
+        case "LOG": return (s) => Math.log(f[0](s)) / Math.log(f[1](s));
+        case "POWER": return (s) => Math.pow(f[0](s), f[1](s));
+        case "INT": return (s) => Math.trunc(f[0](s)); // towards zero, as Vensim's INTEGER and PySD
+        case "MODULO": return (s) => f[0](s) % f[1](s); // Vensim's: the sign of a, so MODULO(-7, 3) is -1
+        case "SIN": return (s) => Math.sin(f[0](s));
+        case "COS": return (s) => Math.cos(f[0](s));
+        case "TAN": return (s) => Math.tan(f[0](s));
+        case "ARCSIN": return (s) => Math.asin(f[0](s));
+        case "ARCCOS": return (s) => Math.acos(f[0](s));
+        case "ARCTAN": return (s) => Math.atan(f[0](s));
+        case "PI": return () => Math.PI;
+        case "ZIDZ": return (s) => {
+          const b = f[1](s);
+          return Math.abs(b) < SMALL ? 0 : f[0](s) / b;
+        };
+        case "XIDZ": return (s) => {
+          const b = f[1](s);
+          return Math.abs(b) < SMALL ? f[2](s) : f[0](s) / b;
+        };
+        case "RANDOM_UNIFORM": case "RANDOM_NORMAL": {
+          // one draw per time step: the value is kept until TIME moves on
+          let next: (() => number) | undefined, at = NaN, v = 0;
+          const k = SEED_ARG[n.f], normal = n.f === "RANDOM_NORMAL";
+          return (s) => {
+            const t = s.TIME ?? 0;
+            if (t === at) return v;
+            next ??= rng(Math.imul((f[k]?.(s) ?? 0) | 0, 0x9e3779b1) ^ Math.imul(stream + 1, 0x85ebca6b));
+            at = t;
+            const lo = f[0](s), hi = f[1](s);
+            if (!normal) return (v = lo + (hi - lo) * next());
+            // a normal draw (Box-Muller), drawn again until it lands between min and max: a truncated normal
+            const mean = f[2](s), sd = f[3](s);
+            for (let i = 0; i < 1000; i++) {
+              v = mean + sd * Math.sqrt(-2 * Math.log(1 - next())) * Math.cos(2 * Math.PI * next());
+              if (v >= lo && v <= hi) return v;
+            }
+            return (v = Math.min(hi, Math.max(lo, v)));
+          };
+        }
         case "IF": return (s) => (f[0](s) !== 0 ? f[1](s) : f[2](s)); // only the chosen branch is evaluated
         case "STEP": return (s) => (t(s) >= f[1](s) - 1e-9 ? f[0](s) : 0);
         case "PULSE":
@@ -308,40 +450,75 @@ function build(n: Node): Fn {
           const xs = pts.filter((_, j) => j % 2 === 0), ys = pts.filter((_, j) => j % 2 === 1);
           return (s) => table(f[0](s), xs, ys);
         }
+        case "TABLE_EXTRAP": {
+          const pts = n.args.slice(1).map((a) => literal(a)!);
+          const xs = pts.filter((_, j) => j % 2 === 0), ys = pts.filter((_, j) => j % 2 === 1);
+          return (s) => tableExtrap(f[0](s), xs, ys);
+        }
         // a single value reduces to itself; arrays are expanded into their elements first (see expand)
-        case "SUM": case "MEAN": case "VMIN": case "VMAX": return f[0];
+        case "SUM": case "MEAN": case "VMIN": case "VMAX": case "PROD": return f[0];
       }
+      if (STATEFUL.has(n.f))
+        return () => {
+          throw new Error(`${n.f} has memory: run it through the builder, which gives it its hidden stocks`);
+        };
       throw new Error("unknown function " + n.f);
     }
   }
 }
 
-export const evaluator = (n: Node) => build(n);
+export const evaluator = (n: Node, stream = 0) => build(n, stream);
 
-// An arrayed equation as plain scalar equations: for element `at`, a reference to an arrayed name reads that name's
-// value for the element (scope key "population[north]"), and SUM(X) and friends become arithmetic over X's elements.
-// elementsOf gives an arrayed name's elements; scalar names are left alone, so they broadcast.
+// An arrayed equation as plain scalar equations, for one element of the array. at(key) gives the element of an arrayed
+// name to read here ("North" or, for several dimensions, "North,Young"), or undefined for a single value, which is left
+// alone and so broadcasts. all(key) lists every element of an arrayed name, for SUM(X) and friends, which become
+// arithmetic over X's elements (over all its dimensions at once).
 export const slotKey = (key: string, element: string) => `${key}[${nameKey(element)}]`;
-export function expand(n: Node, at: string | undefined, elementsOf: (key: string) => string[] | undefined): Node {
-  const ex = (x: Node) => expand(x, at, elementsOf);
+export function expand(n: Node, at: (key: string) => string | undefined, all: (key: string) => string[] | undefined): Node {
+  const ex = (x: Node) => expand(x, at, all);
   switch (n.k) {
     case "name": {
-      const es = elementsOf(n.key);
-      return es && at !== undefined ? { ...n, key: slotKey(n.key, at), raw: `${n.raw}[${at}]` } : n;
+      const e = at(n.key);
+      return e !== undefined ? { ...n, key: slotKey(n.key, e), raw: `${n.raw}[${e}]` } : n;
     }
     case "neg": return { k: "neg", a: ex(n.a) };
     case "bin": return { ...n, a: ex(n.a), b: ex(n.b) };
     case "call": {
-      const a = n.args[0], es = a?.k === "name" && REDUCERS.has(n.f) ? elementsOf(a.key) : undefined;
+      const a = n.args[0], es = a?.k === "name" && REDUCERS.has(n.f) ? all(a.key) : undefined;
       if (!es || a.k !== "name") return { ...n, args: n.args.map(ex) };
       const parts: Node[] = es.map((e) => ({ ...a, key: slotKey(a.key, e), raw: `${a.raw}[${e}]` }));
-      const sum = parts.reduce((x, y) => ({ k: "bin", op: "+", a: x, b: y }));
-      if (n.f === "SUM") return sum;
-      if (n.f === "MEAN") return { k: "bin", op: "/", a: sum, b: { k: "num", v: parts.length } };
+      const chain = (op: string) => parts.reduce((x, y) => ({ k: "bin", op, a: x, b: y }));
+      if (n.f === "SUM") return chain("+");
+      if (n.f === "PROD") return chain("*");
+      if (n.f === "MEAN") return { k: "bin", op: "/", a: chain("+"), b: { k: "num", v: parts.length } };
       return parts.length === 1 ? parts[0] : { k: "call", f: n.f === "VMIN" ? "MIN" : "MAX", args: parts };
     }
   }
   return n;
+}
+
+// A parse tree back as equation text, with only the brackets it needs (the builder writes hidden elements this way).
+export function unparse(n: Node): string {
+  return shown(n)[0];
+}
+function shown(n: Node): [string, number] {
+  const w = (c: Node, min: number) => {
+    const [s, p] = shown(c);
+    return p < min ? `(${s})` : s;
+  };
+  switch (n.k) {
+    case "num": return [String(n.v), 6];
+    case "name": return [refName(n.raw), 6];
+    case "time": return ["TIME", 6];
+    case "dt": return ["DT", 6];
+    case "neg": return ["-" + w(n.a, 4), 4];
+    case "bin":
+      if (n.op === "+" || n.op === "-") return [`${w(n.a, 2)} ${n.op} ${w(n.b, 3)}`, 2];
+      if (n.op === "*" || n.op === "/") return [`${w(n.a, 3)} ${n.op} ${w(n.b, 4)}`, 3];
+      if (n.op === "^") return [`${w(n.a, 6)} ^ ${w(n.b, 4)}`, 5];
+      return [`${w(n.a, 2)} ${n.op} ${w(n.b, 2)}`, 1];
+    case "call": return [`${n.f}(${n.args.map((a) => w(a, 0)).join(", ")})`, 6];
+  }
 }
 
 export function walk(n: Node, visit: (n: Node) => void) {
