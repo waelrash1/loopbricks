@@ -19,7 +19,8 @@
   --link: 216 52% 15%;
   --secondary: 210 30% 88%;
   --accent: 47 92% 53%; /* #f6c518 brick yellow */
-  --accent-edge: 46 100% 39%; /* #c99a00 the brick's shaded side */
+  --accent-edge: 46 100% 39%; /* #c99a00 the brick's shaded side: borders and shadows only, too light for text */
+  --accent-text: 46 100% 24%; /* #7a5d00 the accent as text: 6:1 on cards, 5.3:1 on the page */
   --accent-foreground: 216 52% 15%;
   --border: 210 26% 81%; /* #c2cfdc */
   --edge: 211 24% 70%; /* shaded side of a white brick */

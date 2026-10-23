@@ -67,7 +67,7 @@ export function GlossaryPage({ go }: { go: (h: string) => void }) {
       {!hits.length && <p className="mt-6 text-[15px]">No term matches “{q}”. Try a shorter word.</p>}
       {letters.map((L) => (
         <section key={L} className="mt-8">
-          <h2 className="display text-[26px] text-accent-edge">{L}</h2>
+          <h2 className="display text-[26px] text-accent-text">{L}</h2>
           <dl className="mt-2 grid md:grid-cols-2 gap-x-10 gap-y-5">
             {hits
               .filter((t) => t.term[0].toUpperCase() === L)
@@ -279,7 +279,7 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
       <ul className="mt-3 grid gap-2 max-w-[80ch]">
         {ASSESSMENT.map((a) => (
           <li key={a.item} className="grid grid-cols-[56px_minmax(0,1fr)] gap-3 text-[14.5px]">
-            <span className="display text-[20px] text-accent-edge">{a.weight}%</span>
+            <span className="display text-[20px] text-accent-text">{a.weight}%</span>
             <span>
               <b>{a.item}.</b> {a.detail}
             </span>
@@ -336,7 +336,7 @@ export function AssignedPage({ ids, go }: { ids: string[]; go: (h: string) => vo
         {mods.map((m, i) => (
           <li key={m.id}>
             <button onClick={() => go(`/learn/${m.id}`)} className="brick brick-w w-full text-left p-4 flex gap-3 items-start">
-              <span className="display text-[22px] text-accent-edge leading-none w-6">{i + 1}</span>
+              <span className="display text-[22px] text-accent-text leading-none w-6">{i + 1}</span>
               <span className="flex-1">
                 <span className="heading text-[16px] flex justify-between gap-2">
                   {m.title}
@@ -414,7 +414,7 @@ export function ProjectsIndex({ go }: { go: (h: string) => void }) {
       <div className="mt-6 grid md:grid-cols-3 gap-4">
         {PROJECTS.map((p) => (
           <button key={p.id} onClick={() => go(`/learn/projects/${p.id}`)} className="brick brick-w text-left p-5 flex flex-col">
-            <span className="text-[13px] font-semibold text-accent-edge">{p.field}</span>
+            <span className="text-[13px] font-semibold text-accent-text">{p.field}</span>
             <span className="heading text-[18px] mt-1">{p.title}</span>
             <span className="mt-2 text-[14px] leading-[1.55] text-muted-foreground line-clamp-4">{p.problem}</span>
             <span className="mt-auto pt-3 text-[13px] text-muted-foreground">{p.stages.length} stages</span>
@@ -458,7 +458,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
           Capstone projects
         </button>
       </p>
-      <p className="text-[13px] font-semibold text-accent-edge">{p.field}</p>
+      <p className="text-[13px] font-semibold text-accent-text">{p.field}</p>
       <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{p.title}</h1>
       <div className="mt-5 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[80ch]">
         <p className="heading text-[15px]">The brief</p>
@@ -476,7 +476,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
         {p.stages.map((s, i) => (
           <li key={s.title} className="sheet break-inside-avoid">
             <h2 className="heading text-[19px] flex gap-3">
-              <span className="display text-[22px] text-accent-edge leading-none">{i + 1}</span>
+              <span className="display text-[22px] text-accent-text leading-none">{i + 1}</span>
               {s.title}
             </h2>
             <p className="mt-2 text-[15.5px] leading-[1.65] max-w-[80ch]">{s.task}</p>

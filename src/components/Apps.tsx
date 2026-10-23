@@ -205,7 +205,7 @@ export function AppsIndex({ onDomain, onCase }: Nav) {
         <ol className="grid md:grid-cols-2 gap-x-10 gap-y-7">
           {GUIDE.map((p, i) => (
             <li key={p.step} className="grid grid-cols-[36px_minmax(0,1fr)] gap-3">
-              <span aria-hidden className="display text-[28px] text-accent-edge leading-none">
+              <span aria-hidden className="display text-[28px] text-accent-text leading-none">
                 {i + 1}
               </span>
               <div>

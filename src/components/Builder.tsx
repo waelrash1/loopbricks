@@ -868,7 +868,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
 
         {opened && (
           <div role={opened.error ? "alert" : "status"} className={cn("mb-3 rounded-[8px] border px-3 py-2 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : opened.warnings.length ? "border-accent-edge bg-card border-l-4" : "border-[var(--viz-good)] bg-card")}>
-            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : opened.warnings.length ? <AlertTriangle size={16} aria-hidden className="shrink-0 mt-0.5 text-accent-edge" /> : <Check size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
+            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : opened.warnings.length ? <AlertTriangle size={16} aria-hidden className="shrink-0 mt-0.5 text-accent-text" /> : <Check size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
             <div className="min-w-0 flex-1">
               {opened.error ? (
                 <p>
@@ -1470,7 +1470,7 @@ function IssueItems({ issues, model, onSelect }: { issues: Issue[]; model: BMode
         const Icon = i.level === "error" ? AlertCircle : AlertTriangle;
         const body = (
           <>
-            <Icon size={15} aria-hidden className={cn("shrink-0 mt-0.5", i.level === "error" ? "text-[var(--viz-pink)]" : "text-accent-edge")} />
+            <Icon size={15} aria-hidden className={cn("shrink-0 mt-0.5", i.level === "error" ? "text-[var(--viz-pink)]" : "text-accent-text")} />
             <span>
               {el ? <b>{el.name || `(unnamed ${KIND_LABEL[el.kind].toLowerCase()})`}: </b> : i.field === "settings" ? <b>Settings: </b> : null}
               {i.msg}
@@ -2309,7 +2309,7 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
       <ol className="mt-3 grid gap-3">
         {steps.map(([t, d], i) => (
           <li key={t} className="grid grid-cols-[22px_minmax(0,1fr)] gap-x-2">
-            <span className="text-[13px] font-bold text-accent-edge tabular-nums">{i + 1}</span>
+            <span className="text-[13px] font-bold text-accent-text tabular-nums">{i + 1}</span>
             <span>
               <span className="block heading text-[14.5px]">{t}</span>
               <span className="block mt-0.5 text-[13px] leading-[1.5] text-foreground/80">{d}</span>

@@ -48,7 +48,7 @@ export function MethodsIndex({ onPage, onBook }: { onPage: (id: string) => void;
         {METHOD_PAGES.map((p, i) => (
           <li key={p.id}>
             <button onClick={() => onPage(p.id)} className="brick brick-w w-full h-full text-left p-6 grid grid-cols-[40px_minmax(0,1fr)] gap-3">
-              <span aria-hidden className="display text-[30px] text-accent-edge leading-none">
+              <span aria-hidden className="display text-[30px] text-accent-text leading-none">
                 {i + 1}
               </span>
               <span>

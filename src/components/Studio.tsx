@@ -70,7 +70,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
       <ol className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 max-w-[980px]">
         {STAGES.map(([, title, what], i) => (
           <li key={title} className="flex gap-3">
-            <span className="display text-[22px] leading-none text-accent-edge w-6 shrink-0">{i + 1}</span>
+            <span className="display text-[22px] leading-none text-accent-text w-6 shrink-0">{i + 1}</span>
             <span>
               <span className="heading block text-[15.5px]">{title}</span>
               <span className="block text-[14px] text-muted-foreground leading-[1.5]">{what}</span>
@@ -83,7 +83,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
       <div className="mt-4 grid md:grid-cols-2 gap-4">
         {STUDIO.map((c) => (
           <button key={c.id} onClick={() => go(`/learn/studio/${c.id}`)} className="brick brick-w text-left p-5 flex flex-col">
-            <span className="flex items-center justify-between gap-2 text-[13px] font-semibold text-accent-edge">
+            <span className="flex items-center justify-between gap-2 text-[13px] font-semibold text-accent-text">
               {c.field}
               {seen.has(`done:studio/${c.id}`) && <Check size={16} strokeWidth={3} aria-label="done" className="text-[var(--viz-good)]" />}
             </span>
@@ -372,7 +372,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
   return (
     <article className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here={c.title} />
-      <p className="text-[13px] font-semibold text-accent-edge">{c.field}</p>
+      <p className="text-[13px] font-semibold text-accent-text">{c.field}</p>
       <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{c.title}</h1>
 
       <div className="mt-8 grid lg:grid-cols-[220px_minmax(0,1fr)] gap-8 lg:gap-12">

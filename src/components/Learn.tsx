@@ -90,7 +90,7 @@ function Sequence({ d }: { d: Extract<StudyDiagram, { kind: "sequence" }> }) {
           <li key={s.label}>
             {i > 0 && <ArrowDown aria-hidden size={18} strokeWidth={2.5} className="mx-auto my-1 text-foreground/70" />}
             <div className="rounded-[10px] border border-foreground/70 bg-card px-3.5 py-2.5 grid grid-cols-[22px_minmax(0,1fr)] gap-x-2">
-              <span className="text-[13px] font-bold text-accent-edge tabular-nums pt-px">{i + 1}</span>
+              <span className="text-[13px] font-bold text-accent-text tabular-nums pt-px">{i + 1}</span>
               <span>
                 <span className="block heading text-[15px]">{s.label}</span>
                 {s.detail && <span className="block mt-1 text-[13px] leading-[1.5] text-foreground/80">{s.detail}</span>}
@@ -101,7 +101,7 @@ function Sequence({ d }: { d: Extract<StudyDiagram, { kind: "sequence" }> }) {
       </ol>
       {d.loopBack && (
         <p className="mt-3 text-[13.5px] text-foreground/80">
-          <span aria-hidden className="font-bold text-accent-edge">↺ </span>
+          <span aria-hidden className="font-bold text-accent-text">↺ </span>
           From step {d.loopBack.from + 1} back to step {d.loopBack.to + 1}: {d.loopBack.label}
         </p>
       )}
@@ -230,7 +230,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
       {LEVELS.map(({ level, blurb }, li) => (
         <section key={level} className="mt-12">
           <div className="flex items-baseline gap-3">
-            <span className="display text-[30px] text-accent-edge leading-none">{li + 1}</span>
+            <span className="display text-[30px] text-accent-text leading-none">{li + 1}</span>
             <h2 className="heading text-[24px]">{level}</h2>
           </div>
           <p className="mt-1 text-[15px] text-muted-foreground max-w-[70ch]">{blurb}</p>
@@ -244,7 +244,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
                       {m.def.title}
                       {isDone && <Check size={16} strokeWidth={3} aria-label="done" className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
                     </span>
-                    {track === "manager" && m.def.managerOptional && <span className="mt-1 text-[12.5px] font-semibold text-accent-edge">Optional on the manager track</span>}
+                    {track === "manager" && m.def.managerOptional && <span className="mt-1 text-[12.5px] font-semibold text-accent-text">Optional on the manager track</span>}
                     <span className="mt-1.5 text-[13.5px] leading-[1.5] text-muted-foreground">{m.def.summary}</span>
                     <span className="mt-auto pt-3 flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
                       <Clock size={13} aria-hidden /> about {m.minutes} min

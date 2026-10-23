@@ -74,7 +74,7 @@ export default function Home({ go }: { go: (hash: string) => void }) {
           <span className="mt-6 grid gap-2">
             {MODULES.slice(0, 4).map((m, i) => (
               <span key={m.id} className="flex items-baseline gap-3 text-[14.5px]">
-                <span className="w-5 text-right font-semibold text-accent-edge">{i + 1}</span>
+                <span className="w-5 text-right font-semibold text-accent-text">{i + 1}</span>
                 <span className={isDone(seen, m.id) ? "line-through text-muted-foreground" : ""}>{m.title}</span>
               </span>
             ))}

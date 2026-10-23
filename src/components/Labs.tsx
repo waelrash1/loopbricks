@@ -97,7 +97,7 @@ function Chart({
 
 const Step = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
   <section className="mt-12 grid md:grid-cols-[40px_minmax(0,1fr)] gap-x-4">
-    <span aria-hidden className="display text-[30px] text-accent-edge leading-none">
+    <span aria-hidden className="display text-[30px] text-accent-text leading-none">
       {n}
     </span>
     <div className="min-w-0">
