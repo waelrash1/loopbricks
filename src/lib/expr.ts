@@ -41,7 +41,13 @@ const FUNCS: Record<string, [number, number]> = {
   RAMP: [2, 2],
   TABLE: [5, 999], // TABLE(x, x1, y1, x2, y2, ...): checked further in tableArgs
   TIME: [0, 0],
+  // reducers: an arrayed element to one number, SUM(Population); the argument must be a name
+  SUM: [1, 1],
+  MEAN: [1, 1],
+  VMIN: [1, 1],
+  VMAX: [1, 1],
 };
+export const REDUCERS = new Set(["SUM", "MEAN", "VMIN", "VMAX"]);
 export const FUNCTION_NAMES = Object.keys(FUNCS);
 // names an element may not take
 export const RESERVED = new Set(["time", "dt", "integ", ...FUNCTION_NAMES.map((f) => f.toLowerCase())]);
@@ -193,6 +199,7 @@ export function parse(src: string): Node {
           throw new ExprError(`${upper} takes ${want} argument${lo === 1 && hi === 1 ? "" : "s"}, not ${args.length} (${at(t.p)})`, t.p);
         }
         if (upper === "TIME") return { k: "time" };
+        if (REDUCERS.has(upper) && args[0].k !== "name") throw new ExprError(`${upper} takes the name of an arrayed element, such as ${upper}(Population) (${at(t.p)})`, t.p);
         return { k: "call", f: upper, args };
       }
       if (!t.quoted && upper === "TIME") return { k: "time" };
@@ -214,7 +221,7 @@ export function parse(src: string): Node {
 }
 
 // a plain number, or a minus sign and a number
-const literal = (n: Node): number | undefined => (n.k === "num" ? n.v : n.k === "neg" && n.a.k === "num" ? -n.a.v : undefined);
+export const literal = (n: Node): number | undefined => (n.k === "num" ? n.v : n.k === "neg" && n.a.k === "num" ? -n.a.v : undefined);
 
 // TABLE's points must be numbers, in pairs, at least two, with x increasing
 function tableArgs(args: Node[], p: number) {
@@ -301,13 +308,43 @@ function build(n: Node): Fn {
           const xs = pts.filter((_, j) => j % 2 === 0), ys = pts.filter((_, j) => j % 2 === 1);
           return (s) => table(f[0](s), xs, ys);
         }
+        // a single value reduces to itself; arrays are expanded into their elements first (see expand)
+        case "SUM": case "MEAN": case "VMIN": case "VMAX": return f[0];
       }
       throw new Error("unknown function " + n.f);
     }
   }
 }
 
-function walk(n: Node, visit: (n: Node) => void) {
+export const evaluator = (n: Node) => build(n);
+
+// An arrayed equation as plain scalar equations: for element `at`, a reference to an arrayed name reads that name's
+// value for the element (scope key "population[north]"), and SUM(X) and friends become arithmetic over X's elements.
+// elementsOf gives an arrayed name's elements; scalar names are left alone, so they broadcast.
+export const slotKey = (key: string, element: string) => `${key}[${nameKey(element)}]`;
+export function expand(n: Node, at: string | undefined, elementsOf: (key: string) => string[] | undefined): Node {
+  const ex = (x: Node) => expand(x, at, elementsOf);
+  switch (n.k) {
+    case "name": {
+      const es = elementsOf(n.key);
+      return es && at !== undefined ? { ...n, key: slotKey(n.key, at), raw: `${n.raw}[${at}]` } : n;
+    }
+    case "neg": return { k: "neg", a: ex(n.a) };
+    case "bin": return { ...n, a: ex(n.a), b: ex(n.b) };
+    case "call": {
+      const a = n.args[0], es = a?.k === "name" && REDUCERS.has(n.f) ? elementsOf(a.key) : undefined;
+      if (!es || a.k !== "name") return { ...n, args: n.args.map(ex) };
+      const parts: Node[] = es.map((e) => ({ ...a, key: slotKey(a.key, e), raw: `${a.raw}[${e}]` }));
+      const sum = parts.reduce((x, y) => ({ k: "bin", op: "+", a: x, b: y }));
+      if (n.f === "SUM") return sum;
+      if (n.f === "MEAN") return { k: "bin", op: "/", a: sum, b: { k: "num", v: parts.length } };
+      return parts.length === 1 ? parts[0] : { k: "call", f: n.f === "VMIN" ? "MIN" : "MAX", args: parts };
+    }
+  }
+  return n;
+}
+
+export function walk(n: Node, visit: (n: Node) => void) {
   visit(n);
   if (n.k === "neg") walk(n.a, visit);
   else if (n.k === "bin") (walk(n.a, visit), walk(n.b, visit));
