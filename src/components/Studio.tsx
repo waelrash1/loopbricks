@@ -5,6 +5,7 @@ import { refFor, refUrl } from "@/data/learn/readings";
 import { DrawBoard } from "@/components/LearnExtras";
 import { markSeen, useSeen } from "@/lib/progress";
 import { cn } from "@/lib/utils";
+import { loadModel, saveModel, type BModel } from "@/lib/builder";
 
 const wrap = "max-w-[1180px] mx-auto px-4 md:px-8";
 const load = <T,>(k: string, d: T): T => {
@@ -278,6 +279,46 @@ function StockTable({ c }: { c: StudioCase }) {
   );
 }
 
+
+// The case's stocks and flows, laid out and connected, with every equation and starting value left for the learner.
+// Names drop their explanations in brackets, which the equation language cannot use.
+const plain = (n: string) => n.replace(/\s*\(.*?\)\s*/g, " ").trim();
+export function starterModel(c: StudioCase): BModel {
+  const n = c.stocks.length;
+  const stocks = c.stocks.map((st, i) => ({ id: `s${i + 1}`, name: plain(st.name), init: "", x: n > 1 ? 280 + (i * 520) / (n - 1) : 500, y: 140 + (i % 2) * 200, units: st.unit }));
+  const names = [...new Set(c.stocks.flatMap((st) => [...st.inflows, ...st.outflows]))];
+  const used: Record<string, number> = {}; // flows already placed beside each stock, so the next one is offset
+  const flows = names.map((name, i) => {
+    const from = c.stocks.findIndex((st) => st.outflows.includes(name));
+    const to = c.stocks.findIndex((st) => st.inflows.includes(name));
+    const [a, b] = [stocks[from], stocks[to]];
+    const side = a && b ? "mid" : a ? `out${from}` : `in${to}`;
+    const k = (used[side] = (used[side] ?? -1) + 1);
+    const x = a && b ? (a.x + b.x) / 2 : a ? a.x + 140 : b.x - 140;
+    const y = (a && b ? (a.y + b.y) / 2 : (a ?? b).y) + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 70;
+    return { id: `f${i + 1}`, name: plain(name), from: a?.id, to: b?.id, eq: "", x: Math.max(40, Math.min(960, x)), y: Math.max(40, Math.min(440, y)) };
+  });
+  return { name: c.title, timeUnit: "month", T: 60, dt: 0.25, stocks, flows, vars: [] };
+}
+
+function BuildIt({ c, go }: { c: StudioCase; go: (h: string) => void }) {
+  const open = () => {
+    if (loadModel() && !window.confirm("Replace the model in the builder with this case's stocks and flows? Export yours first if you want to keep it.")) return;
+    saveModel(starterModel(c));
+    go("/build");
+  };
+  return (
+    <div className="sheet flex flex-wrap items-center justify-between gap-4">
+      <p className="text-[15px] leading-[1.6] max-w-[70ch]">
+        <b>Build it.</b> Open the builder with this case&rsquo;s {c.stocks.length} stocks and their flows already laid out and connected. Add the constants, write an equation and a starting value for each element, run it, and compare your run with the reference mode in stage 1.
+      </p>
+      <button onClick={open} className="brick brick-y h-10 px-4 text-[14px] font-semibold whitespace-nowrap">
+        Open in the builder
+      </button>
+    </div>
+  );
+}
+
 export function Citation({ k }: { k: string }) {
   const r = refFor(k);
   if (!r) return null;
@@ -428,6 +469,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
               onChange={(v) => setNote("stocks", v)}
               model={<StockTable c={c} />}
             />
+            <BuildIt c={c} go={go} />
           </section>
 
           <section id="st-policies" className="scroll-mt-24 grid [&>*]:min-w-0 gap-6">

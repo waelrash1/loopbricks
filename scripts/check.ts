@@ -18,6 +18,8 @@ import { METHOD_PAGES, METHOD_REFS } from "@/data/methods";
 import { BOOK_TOC } from "@/data/sterman";
 import { MODULES } from "@/data/learn/modules";
 import { ARCHETYPES } from "@/data/learn/archetypes";
+import { STUDIO } from "@/data/learn/studio";
+import { READINGS, refFor } from "@/data/learn/readings";
 import { OBJECTIVES, QUIZ } from "@/data/learn/quiz";
 import { STEPS } from "@/data/learn/steps";
 import { MODULE_CONTENT } from "@/data/learn";
@@ -361,4 +363,15 @@ try {
 }
 const nCases = DOMAINS.reduce((n, d) => n + d.cases.length, 0), nChecks = DOMAINS.reduce((n, d) => n + d.cases.reduce((m, c) => m + (c.checks?.length ?? 0), 0), 0);
 console.log(all.length, "molecules,", GROUPS.length, "groups,", DOMAINS.length, "fields,", nCases, "cases,", nChecks, "behaviour checks");
+// modelling studio: diagrams must pass the clarity lint, and every case and module reading must resolve to a reference
+for (const c of STUDIO) {
+  lintCld(c.cld).forEach((p) => errs.push(`studio ${c.id}: ${p}`));
+  c.refs.forEach((k) => !refFor(k) && errs.push(`studio ${c.id}: unknown reference ${k}`));
+  if (!c.sorting.some((v) => v.kind === "Stock") || !c.stocks.length) errs.push(`studio ${c.id}: no stocks`);
+}
+for (const m of MODULES) {
+  const r = READINGS[m.id];
+  if (!r) errs.push(`module ${m.id}: no readings`);
+  else [...r.core, ...r.further].forEach((x) => !refFor(x.ref) && errs.push(`module ${m.id}: unknown reading ${x.ref}`));
+}
 console.log([...new Set(errs)].join("\n") || "all checks pass");
