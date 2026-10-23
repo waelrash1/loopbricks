@@ -44,8 +44,14 @@ effect(
 misc= MODULO(7, 3) + INTEGER(2.5) + XIDZ(1, 0, 4) + ACTIVE INITIAL(Tank, 1) + TIME STEP + FINAL TIME + PULSE TRAIN(1, 1, 2, 10) ~~|
 data in := GET XLS DATA('a.xlsx', 'S', 'A', 'B1') ~~|
 :MACRO: TWICE(x)
-TWICE = 2 * x ~~|
+TWICE = 2 * inner ~~|
+inner = x + 1 ~~|
 :END OF MACRO:
+:MACRO: SPLIT(x : rest)
+SPLIT = x / 2 ~~|
+rest = x / 2 ~~|
+:END OF MACRO:
+twice it = TWICE(Tank) + TWICE(3) ~~|
 ********************************************************
 	.Control
 ********************************************************~
@@ -85,9 +91,14 @@ V300  Do not put anything below this section - it will be ignored
   expectEq(w, r, "misc", "MODULO(7, 3) + IF(2.5 < 0, -INT(-2.5), INT(2.5)) + XIDZ(1, 0, 4) + Tank + DT + 20 + PULSE_TRAIN(1, 1, 2, 10)");
   expectEq(w, r, "data in", "0");
   if (el(m, "effect") || el(m, "TWICE")) fail(`${w}: lookups and macros should not become elements`);
-  expectWarn(w, r, /macro TWICE/);
+  // a macro call becomes the macro's equations, named after the caller and the call
+  expectEq(w, r, "twice it", "twice_it_TWICE + twice_it_TWICE_2");
+  expectEq(w, r, "twice it TWICE", "2 * twice_it_TWICE_inner");
+  expectEq(w, r, "twice it TWICE inner", "Tank + 1");
+  expectEq(w, r, "twice it TWICE 2 inner", "3 + 1");
+  expectWarn(w, r, /macro SPLIT: it has more than one output/);
+  if (r.warnings.some((x) => /TWICE|PULSE TRAIN/.test(x))) fail(`${w}: TWICE and PULSE TRAIN should come across without a warning`);
   expectWarn(w, r, /data in reads data/);
-  expectWarn(w, r, /PULSE TRAIN has no equivalent/);
   expectWarn(w, r, /ACTIVE INITIAL/);
   expectWarn(w, r, /RAMP with an end time/);
   // the sketch: positions, and the info arrow Tank -> drain (the pipe from the valve is not an arrow)
@@ -99,6 +110,36 @@ V300  Do not put anything below this section - it will be ignored
   expectEq("mdl 2-D", r2, "x", "1, 2, 3, 4, 5, 6");
   expectEq("mdl 2-D", r2, "y", "7, 7, 7, 8, 8, 8");
   if (el(r2.model, "x")?.dim !== "A, B") fail(`mdl 2-D: dim ${el(r2.model, "x")?.dim}`);
+
+  // single elements, per-element equations (with :EXCEPT:), per-element stock rates, and the newer functions
+  const r3 = importMdl(String.raw`Region: North, South, East ~~|
+a[Region] = 1, 2, 3 ~~|
+b[Region] :EXCEPT: [East] = a[Region] * 2 ~~|
+b[East] = a[North] + ELMCOUNT(Region) ~~|
+c[North] = SINH(1) + QUANTUM(Time, 2) + PULSE TRAIN(1, 1, 3, 9) ~~|
+c[South] = a[South] ~~|
+c[East] = a[South] ~~|
+s[Region] = SAMPLE IF TRUE(Time > 2, a[Region], 0) + COSH(0) + TANH(0) ~~|
+st[North] = INTEG(a[North], 1) ~~|
+st[South] = INTEG(a[South] * 2, 2) ~~|
+st[East] = INTEG(a[East] * 2, 2) ~~|
+g = GET TIME VALUE(0, 0, 0) ~~|
+FINAL TIME = 10 ~~|
+TIME STEP = 1 ~~|`);
+  const w3 = "mdl per element";
+  expectEq(w3, r3, "b", "a * 2");
+  expectEq(w3, r3, "c", "SINH(1) + QUANTUM(TIME, 2) + PULSE_TRAIN(1, 1, 3, 9)");
+  expectEq(w3, r3, "s", "SAMPLE_IF_TRUE(TIME > 2, a, 0) + COSH(0) + TANH(0)");
+  expectEq(w3, r3, "st", "1, 2, 2");
+  expectEq(w3, r3, "st net flow", "a * 2");
+  const eqs = (n: string) => JSON.stringify((el(r3.model, n) as { eqs?: unknown })?.eqs);
+  if (eqs("b") !== JSON.stringify({ East: "a[North] + ELMCOUNT(Region)" })) fail(`${w3}: b's per-element equations ${eqs("b")}`);
+  if (eqs("c") !== JSON.stringify({ South: "a", East: "a[South]" })) fail(`${w3}: c's per-element equations ${eqs("c")}`);
+  if (eqs("st net flow") !== JSON.stringify({ North: "a" })) fail(`${w3}: st's per-element rates ${eqs("st net flow")}`);
+  expectWarn(w3, r3, /GET TIME VALUE has no equivalent/);
+  if (r3.warnings.length !== 1) fail(`${w3}: only GET TIME VALUE should warn:\n  ${r3.warnings.join("\n  ")}`);
+  const v3 = validate(r3.model).issues.filter((i) => i.id !== el(r3.model, "g")?.id && i.level === "error");
+  if (v3.length) fail(`${w3}: does not validate: ${v3.map((i) => i.msg).join("; ")}`);
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -109,6 +150,8 @@ V300  Do not put anything below this section - it will be ignored
   <header><name>Snippet</name></header>
   <sim_specs method="RK4" time_units="Months"><start>1</start><stop>13</stop><dt reciprocal="true">4</dt></sim_specs>
   <dimensions><dim name="Product"><elem name="Pizza"/><elem name="Salad"/></dim><dim name="N" size="2"/></dimensions>
+  <macro name="DOUBLE"><parm>x</parm><eqn>x * 2</eqn></macro>
+  <macro name="BIG"><parm>x</parm><eqn>y</eqn><variables><aux name="y"><eqn>x</eqn></aux></variables></macro>
   <model>
     <variables>
       <stock name="Stock with \\n Newline"><eqn>10</eqn><inflow>"in-flow"</inflow><outflow>out</outflow><non_negative/></stock>
@@ -120,6 +163,8 @@ V300  Do not put anything below this section - it will be ignored
         <element subscript="Pizza"><eqn>2</eqn></element><element subscript="Salad"><eqn>4</eqn></element></aux>
       <aux name="Sales"><dimensions><dim name="Product"/></dimensions><eqn>Price[Product] * shape(TIME) + MEAN(Price[*]) + MAX(Price[*]) + Price[Pizza]</eqn></aux>
       <aux name="Sum"><eqn>SUM(Price[*]) + SMTHN(1, 2, 3) + FORCST(1, 2, 3) + DELAY(TIME, 2) + 7 MOD 4 + LOG10(100) + PI</eqn></aux>
+      <aux name="Mixed"><dimensions><dim name="Product"/></dimensions>
+        <element subscript="Pizza"><eqn>Price[Pizza] * 2</eqn></element><element subscript="Salad"><eqn>DOUBLE(TIME + 1)</eqn></element></aux>
       <module name="sub"/>
     </variables>
     <views><view>
@@ -135,7 +180,9 @@ V300  Do not put anything below this section - it will be ignored
   expectWarn(w, r, /RK4 integration/);
   expectWarn(w, r, /module sub/);
   expectWarn(w, r, /Renamed "in-flow" to "in flow"/);
-  expectWarn(w, r, /Price\[Pizza\] picks out single elements/);
+  expectWarn(w, r, /macro BIG/);
+  expectEq(w, r, "Mixed", "Price * 2");
+  if (JSON.stringify(el(m, "Mixed")?.eqs) !== JSON.stringify({ Salad: "(TIME + 1) * 2" })) fail(`${w}: Mixed's per-element equations ${JSON.stringify(el(m, "Mixed")?.eqs)}`);
   expectEq(w, r, "Stock with Newline", "10");
   expectEq(w, r, "in flow", "MAX(0, SMOOTH(effect_gf, 2) + ZIDZ(1, 0) + PULSE(5 / DT, 3, 0) + INITIAL(out))");
   expectEq(w, r, "out", "IF((Stock_with_Newline > 5) * ((TIME < 2) = 0), 1, 0)");
@@ -155,7 +202,13 @@ V300  Do not put anything below this section - it will be ignored
 
 // ---------------------------------------------------------------------------------------------------
 // round trip: the builder's own XMILE export comes back as the same model
-const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), ...Object.values(SPECS).map((s) => clone(s.model))];
+const perElement: BModel = {
+  ...template("regions"),
+  name: "Per element",
+  stocks: [{ ...template("regions").stocks[0], eqs: { East: "Birth_fraction[North] * 10000" } }],
+  vars: [...template("regions").vars, { id: "v4", name: "North share", eq: "Population[North] / Total_population", x: 0, y: 0 }, { id: "v5", name: "Mixed", eq: "Population * 2", x: 0, y: 0, dim: "Region", eqs: { South: "Population[North] + PULSE_TRAIN(2, 1, 5, 40)" } }],
+};
+const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), perElement, ...Object.values(SPECS).map((s) => clone(s.model))];
 let trips = 0;
 for (const m of models) {
   const tag = `round trip ${m.name}`;
@@ -229,7 +282,7 @@ const reasons = new Map<string, number>();
 let seen = new Set<string>();
 const why = (s: string) => !seen.has(s) && (seen.add(s), reasons.set(s, (reasons.get(s) ?? 0) + 1));
 const CONTRACT = new Set([...FUNCTION_DOCS.map((f) => f[0]), "COS", "TAN", "ARCSIN", "ARCCOS", "ARCTAN"]);
-const passed = new Set<string>(), detail: string[] = [];
+const passed = new Set<string>(), detail: string[] = [], invalid: string[] = [];
 if (!existsSync(ROOT)) console.log(`(no test models at ${ROOT}: clone https://github.com/SDXorg/test-models there, or set TEST_MODELS, to run that part)`);
 else {
   walk(ROOT);
@@ -258,6 +311,7 @@ else {
     const issues = validate(r.model).issues.filter((i) => i.level === "error");
     if (issues.length) {
       report.invalid++;
+      invalid.push(`  ${rel}: ${issues[0].msg.slice(0, 160)}`);
       for (const i of issues) {
         const fn = /Unknown function "([^"]+)"/.exec(i.msg);
         if (fn) why(`function ${fn[1].toUpperCase()} ${CONTRACT.has(fn[1].toUpperCase()) ? "in the contract but not in the engine yet" : "not in the builder"}`);
@@ -304,6 +358,8 @@ else {
     } else report.passed++, passed.add(rel);
   }
   for (const m of MUST) if (!files.some((f) => relative(ROOT, f) === m)) fail(`${m}: not found in the test models`);
+  // 130 matched before single elements, per-element equations, the newer functions and macros came in
+  if (report.passed < 155) fail(`SDXorg: only ${report.passed} models match their expected output; 155 did`);
   const p = report;
   console.log(`SDXorg test models: ${p.files} files (.mdl and .xmile)`);
   console.log(`  imported: ${p.clean} cleanly, ${p.warned} with warnings, ${p.failed} failed`);
@@ -311,7 +367,7 @@ else {
   console.log(`  compared with the expected output: ${p.compared}: ${p.passed} match, ${p.mismatched} differ (${p.noOutput} more ran but have no output file)`);
   console.log("  main reasons:");
   [...reasons].sort((a, b) => b[1] - a[1]).slice(0, 24).forEach(([k, n]) => console.log(`    ${String(n).padStart(3)}  ${k}`));
-  if (process.env.VERBOSE) console.log(["  differences:", ...detail, "  matching:", ...[...passed].map((f) => "  " + f)].join("\n"));
+  if (process.env.VERBOSE) console.log(["  differences:", ...detail, "  not valid:", ...invalid, "  matching:", ...[...passed].map((f) => "  " + f)].join("\n"));
 }
 
 if (errs.length) {

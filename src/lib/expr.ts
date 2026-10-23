@@ -13,7 +13,7 @@ export class ExprError extends Error {
 export type Scope = Record<string, number>; // keys from nameKey(); TIME and DT live under the upper-case keys
 export type Node =
   | { k: "num"; v: number }
-  | { k: "name"; key: string; raw: string; p: number }
+  | { k: "name"; key: string; raw: string; p: number; sub?: string[] } // sub: Population[North, Young] as written, an element or a dimension per position
   | { k: "time" }
   | { k: "dt" }
   | { k: "neg"; a: Node }
@@ -77,12 +77,19 @@ const MORE: Record<string, [number, number]> = {
   RANDOM_UNIFORM: [2, 3],
   RANDOM_NORMAL: [4, 5],
   PROD: [1, 1],
+  PULSE_TRAIN: [4, 4],
+  SINH: [1, 1],
+  COSH: [1, 1],
+  TANH: [1, 1],
+  ELMCOUNT: [1, 1],
+  QUANTUM: [2, 2],
+  SAMPLE_IF_TRUE: [3, 3],
 };
 const ALL_FUNCS = { ...FUNCS, ...MORE };
 export const REDUCERS = new Set(["SUM", "MEAN", "VMIN", "VMAX", "PROD"]);
 // Functions with memory: each call holds hidden stocks, which the builder adds to the model before a run (see lower in
 // builder.ts). The evaluator never sees them.
-export const STATEFUL = new Set(["INITIAL", "DELAY1", "DELAY3", "DELAYN", "DELAY_FIXED", "SMOOTH", "SMOOTH3", "SMOOTHN", "TREND", "FORECAST"]);
+export const STATEFUL = new Set(["INITIAL", "DELAY1", "DELAY3", "DELAYN", "DELAY_FIXED", "SMOOTH", "SMOOTH3", "SMOOTHN", "TREND", "FORECAST", "SAMPLE_IF_TRUE"]);
 // the argument that holds a random function's seed
 export const SEED_ARG: Record<string, number> = { RANDOM_UNIFORM: 2, RANDOM_NORMAL: 4 };
 // The function reference shown in the builder: [name, signature, what it does]. CONTRACT for the builtins being added;
@@ -99,6 +106,10 @@ export const FUNCTION_DOCS: [string, string, string][] = [
   ["INT", "INT(x)", "The integer part, dropping the fraction: INT(-2.5) is -2."],
   ["MODULO", "MODULO(a, b)", "The remainder of a divided by b, with the sign of a: a - b * INT(a / b)."],
   ["SIN", "SIN(x)", "Sine of x in radians; also COS, TAN, ARCSIN, ARCCOS, ARCTAN."],
+  ["SINH", "SINH(x)", "Hyperbolic sine; also COSH and TANH."],
+  ["COSH", "COSH(x)", "Hyperbolic cosine."],
+  ["TANH", "TANH(x)", "Hyperbolic tangent."],
+  ["QUANTUM", "QUANTUM(x, q)", "x rounded towards zero to a whole number of q: q * INT(x / q); x itself when q is below 1e-6."],
   ["PI", "PI()", "3.14159..."],
   ["ZIDZ", "ZIDZ(a, b)", "a / b, or 0 when b is 0."],
   ["XIDZ", "XIDZ(a, b, x)", "a / b, or x when b is 0."],
@@ -106,6 +117,7 @@ export const FUNCTION_DOCS: [string, string, string][] = [
   ["STEP", "STEP(height, time)", "0 before time, height from then on."],
   ["PULSE", "PULSE(height, start, width)", "height from start for width, otherwise 0."],
   ["RAMP", "RAMP(slope, start)", "0 before start, then rises by slope per time unit."],
+  ["PULSE_TRAIN", "PULSE_TRAIN(start, duration, repeat time, end)", "1 for duration from start, again every repeat time, until end; otherwise 0."],
   ["TABLE", "TABLE(x, x1, y1, x2, y2, ...)", "A lookup: y at x, linear between points, flat beyond the ends."],
   ["TABLE_EXTRAP", "TABLE_EXTRAP(x, x1, y1, ...)", "A lookup that continues the end slopes beyond the ends."],
   ["INITIAL", "INITIAL(x)", "The value x had at the start of the run, held fixed."],
@@ -118,6 +130,7 @@ export const FUNCTION_DOCS: [string, string, string][] = [
   ["SMOOTHN", "SMOOTHN(input, smoothing time, order[, initial])", "Smoothing of any order."],
   ["TREND", "TREND(input, averaging time, initial trend)", "The fractional rate of change of the input."],
   ["FORECAST", "FORECAST(input, averaging time, horizon)", "The input extrapolated horizon ahead from its trend."],
+  ["SAMPLE_IF_TRUE", "SAMPLE_IF_TRUE(condition, input, initial)", "The input while the condition holds; otherwise the value it last took then (initial before that)."],
   ["RANDOM_UNIFORM", "RANDOM_UNIFORM(min, max[, seed])", "A new random number each time step, between min and max; the same seed repeats the run."],
   ["RANDOM_NORMAL", "RANDOM_NORMAL(min, max, mean, sd[, seed])", "Normal noise, cut off at min and max."],
   ["SUM", "SUM(X)", "Adds up an array X over all its elements; also MEAN, VMIN, VMAX, PROD."],
@@ -125,6 +138,8 @@ export const FUNCTION_DOCS: [string, string, string][] = [
   ["VMIN", "VMIN(X)", "The smallest element of an array."],
   ["VMAX", "VMAX(X)", "The largest element of an array."],
   ["PROD", "PROD(X)", "Multiplies an array's elements."],
+  ["[]", "Population[North]", "One element of an array; Population[North, Young] over two dimensions. A dimension name stands for this element: Population[Region]."],
+  ["ELMCOUNT", "ELMCOUNT(Dimension)", "The number of elements in a dimension."],
   ["TIME", "TIME", "The current time."],
   ["DT", "DT", "The time step."],
 ];
@@ -133,7 +148,7 @@ export const FUNCTION_NAMES = Object.keys(ALL_FUNCS);
 export const RESERVED = new Set(["time", "dt", "integ", ...Object.keys(FUNCS).map((f) => f.toLowerCase())]);
 export const NAME_RE = /^[\p{L}_][\p{L}\p{N}_ ]*$/u;
 
-const OPS: Record<string, string> = { "+": "+", "-": "-", "−": "-", "–": "-", "*": "*", "×": "*", "·": "*", "/": "/", "÷": "/", "^": "^", "(": "(", ")": ")", ",": ",", "<": "<", ">": ">", "=": "=", "≤": "<=", "≥": ">=", "≠": "<>" };
+const OPS: Record<string, string> = { "[": "[", "]": "]", "+": "+", "-": "-", "−": "-", "–": "-", "*": "*", "×": "*", "·": "*", "/": "/", "÷": "/", "^": "^", "(": "(", ")": ")", ",": ",", "<": "<", ">": ">", "=": "=", "≤": "<=", "≥": ">=", "≠": "<>" };
 const show = (t: Tok) => (t.t === "end" ? "the end" : t.t === "num" ? `"${t.v}"` : t.t === "name" ? `"${t.raw}"` : `"${t.v}"`);
 const at = (p: number) => `at character ${p + 1}`;
 
@@ -279,13 +294,23 @@ export function parse(src: string): Node {
           throw new ExprError(`${upper} takes ${want} argument${lo === 1 && hi === 1 ? "" : "s"}, not ${args.length} (${at(t.p)})`, t.p);
         }
         if (upper === "TIME") return { k: "time" };
-        if (REDUCERS.has(upper) && args[0].k !== "name") throw new ExprError(`${upper} takes the name of an arrayed element, such as ${upper}(Population) (${at(t.p)})`, t.p);
+        if (REDUCERS.has(upper) && (args[0].k !== "name" || args[0].sub)) throw new ExprError(`${upper} takes the name of an arrayed element, such as ${upper}(Population), and reduces over all of it (${at(t.p)})`, t.p);
+        if (upper === "ELMCOUNT" && (args[0].k !== "name" || args[0].sub)) throw new ExprError(`ELMCOUNT takes the name of a dimension, such as ELMCOUNT(Region) (${at(t.p)})`, t.p);
         return { k: "call", f: upper, args };
       }
       if (!t.quoted && upper === "TIME") return { k: "time" };
       if (!t.quoted && upper === "DT") return { k: "dt" };
       if (!t.quoted && FUNCS[upper]) throw new ExprError(`${upper} is a function: write ${upper}(...) ${at(t.p)}`, t.p);
-      return { k: "name", key: t.v, raw: t.raw, p: t.p };
+      if (!isOp("[")) return { k: "name", key: t.v, raw: t.raw, p: t.p };
+      const open = toks[i++], sub: string[] = [];
+      do {
+        const s = peek();
+        if (s.t !== "name") throw new ExprError(`Inside [ ] give element or dimension names, such as ${t.raw}[North]; found ${show(s)} ${at(s.p)}`, s.p);
+        sub.push(s.raw.trim()), i++;
+      } while (isOp(",") && ++i);
+      if (!isOp("]")) throw new ExprError(`Missing "]" to close the "[" ${at(open.p)}; found ${show(peek())} ${at(peek().p)}`, peek().p);
+      i++;
+      return { k: "name", key: t.v, raw: t.raw, p: t.p, sub };
     }
     if (t.t === "end") throw new ExprError(`The equation ends too early: expected a number, a name or "(" ${at(t.p)}`, t.p);
     throw new ExprError(`Unexpected ${show(t)} ${at(t.p)}`, t.p);
@@ -408,6 +433,13 @@ function build(n: Node, stream = 0): Fn {
         case "ARCSIN": return (s) => Math.asin(f[0](s));
         case "ARCCOS": return (s) => Math.acos(f[0](s));
         case "ARCTAN": return (s) => Math.atan(f[0](s));
+        case "SINH": return (s) => Math.sinh(f[0](s));
+        case "COSH": return (s) => Math.cosh(f[0](s));
+        case "TANH": return (s) => Math.tanh(f[0](s));
+        case "QUANTUM": return (s) => {
+          const q = f[1](s), x = f[0](s);
+          return q < SMALL ? x : q * Math.trunc(x / q); // as PySD: a q below 1e-6 leaves x as it is
+        };
         case "PI": return () => Math.PI;
         case "ZIDZ": return (s) => {
           const b = f[1](s);
@@ -445,6 +477,13 @@ function build(n: Node, stream = 0): Fn {
             return t(s) >= start - 1e-9 && t(s) < start + w - 1e-9 ? f[0](s) : 0;
           };
         case "RAMP": return (s) => (t(s) > f[1](s) ? f[0](s) * (t(s) - f[1](s)) : 0);
+        // PySD's pulse(): a repeat time of 0 is one pulse; the 1e-6 keeps a pulse from slipping a step on rounding
+        case "PULSE_TRAIN":
+          return (s) => {
+            const T = t(s), start = f[0](s), w = f[1](s), r = f[2](s);
+            if (r === 0) return +(T >= start - SMALL && T < start + w);
+            return +(T >= start && T < f[3](s) && (T - start + SMALL) % r < w);
+          };
         case "TABLE": {
           const pts = n.args.slice(1).map((a) => literal(a)!);
           const xs = pts.filter((_, j) => j % 2 === 0), ys = pts.filter((_, j) => j % 2 === 1);
@@ -458,9 +497,9 @@ function build(n: Node, stream = 0): Fn {
         // a single value reduces to itself; arrays are expanded into their elements first (see expand)
         case "SUM": case "MEAN": case "VMIN": case "VMAX": case "PROD": return f[0];
       }
-      if (STATEFUL.has(n.f))
+      if (STATEFUL.has(n.f) || n.f === "ELMCOUNT")
         return () => {
-          throw new Error(`${n.f} has memory: run it through the builder, which gives it its hidden stocks`);
+          throw new Error(`${n.f} needs the model: run it through the builder, which gives it its hidden stocks or its count`);
         };
       throw new Error("unknown function " + n.f);
     }
@@ -469,17 +508,17 @@ function build(n: Node, stream = 0): Fn {
 
 export const evaluator = (n: Node, stream = 0) => build(n, stream);
 
-// An arrayed equation as plain scalar equations, for one element of the array. at(key) gives the element of an arrayed
-// name to read here ("North" or, for several dimensions, "North,Young"), or undefined for a single value, which is left
-// alone and so broadcasts. all(key) lists every element of an arrayed name, for SUM(X) and friends, which become
+// An arrayed equation as plain scalar equations, for one element of the array. at(name) gives the element of an arrayed
+// name to read here ("North" or, for several dimensions, "North,Young"; from its subscripts if it has any), or undefined
+// for a single value, which is left alone and so broadcasts. all(key) lists every element of an arrayed name, for SUM(X) and friends, which become
 // arithmetic over X's elements (over all its dimensions at once).
 export const slotKey = (key: string, element: string) => `${key}[${nameKey(element)}]`;
-export function expand(n: Node, at: (key: string) => string | undefined, all: (key: string) => string[] | undefined): Node {
+export function expand(n: Node, at: (n: Extract<Node, { k: "name" }>) => string | undefined, all: (key: string) => string[] | undefined): Node {
   const ex = (x: Node) => expand(x, at, all);
   switch (n.k) {
     case "name": {
-      const e = at(n.key);
-      return e !== undefined ? { ...n, key: slotKey(n.key, e), raw: `${n.raw}[${e}]` } : n;
+      const e = at(n);
+      return e !== undefined ? { k: "name", p: n.p, key: slotKey(n.key, e), raw: `${n.raw}[${e}]` } : n;
     }
     case "neg": return { k: "neg", a: ex(n.a) };
     case "bin": return { ...n, a: ex(n.a), b: ex(n.b) };
@@ -508,7 +547,7 @@ function shown(n: Node): [string, number] {
   };
   switch (n.k) {
     case "num": return [String(n.v), 6];
-    case "name": return [refName(n.raw), 6];
+    case "name": return [refName(n.raw) + (n.sub ? `[${n.sub.map(refName).join(", ")}]` : ""), 6];
     case "time": return ["TIME", 6];
     case "dt": return ["DT", 6];
     case "neg": return ["-" + w(n.a, 4), 4];
@@ -530,11 +569,12 @@ export function walk(n: Node, visit: (n: Node) => void) {
 
 export function compile(src: string): Compiled {
   const ast = parse(src);
-  const refs: string[] = [];
+  const refs: string[] = [], dimArgs = new Set<Node>();
   let usesTime = false;
   walk(ast, (n) => {
-    if (n.k === "name" && !refs.includes(n.key)) refs.push(n.key);
-    if (n.k === "time" || (n.k === "call" && ["STEP", "PULSE", "RAMP"].includes(n.f))) usesTime = true;
+    if (n.k === "name" && !refs.includes(n.key) && !dimArgs.has(n)) refs.push(n.key);
+    if (n.k === "call" && n.f === "ELMCOUNT") dimArgs.add(n.args[0]); // a dimension, not an element
+    if (n.k === "time" || (n.k === "call" && ["STEP", "PULSE", "RAMP", "PULSE_TRAIN"].includes(n.f))) usesTime = true;
   });
   return { src, ast, refs, usesTime, eval: build(ast) };
 }
@@ -563,10 +603,11 @@ export function renameRefs(src: string, oldKey: string, newName: string): string
   } catch {
     return src;
   }
-  let out = "", last = 0;
+  let out = "", last = 0, sub = 0;
   for (let j = 0; j < toks.length; j++) {
     const t = toks[j];
-    if (t.t !== "name" || t.v !== oldKey) continue;
+    if (t.t === "op" && (t.v === "[" || t.v === "]")) sub += t.v === "[" ? 1 : -1;
+    if (t.t !== "name" || t.v !== oldKey || sub > 0) continue; // inside [ ] are elements and dimensions
     const nx = toks[j + 1];
     if (!t.quoted && nx?.t === "op" && nx.v === "(") continue; // a function call, not a name
     out += src.slice(last, t.p) + refName(newName);

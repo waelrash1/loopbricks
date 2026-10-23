@@ -1,7 +1,7 @@
 // Everything the builder can export, as text. Each function takes the learner's model (and, for results, a run) and
 // returns file contents; the builder turns them into downloads. Contract shared by the builder UI.
-import { constNum, dataText, elements, inflows, isConstant, isHidden, lower, outflows, series, toJSON, validate, within, type BDim, type BModel, type Checked, type Element, type RunResult } from "@/lib/builder";
-import { REDUCERS, SEED_ARG, literal, nameKey, refName, walk, type Node } from "@/lib/expr";
+import { constNum, dataText, elements, fits, fixAt, inflows, isConstant, isHidden, lower, outflows, refsOf, series, subAt, toJSON, validate, type BDim, type BModel, type Checked, type Element, type RunResult } from "@/lib/builder";
+import { REDUCERS, SEED_ARG, STATEFUL, literal, nameKey, refName, walk, type Node } from "@/lib/expr";
 
 export type ExportFile = { name: string; mime: string; text: string };
 
@@ -35,7 +35,7 @@ function initOrder(m: BModel, chk: Checked) {
   const visit = (e: Element) => {
     if (seen.has(e.id)) return;
     seen.add(e.id);
-    for (const r of chk.code.get(e.id)?.refs ?? []) {
+    for (const r of refsOf(chk, e.id)) {
       const d = chk.byKey.get(r);
       if (d) visit(d);
     }
@@ -45,8 +45,8 @@ function initOrder(m: BModel, chk: Checked) {
   return out;
 }
 // names an equation reads directly (not through SUM and friends): does an arrayed equation give an array by itself?
-function readsArray(n: Node, arrayed: (key: string) => boolean): boolean {
-  if (n.k === "name") return arrayed(n.key);
+function readsArray(n: Node, arrayed: (n: Extract<Node, { k: "name" }>) => boolean): boolean {
+  if (n.k === "name") return arrayed(n);
   if (n.k === "neg") return readsArray(n.a, arrayed);
   if (n.k === "bin") return readsArray(n.a, arrayed) || readsArray(n.b, arrayed);
   if (n.k === "call") return !REDUCERS.has(n.f) && n.args.some((a) => readsArray(a, arrayed));
@@ -58,12 +58,14 @@ const tablePoints = (n: Extract<Node, { k: "call" }>) => {
 };
 const CMP: Record<string, string> = { "<": "<", "<=": "<=", ">": ">", ">=": ">=", "=": "==", "<>": "!=" };
 // does the model call this function anywhere?
-const uses = (m: BModel, f: (n: string) => boolean) =>
-  [...validate(m).code.values()].some((c) => {
+const uses = (m: BModel, f: (n: string) => boolean) => {
+  const chk = validate(m);
+  return [...chk.code.values(), ...[...chk.cells.values()].flatMap((x) => [...x.values()])].some((c) => {
     let hit = false;
     walk(c.ast, (n) => (hit ||= n.k === "call" && f(n.f)));
     return hit;
   });
+};
 const usesRandom = (m: BModel) => uses(m, (f) => f in SEED_ARG);
 const RANDOM_NOTE = "Random numbers: RANDOM_UNIFORM and RANDOM_NORMAL draw from seeded streams, so a run repeats exactly, but numpy's and PySD's streams are not the app's, so the numbers differ from the builder's run while their spread is the same.";
 // the start time and the save interval, which default to 0 and dt
@@ -120,15 +122,21 @@ function pyContext(top: BModel): Py {
 // the numpy shape of an array over these dimensions: len(REGION), or (len(REGION), len(AGE))
 const pyShape = (x: Py, ds: BDim[]) => (ds.length === 1 ? `len(${x.dimId(ds[0])})` : `(${ds.map((d) => `len(${x.dimId(d)})`).join(", ")})`);
 
-// A name read inside an equation over the dimensions mine, as numpy needs it: the same dimensions as they are; a
-// parent dimension cut down to a subrange (X[[0, 1]]); dimensions in another order transposed; missing ones as None,
-// so numpy broadcasts along them.
-function pyRef(x: Py, key: string, mine?: BDim[]) {
-  const id = x.id(key), e = x.chk.byKey.get(key), xa = e && x.chk.axes.get(e.id);
-  if (!xa || !mine) return id;
-  const pos = xa.map((d) => mine.findIndex((a) => within(x.m, a, d)));
-  if (pos.some((p) => p < 0)) return id;
-  let s = id;
+// A name read inside an equation over the dimensions mine, as numpy needs it: single elements picked out by index
+// (X[2, :]); the same dimensions as they are; a parent dimension cut down to a subrange (X[[0, 1]]); dimensions in
+// another order transposed; missing ones as None, so numpy broadcasts along them.
+function pyRef(x: Py, key: string, mine?: BDim[], sub?: string[]) {
+  const id = x.id(key), e = x.chk.byKey.get(key), xa0 = e && x.chk.axes.get(e.id);
+  if (!xa0 || (!mine && !sub)) return id;
+  // each of X's dimensions: an element's index, or the position of the dimension of mine it follows
+  const at = xa0.map((d, i): { el: number } | { p: number } => {
+    const r = sub ? subAt(x.m, mine, d, sub[i]) : { axis: mine!.findIndex((a) => fits(x.m, a, d)) };
+    return "el" in r ? { el: d.elements.indexOf(r.el) } : { p: "axis" in r ? r.axis : -1 };
+  });
+  if (at.some((q) => "p" in q && q.p < 0)) return id;
+  let s = at.some((q) => "el" in q) ? `${id}[${at.map((q) => ("el" in q ? q.el : ":")).join(", ")}]` : id;
+  const xa = xa0.filter((_, i) => "p" in at[i]), pos = at.flatMap((q) => ("p" in q ? [q.p] : []));
+  if (!xa.length || !mine) return s;
   xa.forEach((d, i) => {
     const a = mine[pos[i]];
     if (nameKey(a.name) !== nameKey(d.name)) s += `[${":, ".repeat(i)}[${a.elements.map((el) => d.elements.findIndex((y) => nameKey(y) === nameKey(el))).join(", ")}]]`;
@@ -152,7 +160,7 @@ function py(n: Node, x: Py, mine: BDim[] | undefined): [string, number] {
   const size = mine ? `, ${pyShape(x, mine)}` : "";
   switch (n.k) {
     case "num": return [String(n.v), 6];
-    case "name": return [pyRef(x, n.key, mine), 6];
+    case "name": return [pyRef(x, n.key, mine, n.sub), 6];
     case "time": return ["t", 6];
     case "dt": return ["dt", 6];
     case "neg": return ["-" + w(n.a, 4), 4];
@@ -178,7 +186,9 @@ function py(n: Node, x: Py, mine: BDim[] | undefined): [string, number] {
         case "INT": return [`np.trunc(${args[0]})`, 6];
         case "MODULO": return [`np.fmod(${args[0]}, ${args[1]})`, 6]; // the sign of a, as Vensim (np.mod would take b's)
         case "SIN": case "COS": case "TAN": return [`np.${n.f.toLowerCase()}(${args[0]})`, 6];
-        case "ARCSIN": case "ARCCOS": case "ARCTAN": return [`np.${n.f.toLowerCase()}(${args[0]})`, 6];
+        case "ARCSIN": case "ARCCOS": case "ARCTAN": case "SINH": case "COSH": case "TANH": return [`np.${n.f.toLowerCase()}(${args[0]})`, 6];
+        case "QUANTUM": return x.used.add("quantum"), [`quantum(${args.join(", ")})`, 6];
+        case "PULSE_TRAIN": return x.used.add("pulse_train"), [`pulse_train(${args.join(", ")}, t)`, 6];
         case "PI": return ["np.pi", 6];
         case "ZIDZ": return x.used.add("zidz"), [`zidz(${args.join(", ")})`, 6];
         case "XIDZ": return x.used.add("xidz"), [`xidz(${args.join(", ")})`, 6];
@@ -212,9 +222,9 @@ function pyRhs(x: Py, e: Element) {
   if (list) return `np.array([${list.join(", ")}], dtype=float)${ax && ax.length > 1 ? `.reshape(${pyShape(x, ax)})` : ""}`;
   if (!c) return "0.0  # this equation does not compile in the builder; fix it there";
   const s = py(c.ast, x, ax)[0];
-  const arrayed = (key: string) => {
-    const r = x.chk.byKey.get(key);
-    return !!r && x.chk.dims.has(r.id);
+  const arrayed = (n: { key: string; sub?: string[] }) => {
+    const r = x.chk.byKey.get(n.key), xa = r && x.chk.axes.get(r.id);
+    return !!xa && (!n.sub || n.sub.some((q, i) => "axis" in subAt(x.m, ax, xa[i], q)));
   };
   return ax && !readsArray(c.ast, arrayed) ? `np.full(${pyShape(x, ax)}, ${s}, dtype=float)` : s;
 }
@@ -227,6 +237,17 @@ const HELPERS: Record<string, string> = {
     """PULSE(height, start, width): height for width time units from start, else 0. A width of 0 lasts one step."""
     width = np.where(np.asarray(width) > 0, width, dt)
     return _plain(np.where((t >= start - 1e-9) & (t < start + width - 1e-9), height, 0.0))`,
+  pulse_train: `def pulse_train(start, duration, repeat, end, t):
+    """PULSE_TRAIN(start, duration, repeat time, end): 1 for duration from start, again every repeat time until end,
+    else 0; a repeat time of 0 is a single pulse. As PySD's, with 1e-6 against rounding in t = i * dt."""
+    repeat = np.asarray(repeat, dtype=float)
+    single = (t >= start - 1e-6) & (t < start + duration)
+    train = (t >= start) & (t < end) & (np.fmod(t - start + 1e-6, np.where(repeat == 0, 1.0, repeat)) < duration)
+    return _plain(np.where(repeat == 0, single, train) * 1.0)`,
+  quantum: `def quantum(x, q):
+    """QUANTUM(x, q): x rounded towards zero to a whole number of q, q * INT(x / q); x itself when q is below 1e-6."""
+    q = np.asarray(q, dtype=float)
+    return _plain(np.where(q >= 1e-6, q * np.trunc(x / np.where(q >= 1e-6, q, 1.0)), x))`,
   ramp: `def ramp(slope, start, t):
     """RAMP(slope, start): 0 until start, then rising by slope per time unit."""
     return _plain(np.where(t > start, slope * (t - start), 0.0))`,
@@ -290,7 +311,19 @@ function pyParts(top: BModel) {
 
   // the simulation (built first, so we know which helpers it uses)
   const I = "    ", II = I + I, III = II + I;
-  const assign = (e: Element, ind: string) => [`${ind}# ${role(m, e, chk.dims.get(e.id))}`, `${ind}${ids.get(e.id)} = ${pyRhs(x, e)}`];
+  const assign = (e: Element, ind: string) => {
+    const id = ids.get(e.id)!, cells = chk.cells.get(e.id), ax = chk.axes.get(e.id);
+    if (!cells?.size || !ax) return [`${ind}# ${role(m, e, chk.dims.get(e.id))}`, `${ind}${id} = ${pyRhs(x, e)}`];
+    // per-element equations: the general one for every element (a copy, so elements can be set), then each override
+    return [
+      `${ind}# ${role(m, e, chk.dims.get(e.id))}`,
+      `${ind}${id} = np.array(${pyRhs(x, e)}, dtype=float)`,
+      ...[...cells].map(([k, c]) => {
+        const at = k.split(",");
+        return `${ind}${id}[${at.map((el, i) => ax[i].elements.indexOf(el)).join(", ")}] = ${py(fixAt(m, c.ast, ax, at), x, undefined)[0]}  # ${one(e.name)}[${k}]`;
+      }),
+    ];
+  };
   const head: string[] = [
     `def simulate(T=${m.T}, dt=${m.dt}, start=${startOf(m)}, save_every=${m.saveEvery ?? "None"}, **overrides):`,
     `${I}"""Run the model from time start to T in steps of dt (Euler's method), keeping a row every save_every (default`,
@@ -362,8 +395,8 @@ function pyParts(top: BModel) {
 
 // the functions with memory, in words: they are stocks too
 const memoryNote = (m: BModel) =>
-  uses(m, (f) => ["INITIAL", "DELAY1", "DELAY3", "DELAYN", "DELAY_FIXED", "SMOOTH", "SMOOTH3", "SMOOTHN", "TREND", "FORECAST"].includes(f))
-    ? "Delays, smoothing, TREND, FORECAST and INITIAL remember the past, so each is written out here as the stocks and flows it is made of (DELAY3 is three stocks in a row, SMOOTH one stock closing its gap to the input), named after the element that uses it."
+  uses(m, (f) => STATEFUL.has(f))
+    ? "Delays, smoothing, TREND, FORECAST, INITIAL and SAMPLE_IF_TRUE remember the past, so each is written out here as the stocks and flows it is made of (DELAY3 is three stocks in a row, SMOOTH one stock closing its gap to the input), named after the element that uses it."
     : undefined;
 
 const EULER =
@@ -437,7 +470,8 @@ export function notebook(m: BModel): string {
   const els = elements(m);
   const item = (e: Element) => {
     const eq = e.kind === "stock" ? e.init : e.kind === "var" && e.data ? dataText(e) : e.eq;
-    return `- **${e.name}**${e.dim ? ` (one per ${e.dim})` : ""}: \`${one(eq)}\`${e.units?.trim() ? ` ${e.units.trim()}` : ""}${e.note?.trim() ? `. ${one(e.note)}` : ""}`;
+    const own = Object.entries(e.eqs ?? {}).map(([k, v]) => `; for ${k}: \`${one(v)}\``).join("");
+    return `- **${e.name}**${e.dim ? ` (one per ${e.dim})` : ""}: \`${one(eq)}\`${own}${e.units?.trim() ? ` ${e.units.trim()}` : ""}${e.note?.trim() ? `. ${one(e.note)}` : ""}`;
   };
   const stockLines = m.stocks.map((st) => {
     const fl = (fs: { name: string }[]) => fs.map((f) => f.name).join(", ");
@@ -524,14 +558,20 @@ function xm(n: Node, x: Xm, mine: BDim[] | undefined): [string, number] {
   };
   const a = (c: Node) => xm(c, x, mine)[0];
   const cmp = (c: Node) => (c.k === "bin" && CMP[c.op] ? `${w(c.a, 2)} ${c.op} ${w(c.b, 2)}` : `${w(c, 2)} <> 0`);
-  const ref = (key: string, whole: boolean) => {
+  const ref = (key: string, whole: boolean, sub?: string[]) => {
     const e = x.chk.byKey.get(key), xa = e && x.chk.axes.get(e.id);
     const name = e ? refName(e.name) : key;
     if (!xa) return name;
+    // picked elements by name; a dimension standing for this element by the matching one here
+    if (sub)
+      return `${name}[${sub.map((q, i) => {
+        const r = subAt(x.m, mine, xa[i], q);
+        return refName("el" in r ? r.el : "axis" in r ? mine![r.axis].name : q);
+      }).join(", ")}]`;
     // PySD reads a whole array the Vensim way, Name[Dim!]; standard XMILE (Stella) uses Name[*]
     if (whole || !mine) return `${name}[${xa.map((d) => (x.pysd ? `${refName(d.name)}!` : "*")).join(", ")}]`;
     // element by element: each of its dimensions by the name of the matching one here (a subrange reads its parent)
-    return `${name}[${xa.map((d) => refName((mine.find((m) => within(x.m, m, d)) ?? d).name)).join(", ")}]`;
+    return `${name}[${xa.map((d) => refName((mine.find((m) => fits(x.m, m, d)) ?? d).name)).join(", ")}]`;
   };
   const DTn = x.pysd ? "TIME_STEP" : "DT"; // PySD names the time step TIME STEP, as Vensim does
   const gf = (input: string, pts: { xs: number[]; ys: number[] }, extrap: boolean) => {
@@ -544,7 +584,7 @@ function xm(n: Node, x: Xm, mine: BDim[] | undefined): [string, number] {
   };
   switch (n.k) {
     case "num": return [String(n.v), 6];
-    case "name": return [ref(n.key, false), 6];
+    case "name": return [ref(n.key, false, n.sub), 6];
     case "time": return ["TIME", 6];
     case "dt": return [DTn, 6];
     case "neg": return ["-" + w(n.a, 4), 4];
@@ -562,6 +602,21 @@ function xm(n: Node, x: Xm, mine: BDim[] | undefined): [string, number] {
       switch (n.f) {
         case "MIN": case "MAX": return [args.reduceRight((acc, s) => `${n.f}(${s}, ${acc})`), 6];
         case "ABS": case "EXP": case "LN": case "SQRT": case "SIN": case "COS": case "TAN": case "ARCSIN": case "ARCCOS": case "ARCTAN": return [`${n.f}(${args[0]})`, 6];
+        // XMILE has no hyperbolic functions (PySD reads them by name): written out with EXP
+        case "SINH": case "COSH": {
+          const a0 = w(n.args[0], 4);
+          return x.pysd ? [`${n.f}(${args[0]})`, 6] : [`(EXP(${a0}) ${n.f === "SINH" ? "-" : "+"} EXP(-${a0})) / 2`, 3];
+        }
+        case "TANH": return x.pysd ? [`TANH(${args[0]})`, 6] : [`(1 - 2 / (EXP(2 * ${w(n.args[0], 4)}) + 1))`, 6];
+        case "QUANTUM": return x.pysd ? [`QUANTUM(${args.join(", ")})`, 6] : [`(IF ${w(n.args[1], 2)} >= 0.000001 THEN ${w(n.args[1], 3)} * INT(${w(n.args[0], 3)} / ${w(n.args[1], 4)}) ELSE ${args[0]})`, 6];
+        case "PULSE_TRAIN": {
+          // PySD takes Vensim's arguments in its own order (start, repeat, duration, end); XMILE has no such function
+          if (x.pysd) return [`PULSE_TRAIN(${[args[0], args[2], args[1], args[3]].join(", ")})`, 6];
+          const [st, du, re, en] = n.args.map((q) => w(q, 3));
+          // ponytail: a repeat time that is a formula and turns 0 during the run is not a single pulse here
+          if (literal(n.args[2]) === 0) return [`(IF TIME >= ${st} - 0.000001 AND TIME < ${st} + ${du} THEN 1 ELSE 0)`, 6];
+          return [`(IF TIME >= ${st} AND TIME < ${en} AND (TIME - ${st} + 0.000001) MOD ${re} < ${du} THEN 1 ELSE 0)`, 6];
+        }
         case "LOG": return [`LN(${args[0]}) / LN(${args[1]})`, 3];
         case "POWER": return [`${w(n.args[0], 6)}^${w(n.args[1], 6)}`, 5];
         case "INT": return [`INT(${args[0]})`, 6];
@@ -629,7 +684,7 @@ const gfXml = (g: { xs: number[]; ys: number[]; extrap?: boolean }, ind: string,
 // as one comma list) and runs with the builder's numbers (see pysdNative).
 export function xmile(top: BModel, opts: { pysd?: boolean } = {}): string {
   // every random call carries its seed (lower gives one to those without), so another tool can repeat the run
-  const m = lower(top, opts.pysd ? pysdNative(top) : () => true);
+  const m = lower(top, opts.pysd ? pysdNative(top) : (n) => n.f !== "SAMPLE_IF_TRUE"); // XMILE has no SAMPLE IF TRUE
   const chk = validate(m), els = elements(m);
   const taken = new Set(els.map((e) => nameKey(e.name)));
   const gfs: Gf[] = [];
@@ -642,7 +697,24 @@ export function xmile(top: BModel, opts: { pysd?: boolean } = {}): string {
     const ax = chk.axes.get(e.id), d = chk.dims.get(e.id), list = chk.lists.get(e.id), c = chk.code.get(e.id);
     const out = [`${I}<${tag} name="${esc(e.name)}">`, ...dimXml(ax, I + "  ")];
     const X: Xm = { m, chk, gfs, owner: e, taken, pysd: opts.pysd };
-    if (list && d && ax && opts.pysd && ax.length === 1) out.push(`${I}  <eqn>${list.join(", ")}</eqn>`);
+    const cells = chk.cells.get(e.id);
+    if (cells?.size && d && ax) {
+      // per-element equations: every element gets its own, the general one made explicit where none is given
+      const own = (el: string, j: number) => {
+        const at = el.split(","), q = cells.get(el)?.ast ?? (list ? undefined : c?.ast);
+        return q ? xm(fixAt(m, q, ax, at), X, undefined)[0] : String(list?.[j] ?? 0);
+      };
+      const each = (ind: string) => d.elements.flatMap((el, j) => [`${ind}<element subscript="${esc(el)}">`, `${ind}  <eqn>${esc(own(el, j))}</eqn>`, `${ind}</element>`]);
+      if (!opts.pysd || e.kind === "var") out.push(...each(I + "  "));
+      else {
+        // PySD reads stocks and flows element by element no better than lists: the equations go on a helper auxiliary
+        let name = `${e.name} by element`, k = 2;
+        while (taken.has(nameKey(name))) name = `${e.name} by element ${k++}`;
+        taken.add(nameKey(name));
+        extra.push(`${I}<aux name="${esc(name)}">`, ...dimXml(ax, I + "  "), ...each(I + "  "), `${I}</aux>`);
+        out.push(`${I}  <eqn>${esc(`${refName(name)}[${ax.map((x) => refName(x.name)).join(", ")}]`)}</eqn>`);
+      }
+    } else if (list && d && ax && opts.pysd && ax.length === 1) out.push(`${I}  <eqn>${list.join(", ")}</eqn>`);
     else if (list && d && ax && opts.pysd && e.kind === "stock") {
       // PySD cannot read a stock's initial values element by element: they go on a helper auxiliary
       let name = `${e.name} initial values`, k = 2;
@@ -724,6 +796,7 @@ export function markdownDoc(m: BModel): string {
       out.push(`### ${e.name}${e.dim ? ` [${e.dim}]` : ""}`, "");
       if (e.kind === "var" && e.data) out.push(`- Data: ${dataText(e)}.`, "", "| time | value |", "| ---: | ---: |", ...e.data.map(([t, v]) => `| ${t} | ${v} |`), "");
       else out.push(e.kind === "stock" ? `- Initial value: \`${one(e.init)}\`` : `- ${isConst(e) ? "Value" : "Equation"}: \`${one(e.eq)}\``);
+      for (const [k, v] of Object.entries(e.eqs ?? {})) out.push(`- For ${k}: \`${one(v)}\``);
       if (e.kind === "stock") {
         const ins = inflows(m, e.id).map((f) => f.name), outs = outflows(m, e.id).map((f) => f.name);
         out.push(`- Inflows: ${ins.join(", ") || "none"}. Outflows: ${outs.join(", ") || "none"}.`);

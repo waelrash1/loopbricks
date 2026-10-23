@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  Check,
   AlertTriangle,
   Box,
   ChevronDown,
@@ -44,6 +45,8 @@ import {
   loadModel,
   newId,
   outflows,
+  parseList,
+  refsOf,
   removeElement,
   renameElement,
   saveModel,
@@ -95,7 +98,7 @@ const labelOf = (e: { name: string; dim?: string }) => (e.name || "(no name)") +
 // the function reference: a signature's skeleton to insert ("SMOOTH(, )"), and a lookup by name for the hint
 const skeleton = (name: string, sig: string) => {
   const m = /\((.*)\)/.exec(sig.replace(/\[[^\]]*\]/g, ""));
-  if (!m) return { text: name, caret: name.length };
+  if (!m) return { text: name, caret: name === "[]" ? 1 : name.length }; // [] picks an element: the caret goes inside
   const n = m[1].split(",").filter((a) => a.trim() && a.trim() !== "...").length;
   return { text: `${name}(${Array(n).fill("").join(", ")})`, caret: name.length + 1 };
 };
@@ -326,7 +329,7 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
     chk.issues.forEach((i) => i.id && out.set(i.id, [...(out.get(i.id) ?? []), i]));
     return out;
   }, [chk]);
-  const geo = useMemo(() => geometry(model, (id) => chk.code.get(id)?.refs ?? [], chk.byKey), [model, chk]);
+  const geo = useMemo(() => geometry(model, (id) => refsOf(chk, id), chk.byKey), [model, chk]);
   const selected = findElement(model, sel);
   const selLink = sel?.startsWith("link:") ? geo.links.find((l) => l.drawn && "link:" + l.key === sel) : undefined;
   const slug = slugOf(model);
@@ -864,8 +867,8 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         </p>
 
         {opened && (
-          <div role={opened.error ? "alert" : "status"} className={cn("mb-3 rounded-[8px] border px-3 py-2 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : "border-accent-edge bg-accent/20")}>
-            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : <AlertTriangle size={16} aria-hidden className={cn("shrink-0 mt-0.5", opened.warnings.length ? "text-accent-edge" : "text-muted-foreground")} />}
+          <div role={opened.error ? "alert" : "status"} className={cn("mb-3 rounded-[8px] border px-3 py-2 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : opened.warnings.length ? "border-accent-edge bg-card border-l-4" : "border-[var(--viz-good)] bg-card")}>
+            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : opened.warnings.length ? <AlertTriangle size={16} aria-hidden className="shrink-0 mt-0.5 text-accent-edge" /> : <Check size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
             <div className="min-w-0 flex-1">
               {opened.error ? (
                 <p>
@@ -1696,6 +1699,7 @@ function Inspector({
               : `One expression for every combination of ${known.map((d) => d.name).join(" and ")} (${combos} values), or a comma list of ${combos} values, in order with ${known[known.length - 1].name} changing fastest.`}
           </p>
         )}
+        {known.length > 0 && !isData && <PerElement el={el} known={known} onPatch={onPatch} />}
         {inputs.length > 0 && !isData && (
           <div>
             <p className="text-[12px] text-muted-foreground">Linked inputs: click one to put it in the {el.kind === "stock" ? "initial value" : "equation"}</p>
@@ -1808,6 +1812,55 @@ function Inspector({
           {issues.some((i) => i.field !== "dim") && <IssueItems issues={issues.filter((i) => i.field !== "dim")} model={model} onSelect={() => {}} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+// per-element equations: an element (or combination) of its dimensions and the equation that holds there instead
+function PerElement({ el, known, onPatch }: { el: Element; known: BDim[]; onPatch: (p: Partial<BStock & BFlow & BVar>) => void }) {
+  const all = known.reduce<string[]>((acc, d) => acc.flatMap((a) => d.elements.map((x) => (a ? `${a},${x}` : x))), [""]);
+  const eqs = el.eqs ?? {}, general = el.kind === "stock" ? el.init : el.eq, list = parseList(general);
+  const free = all.filter((k) => !(k in eqs));
+  const set = (next: Record<string, string>) => onPatch({ eqs: Object.keys(next).length ? next : undefined });
+  return (
+    <div role="group" aria-labelledby="bld-per-label" className="-mt-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <p id="bld-per-label" className="text-[13px] font-semibold">
+          Per element
+        </p>
+        {free.length > 0 && (
+          <select
+            value=""
+            onChange={(e) => e.target.value && set({ ...eqs, [e.target.value]: list ? String(list[all.indexOf(e.target.value)] ?? 0) : general })}
+            aria-label="Give one element its own equation"
+            className={cn(input, "h-7 w-auto max-w-[60%] text-[12px]")}
+          >
+            <option value="">Add an element...</option>
+            {free.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {Object.entries(eqs).map(([k, v]) => (
+        <div key={k} className="mt-1 flex items-center gap-1">
+          <code className="shrink-0 max-w-[40%] truncate text-[12px] font-semibold" title={k}>
+            [{k}]
+          </code>
+          <input value={v} onChange={(e) => set({ ...eqs, [k]: e.target.value })} spellCheck={false} aria-label={`Equation for ${k}`} className={cn(input, mono, "h-8 min-w-0")} />
+          <button
+            onClick={() => set(Object.fromEntries(Object.entries(eqs).filter(([x]) => x !== k)))}
+            className={cn(ibtn, "h-8 w-8 shrink-0")}
+            aria-label={`Remove the equation for ${k}`}
+            title="Remove: the general equation holds here again"
+          >
+            <X size={13} aria-hidden />
+          </button>
+        </div>
+      ))}
+      {!Object.keys(eqs).length && <p className="text-[12px] text-muted-foreground">Give an element its own equation; the one above holds for the rest. Population[North] reads one element anywhere.</p>}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // Opening models made elsewhere: XMILE (Stella, iThink, and the builder's own XMILE export) and Vensim .mdl.
 // CONTRACT shared with the builder UI. Each importer returns the model plus plain-English warnings for anything it could
-// not bring across (a function the builder lacks, a macro, a view-only element), so the learner knows what changed.
+// not bring across (a function the builder lacks, a complex macro, a module), so the learner knows what changed. Simple
+// macros are expanded where they are called.
 // Both importers read equations into a small syntax tree, rewrite names and functions onto the builder's language
 // (expr.ts FUNCTION_DOCS), then share one assembly step: stocks, flows wired from/to, dimensions, positions, arrows.
 import type { BDim, BFlow, BLink, BModel, BStock, BVar } from "@/lib/builder";
@@ -211,7 +212,10 @@ type Ctx = {
   lookups: Map<string, Gf>; // tables callable as name(x)
   inline: Map<string, { input: E; gf: Gf }>; // the builder's own exported lookup helpers, put back inline
   dimKeys: Set<string>;
+  dimName: Map<string, string>; // dimension key -> builder dimension name
   elems: Map<string, string>; // element key -> builder element name
+  macros: Map<string, { params: string[]; body: E }>; // XMILE macros that are one expression, put in where called
+  depth: number;
   cell: Set<string>; // element keys of the element being written, in a per-element equation
   time: { start: number; stop: number; dt: number; save: number };
   vensim: boolean;
@@ -264,15 +268,12 @@ function tr(e: E, c: Ctx): [string, number] {
   }
 }
 
-// subscripts: a whole dimension (or the element being written) is implied, since the builder works element by element
+// subscripts: whole dimensions (or the element being written) are implied, since the builder works element by element;
+// otherwise single elements by name, and a dimension as itself (the builder reads it as this element)
 function subs(e: { raw: string; sub?: string[] }, c: Ctx): string {
-  const own = (e.sub ?? []).filter((s) => {
-    const k = keyOf(s.replace(/!$/, ""));
-    return !(s === "*" || c.dimKeys.has(k) || c.cell.has(k));
-  });
-  if (!own.length) return "";
-  c.warn(`${c.who}: ${e.raw}[${e.sub!.join(", ")}] picks out single elements, which the builder's equations cannot do; it is kept as written and needs rewriting.`);
-  return `[${e.sub!.map((s) => c.elems.get(keyOf(s)) ?? s).join(", ")}]`;
+  const key = (s: string) => keyOf(s.replace(/!$/, ""));
+  if ((e.sub ?? []).every((s) => s === "*" || c.dimKeys.has(key(s)) || c.cell.has(key(s)))) return "";
+  return `[${e.sub!.map((s) => refName(c.elems.get(key(s)) ?? c.dimName.get(key(s)) ?? s)).join(", ")}]`;
 }
 
 // a lookup with clean points: x must increase, and TABLE needs two points
@@ -286,8 +287,22 @@ function table(input: string, g: Gf, c: Ctx): string {
   return `TABLE${g.extrap ? "_EXTRAP" : ""}(${input}, ${xs.map((x, j) => `${fmt(x)}, ${fmt(ys[j])}`).join(", ")})`;
 }
 
-const SAME = new Set("ABS EXP LN SQRT SIN COS TAN ARCSIN ARCCOS ARCTAN INT POWER ZIDZ XIDZ MODULO STEP INITIAL SMOOTH SMOOTH3 DELAY1 DELAY3 DELAYN DELAY_FIXED LOG RANDOM_UNIFORM RANDOM_NORMAL FORECAST".split(" "));
+const SAME = new Set("ABS EXP LN SQRT SIN COS TAN ARCSIN ARCCOS ARCTAN SINH COSH TANH INT POWER ZIDZ XIDZ MODULO QUANTUM STEP PULSE_TRAIN INITIAL SMOOTH SMOOTH3 DELAY1 DELAY3 DELAYN DELAY_FIXED LOG RANDOM_UNIFORM RANDOM_NORMAL FORECAST SAMPLE_IF_TRUE".split(" "));
+// an XMILE macro's body with its parameters replaced by the call's arguments
+const substitute = (x: E, ps: Map<string, E>): E =>
+  x.k === "id" ? (!x.sub && ps.get(x.key)) || x : x.k === "call" ? { ...x, args: x.args.map((a) => substitute(a, ps)) } : x.k === "un" ? { ...x, a: substitute(x.a, ps) } : x.k === "bin" ? { ...x, a: substitute(x.a, ps), b: substitute(x.b, ps) } : x;
 function call(e: Extract<E, { k: "call" }>, c: Ctx): [string, number] {
+  const mac = c.macros.get(keyOf(e.raw));
+  if (mac && c.depth < 20) {
+    c.depth++;
+    const r = tr(substitute(mac.body, new Map(mac.params.map((p, j) => [p, e.args[j] ?? { k: "num", v: 0 }]))), c);
+    c.depth--;
+    return r;
+  }
+  if (e.f === "ELMCOUNT") {
+    const a = e.args[0], d = a?.k === "id" ? c.dimName.get(a.key) : undefined;
+    if (d) return [`ELMCOUNT(${refName(d)})`, 6];
+  }
   const A = e.args.map((x) => tr(x, c)[0]);
   const n = A.length, f = e.f, all = A.join(", ");
   const w = (j: number, min: number) => {
@@ -396,22 +411,26 @@ function call(e: Extract<E, { k: "call" }>, c: Ctx): [string, number] {
 // ---------------------------------------------------------------------------------------------------
 // shared assembly
 type Dim = { name: string; key: string; els: string[]; names: string[] }; // els: element keys, names: builder names
-type Item = { kind: "stock" | "flow" | "var"; key: string; name: string; eq: string; dim?: string; units?: string; note?: string; nonNegative?: boolean; ins?: string[]; outs?: string[]; rate?: string };
+type Eqs = { eq: string; eqs?: Record<string, string> }; // a general equation, and any per element
+type Item = Eqs & { kind: "stock" | "flow" | "var"; key: string; name: string; dim?: string; units?: string; note?: string; nonNegative?: boolean; ins?: string[]; outs?: string[]; rate?: Eqs };
 type Parts = { name: string; timeUnit: string; time: Ctx["time"]; dims: Dim[]; items: Item[]; names: Names; pos: Map<string, [number, number]>; arrows: [string, string][]; warn: (s: string) => void };
 
 // every combination of elements, row-major (last dimension fastest), as the builder lists values
 const combos = (lists: string[][]): string[][] => lists.reduce<string[][]>((acc, l) => acc.flatMap((a) => l.map((x) => [...a, x])), [[]]);
 
-// one equation from per-element ones: the same text, a list of numbers, or (with a warning) the first
-function settle(who: string, grid: Dim[], cells: Map<string, string>, warn: (s: string) => void): string {
-  if (!grid.length) return cells.get("") ?? "0";
+// one equation from per-element ones: the same text, a list of numbers, or the most common one with the others as
+// per-element equations
+function settle(who: string, grid: Dim[], cells: Map<string, string>, warn: (s: string) => void): Eqs {
+  if (!grid.length) return { eq: cells.get("") ?? "0" };
   const v = combos(grid.map((d) => d.els)).map((k) => cells.get(k.join("|")));
   if (v.some((x) => x === undefined)) warn(`${who} is not defined for every element; the missing ones are 0.`);
   const s = v.map((x) => x ?? "0");
-  if (s.every((x) => x === s[0])) return s[0];
-  if (s.every(isNum)) return s.join(", ");
-  warn(`${who} has a different equation for each element; the builder takes one equation for all, so the first (${s[0]}) is used.`);
-  return s[0];
+  if (s.every((x) => x === s[0])) return { eq: s[0] };
+  if (s.every(isNum)) return { eq: s.join(", ") };
+  const n = new Map<string, number>();
+  s.forEach((x) => n.set(x, (n.get(x) ?? 0) + 1));
+  const eq = [...n].sort((a, b) => b[1] - a[1])[0][0], names = combos(grid.map((d) => d.names));
+  return { eq, eqs: Object.fromEntries(s.flatMap((x, j) => (x === eq ? [] : [[names[j].join(","), x]]))) };
 }
 
 function assemble(p: Parts): BModel {
@@ -428,8 +447,8 @@ function assemble(p: Parts): BModel {
         return f && f.kind !== "stock" && !end.has(k) && nameKey(f.dim ?? "") === nameKey(s.dim ?? "");
       });
     if (ok) for (const [k, end] of terms) end.set(k, s.key), (byKey.get(k)!.kind = "flow");
-    else if (s.rate && s.rate !== "0") {
-      const nf: Item = { kind: "flow", key: `\0${s.key}`, name: names.add(`${s.name} net flow`), eq: s.rate, dim: s.dim, note: `The net rate of change of ${s.name}, brought in as one flow.` };
+    else if (s.rate && (s.rate.eq !== "0" || s.rate.eqs)) {
+      const nf: Item = { kind: "flow", key: `\0${s.key}`, name: names.add(`${s.name} net flow`), ...s.rate, dim: s.dim, note: `The net rate of change of ${s.name}, brought in as one flow.` };
       out.push(nf), to.set(nf.key, s.key);
     }
   }
@@ -464,7 +483,7 @@ function assemble(p: Parts): BModel {
       else xy.set(it.key, [80 + (g % 8) * 115, (auto ? 180 + Math.ceil(h / 4) * 140 : 470) + Math.floor(g / 8) * 60]), g++;
     }
 
-  const opt = (it: Item) => ({ ...(it.units ? { units: it.units } : {}), ...(it.dim ? { dim: it.dim } : {}), ...(it.note ? { note: it.note } : {}) });
+  const opt = (it: Item) => ({ ...(it.units ? { units: it.units } : {}), ...(it.dim ? { dim: it.dim } : {}), ...(it.note ? { note: it.note } : {}), ...(it.eqs ? { eqs: it.eqs } : {}) });
   const at = (it: Item) => ({ id: ids.get(it.key)!, name: it.name, x: xy.get(it.key)![0], y: xy.get(it.key)![1] });
   const stocks: BStock[] = out.filter((i) => i.kind === "stock").map((it) => ({ ...at(it), init: it.eq, ...opt(it), ...(it.nonNegative ? { nonNegative: true } : {}) }));
   const flows: BFlow[] = out
@@ -512,7 +531,8 @@ const finish = (p: Parts, warnings: string[]): Imported => ({ model: assemble(p)
 function baseCtx(p: Omit<Parts, "items" | "pos" | "arrows" | "name" | "timeUnit">, vensim: boolean): Ctx {
   const elems = new Map<string, string>();
   p.dims.forEach((d) => d.els.forEach((k, j) => elems.set(k, d.names[j])));
-  return { names: p.names.map, lookups: new Map(), inline: new Map(), dimKeys: new Set(p.dims.map((d) => d.key)), elems, cell: new Set(), time: p.time, vensim, warn: p.warn, who: "" };
+  const dimName = new Map(p.dims.map((d) => [d.key, d.name]));
+  return { names: p.names.map, lookups: new Map(), inline: new Map(), dimKeys: new Set(dimName.keys()), dimName, elems, macros: new Map(), depth: 0, cell: new Set(), time: p.time, vensim, warn: p.warn, who: "" };
 }
 function translate(src: string, c: Ctx): string {
   try {
@@ -547,12 +567,22 @@ export function importXmile(text: string): Imported {
     const els = kids(d, "elem").map((e) => e.a.name);
     return makeDim(d.a.name, els.length ? els : Array.from({ length: +d.a.size || 0 }, (_, j) => String(j + 1)), dimNames, warn);
   });
-  kids(root, "macro").forEach((m) => warn(`Skipped the macro ${m.a.name}: the builder has no macros, so equations that use it need rewriting.`));
   const models = kids(root, "model");
   const main = models.find((m) => !m.a.name) ?? models[0];
   models.filter((m) => m !== main).forEach((m) => warn(`Skipped the module model ${m.a.name}: the builder has no modules.`));
   const names = new Names(warn);
   const c = baseCtx({ dims, names, time, warn }, false);
+  // a macro that is one expression of its parameters is put in wherever it is called
+  for (const m of kids(root, "macro")) {
+    let body: E | undefined;
+    try {
+      body = kid(m, "variables") ? undefined : parseExpr(txt(kid(m, "eqn")).replace(/\{[^}]*\}/g, " "), false);
+    } catch {
+      body = undefined;
+    }
+    if (body) c.macros.set(keyOf(m.a.name ?? ""), { params: kids(m, "parm").map((x) => keyOf(txt(x))), body });
+    else warn(`Skipped the macro ${m.a.name}: it is more than one expression, so equations that use it need rewriting.`);
+  }
   const vars = kid(main, "variables")?.c ?? [];
   const gfOf = (g: X): Gf => {
     const list = (x?: X) => txt(x).split(x?.a.sep || ",").filter((s) => s.trim()).map(Number);
@@ -598,20 +628,24 @@ export function importXmile(text: string): Imported {
       return g ? table(s, gfOf(g), c) : s;
     };
     const els = kids(v, "element");
-    let eq: string;
+    let eq: Eqs;
     if (els.length) {
       const cells = new Map(els.map((x) => [(x.a.subscript ?? "").split(",").map(keyOf), x] as const).map(([k, x]) => [k.join("|"), one(x, k)]));
       eq = settle(name, grid, cells, warn);
-    } else eq = one(v, []);
-    const it: Item = { kind: v.n === "stock" ? "stock" : v.n === "flow" ? "flow" : "var", key, name, eq, dim: grid.map((d) => d.name).join(", ") || undefined, units: txt(kid(v, "units")) || undefined, note: txt(kid(v, "doc")).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || undefined };
+    } else eq = { eq: one(v, []) };
+    const it: Item = { kind: v.n === "stock" ? "stock" : v.n === "flow" ? "flow" : "var", key, name, ...eq, dim: grid.map((d) => d.name).join(", ") || undefined, units: txt(kid(v, "units")) || undefined, note: txt(kid(v, "doc")).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || undefined };
     if (v.n === "stock") {
       it.ins = kids(v, "inflow").map((x) => keyOf(txt(x)));
       it.outs = kids(v, "outflow").map((x) => keyOf(txt(x)));
-      it.rate = [...it.ins.map((k) => refName(names.map.get(k) ?? k)), ...it.outs.map((k) => "- " + refName(names.map.get(k) ?? k))].join(" + ").replace(/\+ - /g, "- ") || "0";
+      it.rate = { eq: [...it.ins.map((k) => refName(names.map.get(k) ?? k)), ...it.outs.map((k) => "- " + refName(names.map.get(k) ?? k))].join(" + ").replace(/\+ - /g, "- ") || "0" };
       if (nn(v, "stock")) it.nonNegative = true;
       if (kid(v, "conveyor") || kid(v, "queue")) warn(`${name} is a conveyor or queue in the original; it came across as a plain stock.`);
     }
-    if (v.n === "flow" && nn(v, "flow")) it.eq = `MAX(0, ${eq})`; // a uniflow never runs backwards
+    if (v.n === "flow" && nn(v, "flow")) {
+      // a uniflow never runs backwards
+      it.eq = `MAX(0, ${it.eq})`;
+      if (it.eqs) it.eqs = Object.fromEntries(Object.entries(it.eqs).map(([k, x]) => [k, `MAX(0, ${x})`]));
+    }
     return it;
   });
 
@@ -639,7 +673,8 @@ const csv = (l: string) => {
   return [...f, cur];
 };
 
-type Entry = { raw: string; key: string; sub: string[]; op: string; rhs: string; units: string; doc: string; except: boolean };
+// exc: the elements an :EXCEPT: leaves out, one subscript list each; ast: the equation already read (a macro expanded)
+type Entry = { raw: string; key: string; sub: string[]; op: string; rhs: string; units: string; doc: string; exc: string[][]; ast?: E };
 
 export function importMdl(text: string): Imported {
   const warnings: string[] = [];
@@ -648,35 +683,87 @@ export function importMdl(text: string): Imported {
   const cut = src.indexOf("\\\\\\---///");
   const sketch = cut < 0 ? "" : src.slice(cut);
   src = (cut < 0 ? src : src.slice(0, cut)).replace(/^\s*\{UTF-8\}/, "").replace(/\\[ \t]*\n/g, " ");
-  src = src.replace(/:MACRO:\s*([^(\n]*)[\s\S]*?:END OF MACRO:/gi, (_, m: string) => (warn(`Skipped the macro ${m.trim()}: the builder has no macros, so equations that use it need rewriting.`), ""));
+  // macros: set aside here, expanded where they are called (see expandMacro)
+  const macros = new Map<string, { raw: string; key: string; params: string[]; body: Entry[] }>();
+  src = src.replace(/:MACRO:\s*([^(\n]*)(?:\(([^)]*)\))?([\s\S]*?):END OF MACRO:/gi, (_, name: string, params: string | undefined, body: string) => {
+    const raw = name.trim(), entries = readEntries(body);
+    for (const e of entries)
+      try {
+        e.ast = ["=", "=="].includes(e.op) ? parseExpr(e.rhs, true) : undefined;
+      } catch {
+        e.ast = undefined;
+      }
+    // ponytail: one output, and equations only; Vensim's extra outputs (after a colon) need more than substitution
+    if (params === undefined || params.includes(":") || !entries.some((e) => e.key === keyOf(raw)) || entries.some((e) => !e.ast || e.sub.length))
+      warn(`Skipped the macro ${raw}: it has more than one output or something other than equations, so equations that use it need rewriting.`);
+    else macros.set(keyOf(raw), { raw, key: keyOf(raw), params: params.split(",").map((x) => keyOf(x)), body: entries });
+    return "";
+  });
+  const entries: Entry[] = [];
+  readEntries(src).forEach((e) => expandMacro(e, 0));
 
   // entries: definition ~ units ~ comment |  (comments may hold stray quotes, so only the definition tracks them)
-  const entries: Entry[] = [];
-  for (let i = 0; i < src.length; ) {
-    let j = i, q = false;
-    while (j < src.length && (q || (src[j] !== "~" && src[j] !== "|"))) (q = src[j] === '"' ? !q : q), j++;
-    // :INTERPOLATE: and friends mark a data variable read from outside the model
-    const raw0 = src.slice(i, j).trim(), def = raw0.replace(/:(INTERPOLATE|RAW|HOLD BACKWARD|LOOK FORWARD):/gi, "").trim();
-    let units = "", doc = "";
-    if (src[j] === "~") {
-      const t = src.indexOf("~", j + 1), b = src.indexOf("|", j + 1) < 0 ? src.length : src.indexOf("|", j + 1);
-      units = src.slice(j + 1, t >= 0 && t < b ? t : b);
-      doc = t >= 0 && t < b ? src.slice(t + 1, b) : "";
-      j = b;
+  function readEntries(src: string) {
+    const entries: Entry[] = [];
+    for (let i = 0; i < src.length; ) {
+      let j = i, q = false;
+      while (j < src.length && (q || (src[j] !== "~" && src[j] !== "|"))) (q = src[j] === '"' ? !q : q), j++;
+      // :INTERPOLATE: and friends mark a data variable read from outside the model
+      const raw0 = src.slice(i, j).trim(), def = raw0.replace(/:(INTERPOLATE|RAW|HOLD BACKWARD|LOOK FORWARD):/gi, "").trim();
+      let units = "", doc = "";
+      if (src[j] === "~") {
+        const t = src.indexOf("~", j + 1), b = src.indexOf("|", j + 1) < 0 ? src.length : src.indexOf("|", j + 1);
+        units = src.slice(j + 1, t >= 0 && t < b ? t : b);
+        doc = t >= 0 && t < b ? src.slice(t + 1, b) : "";
+        j = b;
+      }
+      i = j + 1;
+      if (!def || def.startsWith("*")) continue;
+      if (def !== raw0 && !/(:=|=)/.test(def)) {
+        entries.push({ raw: def.replace(/\[[\s\S]*$/, "").trim(), key: keyOf(def.replace(/\[[\s\S]*$/, "")), sub: /\[([^\]]*)\]/.exec(def)?.[1].split(",").map((s) => s.trim()) ?? [], op: "", rhs: "", units: "", doc: "", exc: [] });
+        continue;
+      }
+      const m = /^("(?:[^"\\]|\\.)*"|[^"[\](=:<]+?)\s*(?:\[([^\]]*)\])?\s*(:EXCEPT:[^=]*)?\s*(:=|==|=|\(|<->|:)([\s\S]*)$/i.exec(def) ?? /^("(?:[^"\\]|\\.)*"|[^"[\](=:<]+?)\s*(?:\[([^\]]*)\])?()()()\s*$/.exec(def);
+      if (!m) {
+        warn(`Could not read the definition "${def.slice(0, 60)}"; it was skipped.`);
+        continue;
+      }
+      const raw = m[1].trim().replace(/^"|"$/g, "");
+      const exc = [...(m[3] ?? "").matchAll(/\[([^\]]*)\]/g)].map((x) => x[1].split(",").map((s) => s.trim()));
+      entries.push({ raw, key: keyOf(raw), sub: m[2] ? m[2].split(",").map((s) => s.trim()) : [], op: m[4], rhs: m[5].trim(), units: units.replace(/\[[\s\S]*$/, "").trim(), doc: doc.replace(/:SUPPLEMENTARY/gi, "").replace(/\s+/g, " ").trim(), exc });
     }
-    i = j + 1;
-    if (!def || def.startsWith("*")) continue;
-    if (def !== raw0 && !/(:=|=)/.test(def)) {
-      entries.push({ raw: def.replace(/\[[\s\S]*$/, "").trim(), key: keyOf(def.replace(/\[[\s\S]*$/, "")), sub: /\[([^\]]*)\]/.exec(def)?.[1].split(",").map((s) => s.trim()) ?? [], op: "", rhs: "", units: "", doc: "", except: false });
-      continue;
-    }
-    const m = /^("(?:[^"\\]|\\.)*"|[^"[\](=:<]+?)\s*(?:\[([^\]]*)\])?\s*(:EXCEPT:[^=]*)?\s*(:=|==|=|\(|<->|:)([\s\S]*)$/i.exec(def) ?? /^("(?:[^"\\]|\\.)*"|[^"[\](=:<]+?)\s*(?:\[([^\]]*)\])?()()()\s*$/.exec(def);
-    if (!m) {
-      warn(`Could not read the definition "${def.slice(0, 60)}"; it was skipped.`);
-      continue;
-    }
-    const raw = m[1].trim().replace(/^"|"$/g, "");
-    entries.push({ raw, key: keyOf(raw), sub: m[2] ? m[2].split(",").map((s) => s.trim()) : [], op: m[4], rhs: m[5].trim(), units: units.replace(/\[[\s\S]*$/, "").trim(), doc: doc.replace(/:SUPPLEMENTARY/gi, "").replace(/\s+/g, " ").trim(), except: !!m[3] });
+    return entries;
+  }
+
+  // A macro call becomes the macro's equations as new variables named after the caller ("macro output EXPRESSION
+  // MACRO", "... intermediate"), with the call's arguments for the parameters; the call reads the output. Each call in
+  // an equation gets its own set, shared by the caller's per-element definitions so they stay one array.
+  function expandMacro(e: Entry, depth: number): void {
+    let ast = e.ast;
+    if (macros.size && !ast && ["=", "=="].includes(e.op))
+      try {
+        ast = parseExpr(e.rhs, true);
+      } catch {
+        ast = undefined;
+      }
+    if (!ast) return void entries.push(e);
+    let n = 0;
+    const go = (x: E): E => {
+      if (x.k === "un") return { ...x, a: go(x.a) };
+      if (x.k === "bin") return { ...x, a: go(x.a), b: go(x.b) };
+      if (x.k !== "call") return x;
+      const args = x.args.map(go), mac = macros.get(keyOf(x.raw));
+      if (!mac || depth > 8) return { ...x, args };
+      const prefix = `${e.raw} ${mac.raw}${++n > 1 ? ` ${n}` : ""}`; // n > 0: a macro was called
+      const local = new Map(mac.body.map((b) => [b.key, b.key === mac.key ? prefix : `${prefix} ${b.raw}`]));
+      const ps = new Map(mac.params.map((p, j) => [p, args[j] ?? ({ k: "num", v: 0 } as E)]));
+      const rw = (y: E): E =>
+        y.k === "id" ? (y.sub ? y : ps.get(y.key) ?? (local.has(y.key) ? { k: "id", key: keyOf(local.get(y.key)!), raw: local.get(y.key)! } : y)) : y.k === "call" ? { ...y, args: y.args.map(rw) } : y.k === "un" ? { ...y, a: rw(y.a) } : y.k === "bin" ? { ...y, a: rw(y.a), b: rw(y.b) } : y;
+      for (const b of mac.body) expandMacro({ ...b, raw: local.get(b.key)!, key: keyOf(local.get(b.key)!), sub: e.sub, exc: e.exc, ast: rw(b.ast!) }, depth + 1);
+      return { k: "id", key: keyOf(prefix), raw: prefix };
+    };
+    const out = go(ast);
+    entries.push(n ? { ...e, ast: out } : e);
   }
 
   // dimensions (subscript ranges), equivalences after
@@ -736,13 +823,14 @@ export function importMdl(text: string): Imported {
       if (!fits.length) warn(`${name}: could not find the dimension of [${group[0].sub.join(", ")}].`);
       return fits[0];
     }).filter((d): d is Dim => !!d);
-    const cells = new Map<string, string>(), inits = new Map<string, string>();
+    const cells = new Map<string, string>(), inits = new Map<string, string>(), rates = new Map<string, string>();
     let rate: E | undefined, stock = false;
     for (const e of group) {
-      const own = combos(e.sub.map(expandSub)).map((k) => k.join("|"));
-      const set = (m: Map<string, string>, k: string, v: string) => (!e.except || !m.has(k)) && m.set(k, v);
-      const rhs = e.rhs.replace(/^TABBED ARRAY\s*\(([\s\S]*)\)\s*$/i, (_, b: string) => b.trim().split(/\s+/).join(","));
-      if (e.except) warn(`${name} uses :EXCEPT:; check the elements it leaves out.`);
+      // the elements it defines, less any an :EXCEPT: leaves out; a definition for all elements but some does not
+      // overwrite one for a single element
+      const own = combos(e.sub.map(expandSub)).filter((k) => !e.exc.some((x) => x.length === k.length && x.every((s, p) => expandSub(s).includes(k[p])))).map((k) => k.join("|"));
+      const set = (m: Map<string, string>, k: string, v: string) => (!e.exc.length || !m.has(k)) && m.set(k, v);
+      const rhs = e.ast ? "" : e.rhs.replace(/^TABBED ARRAY\s*\(([\s\S]*)\)\s*$/i, (_, b: string) => b.trim().split(/\s+/).join(","));
       if (e.op === ":=" || !e.op || /^GET\s+(XLS|DIRECT|DATA|123|VDF)/i.test(rhs) || /^A FUNCTION OF\b/i.test(rhs)) {
         warn(/^A FUNCTION OF/i.test(rhs) ? `${name} has no equation yet (A FUNCTION OF); it is 0 for now.` : `${name} reads data from outside the model; it is a constant ${isNum(rhs) ? rhs : 0} for now. Give it data in the builder.`);
         own.forEach((k) => set(cells, k, isNum(rhs) ? rhs : "0"));
@@ -754,23 +842,25 @@ export function importMdl(text: string): Imported {
         own.forEach((k, j) => set(cells, k, fmt(+(nums.length > 1 ? nums[j] ?? 0 : nums[0]))));
         continue;
       }
-      let ast: E | undefined;
-      try {
-        ast = parseExpr(rhs, true);
-      } catch (err) {
-        warn(`${name}: could not read the equation "${rhs.slice(0, 80)}" (${(err as Error).message}); it is kept as written.`);
-      }
+      let ast = e.ast;
+      if (!ast)
+        try {
+          ast = parseExpr(rhs, true);
+        } catch (err) {
+          warn(`${name}: could not read the equation "${rhs.slice(0, 80)}" (${(err as Error).message}); it is kept as written.`);
+        }
       own.forEach((k) => {
         c.cell = new Set(k.split("|"));
         if (ast?.k === "call" && ast.f === "INTEG") {
           stock = true;
           rate ??= ast.args[0];
+          set(rates, k, tr(ast.args[0], c)[0]);
           set(inits, k, ast.args[1] ? tr(ast.args[1], c)[0] : "0");
         } else set(cells, k, ast ? tr(ast, c)[0] : rhs.replace(/\s+/g, " "));
       });
     }
     const last = group[group.length - 1];
-    const it: Item = { kind: stock ? "stock" : "var", key, name, eq: settle(name, grid, stock ? inits : cells, warn), dim: grid.map((d) => d.name).join(", ") || undefined, units: group.map((e) => e.units).find(Boolean) || undefined, note: last.doc || undefined };
+    const it: Item = { kind: stock ? "stock" : "var", key, name, ...settle(name, grid, stock ? inits : cells, warn), dim: grid.map((d) => d.name).join(", ") || undefined, units: group.map((e) => e.units).find(Boolean) || undefined, note: last.doc || undefined };
     if (stock && rate) {
       // a sum and difference of other variables' names: those become the stock's flows
       const terms: [E, number][] = [];
@@ -778,11 +868,11 @@ export function importMdl(text: string): Imported {
         x.k === "bin" && (x.op === "+" || x.op === "-") ? (flat(x.a, s), flat(x.b, x.op === "-" ? -s : s)) : x.k === "un" && x.op !== "NOT" ? flat(x.a, x.op === "-" ? -s : s) : void terms.push([x, s]);
       flat(rate, 1);
       c.cell = new Set();
-      if (terms.every(([x]) => x.k === "id" && groups.has(x.key) && !(x.sub ?? []).some((s) => !dimBy(keyOf(s))))) {
+      if (new Set(rates.values()).size === 1 && terms.every(([x]) => x.k === "id" && groups.has(x.key) && !(x.sub ?? []).some((s) => !dimBy(keyOf(s))))) {
         it.ins = terms.filter((t) => t[1] > 0).map((t) => (t[0] as { key: string }).key);
         it.outs = terms.filter((t) => t[1] < 0).map((t) => (t[0] as { key: string }).key);
       }
-      it.rate = tr(rate, c)[0];
+      it.rate = settle(name, grid, rates, () => {});
     }
     items.push(it);
   }

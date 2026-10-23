@@ -107,6 +107,36 @@ const noise: BModel = {
   flows: [{ id: "f1", name: "Change", to: "s1", eq: "RANDOM_UNIFORM(0, 1) + RANDOM_NORMAL(-1, 1, 0, 0.5, 42)", x: 0, y: 0, dim: "Patch" }],
   vars: [{ id: "v1", name: "U", eq: "RANDOM_UNIFORM(0, 1, 7)", x: 0, y: 0 }],
 };
+// single elements (Population[North, Young], Base[Coastal]), per-element equations (with memory inside, and on a stock's
+// initial value) and the functions added with them
+const picks: BModel = {
+  name: "Picks and overrides",
+  timeUnit: "month",
+  T: 12,
+  dt: 0.25,
+  dims: [
+    { name: "Region", elements: ["North", "South", "East"] },
+    { name: "Coastal", elements: ["North", "South"], of: "Region" },
+    { name: "Age", elements: ["Young", "Old"] },
+  ],
+  stocks: [
+    { id: "s1", name: "Population", init: "100, 80, 60, 50, 40, 30", x: 0, y: 0, dim: "Region, Age", eqs: { "East,Old": "Base[South] * 10 + ELMCOUNT(Region)" } },
+    { id: "s2", name: "Stock", init: "10", x: 0, y: 0, dim: "Region", eqs: { South: "Base[North] * 3" } },
+    { id: "s3", name: "Held", init: "0", x: 0, y: 0 },
+  ],
+  flows: [
+    { id: "f1", name: "Births", to: "s1", eq: "Population * 0.02 + Population[Region, Young] * 0.01", x: 0, y: 0, dim: "Region, Age", eqs: { "North,Old": "Population[North, Old] * 0.05 + SMOOTH(Population[East, Young], 2) * 0.01", "South,Young": "QUANTUM(Population, 7) * 0.01" } },
+    { id: "f2", name: "Inflow", to: "s2", eq: "Base * PULSE_TRAIN(1, 0.5, 2, 9) + SAMPLE_IF_TRUE(TIME > 3, Base * TIME, 0) * 0.1", x: 0, y: 0, dim: "Region", eqs: { East: "SINH(0.5) + COSH(0.2) + TANH(0.3) + SUM(Population) * 0.0001" } },
+    { id: "f3", name: "Fill", to: "s3", eq: "Stock[East] + SUM(Coast_value) + Sampled + PULSE_TRAIN(2, 1, 0, 0) + ELMCOUNT(Age) + Quant + SUM(Ratio)", x: 0, y: 0 },
+  ],
+  vars: [
+    { id: "v1", name: "Base", eq: "1, 2, 3", x: 0, y: 0, dim: "Region" },
+    { id: "v2", name: "Coast value", eq: "Base[Coastal] * 2 + Base[East]", x: 0, y: 0, dim: "Coastal" },
+    { id: "v3", name: "Sampled", eq: "SAMPLE_IF_TRUE(MODULO(TIME, 2) < 0.5, Stock[North], -1)", x: 0, y: 0 },
+    { id: "v4", name: "Quant", eq: "QUANTUM(TIME * 3.3, 2) + QUANTUM(-5.5, 2) + QUANTUM(3, 0)", x: 0, y: 0 },
+    { id: "v5", name: "Ratio", eq: "Stock / Stock[North]", x: 0, y: 0, dim: "Region", eqs: { North: "1" } },
+  ],
+};
 // one CSV line as cells (labels of arrays over two dimensions hold a comma, so they come quoted)
 const cells = (line: string) => [...line.matchAll(/("(?:[^"]|"")*"|[^,]*)(?:,|$)/g)].slice(0, -1).map((x) => x[1].replace(/^"|"$/g, "").replace(/""/g, '"'));
 const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
@@ -134,7 +164,7 @@ const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
   expect("wrong count", m, ["error v1 eq: Equation: Region has 3 elements (North, South, East), but 2 values are given."]);
   m = clone(regions);
   m.vars[2].eq = "Population * 2";
-  expect("scalar reads array", m, ["error v3 eq: Population is an array over Region: use SUM(Population) or MEAN(Population)."]);
+  expect("scalar reads array", m, ["error v3 eq: Population is an array over Region: use SUM(Population) or MEAN(Population), or pick an element, Population[North]."]);
   m = clone(regions);
   m.dims!.push({ name: "Age", elements: ["Young", "Old"] });
   m.flows[1].dim = "Age";
@@ -157,7 +187,7 @@ const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
   if (renamed.links?.length !== 1 || renamed.vars[2].eq !== "SUM(People)" || validate(renamed).issues.length) fail(`rename: links should survive and SUM(Population) become SUM(People): ${issues(renamed)}`);
   if (removeElement(regions, "v3").links?.length !== 0) fail("remove: links to a removed element should go");
   // JSON keeps dims, links, dim and note
-  for (const mm of [regions, sink, every, noise]) if (canon(fromJSON(toJSON(mm))) !== canon(mm)) fail(`${mm.name}: JSON round trip changed the model`);
+  for (const mm of [regions, sink, every, noise, picks]) if (canon(fromJSON(toJSON(mm))) !== canon(mm)) fail(`${mm.name}: JSON round trip changed the model`);
 
   // the new rules
   m = clone(every);
@@ -197,6 +227,43 @@ const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
   m.vars[1].eq = "TREND(b, 2, 0)";
   expect("loop through TREND", m, ["error v8 eq: Circular definition: b → a → b."]);
 
+  // single elements and per-element equations
+  m = clone(picks);
+  m.flows[2].eq = "Stock[West] + Stock[North, Young] + Base[Age] + Held[North] + Population + ELMCOUNT(Place)";
+  m.vars[1].eq = "Base[Region] + Base[Coastal]"; // a parent stands for this element too
+  m.stocks[0].eqs = { "East,Old": "1", West: "2", "North,Middle": "3", "South,Old": "Nope + 1" };
+  m.vars[0].eqs = { North: "1" };
+  m.stocks[2].eqs = { North: "1" };
+  expect("single elements and per-element", m, [
+    'error f3 eq: Stock[West]: "West" is not an element of Region.',
+    "error f3 eq: Stock is an array over Region: give one element (or dimension) for each, such as Stock[North].",
+    "error f3 eq: Base[Age]: Age stands for \"this element\" only in an equation over Age",
+    "error f3 eq: Held is a single value, so it has no elements to pick: write Held without [ ].",
+    "error f3 eq: Population is an array over Region, Age: use SUM(Population) or MEAN(Population), or pick an element, Population[North,Young].",
+    "error f3 eq: ELMCOUNT(Place): there is no dimension called Place.",
+    "error s1 init: For West: name one element of each of Region, Age, such as North,Young.",
+    'error s1 init: For North, Middle: "Middle" is not an element of Age.',
+    'error s1 init: For South, Old uses "nope", which is not in the model.',
+    "error s3 init: Per-element equations need an array",
+  ]);
+  if (/error v[12]/.test(issues(m))) fail(`a per-element equation on an arrayed constant, and Base[Region] over Coastal, are allowed:\n${issues(m)}`);
+  const pk = simulate(picks, Number.MAX_SAFE_INTEGER);
+  if (!pk.ok) fail(`picks: run failed: ${pk.issues.map((i) => i.msg).join("; ")}`);
+  else {
+    const at = (k: string, i = 0) => pk.values[k][i];
+    if (at("s1[East,Old]") !== 23 || at("s2[South]") !== 3 || at("s2[North]") !== 10) fail(`picks: per-element initial values ${at("s1[East,Old]")}, ${at("s2[South]")}`);
+    if (Math.abs(at("f1[North,Young]") - (100 * 0.02 + 100 * 0.01)) > 1e-12 || Math.abs(at("f1[South,Old]") - (50 * 0.02 + 60 * 0.01)) > 1e-12) fail("picks: Population[Region, Young] should follow the region");
+    if (Math.abs(at("f1[South,Young]") - 0.56) > 1e-12 || Math.abs(at("f1[North,Old]") - (80 * 0.05 + 40 * 0.01)) > 1e-12) fail(`picks: per-element flows ${at("f1[South,Young]")}, ${at("f1[North,Old]")}`);
+    if (at("v2[South]") !== 7 || at("v5[North]") !== 1 || Math.abs(at("v5[South]") - 0.3) > 1e-12) fail("picks: Base[Coastal] and Ratio");
+    if (Math.abs(at("v4", 4) - (2 * Math.trunc(3.3 / 2) - 4 + 3)) > 1e-12) fail(`picks: QUANTUM at time 1 gave ${at("v4", 4)}`);
+    pk.times.forEach((t, i) => {
+      const on = t >= 1 && t < 9 && (t - 1 + 1e-6) % 2 < 0.5 ? 1 : 0;
+      if (t <= 3 && pk.values["f2[North]"][i] !== on) fail(`picks: PULSE_TRAIN at ${t} gave ${pk.values["f2[North]"][i]}, expected ${on}`);
+      const sampled = pk.values.v3[i], want = t % 2 < 0.5 ? pk.values["s2[North]"][i] : i ? pk.values.v3[i - 1] : -1;
+      if (Math.abs(sampled - want) > 1e-12) fail(`picks: SAMPLE_IF_TRUE at ${t} gave ${sampled}, expected ${want}`);
+    });
+  }
+
   // the app's numbers for what PySD does not check on its own
   const ev = simulate(every, Number.MAX_SAFE_INTEGER);
   if (!ev.ok) fail(`every: run failed: ${ev.issues.map((i) => i.msg).join("; ")}`);
@@ -229,7 +296,7 @@ const isRandom = (m: BModel) => /RANDOM_/i.test(JSON.stringify(m));
 
 // ---------------------------------------------------------------------------------------------------
 // exports, for every template, the examples above and every shared spec
-const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), sink, every, noise, ...Object.values(SPECS).map((s) => clone(s.model))];
+const models: BModel[] = [...TEMPLATES.map((t) => template(t.id)), sink, every, noise, picks, ...Object.values(SPECS).map((s) => clone(s.model))];
 const root = mkdtempSync(join(tmpdir(), "loopbricks-builder-"));
 const py = (args: string[], cwd: string) => run("python3", args, { cwd, env: { ...process.env, MPLBACKEND: "Agg", PYTHONWARNINGS: "ignore" }, maxBuffer: 64 << 20 });
 const jobs: (() => Promise<void>)[] = [];

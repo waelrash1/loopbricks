@@ -4,11 +4,13 @@ import { NAME_RE, REDUCERS, RESERVED, SEED_ARG, STATEFUL, evaluator, expand, lit
 // dim: the name of a dimension in BModel.dims, or several separated by commas ("Region, Age") for a multi-dimensional
 // array; the element then holds one value per combination. Its equation or initial value applies to every combination;
 // a comma list ("10, 20, 30") gives one value per combination in row-major order (last dimension fastest).
-export type BStock = { id: string; name: string; init: string; x: number; y: number; units?: string; nonNegative?: boolean; dim?: string; note?: string }; // nonNegative: a physical stock floored at zero, as in the app's molecules
-export type BFlow = { id: string; name: string; from?: string; to?: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string };
+// eqs: per-element equations (a stock's initial values) that override the general one, keyed by element ("North", or
+// "North,Young" over two dimensions); the general equation applies to the rest.
+export type BStock = { id: string; name: string; init: string; x: number; y: number; units?: string; nonNegative?: boolean; dim?: string; note?: string; eqs?: Record<string, string> }; // nonNegative: a physical stock floored at zero, as in the app's molecules
+export type BFlow = { id: string; name: string; from?: string; to?: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string; eqs?: Record<string, string> };
 // data: a time series [time, value][] read from a CSV; the variable then takes the value interpolated at TIME (linear,
 // held flat outside the data unless extrapolate is true) and its eq is ignored.
-export type BVar = { id: string; name: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string; data?: [number, number][]; extrapolate?: boolean }; // an auxiliary, or a constant when eq is a number
+export type BVar = { id: string; name: string; eq: string; x: number; y: number; units?: string; dim?: string; note?: string; data?: [number, number][]; extrapolate?: boolean; eqs?: Record<string, string> }; // an auxiliary, or a constant when eq is a number
 // A dimension (subscript range), e.g. { name: "Region", elements: ["North", "South"] }.
 // of: makes this dimension a subrange of another (its elements are a subset of that dimension's elements).
 export type BDim = { name: string; elements: string[]; of?: string };
@@ -36,8 +38,10 @@ const NUM = String.raw`\s*[-−]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*`;
 const LIST_RE = new RegExp(`^${NUM}(,${NUM})+$`);
 // "10, 20, 30": one number per element of an arrayed element's dimension
 export const parseList = (src: string): number[] | null => (LIST_RE.test(src) ? src.split(",").map((x) => +x.trim().replace("−", "-")) : null);
-// a number, or a list of numbers for an arrayed constant (a data variable is never a constant)
-export const isConstant = (v: { eq: string; data?: unknown }) => !v.data && (new RegExp(`^${NUM}$`).test(v.eq) || LIST_RE.test(v.eq));
+// per-element equations, if any
+export const hasEqs = (e: { eqs?: Record<string, string> }) => !!e.eqs && Object.keys(e.eqs).length > 0;
+// a number, or a list of numbers for an arrayed constant (a data variable, or one with per-element equations, is never a constant)
+export const isConstant = (v: { eq: string; data?: unknown; eqs?: Record<string, string> }) => !v.data && !hasEqs(v) && (new RegExp(`^${NUM}$`).test(v.eq) || LIST_RE.test(v.eq));
 export const inflows = (m: BModel, id: string) => m.flows.filter((f) => f.to === id);
 export const outflows = (m: BModel, id: string) => m.flows.filter((f) => f.from === id);
 
@@ -62,17 +66,59 @@ export function within(m: BModel, a: BDim, b: BDim) {
   for (let d: BDim | undefined = a, i = 0; d && i < 20; d = findDim(m, d.of), i++) if (nameKey(d.name) === nameKey(b.name)) return true;
   return false;
 }
+// a can be read where b is expected: it is b, a subrange of it, or (as Vensim allows) a dimension whose elements are all b's
+export const fits = (m: BModel, a: BDim, b: BDim) => within(m, a, b) || a.elements.every((x) => b.elements.some((y) => nameKey(x) === nameKey(y)));
 // Which element of X (over xa) an equation over mine reads at the combination at (one element name per dimension of
 // mine): X's dimensions are matched to mine by name, and a subrange of mine reads its parent on the shared elements.
 // ponytail: matching by dimension, as the equations have no subscripts; with a dimension twice (Region x Region) the first wins.
 export function pick(m: BModel, mine: BDim[], at: string[], xa: BDim[]): string | undefined {
   const out: string[] = [];
   for (const d of xa) {
-    const i = mine.findIndex((a) => within(m, a, d));
+    const i = mine.findIndex((a) => fits(m, a, d));
     if (i < 0) return undefined;
     out.push(at[i]);
   }
   return out.join(",");
+}
+// One subscript of a reference X[...] at X's dimension d: the element it names, or (a dimension name) the position of my
+// dimension it follows, "this element"; or why it cannot be read.
+export function subAt(m: BModel, mine: BDim[] | undefined, d: BDim, s: string): { el: string } | { axis: number } | { err: string } {
+  const el = d.elements.find((x) => nameKey(x) === nameKey(s));
+  if (el !== undefined) return { el };
+  const D = findDim(m, s);
+  if (!D) return { err: `"${s}" is not an element of ${d.name}` };
+  const j = mine ? mine.findIndex((a) => fits(m, a, D) && fits(m, a, d)) : -1;
+  return j < 0 ? { err: `${D.name} stands for "this element" only in an equation over ${D.name} (or a subrange of it) whose elements are in ${d.name}` } : { axis: j };
+}
+// The element of X (over xa) a reference reads at the combination at of mine: from its subscripts if it has them,
+// otherwise matched by dimension (see pick). undefined for a single value.
+export function resolve(m: BModel, mine: BDim[] | undefined, at: string[] | undefined, xa: BDim[] | undefined, sub?: string[]): string | undefined {
+  if (!xa) return undefined;
+  if (!sub) return mine && at ? pick(m, mine, at, xa) : undefined;
+  if (sub.length !== xa.length) return undefined;
+  const out: string[] = [];
+  for (let i = 0; i < xa.length; i++) {
+    const r = subAt(m, mine, xa[i], sub[i]);
+    if ("err" in r || ("axis" in r && !at)) return undefined;
+    out.push("el" in r ? r.el : at![r.axis]);
+  }
+  return out.join(",");
+}
+// An equation for the combination at of mine with every arrayed reference made explicit (Population[North]), so it reads
+// the same with no dimension around it: how a per-element equation becomes a plain single-value one.
+export function fixAt(m: BModel, n: Node, mine: BDim[], at: string[]): Node {
+  const axes = new Map(elements(m).map((e) => [nameKey(e.name), axesOf(m, e)]));
+  const go = (x: Node): Node => {
+    if (x.k === "name") {
+      const el = resolve(m, mine, at, axes.get(x.key), x.sub);
+      return el === undefined ? x : { ...x, sub: el.split(",") };
+    }
+    if (x.k === "neg") return { k: "neg", a: go(x.a) };
+    if (x.k === "bin") return { ...x, a: go(x.a), b: go(x.b) };
+    if (x.k === "call") return REDUCERS.has(x.f) || x.f === "ELMCOUNT" ? x : { ...x, args: x.args.map(go) };
+    return x;
+  };
+  return go(n);
 }
 // the series a run gives for an element: one for a single value, one per element of its dimensions ("Population[North]",
 // "Population[North,Young]")
@@ -118,11 +164,12 @@ export function renameElement(m: BModel, id: string, name: string): BModel {
   const clash = elements(m).some((e) => e.id !== id && nameKey(e.name) === newKey);
   const rewrite = oldKey && newKey && oldKey !== newKey && !clash && NAME_RE.test(name.trim());
   const fix = (s: string) => (rewrite ? renameRefs(s, oldKey, name) : s);
+  const eqs = (e: { eqs?: Record<string, string> }) => (e.eqs ? { eqs: Object.fromEntries(Object.entries(e.eqs).map(([k, v]) => [k, fix(v)])) } : {});
   return {
     ...m,
-    stocks: m.stocks.map((s) => ({ ...s, name: s.id === id ? name : s.name, init: fix(s.init) })),
-    flows: m.flows.map((f) => ({ ...f, name: f.id === id ? name : f.name, eq: fix(f.eq) })),
-    vars: m.vars.map((v) => ({ ...v, name: v.id === id ? name : v.name, eq: fix(v.eq) })),
+    stocks: m.stocks.map((s) => ({ ...s, name: s.id === id ? name : s.name, init: fix(s.init), ...eqs(s) })),
+    flows: m.flows.map((f) => ({ ...f, name: f.id === id ? name : f.name, eq: fix(f.eq), ...eqs(f) })),
+    vars: m.vars.map((v) => ({ ...v, name: v.id === id ? name : v.name, eq: fix(v.eq), ...eqs(v) })),
   };
 }
 
@@ -173,13 +220,18 @@ export type Checked = {
   dims: Map<string, BDim>; // element id -> its dimension (the product of its dimensions), for arrayed elements
   axes: Map<string, BDim[]>; // element id -> its dimensions in order, for arrayed elements
   lists: Map<string, number[]>; // element id -> one value per element, when written as a list ("10, 20, 30")
+  cells: Map<string, Map<string, Compiled>>; // element id -> per-element equations, by element ("North,Young" as in dims)
   model: BModel; // the model these describe
   sim: Checked; // the model as it runs, stateful functions turned into hidden elements (see lower); itself when there are none
 };
 
-// every name an equation reads, with the reducer around it if any (SUM(X) reads X as a whole)
-function reads(n: Node, f: (key: string, reducer?: string) => void) {
-  if (n.k === "name") f(n.key);
+// every name an element's equations read, the general one and any per element
+export const refsOf = (chk: Pick<Checked, "code" | "cells">, id: string) => [...new Set([...(chk.code.get(id)?.refs ?? []), ...[...(chk.cells.get(id)?.values() ?? [])].flatMap((c) => c.refs)])];
+
+// every name an equation reads, with the reducer around it if any (SUM(X) reads X as a whole), or its subscripts
+function reads(n: Node, f: (key: string, reducer?: string, sub?: string[]) => void) {
+  if (n.k === "name") f(n.key, undefined, n.sub);
+  else if (n.k === "call" && n.f === "ELMCOUNT") return;
   else if (n.k === "call" && REDUCERS.has(n.f) && n.args[0]?.k === "name") f(n.args[0].key, n.f);
   else if (n.k === "neg") reads(n.a, f);
   else if (n.k === "bin") (reads(n.a, f), reads(n.b, f));
@@ -297,13 +349,42 @@ function check(m: BModel) {
       continue;
     }
     code.set(e.id, r.c);
-    for (const ref of r.c.refs) {
+    checkCode(e, field, what, r.c);
+  }
+
+  // per-element equations: each for an element (combination) of its dimensions, checked as the general one is
+  const cells = new Map<string, Map<string, Compiled>>();
+  for (const e of els) {
+    if (!hasEqs(e)) continue;
+    const field: Field = e.kind === "stock" ? "init" : "eq", mine = axes.get(e.id), own = new Map<string, Compiled>();
+    if (!e.dim) err(e.id, field, "Per-element equations need an array: give it a dimension, or remove them.");
+    if (!mine) continue;
+    cells.set(e.id, own);
+    for (const [k, src] of Object.entries(e.eqs!)) {
+      const parts = k.split(",").map((x) => x.trim()), label = `For ${parts.join(", ")}`;
+      const miss = parts.findIndex((x, i) => !mine[i]?.elements.some((y) => nameKey(y) === nameKey(x)));
+      if (parts.length !== mine.length) err(e.id, field, `${label}: name one element of each of ${mine.map((d) => d.name).join(", ")}, such as ${mine.map((d) => d.elements[0]).join(",")}.`);
+      else if (miss >= 0) err(e.id, field, `${label}: "${parts[miss]}" is not an element of ${mine[miss].name}.`);
+      else {
+        const at = parts.map((x, i) => mine[i].elements.find((y) => nameKey(y) === nameKey(x))!).join(",");
+        const r = tryCompile(src);
+        if (own.has(at)) err(e.id, field, `${label}: there are two equations for it.`);
+        else if (!src.trim()) err(e.id, field, `${label}: the equation is empty.`);
+        else if (!r.ok) err(e.id, field, `${label}: ${r.error.message}`);
+        else own.set(at, r.c), checkCode(e, field, label, r.c, `${label}: `);
+      }
+    }
+  }
+  // the checks on one compiled equation: names, functions with memory, arrays
+  function checkCode(e: Element, field: Field, what: string, c: Compiled, pre = "") {
+    for (const ref of c.refs) {
       if (!byKey.has(ref)) err(e.id, field, `${what} uses "${ref}", which is not in the model.${suggest(ref)}`);
       else if (byKey.get(ref)!.id === e.id && e.kind === "stock") err(e.id, field, "A stock's initial value can't refer to the stock itself.");
     }
     // functions with memory: orders and fixed delay times are known before the run
-    walk(r.c.ast, (n) => {
+    walk(c.ast, (n) => {
       if (n.k !== "call") return;
+      if (n.f === "ELMCOUNT" && n.args[0].k === "name" && !findDim(m, n.args[0].raw)) err(e.id, field, `${pre}ELMCOUNT(${n.args[0].raw}): there is no dimension called ${n.args[0].raw}.`);
       if (n.f === "DELAYN" || n.f === "SMOOTHN") {
         const k = constNum(m, n.args[2]);
         if (!(k !== undefined && Number.isInteger(k) && k >= 1)) err(e.id, field, `${what}: the order of ${n.f} must be a whole number of at least 1, written as a number or the name of a constant, such as ${n.f}(input, 6, 3).`);
@@ -314,17 +395,27 @@ function check(m: BModel) {
       }
     });
     // arrays: matching dimensions read element by element, a single value broadcasts, anything else needs a reducer
+    // or subscripts that pick elements out
     const mine = axes.get(e.id), told = new Set<string>();
-    reads(r.c.ast, (key, reducer) => {
-      const x = byKey.get(key), xa = x && axes.get(x.id), xd = x && dims.get(x.id);
-      if (!x || told.has(key + (reducer ?? ""))) return;
+    reads(c.ast, (key, reducer, sub) => {
+      const x = byKey.get(key), xa = x && axes.get(x.id), xd = x && dims.get(x.id), tag = key + (reducer ?? "") + (sub ? `[${sub.join()}]` : "");
+      if (!x || told.has(tag)) return;
       const X = refName(x.name);
-      if (reducer && !xd && !x.dim) err(e.id, field, `${reducer}(${X}) needs an arrayed element, but ${X} is a single value.`);
-      else if (!reducer && xd && !mine) err(e.id, field, `${X} is an array over ${xd.name}: use SUM(${X}) or MEAN(${X}).`);
+      if (sub) {
+        if (!x.dim) err(e.id, field, `${pre}${X} is a single value, so it has no elements to pick: write ${X} without [ ].`);
+        else if (!xa) return;
+        else if (sub.length !== xa.length) err(e.id, field, `${pre}${X} is an array over ${xd!.name}: give one element (or dimension) for each, such as ${X}[${xa.map((d) => refName(d.elements[0])).join(", ")}].`);
+        else {
+          const bad = xa.map((d, i) => subAt(m, mine, d, sub[i])).find((r) => "err" in r) as { err: string } | undefined;
+          if (!bad) return;
+          err(e.id, field, `${pre}${X}[${sub.join(", ")}]: ${bad.err}.`);
+        }
+      } else if (reducer && !xd && !x.dim) err(e.id, field, `${pre}${reducer}(${X}) needs an arrayed element, but ${X} is a single value.`);
+      else if (!reducer && xd && !mine) err(e.id, field, `${pre}${X} is an array over ${xd.name}: use SUM(${X}) or MEAN(${X}), or pick an element, ${X}[${refName(xd.elements[0])}].`);
       else if (!reducer && xa && mine && pick(m, mine, mine.map((d) => d.elements[0]), xa) === undefined)
-        err(e.id, field, `${X} is an array over ${xd!.name}, but this is over ${dims.get(e.id)!.name}. Each of its dimensions must be one of these (or one these are a subrange of) to be read element by element; use SUM(${X}) or MEAN(${X}) for a single value.`);
+        err(e.id, field, `${pre}${X} is an array over ${xd!.name}, but this is over ${dims.get(e.id)!.name}. Each of its dimensions must be one of these (or one these are a subrange of) to be read element by element; use SUM(${X}) or MEAN(${X}) for a single value.`);
       else return;
-      told.add(key + (reducer ?? ""));
+      told.add(tag);
     });
   }
 
@@ -332,7 +423,7 @@ function check(m: BModel) {
   for (const l of m.links ?? []) {
     const a = findElement(m, l.from), b = findElement(m, l.to);
     if (!a || !b || !(code.has(b.id) || lists.has(b.id))) continue;
-    if (!code.get(b.id)?.refs.includes(nameKey(a.name)))
+    if (!refsOf({ code, cells }, b.id).includes(nameKey(a.name)))
       warn(b.id, b.kind === "stock" ? "init" : "eq", `You drew an arrow from ${a.name}, but ${b.kind === "stock" ? "its initial value" : "its equation"} does not use ${refName(a.name)}. Use it, or delete the arrow.`);
   }
 
@@ -366,16 +457,16 @@ function check(m: BModel) {
       }
     }
   }
-  return { issues, byKey, code, dims, axes, lists };
+  return { issues, byKey, code, dims, axes, lists, cells };
 }
 
 // The order flows and variables are worked out in, and the circular definitions that make an order impossible.
 // Stocks break every feedback loop, so they are not in this graph.
-function orderOf(m: BModel, code: Map<string, Compiled>, byKey: Map<string, Element>) {
+function orderOf(m: BModel, chk: Pick<Checked, "code" | "cells">, byKey: Map<string, Element>) {
   const rates = elements(m).filter((e) => e.kind !== "stock");
   const deps = new Map<string, string[]>();
   for (const e of rates) {
-    const refs = code.get(e.id)?.refs ?? [];
+    const refs = refsOf(chk, e.id);
     deps.set(e.id, refs.map((k) => byKey.get(k)).filter((x): x is Element => !!x && x.kind !== "stock").map((x) => x.id));
   }
   // Tarjan's algorithm: components come out dependencies first, which is the evaluation order
@@ -416,6 +507,10 @@ function orderOf(m: BModel, code: Map<string, Compiled>, byKey: Map<string, Elem
 //   INITIAL(x): a stock that starts at x and never moves.
 //   DELAY_FIXED(input, D, init): a pipeline of round(D / dt) stocks (at least 1), each taking the one before's value
 //     every step, so the output is exactly the input D ago; init before that.
+//   SAMPLE_IF_TRUE(c, input, init): a stock holding the last sample (starting at init) and the output IF(c, input,
+//     held); each step the stock moves to the output, as PySD's SampleIfTrue does.
+// ELMCOUNT(Dim) becomes its number. A per-element equation that needs hidden elements is first made explicit (fixAt),
+// so they are single values.
 // A random function without a seed gets one fixed for its place in the model. keep: calls to leave in place (an
 // export that writes them as its own builtins).
 export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => boolean = () => false): BModel {
@@ -430,13 +525,13 @@ export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => bool
   let changed = false;
   for (const e of elements(m)) {
     const src = sourceOf(e), r = !(e.kind === "var" && e.data) && !parseList(src) ? tryCompile(src) : undefined;
-    let calls = 0, hid = 0, memo = 0, touched = false;
+    let calls = 0, hid = 0, memo = 0, touched = false, where = "";
     const ref = (name: string): Node => ({ k: "name", key: nameKey(name), raw: refName(name), p: 0 });
     const num = (v: number): Node => ({ k: "num", v });
     const bin = (op: string, a: Node, b: Node): Node => ({ k: "bin", op, a, b });
     const call = (f: string, ...args: Node[]): Node => ({ k: "call", f, args });
     const add = <T extends Kind>(kind: T, x: Record<string, unknown>) => {
-      const el = { id: `${e.id}~${++hid}`, x: e.x, y: e.y, ...(e.dim ? { dim: e.dim } : {}), ...x };
+      const el = { id: `${e.id}~${++hid}`, x: e.x, y: e.y, ...(e.dim && !where ? { dim: e.dim } : {}), ...x };
       if (kind === "stock") out.stocks.push(el as BStock);
       else if (kind === "flow") out.flows.push({ eq: "", ...el } as BFlow);
       else out.vars.push(el as BVar);
@@ -447,11 +542,11 @@ export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => bool
       const order = F === "DELAY1" || F === "SMOOTH" ? 1 : F === "DELAY3" || F === "SMOOTH3" ? 3 : F === "DELAYN" || F === "SMOOTHN" ? constNum(m, a[2]) : 1;
       const fixed = F === "DELAY_FIXED" ? constNum(m, a[1]) : 0;
       if (order === undefined || !Number.isInteger(order) || order < 1 || fixed === undefined || fixed < 0) return n; // validate has said why
-      const base = `${e.name} ${F.toLowerCase().replace("_", " ")}${k > 1 ? ` ${k}` : ""}`;
+      const base = `${e.name}${where} ${F.toLowerCase().replace(/_/g, " ")}${k > 1 ? ` ${k}` : ""}`;
       const note = (part: string) => `Part of ${F}(${a.map(unparse).join(", ")}) in ${e.name}: ${part}.`;
       let inp = a[0];
       // an input that is a formula gets its own auxiliary, so it is worked out once per step
-      if (F !== "INITIAL" && inp.k !== "name" && inp.k !== "num") {
+      if (F !== "INITIAL" && F !== "SAMPLE_IF_TRUE" && inp.k !== "name" && inp.k !== "num") {
         const v = fresh(`${base} input`);
         add("var", { name: v, eq: unparse(inp), note: note("its input") });
         inp = ref(v);
@@ -491,6 +586,13 @@ export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => bool
           st.forEach((s, i) => add("flow", { name: fresh(`${base} shift${n > 1 ? ` ${i + 1}` : ""}`), to: ids[i], eq: unparse(bin("/", bin("-", i ? ref(st[i - 1]) : inp, ref(s)), { k: "dt" })), note: note("moving the pipeline on one step") }));
           return ref(st[n - 1]);
         }
+        case "SAMPLE_IF_TRUE": {
+          const held = fresh(`${base} held`), v = fresh(`${base} value`);
+          const id = add("stock", { name: held, init: unparse(a[2]), note: note("the value last sampled") });
+          add("var", { name: v, eq: unparse(call("IF", a[0], a[1], ref(held))), note: note("the input while the condition holds, otherwise the value held") });
+          add("flow", { name: fresh(`${base} sample`), to: id, eq: unparse(bin("/", bin("-", ref(v), ref(held)), { k: "dt" })), note: note("moving the held value on to this step's value") });
+          return ref(v);
+        }
       }
       return n;
     };
@@ -498,6 +600,10 @@ export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => bool
       if (n.k === "neg") return { k: "neg", a: rw(n.a) };
       if (n.k === "bin") return { ...n, a: rw(n.a), b: rw(n.b) };
       if (n.k !== "call") return n;
+      if (n.f === "ELMCOUNT") {
+        const d = n.args[0].k === "name" ? findDim(m, n.args[0].raw) : undefined;
+        return d ? ((touched = true), num(d.elements.length)) : n;
+      }
       const c = ++calls, args = n.args.map(rw);
       if (n.f in SEED_ARG && args.length === SEED_ARG[n.f]) (args.push(num(seedFor(e.id, c))), (touched = true));
       const x = { ...n, args };
@@ -508,9 +614,22 @@ export function lower(m: BModel, keep: (n: Extract<Node, { k: "call" }>) => bool
     const ast = r?.ok ? rw(r.c.ast) : undefined;
     const text = ast && touched ? unparse(ast) : undefined;
     changed ||= !!text;
-    if (e.kind === "stock") out.stocks.push({ ...m.stocks.find((x) => x.id === e.id)!, ...(text ? { init: text } : {}) });
-    else if (e.kind === "flow") out.flows.push({ ...m.flows.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}) });
-    else out.vars.push({ ...m.vars.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}) });
+    // per-element equations, each lowered on its own into single-valued hidden elements
+    const mine = axesOf(m, e);
+    const eqs = e.eqs && mine
+      ? Object.fromEntries(Object.entries(e.eqs).map(([k, s]) => {
+          const rr = tryCompile(s), at = k.split(",").map((x) => x.trim());
+          if (!rr.ok || at.length !== mine.length) return [k, s];
+          (touched = false), (where = ` ${at.join(" ")}`);
+          const a = rw(fixAt(m, rr.c.ast, mine, at));
+          where = "";
+          return [k, touched ? ((changed = true), unparse(a)) : s];
+        }))
+      : undefined;
+    const own = eqs ? { eqs } : {};
+    if (e.kind === "stock") out.stocks.push({ ...m.stocks.find((x) => x.id === e.id)!, ...(text ? { init: text } : {}), ...own });
+    else if (e.kind === "flow") out.flows.push({ ...m.flows.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}), ...own });
+    else out.vars.push({ ...m.vars.find((x) => x.id === e.id)!, ...(text ? { eq: text } : {}), ...own });
   }
   return changed ? out : m;
 }
@@ -528,7 +647,7 @@ export function validate(m: BModel): Checked {
   const base = check(m);
   const low = lower(m);
   const run = low === m ? base : check(low);
-  const { order, loops } = orderOf(low, run.code, run.byKey);
+  const { order, loops } = orderOf(low, run, run.byKey);
   const sim: Checked = { ...run, order, model: low } as Checked;
   sim.sim = sim;
   const told = new Set<string>();
@@ -563,24 +682,23 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
   const stride = save * Math.max(1, Math.ceil(steps / save / maxPoints));
   const s: Scope = { TIME: start, DT: m.dt };
   const axesBy = (key: string) => chk.axes.get(chk.byKey.get(key)?.id ?? "");
+  const scalarAt = (n: { key: string; sub?: string[] }) => resolve(low, undefined, undefined, axesBy(n.key), n.sub);
   const all = (key: string) => chk.dims.get(chk.byKey.get(key)?.id ?? "")?.elements;
   // slots: [values key, scope key, compiled rule] for each value an element holds
   type Slot = { vk: string; sk: string; at?: string; f: (s: Scope) => number };
   const slots = new Map<string, Slot[]>();
   for (const e of els) {
-    const key = nameKey(e.name), ax = chk.axes.get(e.id), d = chk.dims.get(e.id), list = chk.lists.get(e.id), c = chk.code.get(e.id)!;
+    const key = nameKey(e.name), ax = chk.axes.get(e.id), d = chk.dims.get(e.id), list = chk.lists.get(e.id), c = chk.code.get(e.id)!, cells = chk.cells.get(e.id);
     slots.set(
       e.id,
       ax && d
         ? d.elements.map((x, j) => {
             const at = x.split(",");
-            const pickAt = (k: string) => {
-              const xa = axesBy(k);
-              return xa && pick(low, ax, at, xa);
-            };
-            return { vk: `${e.id}[${x}]`, sk: slotKey(key, x), at: x, f: list ? () => list[j] : evaluator(expand(c.ast, pickAt, all), j) };
+            const pickAt = (n: { key: string; sub?: string[] }) => resolve(low, ax, at, axesBy(n.key), n.sub);
+            const own = cells?.get(x);
+            return { vk: `${e.id}[${x}]`, sk: slotKey(key, x), at: x, f: own ? evaluator(expand(own.ast, pickAt, all), j) : list ? () => list[j] : evaluator(expand(c.ast, pickAt, all), j) };
           })
-        : [{ vk: e.id, sk: key, f: evaluator(chk.dims.size ? expand(c.ast, () => undefined, all) : c.ast) }],
+        : [{ vk: e.id, sk: key, f: evaluator(chk.dims.size ? expand(c.ast, scalarAt, all) : c.ast) }],
     );
   }
   slots.forEach((ss, id) => !isHidden(id) && ss.forEach((sl) => (values[sl.vk] = [])));
@@ -602,7 +720,7 @@ export function simulate(m: BModel, maxPoints = 1000): RunResult {
     if (done.has(e.id)) return null;
     if (busy.has(e.id)) return owner(e).name;
     busy.add(e.id);
-    for (const r of chk.code.get(e.id)?.refs ?? []) {
+    for (const r of refsOf(chk, e.id)) {
       const d = chk.byKey.get(r)!;
       const loop = initOf(d);
       if (loop) return loop;
@@ -662,16 +780,18 @@ export function equationGroups(m: BModel) {
   const u = (x?: string) => (x?.trim() ? `  [${x.trim()}]` : "");
   const name = (id: string) => refName(m.flows.find((f) => f.id === id)!.name);
   const lhs = (e: { name: string; dim?: string }) => refName(e.name) + (e.dim ? `[${e.dim}]` : "");
+  // per-element equations follow the general one, which then holds for the other elements
+  const own = (e: { name: string; eqs?: Record<string, string> }, line: (eq: string) => string) => Object.entries(e.eqs ?? {}).map(([k, v]) => `${refName(e.name)}[${k}] = ${line(v.trim() || "?")}`);
   return [
     {
       title: "Stocks",
-      lines: m.stocks.map((s) => {
+      lines: m.stocks.flatMap((s) => {
         const net = [...inflows(m, s.id).map((f) => name(f.id)), ...outflows(m, s.id).map((f) => "- " + name(f.id))].join(" + ").replace(/\+ - /g, "- ").replace(/^- /, "-");
-        return `${lhs(s)} = INTEG(${net || "0"}, ${s.init.trim() || "?"})${u(s.units)}`;
+        return [`${lhs(s)} = INTEG(${net || "0"}, ${s.init.trim() || "?"})${u(s.units)}`, ...own(s, (v) => `INTEG(${net || "0"}, ${v})`)];
       }),
     },
-    { title: "Flows", lines: m.flows.map((f) => `${lhs(f)} = ${f.eq.trim() || "?"}${u(f.units)}`) },
-    { title: "Auxiliaries and constants", lines: m.vars.map((v) => `${lhs(v)} = ${v.data ? dataText(v) : v.eq.trim() || "?"}${u(v.units)}`) },
+    { title: "Flows", lines: m.flows.flatMap((f) => [`${lhs(f)} = ${f.eq.trim() || "?"}${u(f.units)}`, ...own(f, (v) => v)]) },
+    { title: "Auxiliaries and constants", lines: m.vars.flatMap((v) => [`${lhs(v)} = ${v.data ? dataText(v) : v.eq.trim() || "?"}${u(v.units)}`, ...own(v, (x) => x)]) },
     { title: "Dimensions", lines: (m.dims ?? []).map((d) => `${d.name}: ${d.elements.join(", ")}${d.of ? ` (a subrange of ${d.of})` : ""}`) },
     { title: "Settings", lines: [`Time unit: ${m.timeUnit || "?"}`, `Start time: ${m.start ?? 0}`, `Stop time: ${m.T}`, `Time step (dt): ${m.dt}`, `Save every: ${m.saveEvery ?? m.dt}`, "Integration: Euler"] },
   ].filter((g) => g.lines.length);
@@ -704,7 +824,11 @@ export function fromJSON(text: string): BModel {
   };
   const opt = (v: unknown) => (typeof v === "string" && v ? v : undefined);
   const rec = (x: unknown) => (x && typeof x === "object" ? (x as Record<string, unknown>) : {});
-  const extra = (o: Record<string, unknown>) => ({ ...(opt(o.dim) ? { dim: opt(o.dim) } : {}), ...(opt(o.note) ? { note: opt(o.note) } : {}) });
+  const eqs = (o: Record<string, unknown>) => {
+    const e = Object.entries(rec(o.eqs)).filter(([, v]) => typeof v === "string" || typeof v === "number");
+    return e.length ? { eqs: Object.fromEntries(e.map(([k, v]) => [k, str(v)])) } : {};
+  };
+  const extra = (o: Record<string, unknown>) => ({ ...(opt(o.dim) ? { dim: opt(o.dim) } : {}), ...(opt(o.note) ? { note: opt(o.note) } : {}), ...eqs(o) });
   const dims = Array.isArray(m.dims) ? m.dims.map(rec).map((d) => ({ name: str(d.name), elements: Array.isArray(d.elements) ? d.elements.map((x) => str(x)) : [], ...(opt(d.of) ? { of: opt(d.of) } : {}) })) : undefined;
   const data = (v: Record<string, unknown>) => ({
     ...(Array.isArray(v.data) ? { data: v.data.map((p) => (Array.isArray(p) ? [num(p[0], NaN), num(p[1], NaN)] : [NaN, NaN]) as [number, number]) } : {}),
