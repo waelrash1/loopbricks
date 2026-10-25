@@ -1,5 +1,11 @@
 /* one variable family; unicode-range keeps the download to latin. Italics are only short body phrases (book titles), so the browser slants the upright face */
 @import "@fontsource-variable/archivo/wdth.css";
+/* reading text and equations: IBM Plex Sans and Mono share proportions, so prose and formulas sit together */
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,7 +15,7 @@
    Colours are H S L triples so Tailwind opacity modifiers work. */
 :root {
   color-scheme: light;
-  --background: 208 33% 93%; /* #e6edf3 instruction sheet */
+  --background: 210 27% 93%; /* #e9eef3 instruction sheet, a touch lighter for long reading */
   --foreground: 216 52% 15%; /* #13233b navy ink */
   --card: 220 50% 99%; /* #fbfcfe the sheet diagrams sit on */
   --muted: 210 30% 88%; /* #d6e0ea */
@@ -29,9 +35,11 @@
   --heading: 216 52% 15%;
   --ring: 216 52% 15%;
   --panel: 216 52% 15%; /* the control box */
-  --radius: 10px; /* bricks are moulded, not cut */
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 12px; /* panels; bricks are moulded, not cut */
+  --radius-control: 8px; /* buttons, chips, inputs */
+  --font-display: "Archivo Variable", ui-sans-serif, system-ui, sans-serif; /* wide, for headlines and the wordmark only */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   /* data colours: they carry meaning, not brand */
   --viz-acc: #2545ff; /* balancing loops, default series */
@@ -121,15 +129,17 @@
 
 @layer components {
   /* wide and heavy, like the type on a parts box */
-  .display { font-stretch: 118%; font-weight: 800; letter-spacing: -0.025em; line-height: 0.98; }
-  .heading { font-stretch: 112%; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
+  .display { font-family: var(--font-display); font-stretch: 118%; font-weight: 800; letter-spacing: -0.025em; line-height: 0.98; }
+  .heading { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
   .tlink { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: hsl(var(--accent)); text-underline-offset: 3px; }
   .tlink:hover { text-decoration-color: currentColor; }
 
   /* Everything clickable is a brick: a shaded bottom edge that compresses when pressed. */
-  .brick { --edge-c: hsl(var(--edge)); border-radius: var(--radius); box-shadow: 0 3px 0 var(--edge-c); transition: transform 70ms, box-shadow 70ms, border-color 120ms, background-color 120ms; }
-  .brick:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge-c); }
-  .brick-y { --edge-c: hsl(var(--accent-edge)); background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+  /* the brick press is kept for the main action only; everything else is flat with a thin border */
+  .brick { --edge-c: hsl(var(--edge)); border-radius: var(--radius-control); transition: transform 70ms, box-shadow 70ms, border-color 120ms, background-color 120ms; }
+  .brick:active:not(:disabled) { transform: translateY(1px); }
+  .brick-y { --edge-c: hsl(var(--accent-edge)); background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); box-shadow: 0 3px 0 var(--edge-c); }
+  .brick-y:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge-c); }
   .brick-w { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
   .brick-w:hover { border-color: hsl(var(--foreground) / 0.45); }
 

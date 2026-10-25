@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Mail, MapPin } from "lucide-react";
 import { BrickMark } from "@/components/TopBar";
 
-// System follows the device; Light or Dark is remembered here and applied by index.html before the first paint
+// Light by default; System follows the device. The choice is remembered and applied by index.html before the first paint
 function ThemePicker() {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem("theme") ?? "system";
+      return localStorage.getItem("theme") ?? "light";
     } catch {
-      return "system";
+      return "light";
     }
   });
   const pick = (t: string) => {
@@ -17,8 +17,7 @@ function ThemePicker() {
     if (t === "system") delete root.dataset.theme;
     else root.dataset.theme = t;
     try {
-      if (t === "system") localStorage.removeItem("theme");
-      else localStorage.setItem("theme", t);
+      localStorage.setItem("theme", t);
     } catch {
       /* private window: the choice lasts until the page closes */
     }

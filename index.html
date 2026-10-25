@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#e6edf3" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d1726" media="(prefers-color-scheme: dark)" />
     <!-- a theme picked in the footer applies before the first paint, so the page never flashes the other one -->
-    <script>try { var t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+    <script>var t = "light"; try { t = localStorage.getItem("theme") || "light"; } catch (e) {} if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;</script>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpath d=%27M7 5h6v5H7zM19 5h6v5h-6z%27 fill=%27%2313233b%27/%3E%3Cpath d=%27M3 10h26v17H3z%27 fill=%27%23f6c518%27 stroke=%27%2313233b%27 stroke-width=%272%27/%3E%3C/svg%3E" />
     <title>LoopBricks: system dynamics, one building block at a time</title>
     <meta name="description" content="Run, tweak and predict 71 stock-and-flow building blocks from Jim Hines' Molecules of Structure." />
