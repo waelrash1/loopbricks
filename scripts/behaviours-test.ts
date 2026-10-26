@@ -37,6 +37,11 @@ for (const [k, want] of molecules) {
   if (got.join() !== want.join()) errs.push(`${k}: expected [${want}], got [${got}]`);
 }
 
+// presets add what the default run hides: stock management oscillates only when it ignores the supply line
+const sm = runs.stockmgmt;
+if (!sm.all.includes("oscillation") || sm.tags.includes("oscillation")) errs.push(`stockmgmt: expected oscillation from a preset only, got [${sm.tags}] / [${sm.all}]`);
+if (!sm.presets.some((p) => p.label.startsWith("Oscillation") && p.tags.includes("oscillation"))) errs.push("stockmgmt: the Oscillation preset should be the one that oscillates");
+
 if (errs.length) {
   console.error(errs.join("\n"));
   process.exit(1);

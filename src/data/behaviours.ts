@@ -1,7 +1,8 @@
 import { MODELS, type Model } from "@/data/molecules";
 import { DT, freshState, initParams, stepOnce } from "@/sim/engine";
+import { PRESETS } from "@/data/presets";
 
-// Which behaviour each molecule produces, read off its own default run (no presets, no pulses).
+// Which behaviour each molecule produces, read off its own default run and its presets (no pulses).
 // Every line on the molecule's chart (stocks not hidden from it, and the derived display lines) is run for RUN_LENGTH time units and
 // classified by classify() below. A molecule produces a behaviour if any of its stocks does; a
 // molecule whose stocks fit none (flat, linear, a single hump) gets no tag. Checked by scripts/behaviours-test.ts.
@@ -82,9 +83,11 @@ export function classify(y: number[], hasR: boolean): Behaviour | null {
 }
 
 export type BehaviourRun = { tags: Behaviour[]; series: { id: string; tag: Behaviour | null; y: number[] }[] };
+// A molecule's default run, plus each preset run that adds a behaviour the default does not show.
+export type MoleculeBehaviour = BehaviourRun & { presets: (BehaviourRun & { label: string })[]; all: Behaviour[] };
 
-export function runDefault(m: Model): BehaviourRun {
-  const p = initParams(m);
+export function runDefault(m: Model, params?: Record<string, number>): BehaviourRun {
+  const p = { ...initParams(m), ...params };
   const stocks = m.stocks.filter((x) => !x.hidden && !x.chartHidden);
   let s = freshState(m, p);
   const ys = stocks.map((x) => [s[x.id]]);
@@ -98,9 +101,18 @@ export function runDefault(m: Model): BehaviourRun {
   return { tags, series };
 }
 
-// Every molecule at once: about 40,000 Euler steps, a few milliseconds. Memoised for the session.
-let cache: Record<string, BehaviourRun> | null = null;
-export function behaviourRuns(): Record<string, BehaviourRun> {
-  if (!cache) cache = Object.fromEntries(Object.entries(MODELS).map(([k, m]) => [k, runDefault(m)]));
+function runAll(k: string, m: Model): MoleculeBehaviour {
+  const base = runDefault(m);
+  const presets = (PRESETS[k] ?? [])
+    .map((pr) => ({ label: pr.label, ...runDefault(m, pr.params) }))
+    .filter((r) => r.tags.some((b) => !base.tags.includes(b)));
+  const all = BEHAVIOURS.filter((b) => base.tags.includes(b) || presets.some((r) => r.tags.includes(b)));
+  return { ...base, presets, all };
+}
+
+// Every molecule and its presets: about 150,000 Euler steps, a few tens of milliseconds. Memoised for the session.
+let cache: Record<string, MoleculeBehaviour> | null = null;
+export function behaviourRuns(): Record<string, MoleculeBehaviour> {
+  if (!cache) cache = Object.fromEntries(Object.entries(MODELS).map(([k, m]) => [k, runAll(k, m)]));
   return cache;
 }

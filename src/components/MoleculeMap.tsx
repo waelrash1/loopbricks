@@ -6,7 +6,7 @@ import { GROUP_BLURB, search } from "@/data/catalog";
 import { PRESETS } from "@/data/presets";
 import { useSimulation } from "@/hooks/useSimulation";
 import { ShapeIcon, Sparkline } from "@/components/LibraryShapes";
-import { BEHAVIOURS, BEHAVIOUR_LABEL, RUN_LENGTH, behaviourRuns, type Behaviour, type BehaviourRun } from "@/data/behaviours";
+import { BEHAVIOURS, BEHAVIOUR_LABEL, RUN_LENGTH, behaviourRuns, type Behaviour, type MoleculeBehaviour } from "@/data/behaviours";
 import StockFlowDiagram from "@/components/StockFlowDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 
@@ -92,15 +92,15 @@ function LoopTags({ k }: { k: string }) {
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// The library: every molecule by family, filtered by name and by the behaviour its default run shows,
+// The library: every molecule by family, filtered by name and by the behaviour its default run or a preset shows,
 // with a switch to the family tree.
 export default function MoleculeMap({ onTree, missing }: { onTree: () => void; missing?: string }) {
   const total = Object.keys(MODELS).length;
   const seen = useSeen();
   const [q, setQ] = useState("");
   const [shape, setShape] = useState<Behaviour | null>(null);
-  // every molecule's default run, worked out once the page has painted (a few milliseconds, memoised)
-  const [runs, setRuns] = useState<Record<string, BehaviourRun> | null>(null);
+  // every molecule's default and preset runs, worked out once the page has painted (a few milliseconds, memoised)
+  const [runs, setRuns] = useState<Record<string, MoleculeBehaviour> | null>(null);
   useEffect(() => {
     const ric = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 1));
     const cancel = window.cancelIdleCallback ?? window.clearTimeout;
@@ -108,9 +108,9 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
     return () => cancel(id);
   }, []);
   const hits = q.trim() ? new Set(search(q).map((r) => r.key)) : null;
-  const fits = (k: string) => (!hits || hits.has(k)) && (!shape || !runs || runs[k].tags.includes(shape));
+  const fits = (k: string) => (!hits || hits.has(k)) && (!shape || !runs || runs[k].all.includes(shape));
   const groups = GROUPS.map((g) => ({ ...g, keys: g.keys.filter(fits) })).filter((g) => g.keys.length);
-  const counts = runs ? Object.fromEntries(BEHAVIOURS.map((b) => [b, Object.values(runs).filter((r) => r.tags.includes(b)).length])) : null;
+  const counts = runs ? Object.fromEntries(BEHAVIOURS.map((b) => [b, Object.values(runs).filter((r) => r.all.includes(b)).length])) : null;
 
   // the family in view, for the left list
   const [current, setCurrent] = useState<string>(GROUPS[0].title);
@@ -223,7 +223,7 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
           <p aria-live="polite" className="text-[14px] text-muted-foreground">
             {shape && groups.length > 0 && (
               <>
-                Showing molecules that produce {label(shape)}, read off each one&apos;s default run.{" "}
+                Showing molecules that produce {label(shape)}, read off each one&apos;s default run and presets.{" "}
                 <button type="button" onClick={() => setShape(null)} className="tlink font-semibold text-foreground">
                   Clear the filter
                 </button>
@@ -234,9 +234,9 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
             <div className="sheet mt-4 text-[15px]">
               <p>
                 {shape && hits
-                  ? <>No molecule matches &ldquo;{q.trim()}&rdquo; and produces {label(shape)} in its default run.</>
+                  ? <>No molecule matches &ldquo;{q.trim()}&rdquo; and produces {label(shape)} in its default run or presets.</>
                   : shape
-                    ? <>No molecule produces {label(shape)} in its default run.</>
+                    ? <>No molecule produces {label(shape)} in its default run or presets.</>
                     : <>Nothing matches &ldquo;{q.trim()}&rdquo;. Try a shorter word, like &ldquo;delay&rdquo; or &ldquo;stock&rdquo;.</>}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -254,7 +254,11 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
                 {group.keys.map((k) => {
                   const m = MODELS[k];
                   const run = runs?.[k];
-                  const line = run && (run.series.find((x) => shape && x.tag === shape) ?? run.series.find((x) => x.tag) ?? run.series[0]);
+                  // a behaviour only a preset shows: draw that preset's run and name it
+                  const viaPreset = run && shape && !run.tags.includes(shape) ? run.presets.find((r) => r.tags.includes(shape)) : undefined;
+                  const shown = viaPreset ?? run;
+                  const line = shown && (shown.series.find((x) => shape && x.tag === shape) ?? shown.series.find((x) => x.tag) ?? shown.series[0]);
+                  const extra = run ? run.all.filter((b) => !run.tags.includes(b)) : [];
                   return (
                     <li key={k} className="min-w-0">
                       <a href={`#/m/${k}`} className="brick brick-w group flex flex-col gap-2.5 h-full w-full text-left !rounded-[var(--radius)] px-[18px] pt-4 pb-[18px]">
@@ -266,7 +270,13 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
                         <span className="text-[14px] text-muted-foreground leading-[1.5] line-clamp-2">{m.lede}</span>
                         <span className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                           <LoopTags k={k} />
-                          {run && run.tags.length > 0 && <span className="text-[12.5px] text-muted-foreground">{run.tags.map((b, i) => (i ? label(b) : BEHAVIOUR_LABEL[b])).join(", ")}</span>}
+                          {run && run.all.length > 0 && (
+                            <span className="text-[12.5px] text-muted-foreground">
+                              {run.tags.map((b, i) => (i ? label(b) : BEHAVIOUR_LABEL[b])).join(", ")}
+                              {extra.length > 0 && `${run.tags.length ? "; " : ""}${run.tags.length ? label(extra[0]) : BEHAVIOUR_LABEL[extra[0]]}${extra.slice(1).map((b) => ", " + label(b)).join("")} in a preset`}
+                            </span>
+                          )}
+                          {viaPreset && <span className="basis-full text-[12.5px] text-muted-foreground">Curve from the preset {viaPreset.label}</span>}
                         </span>
                       </a>
                     </li>
@@ -302,7 +312,7 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
           <i>Molecules of Structure: Building Blocks for System Dynamics Models</i>, version 2.03; the two archetype models are our own. The lessons and causal loop diagrams were added for this app.
         </p>
         <p className="mt-3 max-w-[70ch]">
-          Behaviour tags and sparklines come from each molecule&apos;s default run over {RUN_LENGTH} time units. A molecule whose lines show none of the six shapes there, such as a straight fill or a single hump, has no tag; try its presets on its own page.
+          Behaviour tags come from each molecule&apos;s default run and its presets over {RUN_LENGTH} time units; sparklines show the default run unless the filter needs a preset. A molecule whose lines show none of the six shapes, such as a straight fill or a single hump, has no tag.
         </p>
       </footer>
     </div>
