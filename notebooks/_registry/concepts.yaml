@@ -1,0 +1,2212 @@
+# Concept dependency graph for the book (see .claude/skills/concept-dependencies).
+# introduced_in = notebook stem, section and cell where the idea is first explained.
+# Seeded 2026-10-26 from a read of every notebook; chapters are listed before Appendix A,
+# so a concept both teach is credited to the chapter. Edit by hand as chapters change.
+- id: stock
+  label: Stock (accumulation)
+  kind: concept
+  introduced_in: c01 s2 cell 5
+  revisited_in:
+  - a01
+- id: flow
+  label: Flow (rate)
+  kind: concept
+  introduced_in: c01 s2 cell 5
+- id: stock_flow_diagram
+  label: Stock-and-flow diagram (box, pipes, valves, clouds, information arrows)
+  kind: notation
+  introduced_in: c01 s0 cell 2-3
+  notation:
+  - box
+  - valve/bow tie
+  - cloud
+  - pipe
+- id: stock_integral_form
+  label: Stock as integral of net flow
+  kind: notation
+  introduced_in: c01 s2 cell 5
+  notation:
+  - \int_0^t (inflow - outflow) ds
+- id: net_flow
+  label: Net flow (inflow minus outflow), d stock/dt
+  kind: concept
+  introduced_in: c01 s2 cell 5
+  notation:
+  - d Stock/dt
+  revisited_in:
+  - a01
+- id: bathtub_dynamics
+  label: 'Bathtub idea: stock reveals only net flow'
+  kind: concept
+  introduced_in: c01 s2 cell 5
+- id: flow_identifiability_from_stock
+  label: Separate flows cannot be recovered from a stock series
+  kind: concept
+  introduced_in: c01 s2 cell 7
+- id: constant_net_flow_linear
+  label: Constant net flow gives a straight line; changing net flow gives a curve
+  kind: concept
+  introduced_in: c01 s3 cell 11
+- id: minimum_outflow_time
+  label: Physical outflow limit via minimum time (MIN of capacity and stock/min time)
+  kind: concept
+  introduced_in: c01 s3 cell 9
+  notation:
+  - MIN(Capacity, Stock / Minimum time)
+- id: time_step_dt
+  label: Time step dt
+  kind: notation
+  introduced_in: c01 s3 cell 9
+  notation:
+  - \Delta t
+  - dt
+  revisited_in:
+  - a01
+- id: euler_integration
+  label: Euler's method
+  kind: concept
+  introduced_in: c01 s3 cell 9
+  notation:
+  - S(t+dt) = S(t) + dt (in - out)
+  revisited_in:
+  - a01
+- id: non_negative_stock
+  label: Non-negative (physical) stock and clipping floor
+  kind: concept
+  introduced_in: c01 s4 cell 13
+- id: auxiliary_variable
+  label: Auxiliary variables and constants (vars)
+  kind: concept
+  introduced_in: c01 s4 cell 13
+  revisited_in:
+  - c02
+- id: lb_model_spec
+  label: loopbricks model spec dict (stocks, flows, vars, id, name, eq, units, from, to, nonNegative)
+  kind: python_api
+  introduced_in: c01 s4 cell 13
+- id: lb_model_from_spec
+  label: lb.Model.from_spec
+  kind: python_api
+  introduced_in: c01 s4 cell 13-14
+- id: lb_equations
+  label: Model.equations() and INTEG form
+  kind: python_api
+  introduced_in: c01 s4 cell 15
+  notation:
+  - INTEG(inflow - outflow, initial)
+- id: lb_params
+  label: Model.params
+  kind: python_api
+  introduced_in: c01 s4 cell 15
+- id: lb_run
+  label: Model.run returning DataFrame; keyword overrides of constants; df.attrs['units']
+  kind: python_api
+  introduced_in: c01 s4 cell 17
+- id: lb_with_init
+  label: Model.with_init
+  kind: python_api
+  introduced_in: c01 s4 cell 17
+- id: lb_run_inputs
+  label: Model.run(inputs=...) time-series inputs
+  kind: python_api
+  introduced_in: c01 s4 cell 17
+- id: numerical_error_dt
+  label: Integration error / spurious oscillation from too large dt
+  kind: concept
+  introduced_in: c01 s5 cell 19-21
+- id: dt_rule_quarter_time_constant
+  label: dt at most a quarter of the shortest time constant
+  kind: concept
+  introduced_in: c01 s5 cell 21
+- id: dt_halving_test
+  label: Halving test for dt
+  kind: concept
+  introduced_in: c01 s5 cell 21
+  revisited_in:
+  - c05
+  - c08
+- id: euler_stability_factor
+  label: Euler gap factor 1 - dt/tau; oscillation when dt>tau, explosion when dt>2 tau
+  kind: concept
+  introduced_in: c01 s5 cell 21 (worked answer)
+  notation:
+  - 1 - \Delta t/\tau
+- id: feedback_loop
+  label: Feedback loop
+  kind: concept
+  introduced_in: c01 s6 cell 23
+  revisited_in:
+  - c02
+- id: balancing_loop
+  label: Balancing loop
+  kind: concept
+  introduced_in: c01 s6 cell 23
+  revisited_in:
+  - c02
+  - c03
+  - c11
+- id: reinforcing_loop
+  label: Reinforcing loop
+  kind: concept
+  introduced_in: c01 s6 cell 23
+  revisited_in:
+  - c02
+  - c03
+  - c11
+- id: power_law_effect
+  label: Power-law response (ratio to normal)^-s, sensitivity s
+  kind: notation
+  introduced_in: c01 s6 cell 23
+  notation:
+  - (X/X_normal)^{-s}
+  - s
+- id: policy_resistance
+  label: Policy resistance
+  kind: concept
+  introduced_in: c01 s6 cell 25
+- id: littles_law_list_eq_wait_x_throughput
+  label: List = waiting time x throughput
+  kind: concept
+  introduced_in: c01 s6 cell 25 (worked answer)
+- id: molecules_of_structure
+  label: Molecules (Hines) and lb.molecule
+  kind: concept
+  introduced_in: c01 s7 cell 27
+- id: lb_molecule
+  label: lb.molecule(key), run(preset=...)
+  kind: python_api
+  introduced_in: c01 s7 cell 27-28
+- id: molecule_bathtub
+  label: Bathtub molecule
+  kind: concept
+  introduced_in: c01 s7 cell 27
+- id: molecule_conversion
+  label: Conversion molecule (yield)
+  kind: concept
+  introduced_in: c01 s7 cell 29
+- id: molecule_split_flow
+  label: Split Flow molecule
+  kind: concept
+  introduced_in: c01 s7 cell 31
+  notation:
+  - f
+- id: molecule_broken_cascade
+  label: Broken Cascade molecule (leak fraction)
+  kind: concept
+  introduced_in: c01 s7 cell 33
+  notation:
+  - \ell
+- id: flow_sum_times_dt_integral
+  label: Sum of flow x dt is its integral
+  kind: concept
+  introduced_in: c01 s7 cell 35
+- id: conservation_test
+  label: Conservation (mass balance) test with assert
+  kind: concept
+  introduced_in: c01 s8 cell 37-39
+- id: units_check
+  label: Units consistency check
+  kind: concept
+  introduced_in: c01 check-it cell 39
+  revisited_in:
+  - c05
+- id: extreme_conditions_test
+  label: Extreme conditions test
+  kind: concept
+  introduced_in: c01 check-it cell 39
+  revisited_in:
+  - c05
+  - c08
+- id: runge_kutta_rk4
+  label: Fourth-order Runge-Kutta, run(method='rk4')
+  kind: python_api
+  introduced_in: c01 going-further cell 43
+  revisited_in:
+  - c08
+- id: lb_run_batch
+  label: Model.run_batch
+  kind: python_api
+  introduced_in: c01 going-further cell 43
+- id: problem_definition
+  label: Start from a problem/question, not the system
+  kind: concept
+  introduced_in: c02 s1 cell 3
+- id: interview_to_variables
+  label: 'Extracting variables from interview notes (naming rules: noun, neutral, measurable, typed)'
+  kind: concept
+  introduced_in: c02 s2 cell 5
+- id: causal_link
+  label: Causal link
+  kind: concept
+  introduced_in: c02 s3 cell 9
+- id: link_polarity
+  label: Link polarity (+/-), 'than it would otherwise have been', sign of partial derivative, flows as
+    +/- links
+  kind: notation
+  introduced_in: c02 s3 cell 9
+  notation:
+  - +
+  - '-'
+  - \partial Y/\partial X
+- id: edge_list
+  label: Edge list representation of causal links (cause, effect, sign, delay, source)
+  kind: concept
+  introduced_in: c02 s3 cell 9
+- id: delay_mark
+  label: Delay on a causal link (double bar)
+  kind: notation
+  introduced_in: c02 s3 cell 9; s5 cell 19
+  notation:
+  - '||'
+- id: loop_polarity_rule
+  label: Loop polarity from count of negative links (even=R, odd=B)
+  kind: notation
+  introduced_in: c02 s4 cell 13
+  notation:
+  - R
+  - B
+- id: depth_first_search_loops
+  label: Depth-first search to find all loops
+  kind: concept
+  introduced_in: c02 s4 cell 13-14
+- id: loop_naming
+  label: Naming loops (B1..., R1...)
+  kind: notation
+  introduced_in: c02 s4 cell 15
+  notation:
+  - B1
+  - R1
+- id: causal_loop_diagram
+  label: Causal loop diagram (CLD)
+  kind: concept
+  introduced_in: c02 s0 cell 0; s5 cell 19-21
+  notation:
+  - solid/dashed arrows
+  - circled loop labels
+- id: reference_mode
+  label: Reference mode
+  kind: concept
+  introduced_in: c02 s6 cell 23
+- id: time_horizon
+  label: Time horizon
+  kind: concept
+  introduced_in: c02 s6 cell 23
+- id: model_boundary_chart
+  label: Model boundary chart
+  kind: concept
+  introduced_in: c02 s7 cell 27
+- id: endogenous_exogenous_excluded
+  label: Endogenous, exogenous and excluded variables
+  kind: concept
+  introduced_in: c02 s7 cell 27
+- id: dynamic_hypothesis
+  label: Dynamic hypothesis
+  kind: concept
+  introduced_in: c02 s8 cell 31
+- id: testable_predictions
+  label: Testing a hypothesis by its predictions against data; rival hypothesis
+  kind: concept
+  introduced_in: c02 s8 cell 31-33
+- id: every_loop_has_stock
+  label: Every loop must contain a stock
+  kind: concept
+  introduced_in: c02 check-it cell 35
+- id: group_model_building
+  label: Group model building
+  kind: concept
+  introduced_in: c02 going-further cell 37
+- id: exponential_growth
+  label: Exponential growth, dP/dt = (b-d)P
+  kind: concept
+  introduced_in: c03 s1 cell 4
+  notation:
+  - P(t) = P_0 e^{(b-d)t}
+  - b
+  - d
+  revisited_in:
+  - a01
+- id: fractional_growth_rate
+  label: Net fractional growth rate g
+  kind: notation
+  introduced_in: c03 s1 cell 4
+  notation:
+  - g = b - d
+- id: doubling_time
+  label: Doubling time ln2/g
+  kind: concept
+  introduced_in: c03 s1 cell 4
+  notation:
+  - \ln 2 / g
+  revisited_in:
+  - a01
+- id: rule_of_70
+  label: Rule of 70
+  kind: concept
+  introduced_in: c03 s1 cell 4
+- id: euler_bias_growth
+  label: Euler underestimates growth; error shrinks with dt
+  kind: concept
+  introduced_in: c03 s1 cell 6
+- id: molecule_population_growth
+  label: Population Growth molecule (growth)
+  kind: concept
+  introduced_in: c03 s1 cell 4
+- id: exponential_decay
+  label: Exponential decay / first-order drain S/tau
+  kind: concept
+  introduced_in: c03 s2 cell 10
+  notation:
+  - S/\tau
+  - S(t)=S_0 e^{-t/\tau}
+- id: half_life
+  label: Half-life tau ln2
+  kind: concept
+  introduced_in: c03 s2 cell 10
+  notation:
+  - \tau \ln 2
+- id: time_constant
+  label: Time constant (time to empty if outflow stayed at first value)
+  kind: concept
+  introduced_in: c03 s2 cell 12
+  notation:
+  - \tau
+- id: molecule_go_to_zero
+  label: Go To Zero molecule
+  kind: concept
+  introduced_in: c03 s2 cell 10
+- id: molecule_decay
+  label: Decay molecule
+  kind: concept
+  introduced_in: c03 s2 cell 10
+- id: equilibrium_steady_state
+  label: Equilibrium / steady state where inflow equals outflow
+  kind: concept
+  introduced_in: c03 s2 cell 12
+  notation:
+  - S^*
+- id: residence_time
+  label: Residence time; stock = inflow x stay
+  kind: concept
+  introduced_in: c03 s2 cell 12-14
+  notation:
+  - In service^* = Inflow x \tau
+- id: molecule_residence_time
+  label: Residence Time molecule
+  kind: concept
+  introduced_in: c03 s2 cell 12
+- id: three_time_constants_95pct
+  label: 63% after one, 95% after three time constants
+  kind: concept
+  introduced_in: c03 s2 cell 14; s3 cell 18
+- id: goal_seeking
+  label: Goal seeking (closing a fixed fraction of the gap)
+  kind: concept
+  introduced_in: c03 s3 cell 16
+  notation:
+  - dA/dt = (G-A)/T_adj
+- id: adjustment_time
+  label: Adjustment time
+  kind: notation
+  introduced_in: c03 s3 cell 16
+  notation:
+  - T_{adj}
+  revisited_in:
+  - c05
+- id: molecule_close_gap
+  label: Close Gap molecule
+  kind: concept
+  introduced_in: c03 s3 cell 16
+- id: dt_artifact_oscillation
+  label: Spurious oscillation when dt exceeds adjustment time
+  kind: concept
+  introduced_in: c03 s3 cell 18 (worked answer)
+- id: ceiling_floor_throttling
+  label: Ceilings and floors via throttled flows (approach time), not clipping
+  kind: concept
+  introduced_in: c03 s4 cell 20
+  notation:
+  - T_{approach}
+- id: molecule_ceiling
+  label: Ceiling molecule
+  kind: concept
+  introduced_in: c03 s4 cell 20
+- id: molecule_floor
+  label: Floor molecule
+  kind: concept
+  introduced_in: c03 s4 cell 20
+- id: logistic_growth
+  label: Logistic / constrained growth, S-curve
+  kind: concept
+  introduced_in: c03 s5 cell 24
+  notation:
+  - dP/dt = rP(1-P/K)
+  - r
+- id: carrying_capacity
+  label: Carrying capacity
+  kind: concept
+  introduced_in: c03 s5 cell 24
+  notation:
+  - K
+- id: molecule_constrained_growth
+  label: Constrained Growth molecule (logistic)
+  kind: concept
+  introduced_in: c03 s5 cell 24
+- id: inflection_point
+  label: Logistic inflection point at K/2, peak net growth rK/4, t*
+  kind: concept
+  introduced_in: c03 s5 cell 26; cell 28
+  notation:
+  - rK/4
+  - t^* = \ln(K/P_0 - 1)/r
+- id: loop_dominance
+  label: Loop dominance
+  kind: concept
+  introduced_in: c03 s5 cell 26
+  revisited_in:
+  - c07
+- id: shifting_dominance
+  label: Shifting dominance
+  kind: concept
+  introduced_in: c03 s5 cell 26
+- id: behavioural_dominance_test
+  label: Behavioural loop-dominance label from sign of net flow x its rate of change (Ford 1999)
+  kind: concept
+  introduced_in: c03 s5 cell 26-27
+- id: np_gradient
+  label: np.gradient for numerical derivatives (in dominance helper)
+  kind: python_api
+  introduced_in: c03 s5 cell 27
+- id: molecule_diffusion
+  label: Diffusion molecule (Bass model, innovation p, imitation q)
+  kind: concept
+  introduced_in: c03 s6 cell 30
+  notation:
+  - p
+  - q
+  - N
+- id: bass_diffusion
+  label: Bass diffusion model
+  kind: concept
+  introduced_in: c03 s6 cell 30
+- id: tipping_point
+  label: Tipping point
+  kind: concept
+  introduced_in: c03 s6 cell 32
+- id: reproduction_threshold
+  label: Recruits per adopter > 1 threshold (q/100 x drop-out time)
+  kind: concept
+  introduced_in: c03 s6 cell 32
+- id: spec_helper_functions
+  label: stock/flow/var helper functions for model specs
+  kind: python_api
+  introduced_in: c03 s6 cell 33
+- id: molecule_market_share
+  label: Market Share molecule (network effect, phi)
+  kind: concept
+  introduced_in: c03 s7 cell 37
+  notation:
+  - \phi = 1 + 2 x Network effect
+- id: path_dependence
+  label: Path dependence
+  kind: concept
+  introduced_in: c03 s7 cell 39
+- id: stable_unstable_equilibrium
+  label: Stable and unstable equilibria (map crossing diagonal)
+  kind: concept
+  introduced_in: c03 s7 cell 41
+- id: lock_in
+  label: Lock-in
+  kind: concept
+  introduced_in: c03 s7 cell 41
+- id: increasing_returns
+  label: Increasing returns (Arthur)
+  kind: concept
+  introduced_in: c03 s7 cell 41
+- id: grid_search_fit
+  label: Fitting one parameter by grid search against data
+  kind: concept
+  introduced_in: c03 s8 cell 45-47
+- id: steady_state_error
+  label: Steady-state error of a pure gap-closing rule
+  kind: concept
+  introduced_in: c03 s8 cell 49
+  notation:
+  - List - Target \approx T_adj (Referrals - Base capacity)
+  revisited_in:
+  - c05
+- id: stock_flow_balance_check
+  label: 'Balance-the-books check: sum of net flow x dt equals change in stock'
+  kind: concept
+  introduced_in: c03 check-it cell 55
+- id: delay
+  label: Delay (gap in time between cause and effect)
+  kind: concept
+  introduced_in: c04 s0 cell 0
+- id: material_delay
+  label: Material delay (conserved things in transit; every delay hides a stock)
+  kind: concept
+  introduced_in: c04 s1 cell 4
+  notation:
+  - D
+- id: pipeline_inventory
+  label: Amount in transit = inflow x delay (pipeline stock)
+  kind: concept
+  introduced_in: c04 s1 cell 4
+  notation:
+  - In transit* = Inflow x D
+- id: delay_order
+  label: Order of a delay (number of stages; shape not average)
+  kind: concept
+  introduced_in: c04 s1 cell 6
+  notation:
+  - n
+- id: first_order_delay
+  label: First-order delay (revisited as Residence Time; well-mixed pool)
+  kind: concept
+  introduced_in: c04 s1 cell 6
+- id: higher_order_delay
+  label: Higher-order / cascaded delay; infinite order = fixed pipeline
+  kind: concept
+  introduced_in: c04 s1 cell 8
+- id: delay_peak_rule
+  label: Exit rate of n-stage delay peaks at (n-1)/n x D
+  kind: concept
+  introduced_in: c04 s1 cell 8
+  notation:
+  - (n-1)/n D
+- id: material_delay_molecule
+  label: Material Delay molecule (material)
+  kind: concept
+  introduced_in: c04 s1 cell 4
+- id: cascaded_levels_molecule
+  label: Cascaded Levels molecule (cascade)
+  kind: concept
+  introduced_in: c04 s1 cell 6
+- id: ageing_chain
+  label: Ageing (aging) chain
+  kind: concept
+  introduced_in: c04 s3 cell 14
+  notation:
+  - S_i
+  - tau_i
+  - dS_i/dt
+- id: aging_chain_pdy
+  label: Aging Chain with PDY molecule (stage productivity)
+  kind: concept
+  introduced_in: c04 s3 cell 14
+- id: priority_weight
+  label: Priority-weighted treatment allocation across bands
+  kind: concept
+  introduced_in: c04 s3 cell 16
+  notation:
+  - w_i
+  - B_i
+- id: littles_law
+  label: Little's law L = lambda W
+  kind: concept
+  introduced_in: c04 s4 cell 22
+  notation:
+  - L
+  - lambda
+  - W
+- id: inferring_flows_from_stock
+  label: Inferring an unobserved flow from stock changes (accounting identity)
+  kind: concept
+  introduced_in: c04 s4 cell 22
+- id: information_delay
+  label: Information delay (lag in belief, not conserved)
+  kind: concept
+  introduced_in: c04 s5 cell 26
+- id: smoothing
+  label: Smoothing / adaptive expectations / exponential smoothing
+  kind: concept
+  introduced_in: c04 s5 cell 26
+  notation:
+  - P
+  - X
+  - dP/dt = (X-P)/tau_s
+- id: smoothing_time
+  label: Smoothing time
+  kind: notation
+  introduced_in: c04 s5 cell 26
+  notation:
+  - tau_s
+- id: third_order_smooth
+  label: Third-order smooth
+  kind: concept
+  introduced_in: c04 s5 cell 26
+- id: material_vs_information_delay
+  label: Material vs information delay comparison
+  kind: concept
+  introduced_in: c04 s5 cell 26
+- id: smooth_higher_order
+  label: Smooth (Higher-Order) molecule with separate stage times
+  kind: concept
+  introduced_in: c04 s5 cell 28
+- id: weighted_average_blend
+  label: Weighted Average molecule (blend of two sources, then smoothed)
+  kind: concept
+  introduced_in: c04 s5 cell 32
+  notation:
+  - w
+  - A
+  - B
+  - E
+  - tau
+- id: perceived_vs_actual
+  label: Perceived vs actual quantity (perception delay driving decisions)
+  kind: concept
+  introduced_in: c04 s6 cell 34
+- id: demand_suppression
+  label: Demand suppression via perceived wait (balancing loop through info delay)
+  kind: concept
+  introduced_in: c04 s6 cell 34
+  notation:
+  - s
+- id: trend_lag
+  label: 'Trend: steady-state lag of perception behind growth 1/(1+g tau)'
+  kind: concept
+  introduced_in: c04 s7 cell 41
+  notation:
+  - g
+  - 1/(1+g tau)
+- id: extrapolation_forecast
+  label: Extrapolation forecast from fractional trend
+  kind: concept
+  introduced_in: c04 s7 cell 41
+  notation:
+  - P
+  - H
+  - tau_T
+  - tau_P
+  - h
+- id: fractional_trend
+  label: Fractional trend
+  kind: concept
+  introduced_in: c04 s7 cell 41
+  notation:
+  - (P-H)/(H tau_T)
+- id: forecast_horizon
+  label: Forecast horizon
+  kind: notation
+  introduced_in: c04 s7 cell 41
+  notation:
+  - h
+- id: coflow
+  label: Coflow (attribute tracked by a mirror stock)
+  kind: concept
+  introduced_in: c04 s8 cell 47
+  notation:
+  - E
+  - e_hire
+- id: coflow_experience
+  label: Coflow with Experience (average directly); dilution
+  kind: concept
+  introduced_in: c04 s8 cell 47
+- id: cascaded_coflow
+  label: Cascaded Coflow (attribute along a chain)
+  kind: concept
+  introduced_in: c04 s8 cell 47
+- id: selection_in_coflow
+  label: Selection factor (treated patients vs average time waited)
+  kind: concept
+  introduced_in: c04 s8 cell 49
+  notation:
+  - TW
+- id: run_batch
+  label: 'Model.run_batch: run a parameter grid in one call'
+  kind: python_api
+  introduced_in: c04 s3 cell 18
+  revisited_in:
+  - c08
+- id: model_inputs
+  label: run(inputs={...}) feeding a data series into a model variable
+  kind: python_api
+  introduced_in: c04 s7 cell 43
+- id: molecule_equations
+  label: molecule(...).equations() to print equations
+  kind: python_api
+  introduced_in: c04 s1 cell 5
+- id: decision_rule
+  label: Decision rule (equation behind a controlled flow, using available information)
+  kind: concept
+  introduced_in: c05 s1 cell 3
+- id: bounded_rationality
+  label: Bounded rationality / rules of thumb
+  kind: concept
+  introduced_in: c05 s1 cell 3
+- id: anchor
+  label: Anchor (starting point adjusted for evidence)
+  kind: concept
+  introduced_in: c05 s1 cell 3
+- id: robust_decision_rule
+  label: Robust rule (rates that can exist, no negative flows, bounded effects)
+  kind: concept
+  introduced_in: c05 s1 cell 3
+- id: desired_vs_actual_rate
+  label: Separate desired and achieved rates
+  kind: concept
+  introduced_in: c05 s2 cell 13
+- id: stock_adjustment
+  label: First-Order Stock Adjustment (replace outflow + close gap)
+  kind: concept
+  introduced_in: c05 s2 cell 9
+  notation:
+  - L*
+  - L
+  - tau
+  - r
+- id: replacement_fraction
+  label: Replacement of expected outflow
+  kind: concept
+  introduced_in: c05 s2 cell 9
+  notation:
+  - r
+- id: capacity_utilisation
+  label: Capacity Utilisation (desired/indicated utilisation, saturating output curve)
+  kind: concept
+  introduced_in: c05 s2 cell 9
+  notation:
+  - P*
+  - K
+  - u*
+- id: desired_treatments_rule
+  label: Desired treatments = expected referrals + (list - target)/time to reduce list
+  kind: concept
+  introduced_in: c05 s2 cell 11
+  notation:
+  - R_hat
+  - W
+  - W*
+  - tau_W
+- id: nonlinear_effect
+  label: Effect (multiplier =1 at normal, function of relative pressure)
+  kind: concept
+  introduced_in: c05 s3 cell 17
+  notation:
+  - x/x0
+- id: effect_of_dimensionless_input
+  label: Effect of a Dimensionless Input molecule
+  kind: concept
+  introduced_in: c05 s3 cell 17
+  notation:
+  - 2(x/x0)/(1+x/x0)
+- id: table_function
+  label: TABLE (lookup/table function, piecewise linear, flat beyond ends)
+  kind: notation
+  introduced_in: c05 s3 cell 17
+  notation:
+  - TABLE(x, x1, y1, ...)
+- id: schedule_pressure
+  label: Schedule pressure
+  kind: concept
+  introduced_in: c05 s3 cell 17
+  revisited_in:
+  - c07
+- id: normal_productivity
+  label: Normal productivity / normal point
+  kind: concept
+  introduced_in: c05 s3 cell 17
+- id: table_shape_justification
+  label: 'Defensible table shape: normal point (1,1), modest slope, saturation'
+  kind: concept
+  introduced_in: c05 s3 cell 19
+- id: saturation
+  label: Saturation of an effect
+  kind: concept
+  introduced_in: c05 s3 cell 19
+- id: anchoring_and_adjustment
+  label: Anchoring and adjustment (univariate, multivariate)
+  kind: concept
+  introduced_in: c05 s4 cell 25
+  notation:
+  - A
+  - c/c0
+  - s
+  - f_i(p_i)
+- id: sea_anchor
+  label: Sea anchor and adjustment (anchor drifts; drifting goals)
+  kind: concept
+  introduced_in: c05 s4 cell 25
+  notation:
+  - tau_A
+- id: protected_sea_anchor
+  label: Protected sea anchor (share tied to fundamental)
+  kind: concept
+  introduced_in: c05 s4 cell 25
+  notation:
+  - pi
+  - F
+- id: present_value
+  label: Present value / continuous discounting
+  kind: concept
+  introduced_in: c05 s4 cell 25
+  notation:
+  - PV
+  - C
+  - rho
+- id: split_allocation
+  label: Allocation split rules (proportional, weighted, multidimensional, nonlinear)
+  kind: concept
+  introduced_in: c05 s5 cell 31
+  notation:
+  - R_i
+  - c_i
+  - w_i
+  - m
+- id: protected_outflow
+  label: Protected outflows (by flow, by level; backlog shipping by flow/level)
+  kind: concept
+  introduced_in: c05 s6 cell 37
+  notation:
+  - D
+  - L
+  - tau_min
+  - B
+  - tau_B
+  - K
+  - I_full
+  - L_full
+- id: minimum_draining_time
+  label: Minimum draining (treatment) time
+  kind: concept
+  introduced_in: c05 s6 cell 37
+  notation:
+  - tau_min
+- id: clip_record
+  label: 'df.attrs["clipped"]: record of when the engine floor acted'
+  kind: python_api
+  introduced_in: c05 s6 cell 39
+- id: warn_clips
+  label: run(warn_clips=False)
+  kind: python_api
+  introduced_in: c05 s6 cell 38
+- id: resource_action_identity
+  label: Action from resource, resources from action, ability from action, financial flow, workforce from
+    budget
+  kind: concept
+  introduced_in: c05 s7 cell 43
+  notation:
+  - N
+  - a
+  - Q
+  - N*
+  - a_hat
+  - w
+  - N_aff
+- id: productivity_effects
+  label: Productivity as normal value times multiplicative effects; producing; doing work
+  kind: concept
+  introduced_in: c05 s8 cell 51
+  notation:
+  - p0
+  - f_fatigue
+  - f_pressure
+  - f_adequacy
+  - f_skill
+- id: estimated_productivity
+  label: Estimated (perceived) productivity and its measurement bias
+  kind: concept
+  introduced_in: c05 s8 cell 51
+  notation:
+  - p_hat
+  - tau_p
+- id: longest_acceptable_wait
+  label: Longest acceptable wait floor on desired treatments
+  kind: concept
+  introduced_in: c05 Check-it cell 63
+- id: oscillation_from_stock_management
+  label: Oscillation from stock management (correcting a stock through an ignored delay)
+  kind: concept
+  introduced_in: c06 s0 cell 0
+- id: endogenous_vs_exogenous
+  label: Endogenous vs exogenous swing (set by delays vs by the calendar)
+  kind: concept
+  introduced_in: c06 s0 cell 3
+- id: supply_line
+  label: Supply line (pipeline of units ordered but not received)
+  kind: concept
+  introduced_in: c06 s1 cell 4
+  notation:
+  - SL
+  - SL*
+- id: stock_management_structure
+  label: Stock Management order rule (replace, close stock gap, close supply line gap)
+  kind: concept
+  introduced_in: c06 s1 cell 4
+  notation:
+  - D
+  - S
+  - S*
+  - T_adj
+  - SL*=D tau
+- id: acquisition_delay
+  label: Acquisition delay
+  kind: notation
+  introduced_in: c06 s1 cell 4
+  notation:
+  - tau
+- id: supply_line_weight
+  label: Supply line weight
+  kind: concept
+  introduced_in: c06 s1 cell 4
+  notation:
+  - w
+- id: overshoot_mechanism
+  label: Balancing loop with an ignored delay overshoots and undershoots
+  kind: concept
+  introduced_in: c06 s1 cell 6
+- id: low_visibility_pipeline
+  label: Low-visibility pipeline correction; orders not received; inferred delivery delay
+  kind: concept
+  introduced_in: c06 s2 cell 8
+  notation:
+  - ONR
+  - tau_hat
+  - a
+  - T_S
+  - T_SL
+- id: awareness_of_pipeline
+  label: Awareness of pipeline
+  kind: notation
+  introduced_in: c06 s2 cell 8
+  notation:
+  - a
+- id: amplitude
+  label: Amplitude of a swing
+  kind: concept
+  introduced_in: c06 s3 cell 12
+- id: period
+  label: Period of an oscillation (mean time between peaks)
+  kind: concept
+  introduced_in: c06 s3 cell 12
+- id: period_from_delays
+  label: Period of endogenous swing set by loop delays (rule of thumb)
+  kind: concept
+  introduced_in: c06 s3 cell 14
+- id: autocorrelation
+  label: Autocorrelation at lags
+  kind: concept
+  introduced_in: c06 s3 cell 14
+  revisited_in:
+  - c09
+- id: workforce_molecule
+  label: 'Workforce: hiring/firing to close gap over time to hire or fire'
+  kind: concept
+  introduced_in: c06 s4 cell 18
+  notation:
+  - W
+  - W*
+  - T_h
+- id: desired_workforce
+  label: Desired workforce from workflow W* = R*/p
+  kind: concept
+  introduced_in: c06 s4 cell 18
+  notation:
+  - R*
+  - p
+- id: building_inventory_by_work
+  label: Building inventory by doing work (W x p)
+  kind: concept
+  introduced_in: c06 s4 cell 18
+- id: attrition_asymmetry
+  label: Shrinking by attrition slower than growing by hiring
+  kind: concept
+  introduced_in: c06 s4 cell 20
+- id: moving_target
+  label: Moving target (goal depends on the stock the decision changes)
+  kind: concept
+  introduced_in: c06 s5 cell 22
+- id: hiring_delay
+  label: Hiring delay / recruitment pipeline
+  kind: concept
+  introduced_in: c06 s5 cell 22
+- id: wte
+  label: Whole-time equivalents (WTE)
+  kind: notation
+  introduced_in: c06 s5 cell 22
+  notation:
+  - WTE
+- id: believed_delay
+  label: Believed delay vs true delay in pipeline target
+  kind: concept
+  introduced_in: c06 s5 cell 22
+- id: scorecard_metrics
+  label: 'Scorecard: patient-months above target, idle consultant-months, swing after year 5'
+  kind: concept
+  introduced_in: c06 s5 cell 26
+- id: binding_constraint_min_capacity
+  label: Capacity set by the scarcest staff group (MIN of groups)
+  kind: concept
+  introduced_in: c06 s5 cell 28
+- id: smooth_pricing
+  label: Smooth pricing (price eases to indicated price)
+  kind: concept
+  introduced_in: c06 s6 cell 32
+  notation:
+  - P_ref
+  - T_p
+- id: sea_anchor_pricing
+  label: Sea anchor pricing and protected (floored) version
+  kind: concept
+  introduced_in: c06 s6 cell 32
+  notation:
+  - U
+  - I
+  - I*
+  - m
+  - T_U
+- id: commodity_cycles
+  label: Commodity/housing/labour-market cycles (pig cycle) as stock management
+  kind: concept
+  introduced_in: c06 s6 cell 34
+- id: convergence_under_dt
+  label: 'Convergence check: changes shrink as dt halves'
+  kind: concept
+  introduced_in: c06 Check-it cell 38
+- id: system_archetype
+  label: System archetype (loop structure with recognisable behaviour, trap and way out)
+  kind: concept
+  introduced_in: c07 s0 cell 0
+- id: archetype_four_part_template
+  label: 'Archetype as diagnostic: model, real case, data signature, leverage'
+  kind: concept
+  introduced_in: c07 s1 cell 3
+- id: leverage_point
+  label: Leverage point / typical leverage of an archetype
+  kind: concept
+  introduced_in: c07 s1 cell 3
+- id: fixes_that_fail
+  label: Fixes that fail archetype
+  kind: concept
+  introduced_in: c07 s2 cell 6
+- id: shifting_the_burden
+  label: Shifting the burden archetype
+  kind: concept
+  introduced_in: c07 s4 cell 18
+- id: limits_to_growth
+  label: Limits to growth archetype
+  kind: concept
+  introduced_in: c07 s5 cell 26
+- id: tragedy_of_the_commons
+  label: Tragedy of the commons archetype
+  kind: concept
+  introduced_in: c07 s6 cell 30
+- id: success_to_the_successful
+  label: Success to the successful archetype
+  kind: concept
+  introduced_in: c07 s7 cell 34
+- id: eroding_goals
+  label: Eroding goals archetype
+  kind: concept
+  introduced_in: c07 s8 cell 38
+- id: escalation_archetype
+  label: Escalation archetype (briefly described)
+  kind: concept
+  introduced_in: c07 going-further cell 46
+- id: overtime_molecule
+  label: Overtime molecule
+  kind: concept
+  introduced_in: c07 s2 cell 6
+  notation:
+  - R^*
+  - p
+  - W
+- id: fatigue_effect
+  label: Effect of fatigue on productivity (fatigue as smooth of overtime)
+  kind: concept
+  introduced_in: c07 s2 cell 6
+  notation:
+  - F
+  - T_F
+  - s
+- id: quality_fraction
+  label: Quality as fraction of work done correctly
+  kind: concept
+  introduced_in: c07 s3 cell 12
+  notation:
+  - q
+- id: rework_cycle
+  label: Rework cycle, undiscovered rework and discovery time
+  kind: concept
+  introduced_in: c07 s3 cell 12
+  notation:
+  - A
+  - q
+  - U
+  - T_D
+- id: capability_trap
+  label: Capability built only with spare time, eroded by firefighting
+  kind: concept
+  introduced_in: c07 s4 cell 18
+  notation:
+  - P
+  - C
+  - s
+  - T_B
+- id: tipping_threshold
+  label: Threshold at which a quick fix becomes a dependency (1/(share x build time))
+  kind: concept
+  introduced_in: c07 s4 cell 22
+- id: counterfactual_comparison
+  label: Compare with a counterfactual run rather than before-and-after
+  kind: concept
+  introduced_in: c07 s2 cell 10
+- id: trend_fit_least_squares
+  label: Fitting a straight-line trend to noisy observed data with least squares
+  kind: concept
+  introduced_in: c07 s4 cell 22
+- id: logistic_growth_regression
+  label: Estimating r and K by regressing growth per head on level
+  kind: concept
+  introduced_in: c07 s5 cell 26
+  notation:
+  - r
+  - K
+  - P
+- id: logistic_fishery_model
+  label: 'Commons model: logistic regrowth with two fleets and profit signal'
+  kind: concept
+  introduced_in: c07 s6 cell 30
+  notation:
+  - N
+  - K
+  - r
+  - c_max
+  - A
+  - B
+  - g_A
+- id: maximum_sustainable_yield
+  label: Regrowth fastest at half the carrying capacity
+  kind: concept
+  introduced_in: c07 s6 cell 32
+- id: concentration_index
+  label: Concentration index (sum of squared shares, Herfindahl)
+  kind: concept
+  introduced_in: c07 s7 cell 34
+- id: goal_adjustment_regression
+  label: Estimating goal adjustment time by regressing target change on past gap
+  kind: concept
+  introduced_in: c07 s8 cell 38
+- id: policy_scorecard
+  label: Scorecard of board-level measures for comparing policies
+  kind: concept
+  introduced_in: c07 s9 cell 40
+- id: binding_constraint_check
+  label: Checking whether a cap actually binds before recommending it
+  kind: concept
+  introduced_in: c07 s9 cell 42
+- id: model_with_equation
+  label: Model.with_equation to replace one element's equation
+  kind: python_api
+  introduced_in: c07 s4 cell 23
+- id: verification
+  label: Verification (does the code compute what the equations say)
+  kind: concept
+  introduced_in: c08 s1 cell 4
+- id: validation
+  label: Validation (is the model fit for its purpose)
+  kind: concept
+  introduced_in: c08 s1 cell 4
+- id: structure_vs_behaviour_tests
+  label: Tests of structure vs tests of behaviour (Barlas)
+  kind: concept
+  introduced_in: c08 s1 cell 4
+- id: dimensional_consistency
+  label: Dimensional consistency / unit checking
+  kind: concept
+  introduced_in: c08 s2 cell 9
+- id: unit_as_powers
+  label: Representing a unit as powers of base units
+  kind: concept
+  introduced_in: c08 s2 cell 9
+- id: conversion_constant
+  label: Named conversion constants (Months per year) to keep units consistent
+  kind: concept
+  introduced_in: c08 s2 cell 11
+- id: mass_balance_check
+  label: Mass-balance (conservation) check
+  kind: concept
+  introduced_in: c08 s3 cell 13
+- id: floor_at_zero_clipping
+  label: Floor at zero (non-negative stock clipping) and clip report
+  kind: concept
+  introduced_in: c08 s3 cell 13
+- id: df_attrs_clipped
+  label: df.attrs["clipped"] clip report and warn_clips
+  kind: python_api
+  introduced_in: c08 s3 cell 13
+- id: reducing_backlog_molecule
+  label: Reducing Backlog molecule (unprotected outflow)
+  kind: concept
+  introduced_in: c08 s3 cell 15
+  notation:
+  - W
+  - N
+  - p
+  - \Delta t
+- id: level_protected_by_pdy
+  label: Level Protected by PDY (productivity falls as work runs thin)
+  kind: concept
+  introduced_in: c08 s3 cell 15
+  notation:
+  - R
+  - R^*
+  - p_n
+- id: floor_that_binds
+  label: A floor that binds (protection in the equations)
+  kind: concept
+  introduced_in: c08 s3 cell 15
+- id: doing_work_cascade
+  label: Doing Work Cascade and Cascade Protected by PDY
+  kind: concept
+  introduced_in: c08 s3 cell 17
+  notation:
+  - F_A
+  - N_A
+  - p
+- id: integration_error_order
+  label: 'Order of integration error (first-order: error proportional to dt)'
+  kind: concept
+  introduced_in: c08 s4 cell 25
+- id: dt_vs_time_constant_rule
+  label: dt should be a quarter to a half of the shortest time constant
+  kind: concept
+  introduced_in: c08 s4 cell 25
+- id: parameter_plausibility
+  label: Parameter plausibility ranges with evidence
+  kind: concept
+  introduced_in: c08 s5 cell 31
+- id: boundary_adequacy_test
+  label: Boundary adequacy test (add missing loop, check policy conclusion)
+  kind: concept
+  introduced_in: c08 s5 cell 33
+- id: wait_elasticity
+  label: Referrals responding to wait via elasticity
+  kind: concept
+  introduced_in: c08 s5 cell 33
+- id: grid_search_fit_sse
+  label: Refitting a parameter by grid search on sum of squared errors
+  kind: concept
+  introduced_in: c08 s5 cell 34
+- id: pattern_measures
+  label: Behaviour-pattern measures compared with reference mode
+  kind: concept
+  introduced_in: c08 s6 cell 37
+- id: out_of_sample_pattern
+  label: Reproducing a pattern not fitted to as stronger evidence
+  kind: concept
+  introduced_in: c08 s6 cell 41
+- id: sensitivity_analysis
+  label: Sensitivity analysis (numerical, behavioural, policy)
+  kind: concept
+  introduced_in: c08 s7 cell 43
+- id: one_at_a_time_sensitivity
+  label: One-at-a-time sensitivity and tornado chart
+  kind: concept
+  introduced_in: c08 s7 cell 43
+- id: monte_carlo_sensitivity
+  label: Monte Carlo sensitivity analysis
+  kind: concept
+  introduced_in: c08 s7 cell 46
+- id: standardised_regression_coefficients
+  label: Standardised regression coefficients
+  kind: concept
+  introduced_in: c08 s7 cell 46
+- id: behavioural_filtering
+  label: Keeping only runs within 10% of history (crude filter toward calibration)
+  kind: concept
+  introduced_in: c08 s7 cell 49
+- id: correlated_inputs_problem
+  label: Correlated inputs break simple sensitivity measures
+  kind: concept
+  introduced_in: c08 s7 cell 51
+- id: automated_test_sheet
+  label: Test functions with assert and a test sheet
+  kind: concept
+  introduced_in: c08 s8 cell 53
+- id: pytest_fixture
+  label: pytest, test_ functions, AssertionError, fixtures
+  kind: python_api
+  introduced_in: c08 s8 cell 53
+- id: policy_direction_test
+  label: Test of the sign of a policy effect
+  kind: concept
+  introduced_in: c08 s8 cell 57
+- id: sobol_indices
+  label: Variance-based global sensitivity (Sobol), named only
+  kind: concept
+  introduced_in: c08 going-further cell 59
+- id: continuous_integration
+  label: Continuous integration (GitHub Actions running pytest)
+  kind: concept
+  introduced_in: c08 going-further cell 59
+- id: synthetic_data_known_truth
+  label: Synthetic data with known truth for testing estimation methods
+  kind: concept
+  introduced_in: c09 s1 cell 4
+- id: net_flow_from_stock_differences
+  label: Change in stock = net flow (inferring flows from stock data)
+  kind: concept
+  introduced_in: c09 s2 cell 10
+- id: identifiability
+  label: Identifiability problem (only the difference of flows is identified)
+  kind: concept
+  introduced_in: c09 s2 cell 12
+- id: band_bookkeeping_inference
+  label: Inferring treatment rates from banded stock data via ageing bookkeeping
+  kind: concept
+  introduced_in: c09 s2 cell 12
+- id: calibration
+  label: Calibration (choosing parameters so output matches data)
+  kind: concept
+  introduced_in: c09 s3 cell 18
+- id: payoff_function
+  label: Payoff function, weighted sum of squared errors
+  kind: concept
+  introduced_in: c09 s4 cell 23
+  notation:
+  - P(\theta)
+  - \theta
+  - \hat{y}_t(\theta)
+  - y_t
+  - \sigma
+  - w_t
+- id: error_scale_sigma
+  label: Error scale sigma and per-series weighting
+  kind: concept
+  introduced_in: c09 s4 cell 23
+  notation:
+  - \sigma
+  - \sigma_k
+- id: squared_vs_absolute_errors
+  label: Squared vs absolute errors (sensitivity to outliers)
+  kind: concept
+  introduced_in: c09 s4 cell 23
+- id: grid_search
+  label: Grid search over parameters
+  kind: concept
+  introduced_in: c09 s5 cell 25
+- id: payoff_contour_ridge
+  label: Payoff surface contours and a long valley/ridge
+  kind: concept
+  introduced_in: c09 s5 cell 27
+- id: nelder_mead
+  label: Nelder-Mead simplex search (reflection, expansion, contraction, shrink)
+  kind: concept
+  introduced_in: c09 s5 cell 27
+- id: estimate_on_bound_warning
+  label: An estimate on a bound is a warning
+  kind: concept
+  introduced_in: c09 s5 cell 31
+- id: multiple_starts
+  label: Several random starts to check estimates
+  kind: concept
+  introduced_in: c09 s5 cell 31
+- id: rmse
+  label: Root mean squared error
+  kind: concept
+  introduced_in: c09 s6 cell 33
+  notation:
+  - e_t
+  - n
+- id: mae
+  label: Mean absolute error
+  kind: concept
+  introduced_in: c09 s6 cell 33
+- id: mape
+  label: Mean absolute percentage error and its traps
+  kind: concept
+  introduced_in: c09 s6 cell 33
+- id: symmetric_mape
+  label: Symmetric MAPE
+  kind: concept
+  introduced_in: c09 s6 cell 37
+- id: r_squared
+  label: R squared and how it flatters trends
+  kind: concept
+  introduced_in: c09 s6 cell 33
+  notation:
+  - R^2
+  - \bar{y}
+- id: theil_statistics
+  label: Theil inequality statistics (bias, unequal variance, unequal covariation)
+  kind: concept
+  introduced_in: c09 s6 cell 33
+  notation:
+  - U^M
+  - U^S
+  - U^C
+  - \bar{S}
+  - \bar{A}
+  - s_S
+  - s_A
+  - r
+- id: benchmark_models
+  label: Benchmarks without feedback (straight line, historical average)
+  kind: concept
+  introduced_in: c09 s6 cell 33
+- id: residuals
+  label: Residuals (data minus model)
+  kind: concept
+  introduced_in: c09 s7 cell 39
+- id: durbin_watson
+  label: Durbin-Watson statistic
+  kind: concept
+  introduced_in: c09 s7 cell 39
+- id: effective_sample_size
+  label: Effective number of independent observations n(1-rho)/(1+rho)
+  kind: concept
+  introduced_in: c09 s7 cell 41
+  notation:
+  - \rho
+- id: jacobian_sensitivity
+  label: Jacobian of simulated output w.r.t. parameters
+  kind: concept
+  introduced_in: c09 s8 cell 43
+- id: standard_errors_from_jacobian
+  label: Standard errors and correlations of estimates from the Jacobian
+  kind: concept
+  introduced_in: c09 s8 cell 43
+- id: parameter_correlation
+  label: Correlation of estimates of 1 means parameters cannot be separated
+  kind: concept
+  introduced_in: c09 s8 cell 45
+- id: payoff_profile
+  label: Profile of the payoff (profile likelihood style)
+  kind: concept
+  introduced_in: c09 s8 cell 45
+- id: multi_series_calibration
+  label: Calibrating to several series with per-series error scales
+  kind: concept
+  introduced_in: c09 s9 cell 48
+  notation:
+  - \hat{y}_{k,t}
+  - y_{k,t}
+  - \sigma_k
+- id: specification_error
+  label: Specification error
+  kind: concept
+  introduced_in: c09 s9 cell 53
+- id: gauss_newton_levenberg_marquardt
+  label: Gauss-Newton and Levenberg-Marquardt least-squares search
+  kind: concept
+  introduced_in: c09 s9 cell 53
+- id: out_of_sample_test
+  label: Out-of-sample test split in time (train/test)
+  kind: concept
+  introduced_in: c09 s10 cell 59
+- id: rolling_origin_test
+  label: Rolling-origin evaluation (in worked answer)
+  kind: concept
+  introduced_in: c09 s10 cell 63
+- id: bootstrap
+  label: Bootstrap (residual resampling, refit)
+  kind: concept
+  introduced_in: c09 s11 cell 65
+- id: block_bootstrap
+  label: Block bootstrap
+  kind: concept
+  introduced_in: c09 s11 cell 65
+- id: monte_carlo_over_calibrated_parameters
+  label: Monte Carlo over bootstrap parameter estimates
+  kind: concept
+  introduced_in: c09 s12 cell 68
+- id: prediction_band
+  label: Prediction band (parameter uncertainty plus noise)
+  kind: concept
+  introduced_in: c09 s12 cell 68
+- id: calibrate_for_the_question
+  label: Check identifiability for the parameters the decision depends on
+  kind: concept
+  introduced_in: c09 s12 cell 72
+- id: gradient_matching
+  label: Gradient matching (fitting changes, briefly)
+  kind: concept
+  introduced_in: c09 going-further cell 74
+- id: policy_laboratory
+  label: Model as a policy laboratory
+  kind: concept
+  introduced_in: c10 s0 cell 0
+- id: priority_weighted_allocation
+  label: Treatments shared across bands by size times priority weight
+  kind: concept
+  introduced_in: c10 s1 cell 5
+  notation:
+  - w_k
+  - B_k
+  - Treating_k = Treatments * w_k B_k / sum_j w_j B_j
+- id: waiting_list_policy_model
+  label: Four-band waiting-list policy model with cost stock
+  kind: concept
+  introduced_in: c10 s1 cell 5
+- id: policy_as_switchable_constant
+  label: Policies as constants set to zero when off (STEP-switched)
+  kind: concept
+  introduced_in: c10 s1 cell 5
+- id: cost_accumulation_stock
+  label: Running cost as a stock of extra spending
+  kind: concept
+  introduced_in: c10 s1 cell 7
+- id: pure_accumulator_memory
+  label: Stock as pure accumulator remembers starting level when outflow does not depend on it
+  kind: concept
+  introduced_in: c10 s1 cell 9
+- id: policy
+  label: Policy = change in a decision rule or controlled constant
+  kind: concept
+  introduced_in: c10 s2 cell 11
+- id: multi_measure_policy_comparison
+  label: Comparing policies on several outcome measures over time, incl. cost
+  kind: concept
+  introduced_in: c10 s2 cell 13
+- id: long_wait_months
+  label: Long-wait months (time-integrated harm measure)
+  kind: concept
+  introduced_in: c10 s2 cell 13
+- id: cost_per_outcome_avoided
+  label: Cost per long-wait month avoided
+  kind: concept
+  introduced_in: c10 s2 cell 13
+- id: pulse_vs_rate_change
+  label: One-off pulse changes the level; a rate change changes the trajectory
+  kind: concept
+  introduced_in: c10 s2 cell 15
+- id: relapse_measure
+  label: 'Relapse: rise from lowest point to end'
+  kind: concept
+  introduced_in: c10 s2 cell 15
+- id: scenario
+  label: Scenario (combination of uncertain assumptions)
+  kind: concept
+  introduced_in: c10 s3 cell 17
+- id: robust_policy
+  label: Robust policy
+  kind: concept
+  introduced_in: c10 s3 cell 17
+- id: scenario_grid
+  label: Scenario grid crossing uncertain parameters with policies
+  kind: concept
+  introduced_in: c10 s3 cell 17
+- id: regret
+  label: Regret
+  kind: concept
+  introduced_in: c10 s3 cell 19
+- id: minimax_regret
+  label: Minimax-regret choice
+  kind: concept
+  introduced_in: c10 s3 cell 19
+- id: estimated_remaining_duration
+  label: Estimated Remaining Duration molecule (estRemaining)
+  kind: concept
+  introduced_in: c10 s4 cell 23
+  notation:
+  - Work to do / max(1, Anticipated rate)
+- id: estimated_completion
+  label: Estimated Completion molecule (estCompletion)
+  kind: concept
+  introduced_in: c10 s4 cell 25
+  notation:
+  - dWork remaining/dt = Scope creep - min(Work rate, Work remaining/0.5)
+- id: scope_creep
+  label: Scope creep (work arriving while work proceeds)
+  kind: concept
+  introduced_in: c10 s4 cell 25
+- id: receding_finish_date
+  label: Naive finish date recedes under inflow
+  kind: concept
+  introduced_in: c10 s4 cell 27
+- id: net_rate_clearance_estimate
+  label: Backlog clearance time = backlog / net rate
+  kind: concept
+  introduced_in: c10 s4 cell 27
+- id: one_page_brief
+  label: One-page brief generated from model runs
+  kind: concept
+  introduced_in: c10 s5 cell 31
+- id: interactive_simulator
+  label: Simulator function behind sliders; baseline on every chart
+  kind: concept
+  introduced_in: c10 s6 cell 35
+- id: ipywidgets.interact
+  label: ipywidgets.interact sliders
+  kind: python_api
+  introduced_in: c10 s6 cell 37
+- id: replication
+  label: Replicating a published model result
+  kind: concept
+  introduced_in: c10 s7 cell 39
+- id: bass_diffusion_peak
+  label: Bass diffusion peak time and share
+  kind: notation
+  introduced_in: c10 s7 cell 39
+  notation:
+  - t* = ln(q/p)/(p+q)
+  - Adopters(t*)/N = 1/2 - p/(2q)
+  - p
+  - q
+  - N
+- id: innovation_imitation_coefficients
+  label: Innovation p and imitation q
+  kind: concept
+  introduced_in: c10 s7 cell 39
+  notation:
+  - p
+  - q
+- id: baseline_reproduction_check
+  label: Off settings must reproduce baseline run
+  kind: concept
+  introduced_in: c10 sCheckIt cell 45
+- id: loopbricks.run_batch
+  label: run_batch runs many settings in one call
+  kind: python_api
+  introduced_in: c10 s1 cell 5
+- id: hybrid_model
+  label: Hybrid model (structure plus learned component)
+  kind: concept
+  introduced_in: c11 s3 cell 19
+- id: modelling_life_cycle_stages
+  label: 'Stages: articulation, formulation, estimation, testing, policy'
+  kind: concept
+  introduced_in: c11 s0 cell 0
+- id: large_language_model
+  label: Large language model (LLM) as drafting assistant
+  kind: concept
+  introduced_in: c11 s1 cell 3
+  notation:
+  - LLM
+- id: evidence_based_prompting
+  label: Prompt asking for verbatim evidence per causal link; DEFINITION/UNSUPPORTED
+  kind: concept
+  introduced_in: c11 s1 cell 5
+- id: quote_verification_check
+  label: Checking draft quotes against source text by code
+  kind: concept
+  introduced_in: c11 s1 cell 7
+- id: loop_enumeration_dfs
+  label: Finding feedback loops by depth-first search
+  kind: concept
+  introduced_in: c11 s1 cell 9
+- id: sparse_regression_sindy
+  label: Sparse regression / SINDy
+  kind: concept
+  introduced_in: c11 s2 cell 13
+  notation:
+  - x_dot
+  - Theta(x)
+  - xi
+- id: candidate_term_library
+  label: Library of candidate terms
+  kind: concept
+  introduced_in: c11 s2 cell 13
+  notation:
+  - Theta(x) = [1, x, x^2, x^3]
+- id: sequential_thresholded_least_squares
+  label: Fit, threshold small coefficients, refit
+  kind: concept
+  introduced_in: c11 s2 cell 13
+- id: numerical_derivative_smoothing
+  label: Estimating derivatives by moving-average smoothing and central differences
+  kind: concept
+  introduced_in: c11 s2 cell 14
+- id: phase_plot
+  label: Phase plot (rate against stock)
+  kind: concept
+  introduced_in: c11 s2 cell 17
+- id: equation_vs_mechanism
+  label: Discovered equation is not a mechanism
+  kind: concept
+  introduced_in: c11 s2 cell 17
+- id: inferring_flow_from_stock
+  label: Inferring outflow from stock changes and inflow
+  kind: notation
+  introduced_in: c11 s3 cell 21
+  notation:
+  - Treatments_hat_t = Referrals_t - (W_{t+1} - W_t)
+  - Effect_hat_t
+- id: lookup_table_least_squares_hat_basis
+  label: Fitting a lookup table by least squares with hat-function basis
+  kind: concept
+  introduced_in: c11 s3 cell 21
+- id: extrapolation_outside_training_range
+  label: Learned table flat outside range; extrapolation risk
+  kind: concept
+  introduced_in: c11 s3 cell 24
+- id: neural_ode
+  label: Neural ordinary differential equations
+  kind: concept
+  introduced_in: c11 s3 cell 24
+- id: physics_informed_neural_network
+  label: Physics-informed neural networks
+  kind: concept
+  introduced_in: c11 s3 cell 24
+- id: holdout_test_split
+  label: Keep last years for testing (train/test split by time)
+  kind: concept
+  introduced_in: c11 s3 cell 21
+- id: autoregression
+  label: Autoregression of order p (pure data model)
+  kind: concept
+  introduced_in: c11 s4 cell 26
+  notation:
+  - p
+- id: pure_data_vs_structural_model
+  label: Data model vs structural model across a policy change
+  kind: concept
+  introduced_in: c11 s4 cell 31
+- id: no_change_forecast_benchmark
+  label: No-change (last value) forecast benchmark
+  kind: concept
+  introduced_in: c11 s4 cell 29
+- id: one_step_vs_multi_step_forecast
+  label: One-month-ahead vs two-years-ahead forecasts
+  kind: concept
+  introduced_in: c11 s4 cell 31
+- id: good_fit_not_correct_model
+  label: A good fit is not a correct model (absurd parameters)
+  kind: concept
+  introduced_in: c11 s4 cell 33
+- id: policy_dummy
+  label: Policy dummy variable in regression
+  kind: concept
+  introduced_in: c11 s4 cell 33
+- id: surrogate_model
+  label: Surrogate / metamodel / emulator
+  kind: concept
+  introduced_in: c11 s5 cell 35
+- id: quadratic_response_surface
+  label: Quadratic surrogate fitted to sampled runs
+  kind: concept
+  introduced_in: c11 s5 cell 35
+- id: surrogate_validation_and_confirmation
+  label: Test surrogate on unseen runs; confirm pick with real model; safety margin
+  kind: concept
+  introduced_in: c11 s5 cell 39
+- id: overfitting
+  label: Overfitting
+  kind: concept
+  introduced_in: c11 s6 cell 43
+- id: in_sample_vs_out_of_sample_error
+  label: Training vs forecast error
+  kind: concept
+  introduced_in: c11 s6 cell 43
+- id: data_leakage
+  label: Leakage
+  kind: concept
+  introduced_in: c11 s6 cell 45
+- id: explainability
+  label: Explainability
+  kind: concept
+  introduced_in: c11 s6 cell 47
+- id: learned_component_checklist
+  label: Checklist before trusting a learned component
+  kind: concept
+  introduced_in: c11 s6 cell 47
+- id: validation_set
+  label: Validation set for model choice
+  kind: concept
+  introduced_in: c11 s6 cell 47
+- id: time_split_rule
+  label: Split by time, never at random
+  kind: concept
+  introduced_in: c11 sCheckIt cell 49
+- id: universal_differential_equations
+  label: Universal differential equations
+  kind: concept
+  introduced_in: c11 sGoingFurther cell 51
+- id: python.notebook_cells
+  label: Running notebook cells (Shift+Enter, restart kernel)
+  kind: python_api
+  introduced_in: a01 s0 cell 0
+- id: python.import
+  label: import with nicknames (np, pd, plt, lb)
+  kind: python_api
+  introduced_in: a01 s0 cell 2
+  notation:
+  - np
+  - pd
+  - plt
+  - lb
+- id: python.try_except
+  label: try / except error handling
+  kind: python_api
+  introduced_in: a01 s0 cell 2
+- id: python.assignment
+  label: Names and assignment with =
+  kind: python_api
+  introduced_in: a01 s1 cell 4
+  notation:
+  - '='
+- id: python.comment
+  label: 'Comments with #'
+  kind: python_api
+  introduced_in: a01 s1 cell 4
+  notation:
+  - '#'
+- id: python.arithmetic_operators
+  label: Arithmetic operators + - * / ** // %
+  kind: python_api
+  introduced_in: a01 s1 cell 6
+  notation:
+  - '**'
+  - //
+  - '%'
+- id: python.print
+  label: print
+  kind: python_api
+  introduced_in: a01 s1 cell 8
+- id: python.float_rounding
+  label: Floating-point rounding; compare with a tolerance
+  kind: concept
+  introduced_in: a01 s1 cell 8
+  notation:
+  - 1e-9
+- id: python.scientific_notation
+  label: Scientific notation 1e-9
+  kind: notation
+  introduced_in: a01 s1 cell 8
+  notation:
+  - 1e-9
+- id: python.abs
+  label: abs
+  kind: python_api
+  introduced_in: a01 s1 cell 8
+- id: python.round
+  label: round
+  kind: python_api
+  introduced_in: a01 s1 cell 7
+- id: python.types
+  label: Types int, float, str, bool, None
+  kind: python_api
+  introduced_in: a01 s1 cell 8
+- id: python.comparison_boolean
+  label: Comparisons == != > and boolean and/or/not, in
+  kind: python_api
+  introduced_in: a01 s1 cell 10
+  notation:
+  - ==
+  - '!='
+- id: python.f_string
+  label: f-strings and format specs (.2f, ,.0f, .1%, +, >, .3g)
+  kind: python_api
+  introduced_in: a01 s1 cell 12
+- id: python.list
+  label: Lists, zero-based and negative indexing, len/sum/max
+  kind: python_api
+  introduced_in: a01 s2 cell 14
+- id: python.slice
+  label: Slices start:stop:step (half-open)
+  kind: python_api
+  introduced_in: a01 s2 cell 16
+  notation:
+  - ':'
+- id: python.list_append
+  label: list.append and item replacement
+  kind: python_api
+  introduced_in: a01 s2 cell 18
+- id: python.tuple_unpacking
+  label: Tuples and unpacking
+  kind: python_api
+  introduced_in: a01 s2 cell 18
+- id: python.range
+  label: range
+  kind: python_api
+  introduced_in: a01 s2 cell 18
+- id: python.dict
+  label: Dictionaries, keys, get, items
+  kind: python_api
+  introduced_in: a01 s2 cell 20
+- id: python.copy
+  label: Shared references vs .copy() / copy.deepcopy
+  kind: python_api
+  introduced_in: a01 s2 cell 22
+- id: python.augmented_assignment
+  label: += augmented assignment
+  kind: python_api
+  introduced_in: a01 s2 cell 24
+  notation:
+  - +=
+- id: python.indentation_blocks
+  label: Indentation blocks
+  kind: python_api
+  introduced_in: a01 s3 cell 24
+- id: python.if_elif_else
+  label: if / elif / else
+  kind: python_api
+  introduced_in: a01 s3 cell 25
+- id: python.for_loop
+  label: for loops
+  kind: python_api
+  introduced_in: a01 s3 cell 26
+- id: python.enumerate
+  label: enumerate
+  kind: python_api
+  introduced_in: a01 s3 cell 26
+- id: python.zip
+  label: zip
+  kind: python_api
+  introduced_in: a01 s3 cell 26
+- id: python.while_loop
+  label: while loops and break
+  kind: python_api
+  introduced_in: a01 s3 cell 28
+- id: python.comprehension
+  label: List and dictionary comprehensions
+  kind: python_api
+  introduced_in: a01 s3 cell 30
+- id: python.function_def
+  label: def, parameters, return
+  kind: python_api
+  introduced_in: a01 s4 cell 32
+- id: python.docstring_help
+  label: Docstrings and help()
+  kind: python_api
+  introduced_in: a01 s4 cell 32
+- id: python.default_keyword_args
+  label: Default parameters and keyword arguments
+  kind: python_api
+  introduced_in: a01 s4 cell 34
+- id: python.kwargs_unpacking
+  label: '**dict to spread settings into named arguments'
+  kind: python_api
+  introduced_in: a01 s4 cell 34
+  notation:
+  - '**params'
+- id: python.lambda
+  label: lambda functions
+  kind: python_api
+  introduced_in: a01 s4 cell 34
+- id: python.sorted_key
+  label: sorted with key
+  kind: python_api
+  introduced_in: a01 s4 cell 35
+- id: python.multiple_return_scope
+  label: Returning several values; local scope
+  kind: python_api
+  introduced_in: a01 s4 cell 36
+- id: python.error_messages
+  label: Reading error messages (NameError, SyntaxError, TypeError, KeyError ...)
+  kind: python_api
+  introduced_in: a01 s5 cell 38
+- id: python.str_conversion
+  label: str() conversion
+  kind: python_api
+  introduced_in: a01 s5 cell 39
+- id: python.assert
+  label: assert checks
+  kind: python_api
+  introduced_in: a01 s5 cell 40
+- id: python.cell_order_trap
+  label: Running notebook cells out of order
+  kind: concept
+  introduced_in: a01 s5 cell 42
+- id: numpy.array
+  label: np.array and element-wise arithmetic
+  kind: python_api
+  introduced_in: a01 s6 cell 42
+- id: numpy.vectorisation
+  label: Vectorisation
+  kind: concept
+  introduced_in: a01 s6 cell 42
+- id: numpy.array_methods
+  label: mean, min, max, sum, shape, dtype
+  kind: python_api
+  introduced_in: a01 s6 cell 43
+- id: numpy.arange
+  label: np.arange
+  kind: python_api
+  introduced_in: a01 s6 cell 44
+- id: numpy.linspace
+  label: np.linspace
+  kind: python_api
+  introduced_in: a01 s6 cell 44
+- id: numpy.zeros_ones_full
+  label: np.zeros, np.ones, np.full
+  kind: python_api
+  introduced_in: a01 s6 cell 45
+- id: numpy.math_functions
+  label: np.exp, np.log, np.sqrt, np.abs, np.sin
+  kind: python_api
+  introduced_in: a01 s6 cell 46
+- id: numpy.minimum_maximum
+  label: np.minimum, np.maximum
+  kind: python_api
+  introduced_in: a01 s6 cell 46
+- id: numpy.isclose
+  label: np.isclose
+  kind: python_api
+  introduced_in: a01 s1 cell 8
+- id: numpy.boolean_mask
+  label: Boolean masks, mask.sum()
+  kind: python_api
+  introduced_in: a01 s6 cell 48
+- id: numpy.where
+  label: np.where
+  kind: python_api
+  introduced_in: a01 s6 cell 48
+- id: numpy.diff
+  label: np.diff (net flow from a stock series)
+  kind: python_api
+  introduced_in: a01 s6 cell 50
+- id: numpy.cumsum
+  label: np.cumsum (stock from a flow)
+  kind: python_api
+  introduced_in: a01 s6 cell 50
+- id: numpy.2d_indexing_axis
+  label: 2-D arrays, a[i, j], a[:, j], axis=
+  kind: python_api
+  introduced_in: a01 s6 cell 52
+  notation:
+  - axis=0
+- id: numpy.random_default_rng
+  label: np.random.default_rng with a seed
+  kind: python_api
+  introduced_in: a01 s6 cell 52
+  notation:
+  - rng
+  - SEED
+- id: numpy.random_seed_reproducibility
+  label: Fixed random seed for reproducibility
+  kind: concept
+  introduced_in: a01 s6 cell 52
+- id: numpy.rng_normal
+  label: rng.normal(loc, scale, size)
+  kind: python_api
+  introduced_in: a01 s6 cell 53
+- id: numpy.percentile
+  label: np.percentile
+  kind: python_api
+  introduced_in: a01 s6 cell 53
+- id: pandas.series_dataframe_index
+  label: Series, DataFrame, index
+  kind: python_api
+  introduced_in: a01 s7 cell 54
+- id: pandas.read_csv
+  label: pd.read_csv with parse_dates
+  kind: python_api
+  introduced_in: a01 s7 cell 56
+- id: pandas.head_tail_info_describe
+  label: head, tail, info, describe
+  kind: python_api
+  introduced_in: a01 s7 cell 56
+- id: pandas.drop
+  label: drop(columns=...)
+  kind: python_api
+  introduced_in: a01 s7 cell 57
+- id: pandas.column_selection
+  label: df[col], df[[cols]]
+  kind: python_api
+  introduced_in: a01 s7 cell 58
+- id: pandas.loc_iloc
+  label: .loc (labels) and .iloc (positions)
+  kind: python_api
+  introduced_in: a01 s7 cell 58
+- id: pandas.set_index
+  label: set_index
+  kind: python_api
+  introduced_in: a01 s7 cell 59
+- id: pandas.date_index_slicing
+  label: Date-string selection on a DatetimeIndex; label slices include both ends
+  kind: python_api
+  introduced_in: a01 s7 cell 60
+- id: pandas.boolean_filter
+  label: Combining conditions with & and |
+  kind: python_api
+  introduced_in: a01 s7 cell 60
+  notation:
+  - '&'
+  - '|'
+- id: pandas.diff_shift_pct_change
+  label: .diff(), .shift(), .pct_change()
+  kind: python_api
+  introduced_in: a01 s7 cell 62
+- id: pandas.rolling
+  label: .rolling(n).mean() moving average
+  kind: python_api
+  introduced_in: a01 s7 cell 62
+- id: pandas.nan_dropna_fillna
+  label: NaN, dropna, fillna
+  kind: python_api
+  introduced_in: a01 s7 cell 64
+  notation:
+  - NaN
+- id: pandas.groupby
+  label: groupby (by index.year)
+  kind: python_api
+  introduced_in: a01 s7 cell 64
+- id: pandas.to_string
+  label: to_string
+  kind: python_api
+  introduced_in: a01 s7 cell 66
+- id: pandas.resample
+  label: resample("YE")
+  kind: python_api
+  introduced_in: a01 s7 cell 66
+- id: pandas.dataframe_from_rows
+  label: pd.DataFrame from list of dicts / dict of columns
+  kind: python_api
+  introduced_in: a01 s7 cell 66
+- id: pandas.round
+  label: round on Series/DataFrame
+  kind: python_api
+  introduced_in: a01 s7 cell 57
+- id: matplotlib.subplots
+  label: plt.subplots, fig, ax, grids of axes, figsize
+  kind: python_api
+  introduced_in: a01 s8 cell 68
+- id: matplotlib.plot
+  label: ax.plot with label, ls, lw, color
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: matplotlib.bar_scatter_hist
+  label: ax.bar, ax.scatter, ax.hist
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: matplotlib.fill_between
+  label: ax.fill_between shaded band
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: matplotlib.axhline_axvline
+  label: ax.axhline, ax.axvline
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: matplotlib.labels_set_legend_text
+  label: set_title/xlabel/ylabel, ax.set, legend, text
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: matplotlib.show_tight_layout
+  label: plt.show, plt.tight_layout
+  kind: python_api
+  introduced_in: a01 s8 cell 71
+- id: pandas.series_plot
+  label: series.plot(ax=ax)
+  kind: python_api
+  introduced_in: a01 s8 cell 70
+- id: stock_flow_integration_identity
+  label: diff and cumsum undo each other (stock from flow, flow from stock)
+  kind: concept
+  introduced_in: a01 s6 cell 50
+- id: waiting_list_model
+  label: 'One-stock waiting list: Treatments = MIN(Capacity, Waiting list / Minimum treatment time)'
+  kind: concept
+  introduced_in: a01 s4 cell 33
+- id: loopbricks.model_from_spec
+  label: lb.Model.from_spec (stocks, flows, vars dictionary)
+  kind: python_api
+  introduced_in: a01 s9 cell 76
+- id: loopbricks.run
+  label: model.run() returns time-indexed DataFrame; settings passed by name
+  kind: python_api
+  introduced_in: a01 s9 cell 76
+- id: loopbricks.equations
+  label: model.equations()
+  kind: python_api
+  introduced_in: a01 s9 cell 78
+- id: loopbricks.molecule_presets
+  label: lb.molecule(key), presets, run(preset=...)
+  kind: python_api
+  introduced_in: a01 s9 cell 78
+- id: model_cross_checking
+  label: Check a powerful implementation against a simple trusted one
+  kind: concept
+  introduced_in: a01 s9 cell 78
