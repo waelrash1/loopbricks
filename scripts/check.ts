@@ -335,20 +335,19 @@ all.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${k}: no shared spec in p
   const files = readdirSync("python/loopbricks/spec").filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
   if (JSON.stringify(files) !== JSON.stringify(Object.keys(SPECS).sort())) errs.push("src/lib/specIndex.ts does not list every spec file: run npm run specs");
 }
-// notebooks: one per module, listed in the app and as a chapter of the Quarto book, running only molecules that exist
+// notebooks: one per module, listed in the app (which opens them in Colab; they are not in the book), running only molecules that exist
 {
   const files = readdirSync("notebooks").filter((f) => /^\d\d-.*\.ipynb$/.test(f)).sort() /* module notebooks; book chapters are cNN-*.ipynb */, quarto = readFileSync("notebooks/_quarto.yml", "utf8");
   if (JSON.stringify(files) !== JSON.stringify(NOTEBOOKS.map((n) => n.file).sort())) errs.push("src/lib/notebook.ts NOTEBOOKS does not match the files in notebooks/");
   MODULES.filter((m) => !NOTEBOOKS.some((n) => n.module === m.id)).forEach((m) => errs.push(`module ${m.id}: no notebook`));
   NOTEBOOKS.forEach((n) => {
-    if (!quarto.includes(`- ${n.file}`)) errs.push(`notebooks/_quarto.yml: ${n.file} is not a chapter`);
     // rendering the book runs the notebooks and can save their outputs; commit them clean so Colab starts fresh
     const nb = JSON.parse(readFileSync(`notebooks/${n.file}`, "utf8"));
     if (nb.cells.some((c: { outputs?: unknown[]; execution_count?: number | null }) => c.outputs?.length || c.execution_count != null)) errs.push(`${n.file} has saved outputs: clear them (jupyter nbconvert --clear-output --inplace)`);
     n.molecules.filter((k) => !SPECS[k]).forEach((k) => errs.push(`${n.file}: unknown molecule ${k}`));
   });
-  // book chapters: listed in the book, committed without outputs, no em or en dashes
-  readdirSync("notebooks").filter((f) => /^c\d\d-.*\.ipynb$/.test(f)).forEach((f) => {
+  // book chapters and appendices: listed in the book, committed without outputs, no em or en dashes
+  readdirSync("notebooks").filter((f) => /^[ca]\d\d-.*\.ipynb$/.test(f)).forEach((f) => {
     if (!quarto.includes(`- ${f}`)) errs.push(`notebooks/_quarto.yml: ${f} is not a chapter`);
     const raw = readFileSync(`notebooks/${f}`, "utf8"), nb = JSON.parse(raw);
     if (nb.cells.some((c: { outputs?: unknown[]; execution_count?: number | null }) => c.outputs?.length || c.execution_count != null)) errs.push(`${f} has saved outputs: clear them`);
