@@ -16,10 +16,10 @@ The book has four parts:
 
 1. **Getting started**: why systems push back, and how to go from a story to a diagram.
 2. **How structure drives behaviour**: loops, delays, decision rules, oscillation and the patterns that repeat across fields.
-3. **Evidence**: verification and validation, then data, calibration, goodness of fit and uncertainty.
+3. **Evidence**: the statistics and machine learning a modeller needs, then verification and validation, then data, calibration, goodness of fit and uncertainty.
 4. **Models in use**: from model to decision, and how machine learning helps at every stage of a modelling project.
 
-One running case goes through every chapter: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 10. The data are synthetic, shaped like published Irish waiting-list counts; chapter 9 explains how they were made and why.
+One running case goes through every chapter: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 11. The data are synthetic, shaped like published Irish waiting-list counts; chapter 10 explains how they were made and why.
 
 The models are built from small, reusable structures, or *molecules*. Each molecule is explained once, in the chapter where it first matters, and used freely afterwards.
 

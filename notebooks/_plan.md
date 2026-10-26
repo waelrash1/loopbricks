@@ -24,10 +24,11 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 | | 5 Decisions inside the model | Staffing and treatment rules; productivity; nonlinear effects | stockAdjust, effectFunction, capacityUtil, univariateAnchor, multivariateAnchor, seaAnchor, protectedSeaAnchor, presentValue, propSplit, weightedSplit, multiSplit, nonlinearSplit, protLevel, protFlow, backlogFlow, backlogLevel, actionFromResource, resourcesFromAction, abilityFromAction, financialFlow, workforceFromBudget, doingWork, producing, productivity, estProductivity | 13, 14 |
 | | 6 Why things swing | Hiring to a moving target; swings in staff and list | stockmgmt, lowVisPipeline, workforce, desiredWorkforce, buildingInventory, smoothPricing, seaAnchorPricing, protSeaAnchorPricing | 10, 15 |
 | | 7 Patterns that repeat | Outsourcing as shifting the burden; overtime that backfires | tragedyCommons, shiftingBurden, prodFatigue, effectFatigue, overtime, quality, reworkCycle, schedulePressure | 11, 01 |
-| III Evidence | 8 Testing your model | Verify and build confidence in the waiting-list model | protByPDY, doingWorkCascade, cascadeProtByPDY, reducingBacklog | 16 |
-| | 9 Data, calibration and uncertainty | Calibrate to the NTPF series; held-out years; uncertainty | (none new) | 16, 18 |
-| IV Models in use | 10 From model to decision | Policy design, robustness, a one-page brief, an interactive simulator; plus a published-model replication | estRemaining, estCompletion | 12, 18 |
-| | 11 Models that learn | ML forecasting contest under a policy change; hybrid curves; structure discovery; LLM-drafted diagrams | (none new) | 18 |
+| III Evidence | 8 Learning from data: statistics and machine learning | Variation, intervals and the bootstrap, correlation under feedback, least squares, error measures, train and test, and when learned models fail a policy change | (none; foundations) | (new) |
+| | 9 Testing your model | Verify and build confidence in the waiting-list model | protByPDY, doingWorkCascade, cascadeProtByPDY, reducingBacklog | 16 |
+| | 10 Data, calibration and uncertainty | Calibrate to the NTPF series; held-out years; uncertainty | (none new) | 16, 18 |
+| IV Models in use | 11 From model to decision | Policy design, robustness, a one-page brief, an interactive simulator; plus a published-model replication | estRemaining, estCompletion | 12, 18 |
+| | 12 Models that learn | ML forecasting contest under a policy change; hybrid curves; structure discovery; LLM-drafted diagrams | (none new) | 18 |
 
 Appendices: A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
 

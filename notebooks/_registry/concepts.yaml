@@ -1,5 +1,6 @@
 # Concept dependency graph for the book (see .claude/skills/concept-dependencies).
 # introduced_in = notebook stem, section and cell where the idea is first explained.
+# Chapter stems follow the files (c08 is Learning from data, added after seeding).
 # Seeded 2026-10-26 from a read of every notebook; chapters are listed before Appendix A,
 # so a concept both teach is credited to the chapter. Edit by hand as chapters change.
 - id: stock
@@ -124,7 +125,7 @@
   introduced_in: c01 s5 cell 21
   revisited_in:
   - c05
-  - c08
+  - c09
 - id: euler_stability_factor
   label: Euler gap factor 1 - dt/tau; oscillation when dt>tau, explosion when dt>2 tau
   kind: concept
@@ -144,7 +145,7 @@
   revisited_in:
   - c02
   - c03
-  - c11
+  - c12
 - id: reinforcing_loop
   label: Reinforcing loop
   kind: concept
@@ -152,7 +153,7 @@
   revisited_in:
   - c02
   - c03
-  - c11
+  - c12
 - id: power_law_effect
   label: Power-law response (ratio to normal)^-s, sensitivity s
   kind: notation
@@ -216,13 +217,13 @@
   introduced_in: c01 check-it cell 39
   revisited_in:
   - c05
-  - c08
+  - c09
 - id: runge_kutta_rk4
   label: Fourth-order Runge-Kutta, run(method='rk4')
   kind: python_api
   introduced_in: c01 going-further cell 43
   revisited_in:
-  - c08
+  - c09
 - id: lb_run_batch
   label: Model.run_batch
   kind: python_api
@@ -718,7 +719,7 @@
   kind: python_api
   introduced_in: c04 s3 cell 18
   revisited_in:
-  - c08
+  - c09
 - id: model_inputs
   label: run(inputs={...}) feeding a data series into a model variable
   kind: python_api
@@ -985,11 +986,12 @@
   kind: concept
   introduced_in: c06 s3 cell 14
 - id: autocorrelation
-  label: Autocorrelation at lags
+  label: Autocorrelation and lag
   kind: concept
-  introduced_in: c06 s3 cell 14
+  introduced_in: c08 s3
   revisited_in:
-  - c09
+  - c06
+  - c10
 - id: workforce_molecule
   label: 'Workforce: hiring/firing to close gap over time to hire or fire'
   kind: concept
@@ -1203,43 +1205,43 @@
 - id: verification
   label: Verification (does the code compute what the equations say)
   kind: concept
-  introduced_in: c08 s1 cell 4
+  introduced_in: c09 s1 cell 4
 - id: validation
   label: Validation (is the model fit for its purpose)
   kind: concept
-  introduced_in: c08 s1 cell 4
+  introduced_in: c09 s1 cell 4
 - id: structure_vs_behaviour_tests
   label: Tests of structure vs tests of behaviour (Barlas)
   kind: concept
-  introduced_in: c08 s1 cell 4
+  introduced_in: c09 s1 cell 4
 - id: dimensional_consistency
   label: Dimensional consistency / unit checking
   kind: concept
-  introduced_in: c08 s2 cell 9
+  introduced_in: c09 s2 cell 9
 - id: unit_as_powers
   label: Representing a unit as powers of base units
   kind: concept
-  introduced_in: c08 s2 cell 9
+  introduced_in: c09 s2 cell 9
 - id: conversion_constant
   label: Named conversion constants (Months per year) to keep units consistent
   kind: concept
-  introduced_in: c08 s2 cell 11
+  introduced_in: c09 s2 cell 11
 - id: mass_balance_check
   label: Mass-balance (conservation) check
   kind: concept
-  introduced_in: c08 s3 cell 13
+  introduced_in: c09 s3 cell 13
 - id: floor_at_zero_clipping
   label: Floor at zero (non-negative stock clipping) and clip report
   kind: concept
-  introduced_in: c08 s3 cell 13
+  introduced_in: c09 s3 cell 13
 - id: df_attrs_clipped
   label: df.attrs["clipped"] clip report and warn_clips
   kind: python_api
-  introduced_in: c08 s3 cell 13
+  introduced_in: c09 s3 cell 13
 - id: reducing_backlog_molecule
   label: Reducing Backlog molecule (unprotected outflow)
   kind: concept
-  introduced_in: c08 s3 cell 15
+  introduced_in: c09 s3 cell 15
   notation:
   - W
   - N
@@ -1248,7 +1250,7 @@
 - id: level_protected_by_pdy
   label: Level Protected by PDY (productivity falls as work runs thin)
   kind: concept
-  introduced_in: c08 s3 cell 15
+  introduced_in: c09 s3 cell 15
   notation:
   - R
   - R^*
@@ -1256,11 +1258,11 @@
 - id: floor_that_binds
   label: A floor that binds (protection in the equations)
   kind: concept
-  introduced_in: c08 s3 cell 15
+  introduced_in: c09 s3 cell 15
 - id: doing_work_cascade
   label: Doing Work Cascade and Cascade Protected by PDY
   kind: concept
-  introduced_in: c08 s3 cell 17
+  introduced_in: c09 s3 cell 17
   notation:
   - F_A
   - N_A
@@ -1268,103 +1270,103 @@
 - id: integration_error_order
   label: 'Order of integration error (first-order: error proportional to dt)'
   kind: concept
-  introduced_in: c08 s4 cell 25
+  introduced_in: c09 s4 cell 25
 - id: dt_vs_time_constant_rule
   label: dt should be a quarter to a half of the shortest time constant
   kind: concept
-  introduced_in: c08 s4 cell 25
+  introduced_in: c09 s4 cell 25
 - id: parameter_plausibility
   label: Parameter plausibility ranges with evidence
   kind: concept
-  introduced_in: c08 s5 cell 31
+  introduced_in: c09 s5 cell 31
 - id: boundary_adequacy_test
   label: Boundary adequacy test (add missing loop, check policy conclusion)
   kind: concept
-  introduced_in: c08 s5 cell 33
+  introduced_in: c09 s5 cell 33
 - id: wait_elasticity
   label: Referrals responding to wait via elasticity
   kind: concept
-  introduced_in: c08 s5 cell 33
+  introduced_in: c09 s5 cell 33
 - id: grid_search_fit_sse
   label: Refitting a parameter by grid search on sum of squared errors
   kind: concept
-  introduced_in: c08 s5 cell 34
+  introduced_in: c09 s5 cell 34
 - id: pattern_measures
   label: Behaviour-pattern measures compared with reference mode
   kind: concept
-  introduced_in: c08 s6 cell 37
+  introduced_in: c09 s6 cell 37
 - id: out_of_sample_pattern
   label: Reproducing a pattern not fitted to as stronger evidence
   kind: concept
-  introduced_in: c08 s6 cell 41
+  introduced_in: c09 s6 cell 41
 - id: sensitivity_analysis
   label: Sensitivity analysis (numerical, behavioural, policy)
   kind: concept
-  introduced_in: c08 s7 cell 43
+  introduced_in: c09 s7 cell 43
 - id: one_at_a_time_sensitivity
   label: One-at-a-time sensitivity and tornado chart
   kind: concept
-  introduced_in: c08 s7 cell 43
+  introduced_in: c09 s7 cell 43
 - id: monte_carlo_sensitivity
   label: Monte Carlo sensitivity analysis
   kind: concept
-  introduced_in: c08 s7 cell 46
+  introduced_in: c09 s7 cell 46
 - id: standardised_regression_coefficients
   label: Standardised regression coefficients
   kind: concept
-  introduced_in: c08 s7 cell 46
+  introduced_in: c09 s7 cell 46
 - id: behavioural_filtering
   label: Keeping only runs within 10% of history (crude filter toward calibration)
   kind: concept
-  introduced_in: c08 s7 cell 49
+  introduced_in: c09 s7 cell 49
 - id: correlated_inputs_problem
   label: Correlated inputs break simple sensitivity measures
   kind: concept
-  introduced_in: c08 s7 cell 51
+  introduced_in: c09 s7 cell 51
 - id: automated_test_sheet
   label: Test functions with assert and a test sheet
   kind: concept
-  introduced_in: c08 s8 cell 53
+  introduced_in: c09 s8 cell 53
 - id: pytest_fixture
   label: pytest, test_ functions, AssertionError, fixtures
   kind: python_api
-  introduced_in: c08 s8 cell 53
+  introduced_in: c09 s8 cell 53
 - id: policy_direction_test
   label: Test of the sign of a policy effect
   kind: concept
-  introduced_in: c08 s8 cell 57
+  introduced_in: c09 s8 cell 57
 - id: sobol_indices
   label: Variance-based global sensitivity (Sobol), named only
   kind: concept
-  introduced_in: c08 going-further cell 59
+  introduced_in: c09 going-further cell 59
 - id: continuous_integration
   label: Continuous integration (GitHub Actions running pytest)
   kind: concept
-  introduced_in: c08 going-further cell 59
+  introduced_in: c09 going-further cell 59
 - id: synthetic_data_known_truth
   label: Synthetic data with known truth for testing estimation methods
   kind: concept
-  introduced_in: c09 s1 cell 4
+  introduced_in: c10 s1 cell 4
 - id: net_flow_from_stock_differences
   label: Change in stock = net flow (inferring flows from stock data)
   kind: concept
-  introduced_in: c09 s2 cell 10
+  introduced_in: c10 s2 cell 10
 - id: identifiability
   label: Identifiability problem (only the difference of flows is identified)
   kind: concept
-  introduced_in: c09 s2 cell 12
+  introduced_in: c10 s2 cell 12
 - id: band_bookkeeping_inference
   label: Inferring treatment rates from banded stock data via ageing bookkeeping
   kind: concept
-  introduced_in: c09 s2 cell 12
+  introduced_in: c10 s2 cell 12
 - id: calibration
   label: Calibration (choosing parameters so output matches data)
   kind: concept
-  introduced_in: c09 s3 cell 18
+  introduced_in: c10 s3 cell 18
 - id: payoff_function
   label: Payoff function, weighted sum of squared errors
   kind: concept
-  introduced_in: c09 s4 cell 23
+  introduced_in: c10 s4 cell 23
   notation:
   - P(\theta)
   - \theta
@@ -1375,64 +1377,72 @@
 - id: error_scale_sigma
   label: Error scale sigma and per-series weighting
   kind: concept
-  introduced_in: c09 s4 cell 23
+  introduced_in: c10 s4 cell 23
   notation:
   - \sigma
   - \sigma_k
 - id: squared_vs_absolute_errors
   label: Squared vs absolute errors (sensitivity to outliers)
   kind: concept
-  introduced_in: c09 s4 cell 23
+  introduced_in: c10 s4 cell 23
 - id: grid_search
   label: Grid search over parameters
   kind: concept
-  introduced_in: c09 s5 cell 25
+  introduced_in: c10 s5 cell 25
 - id: payoff_contour_ridge
   label: Payoff surface contours and a long valley/ridge
   kind: concept
-  introduced_in: c09 s5 cell 27
+  introduced_in: c10 s5 cell 27
 - id: nelder_mead
   label: Nelder-Mead simplex search (reflection, expansion, contraction, shrink)
   kind: concept
-  introduced_in: c09 s5 cell 27
+  introduced_in: c10 s5 cell 27
 - id: estimate_on_bound_warning
   label: An estimate on a bound is a warning
   kind: concept
-  introduced_in: c09 s5 cell 31
+  introduced_in: c10 s5 cell 31
 - id: multiple_starts
   label: Several random starts to check estimates
   kind: concept
-  introduced_in: c09 s5 cell 31
+  introduced_in: c10 s5 cell 31
 - id: rmse
-  label: Root mean squared error
+  label: Root mean square error (RMSE)
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c08 s5
   notation:
   - e_t
   - n
+  revisited_in:
+  - c10
 - id: mae
-  label: Mean absolute error
+  label: Mean absolute error (MAE)
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c08 s5
+  revisited_in:
+  - c10
 - id: mape
-  label: Mean absolute percentage error and its traps
+  label: Mean absolute percentage error (MAPE)
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c08 s5
+  revisited_in:
+  - c10
 - id: symmetric_mape
   label: Symmetric MAPE
   kind: concept
-  introduced_in: c09 s6 cell 37
+  introduced_in: c10 s6 cell 37
 - id: r_squared
-  label: R squared and how it flatters trends
+  label: R squared
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c08 s4
   notation:
   - R^2
   - \bar{y}
+  revisited_in:
+  - c10
 - id: theil_statistics
   label: Theil inequality statistics (bias, unequal variance, unequal covariation)
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c10 s6 cell 33
   notation:
   - U^M
   - U^S
@@ -1445,41 +1455,43 @@
 - id: benchmark_models
   label: Benchmarks without feedback (straight line, historical average)
   kind: concept
-  introduced_in: c09 s6 cell 33
+  introduced_in: c10 s6 cell 33
 - id: residuals
-  label: Residuals (data minus model)
+  label: Residuals and reading them
   kind: concept
-  introduced_in: c09 s7 cell 39
+  introduced_in: c08 s4
+  revisited_in:
+  - c10
 - id: durbin_watson
   label: Durbin-Watson statistic
   kind: concept
-  introduced_in: c09 s7 cell 39
+  introduced_in: c10 s7 cell 39
 - id: effective_sample_size
   label: Effective number of independent observations n(1-rho)/(1+rho)
   kind: concept
-  introduced_in: c09 s7 cell 41
+  introduced_in: c10 s7 cell 41
   notation:
   - \rho
 - id: jacobian_sensitivity
   label: Jacobian of simulated output w.r.t. parameters
   kind: concept
-  introduced_in: c09 s8 cell 43
+  introduced_in: c10 s8 cell 43
 - id: standard_errors_from_jacobian
   label: Standard errors and correlations of estimates from the Jacobian
   kind: concept
-  introduced_in: c09 s8 cell 43
+  introduced_in: c10 s8 cell 43
 - id: parameter_correlation
   label: Correlation of estimates of 1 means parameters cannot be separated
   kind: concept
-  introduced_in: c09 s8 cell 45
+  introduced_in: c10 s8 cell 45
 - id: payoff_profile
   label: Profile of the payoff (profile likelihood style)
   kind: concept
-  introduced_in: c09 s8 cell 45
+  introduced_in: c10 s8 cell 45
 - id: multi_series_calibration
   label: Calibrating to several series with per-series error scales
   kind: concept
-  introduced_in: c09 s9 cell 48
+  introduced_in: c10 s9 cell 48
   notation:
   - \hat{y}_{k,t}
   - y_{k,t}
@@ -1487,51 +1499,53 @@
 - id: specification_error
   label: Specification error
   kind: concept
-  introduced_in: c09 s9 cell 53
+  introduced_in: c10 s9 cell 53
 - id: gauss_newton_levenberg_marquardt
   label: Gauss-Newton and Levenberg-Marquardt least-squares search
   kind: concept
-  introduced_in: c09 s9 cell 53
+  introduced_in: c10 s9 cell 53
 - id: out_of_sample_test
   label: Out-of-sample test split in time (train/test)
   kind: concept
-  introduced_in: c09 s10 cell 59
+  introduced_in: c10 s10 cell 59
 - id: rolling_origin_test
   label: Rolling-origin evaluation (in worked answer)
   kind: concept
-  introduced_in: c09 s10 cell 63
+  introduced_in: c10 s10 cell 63
 - id: bootstrap
-  label: Bootstrap (residual resampling, refit)
+  label: Bootstrap
   kind: concept
-  introduced_in: c09 s11 cell 65
+  introduced_in: c08 s2
+  revisited_in:
+  - c10
 - id: block_bootstrap
   label: Block bootstrap
   kind: concept
-  introduced_in: c09 s11 cell 65
+  introduced_in: c10 s11 cell 65
 - id: monte_carlo_over_calibrated_parameters
   label: Monte Carlo over bootstrap parameter estimates
   kind: concept
-  introduced_in: c09 s12 cell 68
+  introduced_in: c10 s12 cell 68
 - id: prediction_band
   label: Prediction band (parameter uncertainty plus noise)
   kind: concept
-  introduced_in: c09 s12 cell 68
+  introduced_in: c10 s12 cell 68
 - id: calibrate_for_the_question
   label: Check identifiability for the parameters the decision depends on
   kind: concept
-  introduced_in: c09 s12 cell 72
+  introduced_in: c10 s12 cell 72
 - id: gradient_matching
   label: Gradient matching (fitting changes, briefly)
   kind: concept
-  introduced_in: c09 going-further cell 74
+  introduced_in: c10 going-further cell 74
 - id: policy_laboratory
   label: Model as a policy laboratory
   kind: concept
-  introduced_in: c10 s0 cell 0
+  introduced_in: c11 s0 cell 0
 - id: priority_weighted_allocation
   label: Treatments shared across bands by size times priority weight
   kind: concept
-  introduced_in: c10 s1 cell 5
+  introduced_in: c11 s1 cell 5
   notation:
   - w_k
   - B_k
@@ -1539,107 +1553,107 @@
 - id: waiting_list_policy_model
   label: Four-band waiting-list policy model with cost stock
   kind: concept
-  introduced_in: c10 s1 cell 5
+  introduced_in: c11 s1 cell 5
 - id: policy_as_switchable_constant
   label: Policies as constants set to zero when off (STEP-switched)
   kind: concept
-  introduced_in: c10 s1 cell 5
+  introduced_in: c11 s1 cell 5
 - id: cost_accumulation_stock
   label: Running cost as a stock of extra spending
   kind: concept
-  introduced_in: c10 s1 cell 7
+  introduced_in: c11 s1 cell 7
 - id: pure_accumulator_memory
   label: Stock as pure accumulator remembers starting level when outflow does not depend on it
   kind: concept
-  introduced_in: c10 s1 cell 9
+  introduced_in: c11 s1 cell 9
 - id: policy
   label: Policy = change in a decision rule or controlled constant
   kind: concept
-  introduced_in: c10 s2 cell 11
+  introduced_in: c11 s2 cell 11
 - id: multi_measure_policy_comparison
   label: Comparing policies on several outcome measures over time, incl. cost
   kind: concept
-  introduced_in: c10 s2 cell 13
+  introduced_in: c11 s2 cell 13
 - id: long_wait_months
   label: Long-wait months (time-integrated harm measure)
   kind: concept
-  introduced_in: c10 s2 cell 13
+  introduced_in: c11 s2 cell 13
 - id: cost_per_outcome_avoided
   label: Cost per long-wait month avoided
   kind: concept
-  introduced_in: c10 s2 cell 13
+  introduced_in: c11 s2 cell 13
 - id: pulse_vs_rate_change
   label: One-off pulse changes the level; a rate change changes the trajectory
   kind: concept
-  introduced_in: c10 s2 cell 15
+  introduced_in: c11 s2 cell 15
 - id: relapse_measure
   label: 'Relapse: rise from lowest point to end'
   kind: concept
-  introduced_in: c10 s2 cell 15
+  introduced_in: c11 s2 cell 15
 - id: scenario
   label: Scenario (combination of uncertain assumptions)
   kind: concept
-  introduced_in: c10 s3 cell 17
+  introduced_in: c11 s3 cell 17
 - id: robust_policy
   label: Robust policy
   kind: concept
-  introduced_in: c10 s3 cell 17
+  introduced_in: c11 s3 cell 17
 - id: scenario_grid
   label: Scenario grid crossing uncertain parameters with policies
   kind: concept
-  introduced_in: c10 s3 cell 17
+  introduced_in: c11 s3 cell 17
 - id: regret
   label: Regret
   kind: concept
-  introduced_in: c10 s3 cell 19
+  introduced_in: c11 s3 cell 19
 - id: minimax_regret
   label: Minimax-regret choice
   kind: concept
-  introduced_in: c10 s3 cell 19
+  introduced_in: c11 s3 cell 19
 - id: estimated_remaining_duration
   label: Estimated Remaining Duration molecule (estRemaining)
   kind: concept
-  introduced_in: c10 s4 cell 23
+  introduced_in: c11 s4 cell 23
   notation:
   - Work to do / max(1, Anticipated rate)
 - id: estimated_completion
   label: Estimated Completion molecule (estCompletion)
   kind: concept
-  introduced_in: c10 s4 cell 25
+  introduced_in: c11 s4 cell 25
   notation:
   - dWork remaining/dt = Scope creep - min(Work rate, Work remaining/0.5)
 - id: scope_creep
   label: Scope creep (work arriving while work proceeds)
   kind: concept
-  introduced_in: c10 s4 cell 25
+  introduced_in: c11 s4 cell 25
 - id: receding_finish_date
   label: Naive finish date recedes under inflow
   kind: concept
-  introduced_in: c10 s4 cell 27
+  introduced_in: c11 s4 cell 27
 - id: net_rate_clearance_estimate
   label: Backlog clearance time = backlog / net rate
   kind: concept
-  introduced_in: c10 s4 cell 27
+  introduced_in: c11 s4 cell 27
 - id: one_page_brief
   label: One-page brief generated from model runs
   kind: concept
-  introduced_in: c10 s5 cell 31
+  introduced_in: c11 s5 cell 31
 - id: interactive_simulator
   label: Simulator function behind sliders; baseline on every chart
   kind: concept
-  introduced_in: c10 s6 cell 35
+  introduced_in: c11 s6 cell 35
 - id: ipywidgets.interact
   label: ipywidgets.interact sliders
   kind: python_api
-  introduced_in: c10 s6 cell 37
+  introduced_in: c11 s6 cell 37
 - id: replication
   label: Replicating a published model result
   kind: concept
-  introduced_in: c10 s7 cell 39
+  introduced_in: c11 s7 cell 39
 - id: bass_diffusion_peak
   label: Bass diffusion peak time and share
   kind: notation
-  introduced_in: c10 s7 cell 39
+  introduced_in: c11 s7 cell 39
   notation:
   - t* = ln(q/p)/(p+q)
   - Adopters(t*)/N = 1/2 - p/(2q)
@@ -1649,48 +1663,48 @@
 - id: innovation_imitation_coefficients
   label: Innovation p and imitation q
   kind: concept
-  introduced_in: c10 s7 cell 39
+  introduced_in: c11 s7 cell 39
   notation:
   - p
   - q
 - id: baseline_reproduction_check
   label: Off settings must reproduce baseline run
   kind: concept
-  introduced_in: c10 sCheckIt cell 45
+  introduced_in: c11 sCheckIt cell 45
 - id: loopbricks.run_batch
   label: run_batch runs many settings in one call
   kind: python_api
-  introduced_in: c10 s1 cell 5
+  introduced_in: c11 s1 cell 5
 - id: hybrid_model
   label: Hybrid model (structure plus learned component)
   kind: concept
-  introduced_in: c11 s3 cell 19
+  introduced_in: c12 s3 cell 19
 - id: modelling_life_cycle_stages
   label: 'Stages: articulation, formulation, estimation, testing, policy'
   kind: concept
-  introduced_in: c11 s0 cell 0
+  introduced_in: c12 s0 cell 0
 - id: large_language_model
   label: Large language model (LLM) as drafting assistant
   kind: concept
-  introduced_in: c11 s1 cell 3
+  introduced_in: c12 s1 cell 3
   notation:
   - LLM
 - id: evidence_based_prompting
   label: Prompt asking for verbatim evidence per causal link; DEFINITION/UNSUPPORTED
   kind: concept
-  introduced_in: c11 s1 cell 5
+  introduced_in: c12 s1 cell 5
 - id: quote_verification_check
   label: Checking draft quotes against source text by code
   kind: concept
-  introduced_in: c11 s1 cell 7
+  introduced_in: c12 s1 cell 7
 - id: loop_enumeration_dfs
   label: Finding feedback loops by depth-first search
   kind: concept
-  introduced_in: c11 s1 cell 9
+  introduced_in: c12 s1 cell 9
 - id: sparse_regression_sindy
   label: Sparse regression / SINDy
   kind: concept
-  introduced_in: c11 s2 cell 13
+  introduced_in: c12 s2 cell 13
   notation:
   - x_dot
   - Theta(x)
@@ -1698,122 +1712,126 @@
 - id: candidate_term_library
   label: Library of candidate terms
   kind: concept
-  introduced_in: c11 s2 cell 13
+  introduced_in: c12 s2 cell 13
   notation:
   - Theta(x) = [1, x, x^2, x^3]
 - id: sequential_thresholded_least_squares
   label: Fit, threshold small coefficients, refit
   kind: concept
-  introduced_in: c11 s2 cell 13
+  introduced_in: c12 s2 cell 13
 - id: numerical_derivative_smoothing
   label: Estimating derivatives by moving-average smoothing and central differences
   kind: concept
-  introduced_in: c11 s2 cell 14
+  introduced_in: c12 s2 cell 14
 - id: phase_plot
   label: Phase plot (rate against stock)
   kind: concept
-  introduced_in: c11 s2 cell 17
+  introduced_in: c12 s2 cell 17
 - id: equation_vs_mechanism
   label: Discovered equation is not a mechanism
   kind: concept
-  introduced_in: c11 s2 cell 17
+  introduced_in: c12 s2 cell 17
 - id: inferring_flow_from_stock
   label: Inferring outflow from stock changes and inflow
   kind: notation
-  introduced_in: c11 s3 cell 21
+  introduced_in: c12 s3 cell 21
   notation:
   - Treatments_hat_t = Referrals_t - (W_{t+1} - W_t)
   - Effect_hat_t
 - id: lookup_table_least_squares_hat_basis
   label: Fitting a lookup table by least squares with hat-function basis
   kind: concept
-  introduced_in: c11 s3 cell 21
+  introduced_in: c12 s3 cell 21
 - id: extrapolation_outside_training_range
   label: Learned table flat outside range; extrapolation risk
   kind: concept
-  introduced_in: c11 s3 cell 24
+  introduced_in: c12 s3 cell 24
 - id: neural_ode
   label: Neural ordinary differential equations
   kind: concept
-  introduced_in: c11 s3 cell 24
+  introduced_in: c12 s3 cell 24
 - id: physics_informed_neural_network
   label: Physics-informed neural networks
   kind: concept
-  introduced_in: c11 s3 cell 24
+  introduced_in: c12 s3 cell 24
 - id: holdout_test_split
   label: Keep last years for testing (train/test split by time)
   kind: concept
-  introduced_in: c11 s3 cell 21
+  introduced_in: c12 s3 cell 21
 - id: autoregression
-  label: Autoregression of order p (pure data model)
+  label: Linear autoregression on lags
   kind: concept
-  introduced_in: c11 s4 cell 26
+  introduced_in: c08 s6
   notation:
   - p
+  revisited_in:
+  - c12
 - id: pure_data_vs_structural_model
   label: Data model vs structural model across a policy change
   kind: concept
-  introduced_in: c11 s4 cell 31
+  introduced_in: c12 s4 cell 31
 - id: no_change_forecast_benchmark
   label: No-change (last value) forecast benchmark
   kind: concept
-  introduced_in: c11 s4 cell 29
+  introduced_in: c12 s4 cell 29
 - id: one_step_vs_multi_step_forecast
   label: One-month-ahead vs two-years-ahead forecasts
   kind: concept
-  introduced_in: c11 s4 cell 31
+  introduced_in: c12 s4 cell 31
 - id: good_fit_not_correct_model
   label: A good fit is not a correct model (absurd parameters)
   kind: concept
-  introduced_in: c11 s4 cell 33
+  introduced_in: c12 s4 cell 33
 - id: policy_dummy
   label: Policy dummy variable in regression
   kind: concept
-  introduced_in: c11 s4 cell 33
+  introduced_in: c12 s4 cell 33
 - id: surrogate_model
   label: Surrogate / metamodel / emulator
   kind: concept
-  introduced_in: c11 s5 cell 35
+  introduced_in: c12 s5 cell 35
 - id: quadratic_response_surface
   label: Quadratic surrogate fitted to sampled runs
   kind: concept
-  introduced_in: c11 s5 cell 35
+  introduced_in: c12 s5 cell 35
 - id: surrogate_validation_and_confirmation
   label: Test surrogate on unseen runs; confirm pick with real model; safety margin
   kind: concept
-  introduced_in: c11 s5 cell 39
+  introduced_in: c12 s5 cell 39
 - id: overfitting
   label: Overfitting
   kind: concept
-  introduced_in: c11 s6 cell 43
+  introduced_in: c08 s6
+  revisited_in:
+  - c12
 - id: in_sample_vs_out_of_sample_error
   label: Training vs forecast error
   kind: concept
-  introduced_in: c11 s6 cell 43
+  introduced_in: c12 s6 cell 43
 - id: data_leakage
   label: Leakage
   kind: concept
-  introduced_in: c11 s6 cell 45
+  introduced_in: c12 s6 cell 45
 - id: explainability
   label: Explainability
   kind: concept
-  introduced_in: c11 s6 cell 47
+  introduced_in: c12 s6 cell 47
 - id: learned_component_checklist
   label: Checklist before trusting a learned component
   kind: concept
-  introduced_in: c11 s6 cell 47
+  introduced_in: c12 s6 cell 47
 - id: validation_set
   label: Validation set for model choice
   kind: concept
-  introduced_in: c11 s6 cell 47
+  introduced_in: c12 s6 cell 47
 - id: time_split_rule
   label: Split by time, never at random
   kind: concept
-  introduced_in: c11 sCheckIt cell 49
+  introduced_in: c12 sCheckIt cell 49
 - id: universal_differential_equations
   label: Universal differential equations
   kind: concept
-  introduced_in: c11 sGoingFurther cell 51
+  introduced_in: c12 sGoingFurther cell 51
 - id: python.notebook_cells
   label: Running notebook cells (Shift+Enter, restart kernel)
   kind: python_api
@@ -2210,3 +2228,79 @@
   label: Check a powerful implementation against a simple trusted one
   kind: concept
   introduced_in: a01 s9 cell 78
+- id: mean_median
+  label: Mean and median
+  kind: concept
+  introduced_in: c08 s1
+- id: standard_deviation
+  label: Standard deviation and variance
+  kind: concept
+  introduced_in: c08 s1
+- id: percentile
+  label: Percentile
+  kind: concept
+  introduced_in: c08 s1
+- id: normal_distribution
+  label: Normal distribution and the 68/95 rule
+  kind: concept
+  introduced_in: c08 s1
+- id: standard_error
+  label: Standard error of a mean
+  kind: concept
+  introduced_in: c08 s2
+- id: confidence_interval
+  label: Confidence interval (1.96, 1.645)
+  kind: concept
+  introduced_in: c08 s2
+- id: prediction_interval
+  label: Prediction interval
+  kind: concept
+  introduced_in: c08 s2
+- id: chi_square_3_84
+  label: 3.84 = 1.96 squared for a one-parameter interval
+  kind: concept
+  introduced_in: c08 s2
+- id: correlation
+  label: Correlation coefficient
+  kind: concept
+  introduced_in: c08 s3
+- id: correlation_under_feedback
+  label: Why feedback makes correlation a poor guide to cause
+  kind: concept
+  introduced_in: c08 s3
+- id: least_squares
+  label: Least squares fitting
+  kind: concept
+  introduced_in: c08 s4
+- id: log_linear_fit
+  label: Log-linear fit for a growth rate
+  kind: concept
+  introduced_in: c08 s4
+- id: train_test_split
+  label: Training and testing, split in time
+  kind: concept
+  introduced_in: c08 s6
+- id: leakage
+  label: Leakage
+  kind: concept
+  introduced_in: c08 s6
+- id: naive_benchmark
+  label: Naive forecast benchmark
+  kind: concept
+  introduced_in: c08 s5
+- id: ml_vs_sd_policy_change
+  label: Learned models fail under a policy change; structure does not
+  kind: concept
+  introduced_in: c08 s7
+- id: numpy.polyfit
+  label: np.polyfit
+  kind: python_api
+  introduced_in: c08 s4
+- id: numpy.corrcoef
+  label: np.corrcoef
+  kind: python_api
+  introduced_in: c08 s3
+- id: numpy.linalg.lstsq
+  label: np.linalg.lstsq
+  kind: python_api
+  introduced_in: c08 s6

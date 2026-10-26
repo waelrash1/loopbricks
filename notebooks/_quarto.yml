@@ -28,12 +28,13 @@ book:
         - c07-patterns.ipynb
     - part: "Evidence"
       chapters:
-        - c08-testing.ipynb
-        - c09-calibration.ipynb
+        - c08-learning.ipynb
+        - c09-testing.ipynb
+        - c10-calibration.ipynb
     - part: "Models in use"
       chapters:
-        - c10-model-to-decision.ipynb
-        - c11-models-that-learn.ipynb
+        - c11-model-to-decision.ipynb
+        - c12-models-that-learn.ipynb
   # ponytail: the 18 app-module notebooks follow the written appendices until A to F are all in place
   appendices:
     - a01-python.ipynb
