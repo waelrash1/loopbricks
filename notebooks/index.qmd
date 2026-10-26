@@ -6,7 +6,7 @@ System dynamics is a way to model such problems as stocks, flows and feedback lo
 
 ## Who this book is for
 
-The reader is the analytical modeller: a postgraduate student, an early-career analyst, a data scientist or a researcher who wants to build feedback models and defend them. You need a little Python; chapter 1 starts gently and explains each line of the first model. If Python is new to you, work through Appendix A, @sec-python, first: it teaches the Python, NumPy, pandas and matplotlib the chapters use, with the waiting list as the example throughout. No prior system dynamics is assumed. If you already know the field, each chapter's opening says what you can skip.
+The reader is the analytical modeller: a postgraduate student, an early-career analyst, a data scientist or a researcher who wants to build feedback models and defend them. You need a little Python; chapter 1 starts gently and explains each line of the first model. If Python is new to you, work through @sec-python first: it teaches the Python, NumPy, pandas and matplotlib the chapters use, with the waiting list as the example throughout. No prior system dynamics is assumed. If you already know the field, each chapter's opening says what you can skip.
 
 The people who benefit most never read the code: the managers and policy makers who ask *why is this happening*, *what if we act*, and *how sure are we?* Every chapter ends with what to tell them.
 
