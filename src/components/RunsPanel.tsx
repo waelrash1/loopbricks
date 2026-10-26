@@ -3,7 +3,7 @@ import { Download, Eye, EyeOff, FileUp, Sliders, Trash2, Wand2 } from "lucide-re
 import type { Model } from "@/data/molecules";
 import type { FrameCb } from "@/hooks/useSimulation";
 import type { History, Vars } from "@/sim/engine";
-import { MAX_RUNS, at, download, newId, parsePoints, setShelf, thin, useShelf, type RefData, type SavedRun, type Shelf } from "@/lib/runs";
+import { MAX_RUNS, at, download, getShelf, newId, parsePoints, setShelf, thin, useShelf, type RefData, type SavedRun, type Shelf } from "@/lib/runs";
 import { calibrate, fitStats, type Fit } from "@/lib/fit";
 import { RUN_DASH } from "@/components/TimeSeriesChart";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,8 @@ type Sim = {
   subscribe: (fn: FrameCb) => () => void;
 };
 
-const field = "h-9 rounded-[8px] border border-border bg-card px-2.5 text-[13px] focus:border-foreground focus:outline-none";
-const iconBtn = "grid place-items-center w-8 h-8 rounded-[7px] text-muted-foreground hover:bg-muted hover:text-foreground";
+const field = "h-9 max-sm:h-11 rounded-[8px] border border-border bg-card px-2.5 text-[13px] focus:border-foreground focus:outline-none";
+const iconBtn = "grid place-items-center w-8 h-8 max-sm:w-11 max-sm:h-11 rounded-[7px] text-muted-foreground hover:bg-muted hover:text-foreground";
 const f2 = (v: number) => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toPrecision(2));
 
 // What the Theil shares say, in plain words (Sterman 1984): where most of the error comes from
@@ -30,6 +30,25 @@ function diagnose(f: Fit) {
   if (f.us >= 0.5) return "Most of the error is unequal variation: the run swings more or less than the data. Check gains and time constants.";
   if (f.uc >= 0.5) return "Most of the error is unequal covariation: the run follows the trend but not every wiggle. Often that is noise the model should not chase.";
   return "The error is spread across bias, variation and timing.";
+}
+
+// Keep the current run on the model's shelf, drawn dashed on the chart. Used by this panel and by the control box.
+export function keepRun(modelKey: string, model: Model, h: History, params: Vars, name = ""): { ok: boolean; note: string } {
+  const shelf = getShelf(modelKey);
+  if (h.times.length < 3) return { ok: false, note: "Run the model first, then keep the run." };
+  if (shelf.runs.length >= MAX_RUNS) return { ok: false, note: `You can keep ${MAX_RUNS} runs per model. Delete one in Runs and data to keep another.` };
+  const t = thin(h.times, h.series);
+  const run: SavedRun = {
+    id: newId(),
+    name: name.trim() || `Run ${shelf.runs.length + 1}`,
+    params: { ...params },
+    times: t.times,
+    series: Object.fromEntries(model.stocks.map((s, i) => [s.id, t.series[i]])),
+    visible: true,
+    saved: new Date().toISOString(),
+  };
+  const stored = setShelf(modelKey, { ...shelf, runs: [...shelf.runs, run] });
+  return { ok: true, note: stored ? `Kept \u201c${run.name}\u201d. It is drawn dashed on the chart.` : `Kept \u201c${run.name}\u201d for this visit only: your browser would not store it. Export it from Runs and data to keep it.` };
 }
 
 export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; model: Model; sim: Sim }) {
@@ -57,22 +76,9 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
   const shown = model.stocks.filter((s) => !s.hidden);
 
   const save = () => {
-    const h = hist.current;
-    if (h.times.length < 3) return setNote("Run the model first, then save the run.");
-    if (shelf.runs.length >= MAX_RUNS) return setNote(`You can keep ${MAX_RUNS} runs per model. Delete one to save another.`);
-    const t = thin(h.times, h.series);
-    const run: SavedRun = {
-      id: newId(),
-      name: name.trim() || `Run ${shelf.runs.length + 1}`,
-      params: { ...sim.params },
-      times: t.times,
-      series: Object.fromEntries(model.stocks.map((s, i) => [s.id, t.series[i]])),
-      visible: true,
-      saved: new Date().toISOString(),
-    };
-    update({ ...shelf, runs: [...shelf.runs, run] });
-    setName("");
-    setNote(`Saved “${run.name}”. It is drawn dashed on the chart.`);
+    const r = keepRun(modelKey, model, hist.current, sim.params, name);
+    if (r.ok) setName("");
+    setNote(r.note);
   };
 
   const patchRun = (id: string, p: Partial<SavedRun>) => update({ ...shelf, runs: shelf.runs.map((r) => (r.id === id ? { ...r, ...p } : r)) });
@@ -165,10 +171,10 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
           <span className="sr-only">Name this run</span>
           <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} placeholder={`Name this run (Run ${shelf.runs.length + 1})`} className={cn(field, "w-full")} />
         </label>
-        <Button size="sm" onClick={save}>
-          Save run
+        <Button size="sm" className="max-sm:h-11" onClick={save}>
+          Keep run
         </Button>
-        <Button size="sm" variant="secondary" onClick={() => setAdding((a) => !a)} aria-expanded={adding}>
+        <Button size="sm" variant="secondary" className="max-sm:h-11" onClick={() => setAdding((a) => !a)} aria-expanded={adding}>
           Add data
         </Button>
       </div>
@@ -285,7 +291,7 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
                 </label>
               ))}
             </div>
-            <Button size="sm" className="mt-3" onClick={runCalibration} disabled={!calIds.length || !shelf.refs.some((r) => r.visible)}>
+            <Button size="sm" className="mt-3 max-sm:h-11" onClick={runCalibration} disabled={!calIds.length || !shelf.refs.some((r) => r.visible)}>
               <Wand2 size={15} aria-hidden /> Calibrate {calIds.length ? `${calIds.length} setting${calIds.length > 1 ? "s" : ""}` : ""}
             </Button>
           </div>
@@ -294,16 +300,16 @@ export default function RunsPanel({ modelKey, model, sim }: { modelKey: string; 
 
       <div className="mt-5 flex flex-wrap items-center gap-2" data-export>
         <span className="text-[13px] text-muted-foreground mr-1">Export</span>
-        <Button size="sm" variant="secondary" onClick={exportCsv}>
+        <Button size="sm" variant="secondary" className="max-sm:h-11" onClick={exportCsv}>
           <Download size={14} aria-hidden /> Data (CSV)
         </Button>
-        <Button size="sm" variant="secondary" onClick={(e) => exportPng(e.currentTarget)}>
+        <Button size="sm" variant="secondary" className="max-sm:h-11" onClick={(e) => exportPng(e.currentTarget)}>
           <Download size={14} aria-hidden /> Chart (PNG)
         </Button>
-        <Button size="sm" variant="secondary" onClick={exportScenario}>
+        <Button size="sm" variant="secondary" className="max-sm:h-11" onClick={exportScenario}>
           <Download size={14} aria-hidden /> Scenario file
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => file.current?.click()}>
+        <Button size="sm" variant="ghost" className="max-sm:h-11" onClick={() => file.current?.click()}>
           <FileUp size={14} aria-hidden /> Import
         </Button>
         <input
@@ -352,10 +358,10 @@ function AddData({ stocks, onAdd, onCancel }: { stocks: { id: string; label: str
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder={"0, 120\n5, 180\n10, 260"} className={cn(field, "h-auto py-2 font-mono")} />
       </label>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => onAdd(n.trim(), stock, text)}>
+        <Button size="sm" className="max-sm:h-11" onClick={() => onAdd(n.trim(), stock, text)}>
           Add data
         </Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button size="sm" variant="ghost" className="max-sm:h-11" onClick={onCancel}>
           Cancel
         </Button>
       </div>

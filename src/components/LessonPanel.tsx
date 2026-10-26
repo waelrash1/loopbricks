@@ -88,8 +88,16 @@ export default function LessonPanel({
                 >
                   <span className="grid place-items-center w-6 h-6 rounded-[6px] bg-foreground/10 text-[12px] font-bold shrink-0">{String.fromCharCode(65 + i)}</span>
                   <span className="flex-1">{opt}</span>
-                  {revealed && isAnswer && <Check size={18} aria-label="Correct answer" />}
-                  {revealed && isPicked && !isAnswer && <X size={18} aria-label="Your answer" />}
+                  {revealed && isAnswer && (
+                    <span className="inline-flex items-center gap-1 text-[13px] font-bold">
+                      <Check size={18} aria-hidden /> {isPicked ? "Right" : "The answer"}
+                    </span>
+                  )}
+                  {revealed && isPicked && !isAnswer && (
+                    <span className="inline-flex items-center gap-1 text-[13px] font-bold">
+                      <X size={18} aria-hidden /> Not quite
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -97,7 +105,7 @@ export default function LessonPanel({
 
           {revealed && (
             <p role="status" className="sheet mb-6 text-[16px] leading-[1.6] max-w-[70ch]">
-              <b>{correct ? "Correct. " : "Not quite. "}</b>
+              <b>{correct ? "Right. " : "Not quite. "}</b>
               {lesson.explain} Watch it play out in the diagram below.
             </p>
           )}

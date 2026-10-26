@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "rea
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GROUPS, MODELS } from "@/data/molecules";
-import { TOUR, childrenOf, groupOf, parentsOf, useApps, useMethods } from "@/data/catalog";
+import { TOUR, groupOf, useApps, useMethods } from "@/data/catalog";
 import { HINTS, PRESETS } from "@/data/presets";
 import { LESSONS } from "@/data/lessons";
 import { MODULES } from "@/data/learn/modules";
@@ -20,6 +20,8 @@ import MoleculeMap from "@/components/MoleculeMap";
 import LessonPanel from "@/components/LessonPanel";
 import FamilyTree from "@/components/FamilyTree";
 import RunsPanel from "@/components/RunsPanel";
+import MoleculeActions from "@/components/MoleculeActions";
+import MoleculeExplain from "@/components/MoleculeExplain";
 import { useShelf } from "@/lib/runs";
 import { markSeen } from "@/lib/progress";
 // the course, the cases and the methods are large and only some visitors open them, so they load on demand
@@ -230,8 +232,6 @@ export default function MoleculeExplorer() {
   const pos = TOUR.indexOf(key);
   const prevKey = TOUR[pos - 1];
   const nextKey = TOUR[pos + 1];
-  const parents = parentsOf(key);
-  const children = childrenOf(key);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -366,14 +366,14 @@ export default function MoleculeExplorer() {
           </div>
         ) : (
           <div className={`${wrap} pt-6 md:pt-8`}>
-            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted-foreground mb-4">
-              <p>
-                <a href="#/library" className="hover:text-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm text-muted-foreground">
+              <nav aria-label="Breadcrumb">
+                <a href="#/library" className="hover:text-foreground underline decoration-border underline-offset-[3px]">
                   Library
                 </a>
                 <span aria-hidden className="mx-2">/</span>
                 <span className="text-foreground font-semibold">{groupOf(key)}</span>
-              </p>
+              </nav>
               <nav aria-label="Neighbouring molecules" className="flex items-center gap-2">
                 <span className="mr-2">
                   {pos + 1} of {TOUR.length}
@@ -397,10 +397,15 @@ export default function MoleculeExplorer() {
               </nav>
             </div>
 
-            <h1 className="display text-[30px] sm:text-[36px] md:text-[38px] max-w-[26ch] [overflow-wrap:break-word]">{model.title}</h1>
-            <p className="mt-3 text-[17px] leading-[1.55] text-foreground/80 max-w-[70ch]">{model.lede}</p>
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              <div className="min-w-0 max-w-[68ch]">
+                <h1 className="display text-[30px] sm:text-[34px] xl:text-[38px] [overflow-wrap:break-word]">{model.title}</h1>
+                <p className="mt-3 text-[17px] leading-[1.55] text-muted-foreground">{model.lede}</p>
+              </div>
+              <MoleculeActions modelKey={key} params={sim.params} onOpen={go} />
+            </div>
 
-            <div data-runs-host className="mt-7">
+            <div data-runs-host className="mt-6 scroll-mt-24">
               <div className={bench}>
                 <div className="flex flex-col gap-5 min-w-0">
                   <section className="sheet">
@@ -422,14 +427,32 @@ export default function MoleculeExplorer() {
                   </section>
                   {behavior}
                 </div>
-                {controls}
+                <aside className="lg:sticky lg:top-[88px] print:hidden">
+                  <Controls model={model} sim={sim} presets={PRESETS[key] ?? []} modelKey={key} />
+                </aside>
               </div>
 
               <div className="mt-10">
                 <Tabs
                   label="About this molecule"
                   items={[
-                    ["explain", "Explain", <div key="x" className="prose-sd" dangerouslySetInnerHTML={{ __html: model.desc }} />],
+                    [
+                      "explain",
+                      "Explain",
+                      <MoleculeExplain
+                        key="x"
+                        modelKey={key}
+                        model={model}
+                        lesson={LESSONS[key]}
+                        cases={apps?.casesUsing(key) ?? []}
+                        onTry={(preset) => {
+                          if (preset) sim.applyParams(preset);
+                          sim.reset();
+                          sim.play();
+                          document.querySelector("[data-runs-host]")?.scrollIntoView({ block: "start" });
+                        }}
+                      />,
+                    ],
                     [
                       "loops",
                       "Loops",
@@ -476,52 +499,26 @@ export default function MoleculeExplorer() {
               </div>
             </div>
 
-            <div className="mt-14 grid md:grid-cols-2 gap-x-10 gap-y-10">
-              {(parents.length > 0 || children.length > 0 || siblings.length > 1) && (
-                <section>
-                  <h2 className="heading text-[18px] mb-3">Related molecules</h2>
-                  <dl className="grid gap-4">
-                    {(
-                      [
-                        ["Built from", parents],
-                        ["Used in", children],
-                        [`Also in ${groupOf(key)}`, siblings.filter((k) => k !== key)],
-                      ] as const
-                    ).map(
-                      ([label, keys]) =>
-                        keys.length > 0 && (
-                          <div key={label}>
-                            <dt className="text-[13px] text-muted-foreground mb-2">{label}</dt>
-                            <dd className="flex flex-wrap gap-2">
-                              {keys.map((k) => (
-                                <a key={k} href={`#/m/${k}`} className={smallBrick}>
-                                  {MODELS[k].name}
-                                </a>
-                              ))}
-                            </dd>
-                          </div>
-                        )
-                    )}
-                  </dl>
-                  <a href={`#/tree/${key}`} className="tlink inline-block mt-4 text-[13px] font-semibold">
-                    See it in the family tree
-                  </a>
-                </section>
-              )}
-              {apps && apps.casesUsing(key).length > 0 && (
-                <section>
-                  <h2 className="heading text-[18px] mb-3">Used in cases</h2>
+            <section className="mt-14">
+              <h2 className="heading text-[18px] mb-3">Related molecules</h2>
+              {siblings.length > 1 && (
+                <>
+                  <p className="text-[13px] text-muted-foreground mb-2">Also in {groupOf(key)}</p>
                   <div className="flex flex-wrap gap-2">
-                    {apps.casesUsing(key).map(({ domain, c }) => (
-                      <a key={domain.id + c.id} href={`#/apps/${domain.id}/${c.id}`} className="brick brick-w px-3.5 py-2 text-[13px] font-semibold text-left">
-                        <span className="block text-[11.5px] font-normal text-muted-foreground">{domain.short}</span>
-                        {c.title}
-                      </a>
-                    ))}
+                    {siblings
+                      .filter((k) => k !== key)
+                      .map((k) => (
+                        <a key={k} href={`#/m/${k}`} className={smallBrick}>
+                          {MODELS[k].name}
+                        </a>
+                      ))}
                   </div>
-                </section>
+                </>
               )}
-            </div>
+              <a href={`#/tree/${key}`} className="tlink inline-flex items-center min-h-11 mt-2 text-[13px] font-semibold">
+                See it in the family tree
+              </a>
+            </section>
 
             <nav aria-label="Next and previous molecule" className="mt-12 grid sm:grid-cols-2 gap-4">
               {prevKey ? (

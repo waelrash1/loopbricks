@@ -175,7 +175,9 @@ export default function TimeSeriesChart({
       const ends = [history.times, prev?.times ?? [], ...runs.map(({ r }) => r.times), ...refs.map((r) => r.points.map((p) => p[0]))].filter((t) => t.length);
       const tmax = ends.length ? Math.max(...ends.map((t) => t[t.length - 1])) : 10;
       const tmin = ends.length ? Math.min(...ends.map((t) => t[0])) : 0;
-      const span = Math.max(tmax - tmin, 1e-6);
+      // before the first step there is one point in time: give the axis a real range and say how to start
+      const empty = tmax - tmin < 1e-9;
+      const span = empty ? 10 : tmax - tmin;
       const X = (t: number) => L + ((t - tmin) / span) * pw;
       const Y = (v: number) => T + ph - (v / max) * ph;
       const base = T + ph;
@@ -209,6 +211,14 @@ export default function TimeSeriesChart({
         ctx.stroke();
         ctx.fillStyle = muted;
         ctx.fillText(t.toFixed(span < 5 ? 1 : 0), x, base + 6);
+      }
+      if (empty && !minimal) {
+        ctx.fillStyle = muted;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `13px ${cssVar("--font-sans")}`;
+        ctx.fillText("Run the model to draw it here", L + pw / 2, T + ph / 2);
+        ctx.font = `11px ${cssVar("--font-sans")}`;
       }
       // axis titles
       ctx.fillStyle = muted;

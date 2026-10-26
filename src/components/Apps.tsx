@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Check, ChevronLeft, ChevronRight, ExternalLink, Printer, Search, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, ExternalLink, Printer, Search } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import type { AppCase, Domain, Level } from "@/data/apps/types";
 import { isBuilt } from "@/data/apps/sim";
@@ -10,7 +10,9 @@ import StockFlowDiagram from "@/components/StockFlowDiagram";
 import CausalLoopDiagram from "@/components/CausalLoopDiagram";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 import EquationsPanel from "@/components/EquationsPanel";
-import Controls from "@/components/Controls";
+import CaseControls from "@/components/CaseControls";
+import CaseChecks from "@/components/CaseChecks";
+import { BrickMark } from "@/components/TopBar";
 import RunsPanel from "@/components/RunsPanel";
 import { useShelf } from "@/lib/runs";
 import { cn } from "@/lib/utils";
@@ -322,14 +324,52 @@ export function DomainLibrary({ domain, onCase }: { domain: Domain; onCase: Nav[
   );
 }
 
+// "Rashwan, Abo-Hamad and Arisha (2015), Eur J Oper Res": authors, year and venue from a reference's text
+function sourceLine(k: string | undefined) {
+  const r = k && REFS[k];
+  if (!r) return null;
+  const m = r.text.match(/^(.+?) \((\d{4})[a-z]?\)\. (.+)$/);
+  if (!m) return shortCite(k);
+  const names = m[1].split(", ").filter((a) => a !== "et al.").map((a) => a.replace(/ [A-Z-]+$/, ""));
+  const authors = names.length > 3 || m[1].includes("et al.") ? `${names[0]} et al.` : names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+  // what follows the title, less volume, issue and pages
+  const after = m[3].split(/(?<=[.?!]) (?=[A-Z])/).slice(1).join(" ");
+  const venue = after
+    .replace(/[,.]?\s*\d+[-–]\d+\.?$/, "")
+    .replace(/[,.]?\s*(pp?\.\s*)?\d+(\(\d+\))?(:\s*[\w-]*)?\.?$/, "")
+    .replace(/\.$/, "")
+    .trim();
+  return `${authors} (${m[2]})${venue ? `, ${venue}` : ""}`;
+}
+
 function CaseSim({ domain, c, tabs }: { domain: Domain; c: AppCase & { sim: string }; tabs: [string, string, ReactNode][] }) {
   const model = domain.models[c.sim];
   const sim = useSimulation(model);
   const shelf = useShelf(c.sim);
   const { setStopTime } = sim;
   useEffect(() => setStopTime(domain.stop[c.sim] ?? 0), [domain, c.sim, setStopTime]);
+  // the settings the behaviour checks were last run with: the defaults on arrival, then each new run's
+  const [checked, setChecked] = useState(sim.params);
   const built = isBuilt(c.sim);
-  const simTabs: [string, string, ReactNode][] = [
+  // the stock and flow diagram leads the Structure tab; loops and equations follow it for purpose-built models
+  const [first, structure, exercises, ...rest] = tabs;
+  const items: [string, string, ReactNode][] = [
+    first,
+    [
+      structure[0],
+      structure[1],
+      <div key="s" className="grid gap-8">
+        <section className="sheet">
+          <div className="sheet-head">
+            <h3 className={sub}>Stock and flow diagram</h3>
+            <span className={hint}>{model.name}</span>
+          </div>
+          <StockFlowDiagram model={model} modelKey={c.sim} subscribe={sim.subscribe} running={sim.running} showInfluences />
+        </section>
+        {structure[2]}
+      </div>,
+    ],
+    exercises,
     ...(built
       ? ([
           [
@@ -349,62 +389,29 @@ function CaseSim({ domain, c, tabs }: { domain: Domain; c: AppCase & { sim: stri
         ] as [string, string, ReactNode][])
       : []),
     ["runs", "Runs and data", <RunsPanel key="r" modelKey={c.sim} model={model} sim={sim} />],
+    ...rest,
   ];
   return (
     <div data-runs-host>
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
-        <div className="flex flex-col gap-5 min-w-0">
-          <section className="sheet">
-            <div className="sheet-head">
-              <h2 className={sub}>Stock and flow diagram</h2>
-              <span className={hint}>{model.name}</span>
-            </div>
-            <StockFlowDiagram model={model} modelKey={c.sim} subscribe={sim.subscribe} running={sim.running} showInfluences />
-          </section>
-          <section className="sheet">
-            <div className="sheet-head">
-              <h2 className={sub}>Behaviour over time</h2>
-              <span className={`${hint} print:hidden`}>Pick a scenario, then press play</span>
-            </div>
-            <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} shelf={shelf} />
-          </section>
+      <section aria-label="Model" className="mt-5 grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start">
+        <figure className="sheet min-w-0 m-0">
+          <figcaption className="sheet-head">
+            <span className={sub}>Behaviour over time</span>
+            <span className={`${hint} print:hidden`}>{model.title !== model.name ? model.title : "Pick a scenario, then press Run"}</span>
+          </figcaption>
+          <TimeSeriesChart model={model} subscribe={sim.subscribe} onClearPrevious={sim.clearPrevious} shelf={shelf} />
+        </figure>
+        <div className="lg:sticky lg:top-[88px] print:hidden">
+          <CaseControls model={model} sim={sim} presets={c.presets ?? []} onRun={() => setChecked(sim.params)} />
         </div>
-        <aside className="lg:sticky lg:top-[88px] print:hidden">
-          <Controls model={model} sim={sim} presets={c.presets ?? []} />
-        </aside>
-      </div>
+      </section>
+      <CaseChecks domain={domain} c={c} checked={checked} current={sim.params} />
       <div className="mt-10">
-        <Tabs label="About this case" items={[...tabs.slice(0, 2), ...simTabs, ...tabs.slice(2)]} />
+        <Tabs label="About this case" items={items} />
       </div>
     </div>
   );
 }
-
-// Runs the case's behaviour checks in the page, so the claim and the proof sit side by side.
-function ModelChecks({ domain, c }: { domain: Domain; c: AppCase }) {
-  const results = useMemo(() => checkResults(domain, c), [domain, c]);
-  if (!results.length) return null;
-  const passed = results.filter((r) => r.ok).length;
-  return (
-    <div className="mt-5">
-      <h3 className="heading text-[16px]">
-        Checks on this model: {passed} of {results.length} pass
-      </h3>
-      <ul className="mt-2 space-y-2 text-[15px] leading-[1.5]">
-        {results.map((r) => (
-          <li key={r.claim} className="flex gap-2.5 items-start">
-            <span className={cn("grid place-items-center w-5 h-5 rounded-[5px] shrink-0 mt-0.5 text-card", r.ok ? "bg-[var(--viz-good)]" : "bg-[var(--viz-pink)]")}>
-              {r.ok ? <Check size={13} aria-label="Passes" /> : <X size={13} aria-label="Fails" />}
-            </span>
-            {r.claim}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-// Section links for a long case page; the one in view is marked
 
 export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Domain; id: string; onOpen: (k: string) => void } & Nav) {
   const c = caseIn(domain, id)!;
@@ -412,18 +419,25 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
   const [prev, next] = [domain.cases[i - 1], domain.cases[i + 1]];
   const tableRow = "grid sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-x-6 gap-y-0.5 py-2.5 border-t border-border first:border-t-0";
   const bullets = "mt-3 space-y-2.5 text-[15px] leading-[1.6] list-disc pl-5 marker:text-accent-edge";
+  const source = sourceLine(c.refs[0]);
 
   const tabs: [string, string, ReactNode][] = [
     [
-      "try",
-      "Try this",
-      <div key="t" className="grid lg:grid-cols-2 gap-x-12 gap-y-8">
-        <ol className="space-y-2.5 text-[15px] leading-[1.6] list-decimal pl-5 marker:font-bold max-w-[70ch]">
-          {c.tryThis.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ol>
-        <p className="h-fit rounded-card bg-card border border-border px-5 py-4 text-[15.5px] leading-[1.6]">
+      "story",
+      "The story",
+      <div key="v" className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-x-12 gap-y-8">
+        <div className="max-w-[70ch]">
+          <p className="text-[17px] leading-[1.6]">{c.summary}</p>
+          <h3 className="heading text-[16px] mt-7">What the studies found</h3>
+          <ul className={bullets}>
+            {c.evidence.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+          <h3 className="heading text-[16px] mt-7">How it was validated</h3>
+          <p className="mt-3 text-[15px] leading-[1.6]">{c.validation}</p>
+        </div>
+        <p className="h-fit rounded-[var(--radius)] bg-card border border-border px-5 py-4 text-[15.5px] leading-[1.6]">
           <b className="heading block text-[16px] mb-1">The dynamic lesson</b>
           {c.insight}
         </p>
@@ -433,6 +447,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
       "structure",
       "Structure",
       <div key="s" className="max-w-[900px]">
+        <h3 className="heading text-[16px] mb-2">What each part stands for</h3>
         <dl className="text-[15px] leading-[1.5]">
           {c.map.map(([a, b]) => (
             <div key={a} className={tableRow}>
@@ -452,23 +467,13 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
       </div>,
     ],
     [
-      "evidence",
-      "Evidence",
-      <div key="v" className="grid lg:grid-cols-2 gap-x-12 gap-y-8">
-        <section>
-          <h3 className="heading text-[16px]">What the studies found</h3>
-          <ul className={bullets}>
-            {c.evidence.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
-        </section>
-        <section>
-          <h3 className="heading text-[16px]">How it was validated</h3>
-          <p className="mt-3 text-[15px] leading-[1.6]">{c.validation}</p>
-          <ModelChecks domain={domain} c={c} />
-        </section>
-      </div>,
+      "exercises",
+      "Exercises",
+      <ol key="t" className="space-y-2.5 text-[15px] leading-[1.6] list-decimal pl-5 marker:font-bold max-w-[70ch]">
+        {c.tryThis.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ol>,
     ],
     [
       "data",
@@ -497,7 +502,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
     ],
     [
       "refs",
-      `References (${c.refs.length})`,
+      `Sources (${c.refs.length})`,
       <ul key="r" className="text-[13.5px] leading-[1.6] text-muted-foreground space-y-1.5 max-w-[95ch]">
         {c.refs.map((k) => (
           <RefLink key={k} k={k} />
@@ -507,38 +512,52 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
   ];
 
   return (
-    <div className={`${wrap} pt-6 md:pt-8`}>
-      <p className="text-sm text-muted-foreground mb-6">
-        <a href="#/apps" className="hover:text-foreground">
+    <div className={`${wrap} pt-6 md:pt-7 pb-4`}>
+      <nav aria-label="Breadcrumb" className="text-[13px] text-muted-foreground">
+        <a href="#/apps" className="hover:text-foreground underline-offset-2 hover:underline">
           Cases
         </a>
-        <span aria-hidden className="mx-2">/</span>
-        <button onClick={() => onDomain(domain.id)} className="hover:text-foreground">
+        <span aria-hidden className="mx-1.5">/</span>
+        <button onClick={() => onDomain(domain.id)} className="hover:text-foreground underline-offset-2 hover:underline">
           {domain.short}
         </button>
-        <span aria-hidden className="mx-2">/</span>
-        <span className="text-foreground font-semibold">{c.theme}</span>
-      </p>
-      <div className="flex items-center justify-between gap-4">
-        <LevelTag l={c.level} />
-        <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
-          <Printer size={15} aria-hidden /> Print as a worksheet
-        </button>
+        <span aria-hidden className="mx-1.5">/</span>
+        <span aria-current="page" className="text-foreground font-semibold">
+          {c.theme}
+        </span>
+      </nav>
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="grid gap-2.5 max-w-[72ch] min-w-0">
+          <h1 className="display text-[30px] sm:text-[34px] xl:text-[38px] [overflow-wrap:anywhere]">{c.title}</h1>
+          {source && (
+            <p className="text-[13.5px] text-muted-foreground">
+              {c.sim ? "Rebuilt from" : "Based on"} {source}.
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-4 print:hidden">
+          <LevelTag l={c.level} />
+          <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 min-h-11 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
+            <Printer size={15} aria-hidden /> Print as a worksheet
+          </button>
+        </div>
       </div>
-      <h1 className="display text-[30px] md:text-[38px] max-w-[30ch] mt-3 [overflow-wrap:anywhere]">{c.title}</h1>
-      <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{c.summary}</p>
-      <p className="mt-6 max-w-[70ch] rounded-card bg-card border-l-4 border-accent px-5 py-4 text-[16px] leading-[1.55]">
-        <b>The question: </b>
-        {c.question}
-      </p>
+
+      <div className="mt-5 sheet flex gap-4 items-start max-w-[880px]">
+        <span className="shrink-0 mt-0.5">
+          <BrickMark size={28} />
+        </span>
+        <div className="grid gap-1">
+          <h2 className="heading text-[20px]">The question</h2>
+          <p className="text-[16px] leading-[1.55]">{c.question}</p>
+        </div>
+      </div>
 
       {c.sim ? (
-        <div className="mt-8">
-          <CaseSim key={c.id} domain={domain} c={c as AppCase & { sim: string }} tabs={tabs} />
-        </div>
+        <CaseSim key={c.id} domain={domain} c={c as AppCase & { sim: string }} tabs={tabs} />
       ) : (
         <>
-          <p className="mt-8 sheet text-[15px] leading-[1.6] max-w-[75ch]">
+          <p className="mt-5 sheet text-[15px] leading-[1.6] max-w-[75ch]">
             No small model does this case justice, so there is no simulator here. Use the molecules in Structure as building blocks and the table as your plan.
           </p>
           <div className="mt-10">

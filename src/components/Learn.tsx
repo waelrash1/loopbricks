@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { NotebookLinks } from "@/components/PythonPanel";
 import { notebookForModule } from "@/lib/notebook";
 import { ModuleReadings } from "@/components/Readings";
+import { READINGS } from "@/data/learn/readings";
 
 const wrap = "page";
 const sub = "heading text-[22px] md:text-[24px]";
@@ -329,15 +330,23 @@ export function QuizBlock({ quiz }: { quiz: Quiz[] }) {
                 >
                   <span className="grid place-items-center w-6 h-6 rounded-[6px] bg-foreground/10 text-[12px] font-bold shrink-0">{String.fromCharCode(65 + j)}</span>
                   <span className="flex-1">{o}</span>
-                  {shown && isRight && <Check size={16} aria-label="correct answer" />}
-                  {shown && isPick && !isRight && <X size={16} aria-label="your answer" />}
+                  {shown && isRight && (
+                    <span className="inline-flex items-center gap-1 text-[13px] font-bold">
+                      <Check size={16} aria-hidden /> {isPick ? "Right" : "The answer"}
+                    </span>
+                  )}
+                  {shown && isPick && !isRight && (
+                    <span className="inline-flex items-center gap-1 text-[13px] font-bold">
+                      <X size={16} aria-hidden /> Not quite
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
           {picked[i] !== undefined && (
             <p role="status" className="mt-3 text-[14.5px] leading-[1.6]">
-              <b>{picked[i] === q.answer ? "Correct. " : "Not quite. "}</b>
+              <b>{picked[i] === q.answer ? "Right. " : "Not quite. "}</b>
               {q.why}
             </p>
           )}
@@ -433,7 +442,7 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
   return (
     <div>
       {phase === "predict" && (
-        <div className="mb-2 rounded-[8px] bg-card border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
+        <div className="mb-2 rounded-[8px] bg-background border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
           <b>Predict first.</b> Draw how you expect <b>{tLine.st.label}</b> to move over {run.T} {m.timeUnit}, starting from the dot. Then run it and compare.
           {lines.length > 1 && (
             <label className="mt-2 flex items-center gap-2">
@@ -452,7 +461,7 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
       <svg
         ref={svg}
         viewBox={`0 0 ${W} ${H}`}
-        className={cn("w-full h-auto select-none", phase === "predict" && "cursor-crosshair touch-none")}
+        className={cn("w-full h-auto max-h-[340px] select-none", phase === "predict" && "cursor-crosshair touch-none")}
         role="img"
         aria-label={phase === "predict" ? `Drawing area: sketch ${tLine.st.label} over time` : `${m.name}: ${lines.map((l) => l.st.label).join(", ")} over ${run.T} ${m.timeUnit}`}
         onPointerDown={(e) => {
@@ -501,30 +510,10 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
           </span>
         )}
       </div>
-      {phase === "predict" ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button onClick={() => setPhase("shown")} disabled={sketch.length < 3} className="brick brick-y h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold disabled:opacity-50">
-            Run and compare
-          </button>
-          {sketch.length > 0 && (
-            <button onClick={() => setSketch([])} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
-              Clear sketch
-            </button>
-          )}
-          <button
-            onClick={() => {
-              setPredict(false);
-              setPhase("shown");
-            }}
-            className="h-9 px-2 text-[13px] text-muted-foreground underline underline-offset-2"
-          >
-            Skip predictions
-          </button>
-        </div>
-      ) : (
+      {phase === "shown" && (
         <>
           {/* what to notice comes after the learner has committed to a prediction */}
-          <p className="mt-2 rounded-[8px] bg-card border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
+          <p className="mt-2 rounded-[8px] bg-background border-l-4 border-accent px-3 py-2 text-[13.5px] leading-[1.5]">
             <b>Look for: </b>
             {run.look}
           </p>
@@ -533,34 +522,61 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
               <b>Your prediction matched {cmp.score}%</b> of the way{cmp.covered < 0.8 ? " over the part you drew" : ""}. {cmp.notes.join(" ")}
             </div>
           )}
-          <div className="mt-3 grid sm:grid-cols-2 gap-x-5 gap-y-2">
-            {m.params.map((d) => (
-              <label key={d.id} className="text-[12.5px]">
-                <span className="flex justify-between gap-2">
-                  <span className="truncate">{d.label}</span>
-                  <b className="tabular-nums">
-                    {p[d.id]} {d.unit}
-                  </b>
-                </span>
-                <input type="range" min={d.min} max={d.max} step={d.step} value={p[d.id]} onChange={(e) => setP((q) => ({ ...q, [d.id]: +e.target.value }))} className="w-full accent-[hsl(var(--accent-edge))]" />
-              </label>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {changed && (
-              <button onClick={() => setP(base)} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
-                Reset
-              </button>
-            )}
-            <button onClick={() => (setSketch([]), setP(base), setPhase("predict"), setPredict(true))} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
-              Predict again
-            </button>
-            <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w h-8 max-sm:min-h-11 px-3 text-[12.5px] font-semibold">
-              Open {m.name} in the simulator
-            </button>
-          </div>
         </>
       )}
+      {/* the navy control strip: full width along the foot of the card */}
+      <div className="-mx-4 md:-mx-5 -mb-4 md:-mb-5 mt-4 bg-panel text-white px-4 md:px-5 py-3.5">
+        {phase === "predict" ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setPhase("shown")} disabled={sketch.length < 3} className="brick brick-y h-10 max-sm:min-h-11 px-4 text-[14px] font-semibold disabled:opacity-50">
+              Run and compare
+            </button>
+            {sketch.length > 0 && (
+              <button onClick={() => setSketch([])} className="brick brick-w text-foreground h-10 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
+                Clear sketch
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setPredict(false);
+                setPhase("shown");
+              }}
+              className="h-10 max-sm:min-h-11 px-2 text-[13px] text-white/85 hover:text-white underline underline-offset-2"
+            >
+              Skip predictions
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="grid sm:grid-cols-2 gap-x-5 gap-y-2.5">
+              {m.params.map((d) => (
+                <label key={d.id} className="text-[13px] font-medium">
+                  <span className="flex justify-between gap-2">
+                    <span className="truncate">{d.label}</span>
+                    <output className="font-mono text-[12.5px] tabular-nums">
+                      {p[d.id]} {d.unit}
+                    </output>
+                  </span>
+                  <input type="range" min={d.min} max={d.max} step={d.step} value={p[d.id]} onChange={(e) => setP((q) => ({ ...q, [d.id]: +e.target.value }))} className="w-full max-sm:h-8 accent-[hsl(var(--accent))]" />
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {changed && (
+                <button onClick={() => setP(base)} className="brick brick-w text-foreground h-9 max-sm:min-h-11 px-3 text-[13px] font-semibold">
+                  Reset
+                </button>
+              )}
+              <button onClick={() => (setSketch([]), setP(base), setPhase("predict"), setPredict(true))} className="brick brick-w text-foreground h-9 max-sm:min-h-11 px-3 text-[13px] font-semibold">
+                Predict again
+              </button>
+              <button onClick={() => onOpen(`/m/${run.molecule}`)} className="brick brick-w text-foreground h-9 max-sm:min-h-11 px-3 text-[13px] font-semibold">
+                Open {m.name} in the simulator
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -568,8 +584,8 @@ function MiniRun({ run, onOpen }: { run: NonNullable<Step["run"]>; onOpen: (hash
 type Resolved = { step: Step; diagram?: StudyDiagram; formulation?: ModuleContent["formulations"][number]; archetype?: Archetype };
 type Tab = "all" | "diagram" | "equation" | "run";
 
-// The workbench: the diagram, equation and live run for one step, side by side with its text.
-function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => void; sticky?: boolean }) {
+// The workbench: the diagram, equation and live run for one step, on one card with the controls along its foot.
+function Bench({ r, onOpen }: { r: Resolved; onOpen: (hash: string) => void }) {
   const [track] = useTrack();
   if (track === "manager") r = { ...r, formulation: undefined };
   const tabs = [
@@ -583,60 +599,105 @@ function Bench({ r, onOpen, sticky }: { r: Resolved; onOpen: (hash: string) => v
   if (!tabs.length) return null;
   const t = tabs.find((x) => x[0] === tab) ? tab : tabs[0][0];
   return (
-    <div className={cn("rounded-card bg-card border border-border flex flex-col", sticky && "h-full")}>
-      <div role="tablist" aria-label="Show" className="flex flex-wrap gap-1 p-2 border-b border-border">
-        {tabs.map(([k, label]) => (
-          <button
-            key={k}
-            role="tab"
-            aria-selected={t === k}
-            onClick={() => setTab(k)}
-            className={cn("h-8 max-sm:min-h-11 px-3 rounded-[8px] text-[13px] font-semibold", t === k ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel" className={cn("p-4 md:p-5", sticky && "flex-1 overflow-y-auto")}>
+    <figure className="rounded-[var(--radius)] bg-card border border-border overflow-hidden">
+      {tabs.length > 1 && (
+        <div role="tablist" aria-label="Show" className="flex flex-wrap gap-1 p-2 border-b border-border">
+          {tabs.map(([k, label]) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={t === k}
+              onClick={() => setTab(k)}
+              className={cn("h-8 max-sm:min-h-11 px-3 rounded-btn text-[13px] font-semibold", t === k ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted")}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div role={tabs.length > 1 ? "tabpanel" : undefined} className="p-4 md:p-5">
         {(t === "diagram" || t === "all") && r.archetype && (
           <>
-            <p className="heading text-[15px] mb-2">{r.archetype.name}</p>
+            <figcaption className="heading text-[17px] mb-2">{r.archetype.name}</figcaption>
             <CausalLoopDiagram model={{ name: r.archetype.name, cld: r.archetype.cld } as unknown as Model} />
           </>
         )}
         {(t === "diagram" || t === "all") && r.diagram && !r.archetype && (
           <>
-            <p className="heading text-[15px] mb-2">
+            <figcaption className="heading text-[17px] mb-2">
               {r.diagram.title}
               {pg(r.diagram.pages)}
-            </p>
+            </figcaption>
             <DiagramBody d={r.diagram} />
           </>
         )}
         {(t === "equation" || t === "all") && r.formulation && (
           <div className={cn(t === "all" && (r.diagram || r.archetype) && "mt-6 pt-5 border-t border-border")}>
-            <p className="heading text-[15px]">
+            <p className="heading text-[17px]">
               {r.formulation.name}
               {pg(r.formulation.pages)}
             </p>
-            <pre className="mt-3 rounded-[8px] bg-background px-4 py-3 text-[13.5px] font-mono whitespace-pre-wrap [overflow-wrap:anywhere]">{r.formulation.equations.join("\n")}</pre>
+            <pre className="mt-3 rounded-btn bg-background px-4 py-3 text-[13.5px] font-mono whitespace-pre-wrap [overflow-wrap:anywhere]">{r.formulation.equations.join("\n")}</pre>
             <p className="mt-3 text-[14.5px] leading-[1.6]">{r.formulation.explain}</p>
           </div>
         )}
         {(t === "run" || t === "all") && r.step.run && MODELS[r.step.run.molecule] && (
           <div className={cn(t === "all" && tabs.length > 2 && "mt-6 pt-5 border-t border-border")}>
-            {t === "all" && <p className="heading text-[15px] mb-2">Run it: {MODELS[r.step.run.molecule].name}</p>}
+            <p className="heading text-[17px] mb-2">Run it: {MODELS[r.step.run.molecule].name}</p>
             <MiniRun run={r.step.run} onOpen={onOpen} />
           </div>
         )}
       </div>
-    </div>
+    </figure>
   );
 }
 
 // ponytail: modules without authored steps get one step per idea, with diagrams and equations dealt out in order
 function fallbackSteps(m: ModuleContent): Step[] {
   return m.bigIdeas.map((b, i) => ({ title: b.title, ideas: [b.title], diagram: m.diagrams[i]?.title, formulation: m.formulations[i]?.name }));
+}
+
+// the step lives in the address, #/learn/<module>/<n>, so each step can be linked, bookmarked and reached with Back
+const stepFromHash = () => {
+  const n = Number(window.location.hash.split("/")[3]);
+  return Number.isInteger(n) && n >= 1 ? n - 1 : 0;
+};
+function useHashStep() {
+  const [s, setS] = useState(stepFromHash);
+  useEffect(() => {
+    const f = () => setS(stepFromHash());
+    window.addEventListener("hashchange", f);
+    return () => window.removeEventListener("hashchange", f);
+  }, []);
+  return s;
+}
+// the step number of an archetype in the archetypes module, for links from a molecule page
+export const archetypeStep = (archId: string) => {
+  const k = (STEPS.archetypes ?? []).findIndex((s) => s.archetype === archId);
+  return k >= 0 ? k + 1 : undefined;
+};
+
+// a step in the module: an authored step, or one of the two that close every module
+type Item = { title: string; lead?: string } & ({ kind: "step"; r: Resolved; k: number } | { kind: "check" } | { kind: "more" });
+
+function StepMark({ n, done, current }: { n: number; done: boolean; current: boolean }) {
+  if (done)
+    return (
+      <span aria-hidden className="grid place-items-center w-[22px] h-[22px] shrink-0 rounded-[6px] bg-accent text-accent-foreground">
+        <Check size={14} strokeWidth={3} />
+      </span>
+    );
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "grid place-items-center w-[22px] h-[22px] shrink-0 rounded-[6px] font-mono text-[12px]",
+        current ? "border-2 border-foreground text-foreground" : "border-[1.5px] border-border text-muted-foreground"
+      )}
+    >
+      {n}
+    </span>
+  );
 }
 
 export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onModule: (id: string) => void; onIndex: () => void; onOpen: (hash: string) => void }) {
@@ -652,17 +713,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
       archetype: ARCHETYPES.find((a) => a.id === step.archetype),
     }));
   }, [m, id]);
-  const [active, setActive] = useState(0);
-  const refs = useRef<(HTMLElement | null)[]>([]);
-  useEffect(() => {
-    // the step crossing the reading line (40% down the screen) drives the workbench
-    const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && setActive(+(e.target as HTMLElement).dataset.step!)),
-      { rootMargin: "-40% 0px -59% 0px" }
-    );
-    refs.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, [steps]);
+  const want = useHashStep();
 
   if (!m)
     return (
@@ -675,39 +726,52 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
         </p>
       </div>
     );
-  const [prev, next] = [MODULE_CONTENT[i - 1], MODULE_CONTENT[i + 1]];
+  const [prevMod, nextMod] = [MODULE_CONTENT[i - 1], MODULE_CONTENT[i + 1]];
   const stepKey = (k: number) => `done:step/${id}/${k}`;
   const isDone = seen.has(doneKey(id));
   const used = new Set(steps.flatMap((s) => s.step.exercises ?? []));
   const usedEx = new Set(steps.map((s) => s.step.example));
   const restEx = m.exercises.map((x, k) => [x, k] as const).filter(([, k]) => !used.has(k));
   const restExamples = m.examples.filter((x) => !usedEx.has(x.title));
-  // the workbench keeps showing the last step that had something to show
-  let shown = active;
-  while (shown > 0 && !(steps[shown].diagram || steps[shown].formulation || steps[shown].archetype || steps[shown].step.run)) shown--;
-  const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const goStep = (k: number) => refs.current[k]?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  const nb = notebookForModule(id);
   const exNo = new Map<number, number>();
   let n = 0;
   steps.forEach((s) => s.step.exercises?.forEach((k) => exNo.set(k, ++n)));
   restEx.forEach(([, k]) => exNo.set(k, ++n));
 
+  const items: Item[] = [
+    ...steps.map((r, k) => ({ kind: "step" as const, r, k, title: r.step.title, lead: r.step.lead })),
+    ...(m.quiz.length || m.pitfalls.length
+      ? [{ kind: "check" as const, title: m.quiz.length ? "Check your understanding" : "Mistakes to avoid", lead: "Test the ideas from this module before you move on." }]
+      : []),
+    ...(restEx.length || restExamples.length || READINGS[id] || nb || m.def.deeper
+      ? [{ kind: "more" as const, title: "Practice and reading", lead: "More worked examples and exercises, the readings for this module, and where to go next." }]
+      : []),
+  ];
+  const cur = Math.min(want, items.length - 1);
+  const it = items[cur];
+  const last = cur === items.length - 1;
+  const itemDone = (x: Item) => (x.kind === "step" ? seen.has(stepKey(x.k)) : isDone);
+  const href = (k: number) => `#/learn/${id}${k > 0 ? `/${k + 1}` : ""}`;
+  const goStep = (k: number) => onOpen(`/learn/${id}${k > 0 ? `/${k + 1}` : ""}`);
+  const markCur = () => it.kind === "step" && markSeen(stepKey(it.k));
+
   const exercise = (k: number) => {
     const x = m.exercises[k];
     if (!x) return null;
     return (
-      <div key={k} className="rounded-card bg-card border-l-4 border-accent px-4 py-3.5">
+      <div key={k} className="rounded-[var(--radius)] bg-card border border-border border-l-4 border-l-accent px-4 py-3.5">
         <p className="text-[12.5px] font-semibold text-muted-foreground">Try it {exNo.get(k)}</p>
         <p className="mt-1 text-[15px] leading-[1.6]">{x.prompt}</p>
         {x.hint && (
           <details className="mt-2 text-[14px]">
-            <summary className="cursor-pointer font-semibold text-foreground/80">Hint</summary>
+            <summary className="cursor-pointer font-semibold text-foreground/80 py-1">Hint</summary>
             <p className="mt-1 leading-[1.6] text-foreground/85">{x.hint}</p>
           </details>
         )}
         {x.answer && (
           <details className="mt-2 text-[14px]">
-            <summary className="cursor-pointer font-semibold text-foreground/80">Show a worked answer</summary>
+            <summary className="cursor-pointer font-semibold text-foreground/80 py-1">Show a worked answer</summary>
             <p className="mt-1 leading-[1.6] text-foreground/85">{x.answer}</p>
           </details>
         )}
@@ -720,202 +784,165 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
     );
   };
 
-  // jump to any step, or step through; the same control sits on the workbench and, on phones, at the bottom
+  // on phones the same control sits at the foot of the screen: jump to any step, or step through
   const stepper = (
     <div className="flex items-center gap-2">
-      <button aria-label="Previous step" disabled={active === 0} onClick={() => goStep(active - 1)} className="brick brick-w w-9 max-sm:min-w-11 h-9 max-sm:min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+      <button aria-label="Previous step" disabled={cur === 0} onClick={() => goStep(cur - 1)} className="brick brick-w min-w-11 min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
         <ChevronLeft size={16} />
       </button>
       <label className="flex-1 min-w-0">
         <span className="sr-only">Go to step</span>
-        <select value={active} onChange={(e) => goStep(+e.target.value)} className="w-full h-9 max-sm:min-h-11 rounded-btn border border-border bg-card px-2.5 text-[13.5px] font-semibold text-foreground truncate">
-          {steps.map((s, k) => (
-            <option key={s.step.title} value={k}>
-              Step {k + 1} of {steps.length}: {s.step.title}
-              {seen.has(stepKey(k)) ? " (done)" : ""}
+        <select value={cur} onChange={(e) => goStep(+e.target.value)} className="w-full min-h-11 rounded-btn border border-border bg-card px-2.5 text-[13.5px] font-semibold text-foreground truncate">
+          {items.map((x, k) => (
+            <option key={x.title} value={k}>
+              Step {k + 1} of {items.length}: {x.title}
+              {itemDone(x) ? " (done)" : ""}
             </option>
           ))}
         </select>
       </label>
-      <button aria-label="Next step" disabled={active >= steps.length - 1} onClick={() => goStep(active + 1)} className="brick brick-w w-9 max-sm:min-w-11 h-9 max-sm:min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40">
+      <button
+        aria-label="Next step"
+        disabled={last}
+        onClick={() => (markCur(), goStep(cur + 1))}
+        className="brick brick-w min-w-11 min-h-11 grid place-items-center shrink-0 text-foreground disabled:opacity-40"
+      >
         <ChevronRight size={16} />
       </button>
     </div>
   );
 
-  return (
-    <article className="page pt-6 md:pt-8">
-      <p className="text-sm text-muted-foreground mb-6">
-        <button onClick={onIndex} className="hover:text-foreground">
-          Learn
-        </button>
-        <span aria-hidden className="mx-2">/</span>
-        <span className="text-foreground font-semibold">{m.def.level}</span>
-      </p>
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] gap-x-12 gap-y-6">
-        <header>
-          <p className="text-[13px] font-semibold text-muted-foreground flex items-center gap-1.5">
-            Module {i + 1} of {MODULE_CONTENT.length}, about {m.minutes} min
-            <Clock size={13} aria-hidden />
-          </p>
-          <h1 className="display text-[32px] md:text-[38px] max-w-[20ch] mt-2">{m.def.title}</h1>
-          <p className="mt-4 text-[18px] leading-[1.6] text-foreground/85 max-w-[60ch]">{m.def.summary}</p>
-          {m.def.prereqs.length > 0 && (
-            <p className="mt-5 text-[14px] text-muted-foreground">
-              Best after{" "}
-              {m.def.prereqs.map((p, k) => (
-                <span key={p}>
-                  {k > 0 && " and "}
-                  <button onClick={() => onModule(p)} className="tlink font-semibold text-foreground">
-                    {byId(p)?.def.title}
-                  </button>
-                  {seen.has(doneKey(p)) && <Check size={13} strokeWidth={3} aria-label="done" className="inline ml-1 -mt-0.5 text-[var(--viz-good)]" />}
-                </span>
-              ))}
-            </p>
-          )}
-          <nav aria-label="Steps in this module" className="mt-8 border-t border-border pt-5 print:hidden max-w-[60ch]">
-            <p className="heading text-[16px]">
-              The module in {steps.length} steps
-              <span className="ml-2 text-[13px] font-normal text-muted-foreground">{steps.filter((_, k) => seen.has(stepKey(k))).length} done</span>
-            </p>
-            <ol className="mt-2 grid gap-y-1 text-[14.5px]">
-              {steps.map((s, k) => (
-                <li key={s.step.title}>
-                  <a
-                    href={`#/learn/${id}`}
-                    onClick={(e) => (e.preventDefault(), goStep(k))}
-                    className="inline-flex gap-2 py-0.5 text-foreground/85 hover:text-foreground hover:underline underline-offset-2"
-                  >
-                    <span className="tabular-nums font-semibold text-accent-text w-5 shrink-0">{k + 1}</span>
-                    {s.step.title}
-                    {seen.has(stepKey(k)) && <Check size={14} strokeWidth={3} aria-label="done" className="shrink-0 mt-1 text-[var(--viz-good)]" />}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        </header>
-        <div className="grid gap-4 content-start">
-          {m.objectives.length > 0 && (
-            <div className="rounded-card bg-card border-l-4 border-accent px-5 py-4">
-              <p className="heading text-[16px]">By the end you will be able to</p>
-              <ul className="mt-2 space-y-1.5 text-[15px] leading-[1.55] list-disc pl-5 marker:text-accent-edge">
-                {m.objectives.map((o) => (
-                  <li key={o}>{o}</li>
+  const prose = "max-w-[68ch] text-[16px] leading-[1.65]";
+  let body: React.ReactNode = null;
+  if (it.kind === "step") {
+    const s = it.r, a = s.archetype;
+    const ideas = s.step.ideas.map((t) => m.bigIdeas.find((b) => b.title === t)).filter(Boolean) as ModuleContent["bigIdeas"];
+    const example = m.examples.find((x) => x.title === s.step.example);
+    body = (
+      <>
+        {it.k === 0 && (m.objectives.length > 0 || m.def.prereqs.length > 0) && (
+          <div className="max-w-[68ch] rounded-[var(--radius)] bg-card border border-border px-5 py-4">
+            {m.objectives.length > 0 && (
+              <>
+                <p className="heading text-[16px]">By the end of this module you will be able to</p>
+                <ul className="mt-2 space-y-1.5 text-[15px] leading-[1.55] list-disc pl-5 marker:text-accent-edge">
+                  {m.objectives.map((o) => (
+                    <li key={o}>{o}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {m.def.prereqs.length > 0 && (
+              <p className={cn("text-[14px] text-muted-foreground", m.objectives.length > 0 && "mt-3 pt-3 border-t border-border")}>
+                Best after{" "}
+                {m.def.prereqs.map((p, k) => (
+                  <span key={p}>
+                    {k > 0 && " and "}
+                    <button onClick={() => onModule(p)} className="tlink font-semibold text-foreground">
+                      {byId(p)?.def.title}
+                    </button>
+                    {seen.has(doneKey(p)) && <Check size={13} strokeWidth={3} aria-label="done" className="inline ml-1 -mt-0.5 text-[var(--viz-good)]" />}
+                  </span>
                 ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-14 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] gap-x-12">
-        <ol className="relative min-w-0">
-          {/* the spine: one line through every step, with the current one lit */}
-          <span aria-hidden className="absolute left-[17px] top-2 bottom-2 w-[2px] bg-border" />
-          {steps.map((s, k) => {
-            const a = s.archetype;
-            const ideas = s.step.ideas.map((t) => m.bigIdeas.find((b) => b.title === t)).filter(Boolean) as ModuleContent["bigIdeas"];
-            const example = m.examples.find((x) => x.title === s.step.example);
-            return (
-              <li key={s.step.title} ref={(el) => (refs.current[k] = el)} data-step={k} className="relative pl-14 pb-14 scroll-mt-24 min-h-[40vh] lg:min-h-[62vh]">
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute left-0 top-0 grid place-items-center w-9 h-9 rounded-[9px] text-[15px] font-bold tabular-nums border-2 transition-colors",
-                    k === active ? "bg-accent border-accent-edge text-accent-foreground" : "bg-background border-border text-muted-foreground"
-                  )}
-                >
-                  {k + 1}
-                </span>
-                {a && <span id={`arch-${a.id}`} className="absolute -top-24" />}
-                <h2 className="heading text-[22px] md:text-[25px] leading-tight pt-1">{s.step.title}</h2>
-                {s.step.lead && <p className="mt-2 text-[16.5px] leading-[1.6] text-foreground/75 max-w-[62ch]">{s.step.lead}</p>}
-                {ideas.map((b) => (
-                  <div key={b.title} className="mt-5 max-w-[62ch]">
-                    {b.title !== s.step.title && <h3 className="heading text-[16px]">{b.title}</h3>}
-                    <p className="mt-1.5 text-[15.5px] leading-[1.7]">
-                      {b.text}
-                      {pg(b.pages)}
-                    </p>
-                  </div>
-                ))}
-                {a && (
-                  <div className="mt-4 max-w-[62ch] text-[15.5px] leading-[1.7]">
-                    <p>{a.story}</p>
-                    <dl className="mt-4 grid gap-3 text-[14.5px] leading-[1.6]">
-                      {(
-                        [
-                          ["What you see", a.behaviour],
-                          ["Why it traps people", a.trap],
-                          ["Where to intervene", a.leverage],
-                        ] as const
-                      ).map(([dt, dd]) => (
-                        <div key={dt} className="grid sm:grid-cols-[150px_minmax(0,1fr)] gap-x-4">
-                          <dt className="heading text-[14px]">{dt}</dt>
-                          <dd>{dd}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {a.cases.map((c) => (
-                        <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-[12.5px] text-muted-foreground">Sources: {a.sources.join("; ")}</p>
-                  </div>
-                )}
-                {example && (
-                  <div className="mt-5 max-w-[62ch] border-l-4 border-accent-edge pl-4">
-                    <p className="text-[12.5px] font-semibold text-muted-foreground">From practice</p>
-                    <h3 className="heading text-[15.5px] mt-0.5">
-                      {example.title}
-                      {pg(example.pages)}
-                    </h3>
-                    <p className="mt-1 text-[15px] leading-[1.6]">{example.text}</p>
-                  </div>
-                )}
-                {/* on narrow screens the workbench sits inside each step */}
-                <div className="lg:hidden mt-5">
-                  <Bench r={s} onOpen={onOpen} />
-                </div>
-                {s.step.exercises?.length ? (
-                  <div className="mt-5 grid gap-3 max-w-[62ch]">
-                    {s.step.exercises.map(exercise)}
-                  </div>
-                ) : null}
-                <button
-                  onClick={() => markSeen(stepKey(k))}
-                  disabled={seen.has(stepKey(k))}
-                  className="brick brick-w mt-6 h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold inline-flex items-center gap-1.5 print:hidden"
-                >
-                  {seen.has(stepKey(k)) ? (
-                    <>
-                      <Check size={14} strokeWidth={3} aria-hidden className="text-[var(--viz-good)]" /> Step {k + 1} done
-                    </>
-                  ) : (
-                    `Mark step ${k + 1} as done`
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-        <aside className="hidden lg:block" aria-label="Workbench for the current step">
-          <div className="sticky top-[84px] h-[calc(100dvh-108px)] flex flex-col gap-2">
-            {stepper}
-            <div className="flex-1 min-h-0">{steps[shown] && <Bench key={shown} r={steps[shown]} onOpen={onOpen} sticky />}</div>
+              </p>
+            )}
           </div>
-        </aside>
-      </div>
-      <div className="lg:hidden print:hidden sticky bottom-0 z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur border-t border-border">{stepper}</div>
-
-      <div className="max-w-[1100px]">
+        )}
+        {ideas.length > 0 && (
+          <div className={cn(prose, "grid gap-4")}>
+            {ideas.map((b) => (
+              <div key={b.title}>
+                {b.title !== s.step.title && <h2 className="heading text-[18px] mb-1.5">{b.title}</h2>}
+                <p>
+                  {b.text}
+                  {pg(b.pages)}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+        {a && (
+          <div className={prose}>
+            <p>{a.story}</p>
+            <dl className="mt-4 grid gap-3 text-[15px] leading-[1.6]">
+              {(
+                [
+                  ["What you see", a.behaviour],
+                  ["Why it traps people", a.trap],
+                  ["Where to intervene", a.leverage],
+                ] as const
+              ).map(([dt, dd]) => (
+                <div key={dt} className="grid sm:grid-cols-[150px_minmax(0,1fr)] gap-x-4">
+                  <dt className="heading text-[14.5px]">{dt}</dt>
+                  <dd>{dd}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {a.cases.map((c) => (
+                <button key={c.hash} onClick={() => onOpen(c.hash)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[12.5px] text-muted-foreground">Sources: {a.sources.join("; ")}</p>
+          </div>
+        )}
+        <Bench key={cur} r={s} onOpen={onOpen} />
+        {example && (
+          <div className="max-w-[68ch] border-l-4 border-accent-edge pl-4">
+            <p className="text-[12.5px] font-semibold text-muted-foreground">From practice</p>
+            <h2 className="heading text-[16px] mt-0.5">
+              {example.title}
+              {pg(example.pages)}
+            </h2>
+            <p className="mt-1 text-[15px] leading-[1.6]">{example.text}</p>
+          </div>
+        )}
+        {s.step.exercises?.length ? <div className="grid gap-3 max-w-[68ch]">{s.step.exercises.map(exercise)}</div> : null}
+        <div className="print:hidden">
+          <button
+            onClick={() => markSeen(stepKey(it.k))}
+            disabled={seen.has(stepKey(it.k))}
+            className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold inline-flex items-center gap-1.5"
+          >
+            {seen.has(stepKey(it.k)) ? (
+              <>
+                <Check size={14} strokeWidth={3} aria-hidden className="text-[var(--viz-good)]" /> Step {cur + 1} done
+              </>
+            ) : (
+              `Mark step ${cur + 1} as done`
+            )}
+          </button>
+        </div>
+      </>
+    );
+  } else if (it.kind === "check") {
+    body = (
+      <>
+        {m.pitfalls.length > 0 && (
+          <section className="max-w-[68ch]">
+            {m.quiz.length > 0 && <h2 className={sub}>Mistakes to avoid</h2>}
+            <ul className="mt-3 space-y-2 text-[15.5px] leading-[1.6] list-disc pl-5 marker:text-accent-edge">
+              {m.pitfalls.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {m.quiz.length > 0 && (
+          <section className="max-w-[68ch]">
+            {m.pitfalls.length > 0 && <h2 className={sub}>Questions</h2>}
+            <QuizBlock key={id} quiz={m.quiz} />
+          </section>
+        )}
+      </>
+    );
+  } else {
+    body = (
+      <>
         {(restEx.length > 0 || restExamples.length > 0) && (
-          <section className="mt-6">
+          <section>
             <h2 className={sub}>More practice</h2>
             {restExamples.length > 0 && (
               <div className="mt-4 grid md:grid-cols-2 gap-4">
@@ -930,45 +957,29 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
                 ))}
               </div>
             )}
-            <div className="mt-4 grid md:grid-cols-2 gap-3">
-              {restEx.map(([, k]) => exercise(k))}
+            <div className="mt-4 grid md:grid-cols-2 gap-3">{restEx.map(([, k]) => exercise(k))}</div>
+          </section>
+        )}
+        <div className="-mt-14 empty:hidden">
+          <ModuleReadings id={id} go={onOpen} />
+        </div>
+        {nb && (
+          <section className="print:hidden">
+            <h2 className="heading text-[17px]">In Python</h2>
+            <p className="mt-1 text-[14px] text-muted-foreground max-w-[68ch]">
+              The same models in a Jupyter notebook: run them in code, change them, and work the exercises. It is also{" "}
+              <a href={`./book/${nb.file.replace(".ipynb", ".html")}`} className="tlink font-semibold">
+                a chapter of the book
+              </a>
+              , with every plot already drawn.
+            </p>
+            <div className="mt-3">
+              <NotebookLinks file={nb.file} title={`${m.def.title} in Python`} />
             </div>
           </section>
         )}
-
-        <ModuleReadings id={id} go={onOpen} />
-
-        {m.pitfalls.length > 0 && (
-          <section className="mt-14">
-            <h2 className={sub}>Mistakes to avoid</h2>
-            <ul className="mt-3 space-y-2 text-[15.5px] leading-[1.6] list-disc pl-5 marker:text-accent-edge max-w-[80ch]">
-              {m.pitfalls.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {m.quiz.length > 0 && (
-          <section id="lm-quiz" className="mt-14 scroll-mt-24">
-            <h2 className={sub}>Check your understanding</h2>
-            <QuizBlock key={id} quiz={m.quiz} />
-          </section>
-        )}
-
-        {notebookForModule(id) && (
-          <section className="mt-10 print:hidden">
-            <h2 className="heading text-[17px]">In Python</h2>
-            <p className="mt-1 text-[14px] text-muted-foreground max-w-[70ch]">
-              The same models in a Jupyter notebook: run them in code, change them, and work the exercises. It is also{" "}
-              <a href={`./book/${notebookForModule(id)!.file.replace(".ipynb", ".html")}`} className="tlink font-semibold">a chapter of the book</a>, with every plot already drawn.
-            </p>
-            <div className="mt-3"><NotebookLinks file={notebookForModule(id)!.file} title={`${m.def.title} in Python`} /></div>
-          </section>
-        )}
-
         {m.def.deeper && (
-          <section className="mt-10">
+          <section>
             <h2 className="heading text-[17px]">Go deeper</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {m.def.deeper.map((d) => (
@@ -979,42 +990,110 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             </div>
           </section>
         )}
+      </>
+    );
+  }
 
-        <div className="mt-10 flex flex-wrap items-center gap-3 print:hidden">
-          <button onClick={() => markSeen(doneKey(id))} disabled={isDone} className={cn("brick h-11 px-5 text-[15px] font-semibold", isDone ? "brick-w" : "brick-y")}>
-            {isDone ? (
-              <>
-                <Check size={16} strokeWidth={3} aria-hidden className="inline mr-1.5 -mt-0.5 text-[var(--viz-good)]" />
-                Marked as done
-              </>
-            ) : (
-              "Mark this module as done"
-            )}
-          </button>
+  // back and next: a quiet link back, the one yellow brick forward; at the ends of the module they lead on to the neighbouring module
+  const back =
+    cur > 0
+      ? { href: href(cur - 1), label: `Back: ${items[cur - 1].title}` }
+      : prevMod
+        ? { href: `#/learn/${prevMod.def.id}`, label: `Back: ${prevMod.def.title}` }
+        : { href: "#/learn", label: "Back: all modules" };
+  const fwd = !last
+    ? { href: href(cur + 1), label: `Next: ${items[cur + 1].title}` }
+    : nextMod
+      ? { href: `#/learn/${nextMod.def.id}`, label: `Next module: ${nextMod.def.title}` }
+      : { href: "#/learn", label: "Next: all modules" };
+
+  return (
+    <div className="page pt-6 md:pt-8 pb-10 lg:pb-16 grid lg:grid-cols-[minmax(220px,264px)_minmax(0,1fr)] gap-x-10 xl:gap-x-14 items-start">
+      <nav aria-label="Steps in this module" className="hidden lg:grid gap-3.5 sticky top-[84px] max-h-[calc(100dvh-108px)] overflow-y-auto print:hidden pr-1">
+        <a href="#/learn" onClick={(e) => (e.preventDefault(), onIndex())} className="text-[13px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline w-fit">
+          All modules
+        </a>
+        <div className="grid gap-1.5">
+          <span className="text-[13px] text-muted-foreground flex items-center gap-1.5">
+            Module {i + 1} of {MODULE_CONTENT.length}, about {m.minutes} min
+          </span>
+          <span className="heading text-[20px]">{m.def.title}</span>
+          <span className="text-[13px] text-muted-foreground">
+            {items.filter(itemDone).length} of {items.length} steps done
+          </span>
         </div>
+        <ol className="grid gap-0.5 text-[14px]">
+          {items.map((x, k) => {
+            const here = k === cur, done = itemDone(x);
+            return (
+              <li key={x.title}>
+                <a
+                  href={href(k)}
+                  aria-current={here ? "step" : undefined}
+                  className={cn(
+                    "flex gap-2.5 items-center px-2.5 py-2 rounded-btn border",
+                    here ? "bg-card border-border text-foreground font-semibold" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-card/60"
+                  )}
+                >
+                  <StepMark n={k + 1} done={done} current={here} />
+                  <span className="min-w-0">{x.title}</span>
+                  {done && <span className="sr-only">, done</span>}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
 
-        <nav aria-label="Next and previous module" className="mt-8 grid sm:grid-cols-2 gap-4 print:hidden">
-          {prev ? (
-            <button onClick={() => onModule(prev.def.id)} className="brick brick-w text-left px-5 py-4">
-              <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                <ChevronLeft size={14} aria-hidden /> Previous module
-              </span>
-              <span className="heading block text-[17px] mt-1">{prev.def.title}</span>
+      <article className="min-w-0 max-w-[880px] grid gap-6">
+        {/* phones and tablets: the module in one line above the step */}
+        <div className="lg:hidden grid gap-1">
+          <a href="#/learn" onClick={(e) => (e.preventDefault(), onIndex())} className="text-[13px] text-muted-foreground hover:text-foreground w-fit py-1">
+            All modules
+          </a>
+          <p className="text-[13px] text-muted-foreground">
+            Module {i + 1} of {MODULE_CONTENT.length}: <span className="font-semibold text-foreground">{m.def.title}</span>
+          </p>
+        </div>
+        <header className="grid gap-2.5 max-w-[68ch]">
+          <p className="text-[13px] font-semibold text-accent-text">
+            Step {cur + 1} of {items.length}
+          </p>
+          <h1 className="display text-[30px] sm:text-[34px] xl:text-[38px]">{it.title}</h1>
+          {it.lead && <p className="text-[17px] leading-[1.55] text-muted-foreground">{it.lead}</p>}
+        </header>
+
+        {body}
+
+        {last && (
+          <div className="print:hidden">
+            <button onClick={() => markSeen(doneKey(id))} disabled={isDone} className="brick brick-w h-11 px-5 text-[15px] font-semibold inline-flex items-center gap-1.5">
+              {isDone ? (
+                <>
+                  <Check size={16} strokeWidth={3} aria-hidden className="text-[var(--viz-good)]" />
+                  Module marked as done
+                </>
+              ) : (
+                "Mark this module as done"
+              )}
             </button>
-          ) : (
-            <span />
-          )}
-          {next && (
-            <button onClick={() => onModule(next.def.id)} className="brick brick-w text-left sm:text-right px-5 py-4">
-              <span className="flex sm:justify-end items-center gap-1 text-[13px]">
-                Next module <ChevronRight size={14} aria-hidden />
-              </span>
-              <span className="heading block text-[17px] mt-1">{next.def.title}</span>
-            </button>
-          )}
+          </div>
+        )}
+
+        <nav aria-label="Back and next" className="max-w-[68ch] mt-2 pt-5 border-t border-border flex flex-wrap justify-between gap-3 print:hidden">
+          <a href={back.href} className="inline-flex items-center gap-1.5 min-h-11 px-3 -ml-3 rounded-btn font-semibold text-foreground hover:bg-card max-w-full">
+            <ChevronLeft size={16} aria-hidden className="shrink-0" />
+            <span>{back.label}</span>
+          </a>
+          <a href={fwd.href} onClick={markCur} className="brick brick-y inline-flex items-center gap-1.5 min-h-11 px-[18px] py-2 font-semibold max-w-full">
+            <span>{fwd.label}</span>
+            <ChevronRight size={16} aria-hidden className="shrink-0" />
+          </a>
         </nav>
-      </div>
-    </article>
+      </article>
+
+      <div className="lg:hidden print:hidden sticky bottom-0 z-20 -mx-4 px-4 py-2.5 mt-6 bg-background/95 backdrop-blur border-t border-border">{stepper}</div>
+    </div>
   );
 }
 
@@ -1034,7 +1113,7 @@ export function LearnPanel({ molecule, onModule }: { molecule: string; onModule:
             <p className="heading text-[16px]">Archetype{arch.length > 1 ? "s" : ""} this molecule runs</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {arch.map((a) => (
-                <button key={a.id} onClick={() => onModule("archetypes", `arch-${a.id}`)} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
+                <button key={a.id} onClick={() => onModule(archetypeStep(a.id) ? `archetypes/${archetypeStep(a.id)}` : "archetypes")} className="brick brick-w h-9 max-sm:min-h-11 px-3.5 text-[13px] font-semibold">
                   {a.name}
                 </button>
               ))}

@@ -1,16 +1,20 @@
-import { ArrowUpRight, BookOpen, Boxes, GraduationCap, PencilRuler, Stethoscope } from "lucide-react";
+import type { MouseEvent } from "react";
+import { ArrowRight } from "lucide-react";
 import { MODELS } from "@/data/molecules";
 import { MODULES } from "@/data/learn/modules";
 import { useApps } from "@/data/catalog";
 import { useSeen } from "@/lib/progress";
-import { LiveDemo } from "@/components/MoleculeMap";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import HomeDemo from "@/components/HomeDemo";
+import MiniDiagram from "@/components/MiniDiagram";
 
 // ponytail: same key as doneKey in Learn.tsx, repeated so the home page does not load the whole course
 const isDone = (seen: Set<string>, id: string) => seen.has(`done:learn/${id}`);
 
+type Last = { hash: string; label: string; kind: "m" | "learn" | "apps"; key: string };
+
 // What the last visit was about, in words, or nothing if it no longer exists.
-function lastVisit(apps: ReturnType<typeof useApps>): { hash: string; label: string } | null {
+function lastVisit(apps: ReturnType<typeof useApps>): Last | null {
   let hash: string | null = null;
   try {
     hash = localStorage.getItem("last");
@@ -20,10 +24,10 @@ function lastVisit(apps: ReturnType<typeof useApps>): { hash: string; label: str
   const [, a, b, c] = (hash ?? "").split("/");
   const label =
     a === "m" ? MODELS[b]?.name : a === "learn" ? MODULES.find((m) => m.id === b)?.title : a === "apps" ? apps?.caseIn(apps.domainById(b), c)?.title : undefined;
-  return hash && label ? { hash, label } : null;
+  return hash && label ? { hash, label, kind: a as Last["kind"], key: b } : null;
 }
 
-// The front door: one running model, then the four places in the app and the book.
+// The front door: one running model, where you were, the four places in the app, and the book.
 export default function Home({ go }: { go: (hash: string) => void }) {
   const seen = useSeen();
   const done = MODULES.filter((m) => isDone(seen, m.id)).length;
@@ -31,103 +35,117 @@ export default function Home({ go }: { go: (hash: string) => void }) {
   const total = Object.keys(MODELS).length;
   const apps = useApps();
   const last = lastVisit(apps);
-  const door = "brick brick-w group text-left p-5 md:p-6 flex flex-col";
-  const doorTitle = "heading text-[20px] flex items-center gap-2.5";
-  const doorText = "mt-2 text-[14.5px] leading-[1.55] text-muted-foreground";
+  const link = (hash: string) => ({ href: "#" + hash, onClick: (e: MouseEvent) => (e.preventDefault(), go(hash)) });
+
+  // the course card follows the module last opened, else the next one not yet done
+  const lastModule = last?.kind === "learn" ? MODULES.find((m) => m.id === last.key) : undefined;
+  const mod = lastModule ?? next;
+  const modNo = mod ? MODULES.indexOf(mod) + 1 : 0;
+  const started = done > 0 || !!lastModule;
+  const other = last && last.kind !== "learn" ? last : null;
+
+  const ways = [
+    ["Learn", "/learn", `A course in ${MODULES.length} modules, from your first stock and flow to models you can test against data.`],
+    ["Library", "/library", `All ${total} molecules by family, each runnable on its own page with equations and Python.`],
+    [
+      "Cases",
+      "/apps",
+      apps ? `${apps.ALL_CASES.length} published studies in ${apps.DOMAINS.length} fields, rebuilt as models that run with their data.` : "Published studies rebuilt as models that run with their data.",
+    ],
+    ["Build", "/build", "Draw your own stock and flow model, run it, and take it to Python as a notebook."],
+  ];
 
   return (
-    <div className="page">
-      <section className="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-10 lg:gap-14 items-center pt-10 md:pt-14 pb-14 md:pb-16">
-        <div className="min-w-0">
+    <div className="page pb-16 md:pb-20">
+      <section className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center pt-10 md:pt-16 pb-12 md:pb-14">
+        <div className="min-w-0 flex flex-col gap-5">
           <h1 className="display text-[32px] sm:text-[38px] xl:text-[42px] max-w-[20ch]">Big models are built from small molecules.</h1>
-          <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[40ch]">
+          <p className="text-[17px] leading-[1.55] text-muted-foreground max-w-[50ch]">
             Run, change and combine {total} small feedback models, and see why each behaves as it does.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button size="lg" onClick={() => go(next ? `/learn/${next.id}` : "/learn")}>
-              {done ? "Continue learning" : "Start learning"}
-            </Button>
-            <Button size="lg" variant="secondary" onClick={() => go("/library")}>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <a {...link("/learn")} className="brick brick-y h-11 px-[18px] inline-flex items-center text-[15px] font-semibold">
+              Start the course
+            </a>
+            <a {...link("/library")} className="brick brick-w h-11 px-[18px] inline-flex items-center text-[15px] font-semibold">
               Browse the library
-            </Button>
+            </a>
           </div>
         </div>
-        <LiveDemo />
+        <HomeDemo />
       </section>
 
-      <h2 className="sr-only">Where to go</h2>
-      {last && (
-        <p className="mb-4 text-[15px] text-muted-foreground">
-          Pick up where you left off:{" "}
-          <a href={"#" + last.hash} onClick={(e) => (e.preventDefault(), go(last.hash))} className="tlink font-semibold text-foreground">
-            {last.label}
+      <section aria-labelledby="resume" className="flex flex-wrap gap-5">
+        <div className="sheet flex-[2_1_480px] min-w-0 flex flex-wrap items-center justify-between gap-5">
+          <div className="grid gap-2 min-w-0">
+            <h2 id="resume" className="heading text-[19px]">
+              {started ? "Pick up where you left off" : "Where to start"}
+            </h2>
+            <p className="text-muted-foreground">
+              {mod ? `Module ${modNo}: ${mod.title}. ` : "Every module is done. "}
+              {started ? `${done} of ${MODULES.length} modules done.` : "Nothing done yet."}
+            </p>
+            <div role="img" aria-label={`${done} of ${MODULES.length} modules done`} className="flex flex-wrap gap-1">
+              {MODULES.map((m) => (
+                <span
+                  key={m.id}
+                  className={cn("w-5 h-2.5 rounded-[3px]", isDone(seen, m.id) ? "bg-accent" : "border-[1.5px] border-muted-foreground/50")}
+                />
+              ))}
+            </div>
+          </div>
+          <a
+            {...link(mod ? `/learn/${mod.id}` : "/learn")}
+            className="brick brick-w h-11 px-[18px] inline-flex items-center gap-2 text-[15px] font-semibold !border-foreground"
+          >
+            {mod ? (started ? `Continue module ${modNo}` : `Start module ${modNo}`) : "Review the course"}
+            <ArrowRight size={16} aria-hidden />
           </a>
-        </p>
-      )}
-      <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-4">
-        <a href="#/learn" className={`${door} lg:row-span-3`}>
-          <span className={doorTitle}>
-            <GraduationCap size={22} aria-hidden /> Learn
-          </span>
-          <span className={doorText}>
-            A course in {MODULES.length} modules, from your first stock and flow to models you can test against data. Each module explains, sends you to the simulator, and ends with a self-check.
-          </span>
-          <span className="mt-6 grid gap-2">
-            {MODULES.slice(0, 4).map((m, i) => (
-              <span key={m.id} className="flex items-baseline gap-3 text-[14.5px]">
-                <span className="w-5 text-right font-semibold text-accent-text">{i + 1}</span>
-                <span className={isDone(seen, m.id) ? "line-through text-muted-foreground" : ""}>{m.title}</span>
+        </div>
+        {other && (
+          <a {...link(other.hash)} className="brick brick-w flex-[1_1_300px] min-w-0 rounded-[var(--radius)] px-5 py-4 flex items-center gap-4">
+            {other.kind === "m" && (
+              <span className="w-24 h-9 shrink-0" aria-hidden>
+                <MiniDiagram model={MODELS[other.key]} />
               </span>
-            ))}
-            <span className="flex items-baseline gap-3 text-[14.5px] text-muted-foreground">
-              <span className="w-5" />
-              and {MODULES.length - 4} more
+            )}
+            <span className="grid min-w-0">
+              <span className="text-[13px] text-muted-foreground">{other.kind === "m" ? "Last opened molecule" : "Last opened case"}</span>
+              <span className="font-semibold">{other.label}</span>
             </span>
-          </span>
-          <span className="mt-auto pt-6"><span className="brick brick-y inline-flex h-10 items-center px-4 text-[14px] font-semibold">
-            {done ? `${done} of ${MODULES.length} done. Next: ${next?.title ?? "review"}` : `Start with ${MODULES[0].title}`}
-          </span></span>
-        </a>
+          </a>
+        )}
+      </section>
 
-        <a href="#/library" className={door}>
-          <span className={doorTitle}>
-            <Boxes size={22} aria-hidden /> Library
-          </span>
-          <span className={doorText}>
-            A molecule is a small, reusable piece of model structure, such as a stock with its inflow and outflow. All {total} are here by family, or as a family tree showing which ones are built from which.
-          </span>
-        </a>
-        <a href="#/apps" className={door}>
-          <span className={doorTitle}>
-            <Stethoscope size={22} aria-hidden /> Cases
-          </span>
-          <span className={doorText}>
-            {apps
-              ? `${apps.ALL_CASES.length} cases from published studies in ${apps.DOMAINS.length} fields, from ${apps.DOMAINS[0].short.toLowerCase()} to ${apps.DOMAINS[apps.DOMAINS.length - 1].short.toLowerCase()}.`
-              : "Cases from published studies in several fields."}{" "}
-            Each runs here, with its data.
-          </span>
-        </a>
-        <a href="#/build" className={door}>
-          <span className={doorTitle}>
-            <PencilRuler size={22} aria-hidden /> Build
-          </span>
-          <span className={doorText}>Draw your own stock-and-flow model, run it, and take it to Python as a notebook.</span>
-        </a>
-      </div>
+      <section aria-labelledby="ways" className="mt-16 md:mt-[72px] flex flex-wrap gap-x-12 gap-y-6">
+        <h2 id="ways" className="display flex-[1_1_260px] text-[26px] md:text-[30px] max-w-[12ch]">
+          Four ways into the same models
+        </h2>
+        <ul className="flex-[3_1_560px] min-w-0 grid sm:grid-cols-2 gap-x-8">
+          {ways.map(([title, hash, text]) => (
+            <li key={title}>
+              <a {...link(hash)} className="group grid gap-1 pt-[18px] pb-[22px] border-t-2 border-foreground">
+                <span className="heading text-[22px] group-hover:underline underline-offset-4">{title}</span>
+                <span className="text-muted-foreground">{text}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <a href="./book/" className="brick brick-w mt-4 p-5 md:p-6 grid md:grid-cols-[auto_minmax(0,1fr)_auto] gap-4 items-center">
-        <BookOpen size={26} aria-hidden />
-        <span>
-          <span className="heading block text-[20px]">System Dynamics with Python</span>
-          <span className="block mt-1 text-[14.5px] leading-[1.55] text-muted-foreground">
+      <section aria-labelledby="book" className="sheet mt-16 md:mt-[72px] !p-6 md:!p-8 flex flex-wrap items-center justify-between gap-6">
+        <div className="grid gap-2 max-w-[60ch]">
+          <h2 id="book" className="display text-[24px] md:text-[28px]">
+            System Dynamics with Python
+          </h2>
+          <p className="text-muted-foreground">
             The companion book: 11 chapters that build, test and use these models in code, with one running case and notebooks that open in Colab.
-          </span>
-        </span>
-        <span className="flex items-center gap-1 text-[14px] font-semibold">
-          Read the book <ArrowUpRight size={16} aria-hidden />
-        </span>
-      </a>
+          </p>
+        </div>
+        <a href="./book/" className="brick brick-w h-11 px-[18px] inline-flex items-center text-[15px] font-semibold !border-foreground">
+          Read the book
+        </a>
+      </section>
     </div>
   );
 }

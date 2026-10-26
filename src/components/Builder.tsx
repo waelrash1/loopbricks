@@ -4,6 +4,7 @@ import {
   Check,
   AlertTriangle,
   Box,
+  CircleCheck,
   ChevronDown,
   Circle,
   ClipboardCopy,
@@ -13,6 +14,9 @@ import {
   FileText,
   Keyboard,
   Layers,
+  LayoutTemplate,
+  MousePointer2,
+  Settings2,
   Maximize,
   Minimize,
   MoveUpRight,
@@ -341,8 +345,9 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
   const dims = model.dims ?? [];
 
   // save as you go, a moment after the last change
+  const [saved, setSaved] = useState(false);
   useEffect(() => {
-    const t = window.setTimeout(() => saveModel(model), 300);
+    const t = window.setTimeout(() => setSaved(saveModel(model)), 300);
     return () => window.clearTimeout(t);
   }, [model]);
   useEffect(() => {
@@ -782,174 +787,119 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
         .filter((x): x is { el: Element; used: boolean } => !!x.el)
     : [];
   const linkSrc = linking?.from ? findElement(model, linking.from) : undefined;
-  const sep = <span className="hidden sm:block w-px h-7 bg-border" aria-hidden />;
+  const sep = <span className="w-px h-7 bg-border mx-1 shrink-0" aria-hidden />;
+  // a tool in the tool row: an icon and a label, pressed while its mode is on
+  const tool = (on: boolean) => cn("h-10 max-sm:min-h-11 px-3 rounded-btn border text-[13.5px] font-semibold inline-flex items-center gap-2 disabled:opacity-50 transition-colors", on ? "bg-accent text-accent-foreground border-accent-edge" : "bg-card border-border hover:border-foreground/45");
+  const ghost = "h-10 w-10 max-sm:min-h-11 max-sm:min-w-11 rounded-btn inline-flex items-center justify-center hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent";
+  const nothingMode = !linking && !adding;
+  const runSpan = `${fmt(model.start ?? 0)} to ${Number.isFinite(model.T) ? fmt(model.T) : "?"}${model.timeUnit ? ` ${model.timeUnit}` : ""}, dt ${Number.isFinite(model.dt) ? fmt(model.dt) : "?"}`;
 
   return (
-    <div className={`${wrap} pt-6 md:pt-8 pb-16`}>
-      <h1 className="heading text-[26px] md:text-[30px]">Build a model</h1>
-      <p className="mt-1.5 text-[15px] leading-[1.55] text-muted-foreground max-w-[80ch]">
-        Add stocks, flows and variables, write an equation for each, then run it. The builder checks your model as you go and saves it in this browser. Export it as Python, a notebook or XMILE when you are ready.
-      </p>
-
-      {/* templates and files */}
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <span className="hidden sm:inline text-[14px] font-semibold mr-1">Start from</span>
-        {TEMPLATES.map((t) => (
-          <button key={t.id} onClick={() => loadTemplate(t.id)} title={t.blurb} className={cn(btn, "max-sm:hidden")}>
-            {t.label}
-          </button>
-        ))}
-        <select value="" onChange={(e) => e.target.value && loadTemplate(e.target.value)} aria-label="Start from a template" className={cn(input, "sm:hidden h-11 flex-1 min-w-0 font-semibold")}>
-          <option value="">Start from a template...</option>
-          {TEMPLATES.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-        <span className="hidden sm:block w-px h-7 bg-border mx-1" aria-hidden />
-        <button onClick={() => fileRef.current?.click()} className={btn} title="Open a model: this builder's .json, XMILE from Stella or iThink (.xmile, .stmx, .itmx, .xml) or Vensim (.mdl)">
-          <Upload size={15} aria-hidden /> Open model...
-        </button>
-        <input ref={fileRef} type="file" accept=".json,.xmile,.stmx,.itmx,.xml,.mdl,application/json,application/xml,text/xml" className="sr-only" tabIndex={-1} aria-label="Open a model file" onChange={(e) => importFile(e.target.files?.[0])} />
-      </div>
+    <div className={`${wrap} pt-4 md:pt-6 pb-16`}>
+      <h1 className="sr-only">Build a model</h1>
 
       {/* the workspace: what goes full screen */}
       <div
         ref={wsRef}
-        className={cn("mt-4", full && "bg-background overflow-auto p-3 md:p-5", full === "overlay" && "fixed inset-0 z-[100]")}
+        className={cn(full && "bg-background overflow-auto p-2 md:p-4", full === "overlay" && "fixed inset-0 z-[100]")}
         aria-label="Builder workspace"
         role="region"
       >
-        <div className="relative">
-        <div role="toolbar" aria-label="Builder tools" className="flex flex-wrap items-center gap-x-3 gap-y-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:-mx-4 max-sm:px-4 max-sm:pb-1 [&>*]:shrink-0">
-          <div role="group" aria-label="Add" className="flex flex-wrap max-sm:flex-nowrap gap-1.5">
-            <button onClick={addStock} className={btn} title="Add a stock: something that accumulates">
-              <Box size={15} aria-hidden /> Add stock
-            </button>
-            <button onClick={startFlow} className={btn} disabled={!model.stocks.length} title={model.stocks.length ? "Add a flow into or out of a stock" : "Add a stock first"}>
-              <Workflow size={15} aria-hidden /> Add flow
-            </button>
-            <button onClick={addVar} className={btn} title="Add a variable: a constant or an auxiliary">
-              <Circle size={15} aria-hidden /> Add variable
-            </button>
-            <button
-              onClick={() => (linking ? select(null) : startLink())}
-              className={cn(btn, linking && "brick-y border-transparent")}
-              aria-pressed={!!linking}
-              disabled={elements(model).length < 2}
-              title="Add an information link: click the source, then the element that uses it (L)"
-              aria-keyshortcuts="L"
-            >
-              <MoveUpRight size={15} aria-hidden /> Add link
-            </button>
-          </div>
-          {sep}
-          <div role="group" aria-label="Edit" className="flex gap-1.5">
-            <button onClick={undo} disabled={!hasPast} className={ibtn} aria-label="Undo" title="Undo (Ctrl or Cmd + Z)" aria-keyshortcuts="Control+Z Meta+Z">
-              <Undo2 size={16} aria-hidden />
-            </button>
-            <button onClick={redo} disabled={!hasFuture} className={ibtn} aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z, or Ctrl + Y)" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y">
-              <Redo2 size={16} aria-hidden />
-            </button>
-            <button onClick={duplicate} disabled={!selected} className={ibtn} aria-label="Duplicate the selected element" title="Duplicate (Ctrl or Cmd + D)" aria-keyshortcuts="Control+D Meta+D">
-              <Copy size={16} aria-hidden />
-            </button>
-            <button onClick={() => sel && remove(sel)} disabled={!selected && !selLink} className={ibtn} aria-label="Delete the selection" title="Delete the selection (Delete)" aria-keyshortcuts="Delete">
-              <Trash2 size={16} aria-hidden />
-            </button>
-          </div>
-          {sep}
-          <div role="group" aria-label="Zoom" className="flex gap-1.5 max-sm:order-1">
-            <button onClick={() => zoomAt(1.25)} disabled={view !== "diagram" || vb.w >= MAX_W} className={ibtn} aria-label="Zoom out" title="Zoom out (minus key)">
-              <ZoomOut size={16} aria-hidden />
-            </button>
-            <button onClick={() => setVb(HOME)} disabled={view !== "diagram"} className={cn(btn, "w-[62px] justify-center px-0 tabular-nums")} aria-label={`Zoom ${zoomPct}%. Reset to 100%`} title="Reset the view to 100%">
-              {zoomPct}%
-            </button>
-            <button onClick={() => zoomAt(1 / 1.25)} disabled={view !== "diagram" || vb.w <= MIN_W} className={ibtn} aria-label="Zoom in" title="Zoom in (plus key); Ctrl or Cmd + wheel zooms at the pointer">
-              <ZoomIn size={16} aria-hidden />
-            </button>
-            <button onClick={fit} disabled={view !== "diagram" || !elements(model).length} className={ibtn} aria-label="Fit the model in view" title="Fit to model (0)">
-              <Focus size={16} aria-hidden />
-            </button>
-          </div>
-          {sep}
-          <details data-menu className="sm:relative">
-            <summary className={cn(btn, summaryCls)} aria-label="Export menu" title="Download the model as Python, a notebook, XMILE and more">
-              <Download size={15} aria-hidden /> Export <ChevronDown size={14} aria-hidden />
-            </summary>
-            <ExportMenu onPick={exportAs} canCsv={!!run?.res.ok} />
-          </details>
-          <button onClick={toggleFull} className={cn(btn, "max-sm:order-1")} aria-pressed={!!full} title={full ? "Exit full screen (Esc)" : "Fill the screen with the canvas, editor and results"}>
-            {full ? <Minimize size={15} aria-hidden /> : <Maximize size={15} aria-hidden />} {full ? "Exit full screen" : "Full screen"}
-          </button>
-          <details data-menu className="sm:relative">
-            <summary className={cn(ibtn, summaryCls)} aria-label="Functions" title="Functions: every function you can use in an equation">
-              <Sigma size={16} aria-hidden />
-            </summary>
-            <FunctionRef
-              className="right-0"
-              hint={selected ? `Click one to insert it into the equation of ${selected.name || "the selection"}.` : "Select an element, then click a function to insert it into its equation."}
-              onPick={(name, sig) => {
-                if (!insertRef.current) return setNote("Select an element first, then pick a function to insert it into its equation.");
-                const k = skeleton(name, sig);
-                insertRef.current(k.text, k.caret);
-              }}
-            />
-          </details>
-          <details data-menu className="sm:relative max-sm:order-1">
-            <summary className={cn(ibtn, summaryCls)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts">
-              <Keyboard size={16} aria-hidden />
-            </summary>
-            <Shortcuts />
-          </details>
-        </div>
-        </div>
-        <p aria-live="polite" className="mt-2 min-h-[20px] text-[13.5px] text-muted-foreground">
-          {note}
-        </p>
-
-        {opened && (
-          <div role={opened.error ? "alert" : "status"} className={cn("mb-3 rounded-[8px] border px-3 py-2 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : opened.warnings.length ? "border-accent-edge bg-card border-l-4" : "border-[var(--viz-good)] bg-card")}>
-            {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : opened.warnings.length ? <AlertTriangle size={16} aria-hidden className="shrink-0 mt-0.5 text-accent-text" /> : <Check size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
-            <div className="min-w-0 flex-1">
-              {opened.error ? (
-                <p>
-                  <b>Could not open {opened.file}.</b> {opened.error.replace(/^not implemented$/i, "Opening this kind of file is not ready yet; for now, open a .json model file saved from this builder.")} Your model has not changed.
-                </p>
-              ) : (
-                <>
-                  <p>
-                    <b>Opened {opened.file}.</b> {opened.warnings.length ? `${plural(opened.warnings.length, "thing")} to check:` : "Everything came across."}
-                  </p>
-                  {opened.warnings.length > 0 && (
-                    <ul className="mt-1 list-disc pl-5 grid gap-0.5 max-h-[160px] overflow-auto">
-                      {opened.warnings.map((w, i) => (
-                        <li key={i}>{w}</li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
+        <div className="rounded-card border border-border bg-card">
+          {/* top bar: the model's name, where it is saved, files, full screen and Run */}
+          <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 px-3 sm:px-4 py-2.5 border-b border-border">
+            <label className="flex items-center min-w-0 flex-1 sm:flex-none">
+              <span className="sr-only">Model name</span>
+              <input
+                value={model.name}
+                onChange={(e) => update((m) => ({ ...m, name: e.target.value }), "set:name")}
+                placeholder="Untitled model"
+                className="h-10 max-sm:h-11 w-full sm:w-[260px] min-w-0 rounded-btn border border-transparent bg-transparent px-2 text-[15px] font-semibold hover:border-border focus-visible:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </label>
+            {saved && <span className="text-[13px] text-muted-foreground max-sm:order-last max-sm:w-full max-sm:px-2">Saved in this browser</span>}
+            <div className="flex-1 max-sm:hidden" />
+            <div role="toolbar" aria-label="Model" className="flex flex-wrap items-center gap-2 whitespace-nowrap max-sm:ml-auto">
+              <button onClick={() => fileRef.current?.click()} className={btn} title="Open a model: this builder's .json, XMILE from Stella or iThink (.xmile, .stmx, .itmx, .xml) or Vensim (.mdl)">
+                <Upload size={15} aria-hidden /> Open<span className="max-sm:sr-only"> model</span>
+              </button>
+              <input ref={fileRef} type="file" accept=".json,.xmile,.stmx,.itmx,.xml,.mdl,application/json,application/xml,text/xml" className="sr-only" tabIndex={-1} aria-label="Open a model file" onChange={(e) => importFile(e.target.files?.[0])} />
+              <details data-menu className="sm:relative">
+                <summary className={cn(btn, summaryCls)} aria-label="Export menu" title="Download the model as Python, a notebook, XMILE and more">
+                  <Download size={15} aria-hidden /> Export <ChevronDown size={14} aria-hidden />
+                </summary>
+                <ExportMenu onPick={exportAs} canCsv={!!run?.res.ok} />
+              </details>
+              <button onClick={toggleFull} className={ibtn} aria-pressed={!!full} aria-label={full ? "Exit full screen" : "Full screen"} title={full ? "Exit full screen (Esc)" : "Fill the screen with the canvas, editor and results"}>
+                {full ? <Minimize size={16} aria-hidden /> : <Maximize size={16} aria-hidden />}
+              </button>
+              <button onClick={doRun} className="brick brick-y h-10 max-sm:min-h-11 px-5 max-sm:px-4 text-[14px] font-semibold inline-flex items-center gap-2" aria-describedby="bld-run-state">
+                <Play size={16} aria-hidden /> Run
+              </button>
             </div>
-            <button onClick={() => setOpened(null)} className={cn(ibtn, "h-7 w-7 shrink-0")} aria-label="Dismiss this message" title="Dismiss">
-              <X size={14} aria-hidden />
-            </button>
           </div>
-        )}
 
-        <div className="mt-1 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start">
-          {/* canvas */}
-          <section className="sheet min-w-0" aria-label="Model canvas">
-            <div className="relative flex flex-wrap items-center gap-2">
-              <label className="flex items-center gap-2 text-[13px] font-semibold mr-auto min-w-0">
-                <span className="shrink-0">Model name</span>
-                <input value={model.name} onChange={(e) => update((m) => ({ ...m, name: e.target.value }), "set:name")} className={cn(input, "w-[200px] max-w-full")} />
-              </label>
-              <div className="flex rounded-[8px] border border-border p-0.5 bg-background" role="group" aria-label="View">
+          {/* tool row */}
+          <div className="relative border-b border-border">
+            <div role="toolbar" aria-label="Builder tools" className="flex flex-wrap items-center gap-1.5 px-3 sm:px-4 py-2 max-sm:flex-nowrap max-sm:overflow-x-auto [&>*]:shrink-0">
+              <div role="group" aria-label="Draw" className="flex gap-1.5">
+                <button onClick={() => select(sel)} className={tool(nothingMode)} aria-pressed={nothingMode} title="Select and move elements">
+                  <MousePointer2 size={16} aria-hidden /> Select
+                </button>
+                <button onClick={addStock} className={tool(false)} title="Add a stock: something that accumulates">
+                  <Box size={16} aria-hidden /> Stock
+                </button>
+                <button onClick={() => (adding ? setAdding(null) : startFlow())} className={tool(!!adding)} aria-pressed={!!adding} disabled={!model.stocks.length} title={model.stocks.length ? "Add a flow into or out of a stock" : "Add a stock first"}>
+                  <Workflow size={16} aria-hidden /> Flow
+                </button>
+                <button onClick={addVar} className={tool(false)} title="Add a variable: a constant or an auxiliary">
+                  <Circle size={16} aria-hidden /> Variable
+                </button>
+                <button
+                  onClick={() => (linking ? select(null) : startLink())}
+                  className={tool(!!linking)}
+                  aria-pressed={!!linking}
+                  disabled={elements(model).length < 2}
+                  title="Add an information link: click the source, then the element that uses it (L)"
+                  aria-keyshortcuts="L"
+                >
+                  <MoveUpRight size={16} aria-hidden /> Link
+                </button>
+              </div>
+              {sep}
+              <div role="group" aria-label="Edit" className="flex gap-0.5">
+                <button onClick={undo} disabled={!hasPast} className={ghost} aria-label="Undo" title="Undo (Ctrl or Cmd + Z)" aria-keyshortcuts="Control+Z Meta+Z">
+                  <Undo2 size={18} aria-hidden />
+                </button>
+                <button onClick={redo} disabled={!hasFuture} className={ghost} aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z, or Ctrl + Y)" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y">
+                  <Redo2 size={18} aria-hidden />
+                </button>
+                <button onClick={duplicate} disabled={!selected} className={ghost} aria-label="Duplicate the selected element" title="Duplicate (Ctrl or Cmd + D)" aria-keyshortcuts="Control+D Meta+D">
+                  <Copy size={17} aria-hidden />
+                </button>
+                <button onClick={() => sel && remove(sel)} disabled={!selected && !selLink} className={ghost} aria-label="Delete the selection" title="Delete the selection (Delete)" aria-keyshortcuts="Delete">
+                  <Trash2 size={17} aria-hidden />
+                </button>
+              </div>
+              {sep}
+              <div role="group" aria-label="Zoom" className="flex gap-0.5">
+                <button onClick={() => zoomAt(1.25)} disabled={view !== "diagram" || vb.w >= MAX_W} className={ghost} aria-label="Zoom out" title="Zoom out (minus key)">
+                  <ZoomOut size={17} aria-hidden />
+                </button>
+                <button onClick={() => setVb(HOME)} disabled={view !== "diagram"} className={cn(ghost, "w-[58px] text-[13px] font-semibold tabular-nums")} aria-label={`Zoom ${zoomPct}%. Reset to 100%`} title="Reset the view to 100%">
+                  {zoomPct}%
+                </button>
+                <button onClick={() => zoomAt(1 / 1.25)} disabled={view !== "diagram" || vb.w <= MIN_W} className={ghost} aria-label="Zoom in" title="Zoom in (plus key); Ctrl or Cmd + wheel zooms at the pointer">
+                  <ZoomIn size={17} aria-hidden />
+                </button>
+                <button onClick={fit} disabled={view !== "diagram" || !elements(model).length} className={ghost} aria-label="Fit the model in view" title="Fit to model (0)">
+                  <Focus size={17} aria-hidden />
+                </button>
+              </div>
+              {sep}
+              <div className="flex rounded-btn border border-border p-0.5 bg-background" role="group" aria-label="View">
                 {(["diagram", "equations", "python"] as const).map((v) => (
-                  <button key={v} aria-pressed={view === v} onClick={() => setView(v)} className={cn("h-8 max-sm:h-11 px-3 rounded-[6px] text-[13px] font-semibold", view === v ? "bg-card shadow-sm" : "text-muted-foreground")}>
+                  <button key={v} aria-pressed={view === v} onClick={() => setView(v)} className={cn("h-8 max-sm:h-10 px-2.5 rounded-[6px] text-[13px] font-semibold", view === v ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground")}>
                     {v[0].toUpperCase() + v.slice(1)}
                   </button>
                 ))}
@@ -973,30 +923,89 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                   />
                 </div>
               </details>
+              <details data-menu className="sm:relative">
+                <summary className={cn(btn, summaryCls)} title="Replace the model with a worked example">
+                  <LayoutTemplate size={15} aria-hidden /> Templates <ChevronDown size={14} aria-hidden />
+                </summary>
+                <TemplateMenu onPick={(id) => (closeMenus(true), loadTemplate(id))} />
+              </details>
+              <details data-menu className="sm:relative">
+                <summary className={cn(ibtn, summaryCls)} aria-label="Functions" title="Functions: every function you can use in an equation">
+                  <Sigma size={16} aria-hidden />
+                </summary>
+                <FunctionRef
+                  className="right-0"
+                  hint={selected ? `Click one to insert it into the equation of ${selected.name || "the selection"}.` : "Select an element, then click a function to insert it into its equation."}
+                  onPick={(name, sig) => {
+                    if (!insertRef.current) return setNote("Select an element first, then pick a function to insert it into its equation.");
+                    const k = skeleton(name, sig);
+                    insertRef.current(k.text, k.caret);
+                  }}
+                />
+              </details>
+              <details data-menu className="sm:relative">
+                <summary className={cn(ibtn, summaryCls)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts">
+                  <Keyboard size={16} aria-hidden />
+                </summary>
+                <Shortcuts />
+              </details>
             </div>
+          </div>
 
-            {linking && (
-              <p role="status" className="mt-3 rounded-[8px] border border-accent-edge bg-accent/25 px-3 py-1.5 text-[13px] flex flex-wrap items-center gap-x-2">
-                <MoveUpRight size={14} aria-hidden />
-                {linkSrc ? (
-                  <span>
-                    From <b>{linkSrc.name}</b>: now click the element that uses it.
-                  </span>
+          {linking && (
+            <p role="status" className="border-b border-border bg-accent/25 px-4 py-2 text-[13px] flex flex-wrap items-center gap-x-2">
+              <MoveUpRight size={14} aria-hidden />
+              {linkSrc ? (
+                <span>
+                  From <b>{linkSrc.name}</b>: now click the element that uses it.
+                </span>
+              ) : (
+                <span>Click the element the information comes from.</span>
+              )}
+              <span className="text-muted-foreground">Esc cancels.</span>
+            </p>
+          )}
+
+          {opened && (
+            <div role={opened.error ? "alert" : "status"} className={cn("border-b px-4 py-2.5 text-[13.5px] flex gap-2 items-start", opened.error ? "border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)]" : opened.warnings.length ? "border-border border-l-4 border-l-accent-edge" : "border-border border-l-4 border-l-[var(--viz-good)]")}>
+              {opened.error ? <AlertCircle size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-pink)]" /> : opened.warnings.length ? <AlertTriangle size={16} aria-hidden className="shrink-0 mt-0.5 text-accent-text" /> : <Check size={16} aria-hidden className="shrink-0 mt-0.5 text-[var(--viz-good)]" />}
+              <div className="min-w-0 flex-1">
+                {opened.error ? (
+                  <p>
+                    <b>Could not open {opened.file}.</b> {opened.error.replace(/^not implemented$/i, "Opening this kind of file is not ready yet; for now, open a .json model file saved from this builder.")} Your model has not changed.
+                  </p>
                 ) : (
-                  <span>Click the element the information comes from.</span>
+                  <>
+                    <p>
+                      <b>Opened {opened.file}.</b> {opened.warnings.length ? `${plural(opened.warnings.length, "thing")} to check:` : "Everything came across."}
+                    </p>
+                    {opened.warnings.length > 0 && (
+                      <ul className="mt-1 list-disc pl-5 grid gap-0.5 max-h-[160px] overflow-auto">
+                        {opened.warnings.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
                 )}
-                <span className="text-muted-foreground">Esc cancels.</span>
-              </p>
-            )}
+              </div>
+              <button onClick={() => setOpened(null)} className={cn(ibtn, "h-7 w-7 shrink-0")} aria-label="Dismiss this message" title="Dismiss">
+                <X size={14} aria-hidden />
+              </button>
+            </div>
+          )}
 
-            {view === "diagram" ? (
-              <div
-                ref={boxRef}
-                tabIndex={-1}
-                className={cn("mt-3 overflow-auto rounded-card border border-border bg-card focus:outline-none", full ? "h-[calc(100dvh-215px)] min-h-[340px]" : "max-h-[70vh]")}
-                aria-label="Diagram. Tab to an element to select it; arrow keys move it; Delete removes it."
-                role="region"
-              >
+          {/* canvas and results on the left, the inspector on the right; on narrow screens they stack */}
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-[1fr_auto] [grid-template-areas:'canvas'_'insp'_'results'] lg:[grid-template-areas:'canvas_insp'_'results_insp']">
+            <section className="relative min-w-0 [grid-area:canvas] flex flex-col" aria-label="Model canvas">
+              {view === "diagram" ? (
+                <div
+                  ref={boxRef}
+                  tabIndex={-1}
+                  className={cn("flex-1 overflow-auto bg-card bg-[radial-gradient(hsl(var(--border))_1px,transparent_1px)] [background-size:20px_20px] focus:outline-none", full ? "h-[calc(100dvh-330px)] min-h-[300px]" : "max-h-[70vh] min-h-[300px]")}
+                  aria-label="Diagram. Tab to an element to select it; arrow keys move it; Delete removes it."
+                  role="region"
+                >
                 <svg
                   ref={svgRef}
                   viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
@@ -1146,127 +1155,155 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
                     );
                   })}
                 </svg>
-              </div>
-            ) : view === "equations" ? (
-              <EquationsView model={model} onSelect={(id) => (select(id), setView("diagram"))} byId={byId} />
-            ) : (
-              <PythonView model={model} slug={slug} full={!!full} onExport={exportAs} onNote={setNote} />
-            )}
-            <p className="mt-2 text-[12.5px] text-muted-foreground">
-              Drag to move; drag empty space to pan; Ctrl or Cmd + wheel zooms. Click or Tab to select; arrow keys nudge, Delete removes. Thin arrows are drawn for you from every name an equation uses; Add link draws one yourself, dashed until the equation uses it. A small filled dot is a constant; a doubled outline is an array.
-            </p>
-            <ChecksList issues={chk.issues} model={model} onSelect={(id) => (select(id), setView("diagram"))} />
-          </section>
-
-          {/* side panel */}
-          <section className={cn("sheet min-w-0 lg:sticky", full ? "lg:top-4" : "lg:top-24")} aria-label="Edit the selected element">
-            {linking ? (
-              <div>
-                <h2 className="heading text-[18px]">Add an information link</h2>
-                <ol className="mt-2 grid gap-1.5 text-[13.5px] leading-[1.5] list-decimal pl-5">
-                  <li className={cn(linkSrc && "text-muted-foreground")}>Click the element the information comes from{linkSrc ? `: ${linkSrc.name}` : "."}</li>
-                  <li className={cn(!linkSrc && "text-muted-foreground")}>Click the element whose equation uses it.</li>
-                </ol>
-                <p className="mt-2 text-[13px] text-muted-foreground">A link into a stock informs its initial value; only flows change a stock. Links never add to a stock's net flow.</p>
-                <button onClick={() => select(null)} className={cn(btn, "mt-3")}>
-                  Cancel
-                </button>
-              </div>
-            ) : adding ? (
-              <AddFlow model={model} value={adding} onChange={setAdding} onAdd={() => addFlow(adding.from, adding.to)} onCancel={() => setAdding(null)} />
-            ) : selLink ? (
-              <LinkInspector model={model} link={selLink} onSelect={(id) => select(id)} onDelete={() => remove("link:" + selLink.key)} />
-            ) : selected ? (
-              <Inspector
-                key={selected.id}
-                el={selected}
-                model={model}
-                issues={byId.get(selected.id) ?? []}
-                inputs={inputs}
-                onPatch={(p) => patch(selected.id, p)}
-                onRename={(n) => update((m) => renameElement(m, selected.id, n))}
-                onDelete={() => remove(selected.id)}
-                onDuplicate={duplicate}
-                onUnlink={(from) => update((m) => ({ ...m, links: (m.links ?? []).filter((l) => !(l.from === from && l.to === selected.id)) }))}
-                insertRef={insertRef}
-              />
-            ) : (
-              <div>
-                <h2 className="heading text-[18px]">Nothing selected</h2>
-                <p className="mt-2 text-[14px] leading-[1.6] text-foreground/80">Select an element on the canvas to edit its name, equation and units, or add a new one with the buttons above the canvas.</p>
-                <p className="mt-3 text-[13.5px] text-muted-foreground">
-                  {plural(model.stocks.length, "stock")}, {plural(model.flows.length, "flow")}, {plural(model.vars.length, "variable")}, {plural((model.links ?? []).length, "drawn link")}
-                  {dims.length ? `, ${plural(dims.length, "dimension")}` : ""}.
-                </p>
-              </div>
-            )}
-          </section>
-        </div>
-
-        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-5 items-start">
-          {/* run */}
-          <section className="sheet min-w-0" aria-labelledby="bld-run">
-            <h2 id="bld-run" className="heading text-[20px]">
-              Run
-            </h2>
-            <div className="mt-3 flex flex-wrap items-end gap-3">
-              <label className="text-[13px] font-semibold flex flex-col">
-                Start time
-                <input type="number" step="any" value={model.start ?? ""} placeholder="0" onChange={(e) => update((m) => ({ ...m, start: e.target.value === "" ? undefined : +e.target.value }), "set:start")} aria-describedby="bld-run-help" className={cn(input, "mt-1 w-[110px]")} />
-              </label>
-              <label className="text-[13px] font-semibold flex flex-col">
-                Stop time
-                <input type="number" min={0} step="any" value={Number.isFinite(model.T) ? model.T : ""} onChange={(e) => update((m) => ({ ...m, T: e.target.value === "" ? NaN : +e.target.value }), "set:T")} className={cn(input, "mt-1 w-[110px]")} />
-              </label>
-              <label className="text-[13px] font-semibold flex flex-col">
-                Time step (dt)
-                <input type="number" min={0} step="any" value={Number.isFinite(model.dt) ? model.dt : ""} onChange={(e) => update((m) => ({ ...m, dt: e.target.value === "" ? NaN : +e.target.value }), "set:dt")} className={cn(input, "mt-1 w-[110px]")} />
-              </label>
-              <label className="text-[13px] font-semibold flex flex-col">
-                Save every
-                <input type="number" min={0} step="any" value={model.saveEvery ?? ""} placeholder="every step" onChange={(e) => update((m) => ({ ...m, saveEvery: e.target.value === "" ? undefined : +e.target.value }), "set:saveEvery")} aria-describedby="bld-run-help" className={cn(input, "mt-1 w-[110px]")} />
-              </label>
-              <label className="text-[13px] font-semibold flex flex-col">
-                Time unit
-                <input value={model.timeUnit} onChange={(e) => update((m) => ({ ...m, timeUnit: e.target.value }), "set:timeUnit")} className={cn(input, "mt-1 w-[130px]")} placeholder="week" />
-              </label>
-              <button onClick={doRun} className="brick brick-y h-10 px-5 text-[14px] font-semibold inline-flex items-center gap-2" aria-describedby="bld-run-state">
-                <Play size={16} aria-hidden /> Run
-              </button>
-              <span id="bld-run-state" className="text-[13px] text-muted-foreground pb-2">
-                {errors.length ? `${errors.length} problem${errors.length > 1 ? "s" : ""} to fix before it can run` : "Ready to run"}
-              </span>
-            </div>
-            <p id="bld-run-help" className="mt-2 text-[12.5px] text-muted-foreground max-w-[75ch]">
-              The run goes from the start time (0 if blank) to the stop time in steps of dt. Save every keeps a result only at that interval, a multiple of dt, to keep long runs light; leave it blank to keep every step.
-            </p>
-            {chk.issues.some((i) => i.field === "settings") && <IssueItems issues={chk.issues.filter((i) => i.field === "settings")} model={model} onSelect={() => {}} />}
-            <div aria-live="polite">
-              {run && !run.res.ok && (
-                <div className="mt-4 rounded-[8px] border border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)] px-4 py-3">
-                  <p className="font-semibold text-[14px] flex items-center gap-2">
-                    <AlertCircle size={16} aria-hidden className="text-[var(--viz-pink)]" />
-                    {run.res.issues.length === 1 && run.res.issues[0].msg.includes("gave") ? "The run stopped part way" : `Not ready to run yet: fix ${run.res.issues.length === 1 ? "this problem" : `these ${run.res.issues.length} problems`} first`}
-                  </p>
-                  <IssueItems issues={run.res.issues} model={run.model} onSelect={(id) => (select(id), setView("diagram"))} />
+                </div>
+              ) : view === "equations" ? (
+                <div className="p-3 flex-1">
+                  <EquationsView model={model} onSelect={(id) => (select(id), setView("diagram"))} byId={byId} />
+                </div>
+              ) : (
+                <div className="p-3 flex-1">
+                  <PythonView model={model} slug={slug} full={!!full} onExport={exportAs} onNote={setNote} />
                 </div>
               )}
-              {run?.res.ok && (
-                <>
-                  {stale && <p className="mt-3 text-[13px] rounded-[8px] bg-card border-l-4 border-accent px-3 py-2">You have changed the model since this run. Run again to see the effect.</p>}
-                  {usesRandom(run.model) && (
-                    <p className="mt-3 text-[13px] flex items-start gap-2 text-foreground/80">
-                      <Shuffle size={15} aria-hidden className="shrink-0 mt-0.5 text-muted-foreground" /> This model uses random numbers. With a seed in each RANDOM_ function, the same seed repeats the run exactly; change the seed for a different run.
-                    </p>
-                  )}
-                  <Results model={run.model} res={run.res} plot={model.plot} onPlot={(plot) => setModel((m) => ({ ...m, plot }))} />
-                </>
-              )}
-              {!run && <p className="mt-4 text-[14px] text-muted-foreground">Press Run to simulate the model. Stocks are plotted over time, one line per element of an array; choose more to plot after the run.</p>}
-            </div>
-          </section>
+              <p aria-live="polite" className={cn("pointer-events-none absolute left-3 bottom-3 max-w-[min(560px,calc(100%-24px))] text-[13px]", note && "rounded-btn border border-border bg-card px-3 py-1.5 shadow-[0_4px_14px_hsl(var(--foreground)/0.12)]")}>
+                {note}
+              </p>
+            </section>
 
-          <HowTo onOpen={onOpen} />
+            {/* inspector */}
+            <aside className="min-w-0 [grid-area:insp] border-t lg:border-t-0 lg:border-l border-border p-4 md:p-5" aria-label="Inspector">
+              {linking ? (
+                <div>
+                  <h2 className="heading text-[18px]">Add an information link</h2>
+                  <ol className="mt-2 grid gap-1.5 text-[13.5px] leading-[1.5] list-decimal pl-5">
+                    <li className={cn(linkSrc && "text-muted-foreground")}>Click the element the information comes from{linkSrc ? `: ${linkSrc.name}` : "."}</li>
+                    <li className={cn(!linkSrc && "text-muted-foreground")}>Click the element whose equation uses it.</li>
+                  </ol>
+                  <p className="mt-2 text-[13px] text-muted-foreground">A link into a stock informs its initial value; only flows change a stock. Links never add to a stock's net flow.</p>
+                  <button onClick={() => select(null)} className={cn(btn, "mt-3")}>
+                    Cancel
+                  </button>
+                </div>
+              ) : adding ? (
+                <AddFlow model={model} value={adding} onChange={setAdding} onAdd={() => addFlow(adding.from, adding.to)} onCancel={() => setAdding(null)} />
+              ) : selLink ? (
+                <LinkInspector model={model} link={selLink} onSelect={(id) => select(id)} onDelete={() => remove("link:" + selLink.key)} />
+              ) : selected ? (
+                <Inspector
+                  key={selected.id}
+                  el={selected}
+                  model={model}
+                  issues={byId.get(selected.id) ?? []}
+                  inputs={inputs}
+                  onPatch={(p) => patch(selected.id, p)}
+                  onRename={(n) => update((m) => renameElement(m, selected.id, n))}
+                  onDelete={() => remove(selected.id)}
+                  onDuplicate={duplicate}
+                  onUnlink={(from) => update((m) => ({ ...m, links: (m.links ?? []).filter((l) => !(l.from === from && l.to === selected.id)) }))}
+                  insertRef={insertRef}
+                />
+              ) : (
+                <div>
+                  <h2 className="heading text-[18px]">{elements(model).length ? "Nothing selected" : "Start your model"}</h2>
+                  <p className="mt-2 text-[14px] leading-[1.6] text-foreground/80">
+                    {elements(model).length
+                      ? "Click an element on the canvas to edit its name, equation, units and note. Use the tool row to add stocks, flows, variables and links."
+                      : "Begin with Stock in the tool row: what accumulates in your system? Then add the flows that fill and drain it, and the variables that set their rates."}
+                  </p>
+                  <p className="mt-3 text-[13.5px] text-muted-foreground">
+                    {plural(model.stocks.length, "stock")}, {plural(model.flows.length, "flow")}, {plural(model.vars.length, "variable")}, {plural((model.links ?? []).length, "drawn link")}
+                    {dims.length ? `, ${plural(dims.length, "dimension")}` : ""}.
+                  </p>
+                  <p className="mt-4 text-[13px] font-semibold">Or start from a template</p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {TEMPLATES.map((t) => (
+                      <button key={t.id} onClick={() => loadTemplate(t.id)} title={t.blurb} className={btn}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-[12.5px] leading-[1.5] text-muted-foreground">
+                    Drag to move; drag empty space to pan; Ctrl or Cmd + wheel zooms. Click or Tab to select; arrow keys nudge, Delete removes. Thin arrows are drawn for you from every name an equation uses; Link draws one yourself, dashed until the equation uses it. A small filled dot is a constant; a doubled outline is an array.
+                  </p>
+                </div>
+              )}
+              <ChecksList issues={chk.issues} model={model} onSelect={(id) => (select(id), setView("diagram"))} />
+            </aside>
+
+            {/* results strip */}
+            <section className="relative min-w-0 [grid-area:results] border-t border-border px-4 pt-3 pb-4" aria-labelledby="bld-run">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <h2 id="bld-run" className="heading text-[16px]">
+                  Results
+                </h2>
+                <span id="bld-run-state" className={cn("text-[13px]", errors.length ? "text-foreground" : "text-muted-foreground")}>
+                  {errors.length ? `${errors.length} problem${errors.length > 1 ? "s" : ""} to fix before it can run` : "Ready to run"}
+                </span>
+                <span className="flex-1" />
+                <details data-menu className="sm:relative">
+                  <summary className={cn(btn, summaryCls, "font-normal")} title="Start, stop, time step, save interval and time unit">
+                    <Settings2 size={15} aria-hidden /> <span className="sr-only">Run settings: </span>
+                    <span className="font-mono text-[12.5px]">{runSpan}</span>
+                    {chk.issues.some((i) => i.field === "settings" && i.level === "error") && <AlertCircle size={14} aria-label="has problems" className="text-[var(--viz-pink)]" />}
+                    <ChevronDown size={14} aria-hidden />
+                  </summary>
+                  <div className={cn(popover, "right-0 bottom-full mb-2 w-[340px] max-w-[calc(100vw-40px)] p-3")}>
+                    <h3 className="heading text-[15px]">Run settings</h3>
+                    <div className="mt-2 grid grid-cols-2 gap-2.5">
+                      <label className="text-[13px] font-semibold flex flex-col">
+                        Start time
+                        <input type="number" step="any" value={model.start ?? ""} placeholder="0" onChange={(e) => update((m) => ({ ...m, start: e.target.value === "" ? undefined : +e.target.value }), "set:start")} aria-describedby="bld-run-help" className={cn(input, "mt-1")} />
+                      </label>
+                      <label className="text-[13px] font-semibold flex flex-col">
+                        Stop time
+                        <input type="number" min={0} step="any" value={Number.isFinite(model.T) ? model.T : ""} onChange={(e) => update((m) => ({ ...m, T: e.target.value === "" ? NaN : +e.target.value }), "set:T")} className={cn(input, "mt-1")} />
+                      </label>
+                      <label className="text-[13px] font-semibold flex flex-col">
+                        Time step (dt)
+                        <input type="number" min={0} step="any" value={Number.isFinite(model.dt) ? model.dt : ""} onChange={(e) => update((m) => ({ ...m, dt: e.target.value === "" ? NaN : +e.target.value }), "set:dt")} className={cn(input, "mt-1")} />
+                      </label>
+                      <label className="text-[13px] font-semibold flex flex-col">
+                        Save every
+                        <input type="number" min={0} step="any" value={model.saveEvery ?? ""} placeholder="every step" onChange={(e) => update((m) => ({ ...m, saveEvery: e.target.value === "" ? undefined : +e.target.value }), "set:saveEvery")} aria-describedby="bld-run-help" className={cn(input, "mt-1")} />
+                      </label>
+                      <label className="col-span-2 text-[13px] font-semibold flex flex-col">
+                        Time unit
+                        <input value={model.timeUnit} onChange={(e) => update((m) => ({ ...m, timeUnit: e.target.value }), "set:timeUnit")} className={cn(input, "mt-1")} placeholder="week" />
+                      </label>
+                    </div>
+                    <p id="bld-run-help" className="mt-2 text-[12.5px] leading-[1.5] text-muted-foreground">
+                      The run goes from the start time (0 if blank) to the stop time in steps of dt. Save every keeps a result only at that interval, a multiple of dt, to keep long runs light; leave it blank to keep every step.
+                    </p>
+                    {chk.issues.some((i) => i.field === "settings") && <IssueItems issues={chk.issues.filter((i) => i.field === "settings")} model={model} onSelect={() => {}} />}
+                  </div>
+                </details>
+              </div>
+              {chk.issues.some((i) => i.field === "settings" && i.level === "error") && <IssueItems issues={chk.issues.filter((i) => i.field === "settings" && i.level === "error")} model={model} onSelect={() => {}} />}
+              <div aria-live="polite">
+                {run && !run.res.ok && (
+                  <div className="mt-3 rounded-btn border border-[var(--viz-pink)] bg-[color-mix(in_srgb,var(--viz-pink)_7%,transparent)] px-4 py-3">
+                    <p className="font-semibold text-[14px] flex items-center gap-2">
+                      <AlertCircle size={16} aria-hidden className="text-[var(--viz-pink)]" />
+                      {run.res.issues.length === 1 && run.res.issues[0].msg.includes("gave") ? "The run stopped part way" : `Not ready to run yet: fix ${run.res.issues.length === 1 ? "this problem" : `these ${run.res.issues.length} problems`} first`}
+                    </p>
+                    <IssueItems issues={run.res.issues} model={run.model} onSelect={(id) => (select(id), setView("diagram"))} />
+                  </div>
+                )}
+                {run?.res.ok && (
+                  <>
+                    {stale && <p className="mt-3 text-[13px] rounded-btn bg-background border-l-4 border-accent px-3 py-2">You have changed the model since this run. Run again to see the effect.</p>}
+                    {usesRandom(run.model) && (
+                      <p className="mt-3 text-[13px] flex items-start gap-2 text-foreground/80">
+                        <Shuffle size={15} aria-hidden className="shrink-0 mt-0.5 text-muted-foreground" /> This model uses random numbers. With a seed in each RANDOM_ function, the same seed repeats the run exactly; change the seed for a different run.
+                      </p>
+                    )}
+                    <Results model={run.model} res={run.res} plot={model.plot} onPlot={(plot) => setModel((m) => ({ ...m, plot }))} />
+                  </>
+                )}
+                {!run && <p className="mt-2 text-[14px] text-muted-foreground">Press Run to simulate the model. Stocks are plotted over time, one line per element of an array; choose more to plot after the run.</p>}
+              </div>
+            </section>
+          </div>
         </div>
         {toast && (
           <div role="status" className="fixed z-[110] bottom-4 left-1/2 -translate-x-1/2 w-[min(92vw,520px)] rounded-[10px] bg-foreground text-background px-4 py-2.5 text-[14px] flex items-center gap-3 shadow-[0_8px_24px_hsl(var(--foreground)/0.3)]">
@@ -1280,6 +1317,28 @@ export function ModelBuilder({ onOpen }: { onOpen: (hash: string) => void }) {
           </div>
         )}
       </div>
+
+      <div className="mt-6">
+        <HowTo onOpen={onOpen} />
+      </div>
+    </div>
+  );
+}
+
+function TemplateMenu({ onPick }: { onPick: (id: string) => void }) {
+  return (
+    <div className={cn(popover, "right-0 w-[300px] max-w-[calc(100vw-40px)]")}>
+      <p className="px-2.5 pt-1 pb-1 text-[12px] text-muted-foreground">Replaces the model on the canvas. Undo brings yours back.</p>
+      <ul className="grid gap-0.5">
+        {TEMPLATES.map((t) => (
+          <li key={t.id}>
+            <button onClick={() => onPick(t.id)} className="w-full text-left rounded-[6px] px-2.5 py-1.5 max-sm:min-h-11 hover:bg-background focus-visible:bg-background">
+              <span className="block text-[13.5px] font-semibold">{t.label}</span>
+              <span className="block text-[12px] text-muted-foreground">{t.blurb}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -1592,14 +1651,22 @@ function ChecksList({ issues, model, onSelect }: { issues: Issue[]; model: BMode
   const sorted = [...issues].sort((a, b) => (a.level === b.level ? 0 : a.level === "error" ? -1 : 1));
   const ne = issues.filter((i) => i.level === "error").length, nw = issues.length - ne;
   return (
-    <div className="mt-4 border-t border-border pt-3" aria-live="polite">
+    <div className="mt-5 border-t border-border pt-4" aria-live="polite">
       <h2 className="heading text-[15px]">
-        Checks{" "}
-        <span className="font-normal text-[13px] text-muted-foreground">
-          {issues.length ? `${ne} error${ne === 1 ? "" : "s"}, ${nw} warning${nw === 1 ? "" : "s"}` : "no problems found"}
-        </span>
+        Model check{" "}
+        {issues.length > 0 && (
+          <span className="font-normal text-[13px] text-muted-foreground">
+            {ne} error{ne === 1 ? "" : "s"}, {nw} warning{nw === 1 ? "" : "s"}
+          </span>
+        )}
       </h2>
-      {issues.length > 0 && <IssueItems issues={sorted} model={model} onSelect={onSelect} />}
+      {issues.length > 0 ? (
+        <IssueItems issues={sorted} model={model} onSelect={onSelect} />
+      ) : (
+        <p className="mt-2 flex items-center gap-2 text-[14px]">
+          <CircleCheck size={18} aria-hidden className="shrink-0 text-[var(--viz-good)]" /> No problems found
+        </p>
+      )}
     </div>
   );
 }
@@ -1668,6 +1735,7 @@ function Inspector({
   const known = chosen.every((c) => c.d) ? chosen.map((c) => c.d!) : [];
   const combos = known.reduce((a, d) => a * d.elements.length, 1);
   const isData = el.kind === "var" && !!el.data;
+  const KindIcon = el.kind === "stock" ? Box : el.kind === "flow" ? Workflow : Circle;
   const fn = caret === null ? undefined : fnAt(exprVal, caret);
   const stockOpts = model.stocks.map((s) => (
     <option key={s.id} value={s.id}>
@@ -1705,12 +1773,15 @@ function Inspector({
   return (
     <div>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {kindOf(el)}
-            {el.dim ? ", array" : ""}
-          </p>
-          <h2 className="heading text-[18px] break-words">{labelOf(el)}</h2>
+        <div className="min-w-0 flex items-start gap-2.5">
+          <KindIcon size={20} aria-hidden className="shrink-0 mt-1" />
+          <div className="min-w-0">
+            <h2 className="heading text-[19px] break-words">{labelOf(el)}</h2>
+            <p className="text-[13px] text-muted-foreground">
+              {kindOf(el)}
+              {el.dim ? ", array" : ""}
+            </p>
+          </div>
         </div>
         <div className="flex gap-1.5 shrink-0">
           <button onClick={onDuplicate} className={ibtn} aria-label={`Duplicate ${el.name}`} title="Duplicate (Ctrl or Cmd + D)">
@@ -1771,7 +1842,7 @@ function Inspector({
               onBlur={() => setCaret(null)}
               aria-invalid={has(exprField)}
               aria-describedby="bld-el-issues bld-eq-hint"
-              className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.5] resize-y", has(exprField) && "border-[var(--viz-pink)]")}
+              className={cn(input, mono, "mt-1 h-auto py-2 leading-[1.5] resize-y bg-muted border-transparent", has(exprField) && "border-[var(--viz-pink)]")}
             />
             <div id="bld-eq-hint" aria-live="polite" className="mt-0.5 min-h-[18px] text-[12px] leading-[1.45] text-muted-foreground">
               {issues.some((i) => i.field === exprField) && (
@@ -1838,12 +1909,15 @@ function Inspector({
           </div>
         )}
         {el.kind === "stock" && (
-          <p className="rounded-[8px] bg-background px-3 py-2 text-[13px] leading-[1.5]">
-            <code className={mono}>
-              {refName(el.name)} = INTEG({net || "0"}, {el.init.trim() || "?"})
-            </code>
-            <span className="block mt-1 text-muted-foreground">A stock changes only through its flows: each time step it adds dt × (inflows − outflows).</span>
-          </p>
+          <div className="grid gap-1">
+            <p className="text-[13px] font-semibold">Equation</p>
+            <p className="rounded-btn bg-muted px-3 py-2.5 text-[13px] leading-[1.5] break-words">
+              <code className={mono}>
+                {refName(el.name)} = INTEG({net || "0"}, {el.init.trim() || "?"})
+              </code>
+            </p>
+            <p className="text-[12px] text-muted-foreground">Set by its flows: each time step it adds dt × (inflows - outflows). Draw a flow into or out of the stock to change it.</p>
+          </div>
         )}
         <div className="grid gap-2">
           <label className="block text-[13px] font-semibold min-w-0">
@@ -1912,7 +1986,7 @@ function Inspector({
           ))}
         {!dims.length && <p className="-mt-1.5 text-[12px] text-muted-foreground">To make an array, add a dimension with Dimensions above the canvas.</p>}
         <label className="block text-[13px] font-semibold">
-          Notes
+          Note
           <textarea value={el.note ?? ""} rows={2} onChange={(e) => onPatch({ note: e.target.value || undefined })} placeholder="What it means, where the number comes from" className={cn(input, "mt-1 h-auto py-2 leading-[1.5] resize-y font-normal")} />
         </label>
         <div id="bld-el-issues" aria-live="polite">
@@ -2282,12 +2356,12 @@ function Results({ model, res, plot, onPlot }: { model: BModel; res: RunResult; 
     onPlot(ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
   };
   const picker = (
-    <div className="mt-4 flex flex-wrap items-center gap-1.5" role="group" aria-label="Choose what to plot">
-      <span className="text-[13px] font-semibold mr-1">Plot</span>
+    <div className="mt-2.5 flex flex-wrap items-center gap-1.5" role="group" aria-label="Choose what to plot">
+      <span className="text-[13px] text-muted-foreground mr-1">Plot</span>
       {plottable.map((e) => {
         const on = chosen.some((c) => c.id === e.id);
         return (
-          <button key={e.id} onClick={() => toggle(e.id)} aria-pressed={on} className={cn("h-7 px-2.5 rounded-full border text-[12.5px] font-semibold", on ? "bg-accent/30 border-accent-edge" : "bg-card border-border text-muted-foreground hover:text-foreground")}>
+          <button key={e.id} onClick={() => toggle(e.id)} aria-pressed={on} className={cn("min-h-8 max-sm:min-h-11 px-2.5 rounded-btn border text-[12.5px] font-semibold", on ? "bg-accent text-accent-foreground border-accent-edge" : "bg-card border-border hover:border-foreground/45")}>
             {e.name}
           </button>
         );
@@ -2404,7 +2478,7 @@ function HowTo({ onOpen }: { onOpen: (hash: string) => void }) {
     ["Find the stocks", "What accumulates? Inventory, people, water, money. Each is a box, measured at a point in time."],
     ["Add the flows", "What fills and drains each stock? A flow is a rate per time unit. Use a cloud where it comes from or goes to outside the model."],
     ["Add the variables", "Constants (a number) and auxiliaries (a rule, such as Water / drain_time) set the rates."],
-    ["Write the equations", "Refer to other elements by name, with underscores for spaces. The arrows appear as you type; Add link lets you draw one first and fill in the equation after."],
+    ["Write the equations", "Refer to other elements by name, with underscores for spaces. The arrows appear as you type; Link lets you draw one first and fill in the equation after."],
     ["Check and run", "Fix the errors, look at the unit warnings, then run. Does the behaviour match what you expected, and why?"],
     ["Take it further", "Arrays repeat a structure over a dimension such as regions. Export as Python or a notebook to keep experimenting in code."],
   ];
