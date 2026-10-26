@@ -37,6 +37,15 @@ jobs:
       - run: quarto render notebooks && cp -r notebooks/_book dist/book
         env:
           MPLBACKEND: Agg
+      # the AI edition of the book at /book-ai/, rendered from its own branch with that branch's package
+      # (installed after the main book is done, so /book/ keeps this commit's package)
+      - uses: actions/checkout@v7
+        with:
+          ref: book-ai
+          path: book-ai-src
+      - run: pip install "./book-ai-src/python[test]" && quarto render book-ai-src/notebooks && cp -r book-ai-src/notebooks/_book dist/book-ai
+        env:
+          MPLBACKEND: Agg
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
