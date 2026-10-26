@@ -129,7 +129,7 @@
 
 @layer components {
   /* wide and heavy, like the type on a parts box */
-  .display { font-family: var(--font-display); font-stretch: 118%; font-weight: 800; letter-spacing: -0.025em; line-height: 0.98; }
+  .display { font-family: var(--font-display); font-stretch: 116%; font-weight: 800; letter-spacing: -0.025em; line-height: 1.04; }
   .heading { font-family: var(--font-display); font-stretch: 112%; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; }
   .tlink { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: hsl(var(--accent)); text-underline-offset: 3px; }
   .tlink:hover { text-decoration-color: currentColor; }

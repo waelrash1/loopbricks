@@ -43,7 +43,7 @@ export function ReviewPage({ onIndex, onModule }: { onIndex: () => void; onModul
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb onIndex={onIndex} here="Review" />
-      <h1 className="display text-[32px] md:text-[44px]">Mixed review</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Mixed review</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[62ch]">
         Eight questions drawn at random from {done.length >= 2 ? `the ${done.length} modules you have finished` : "the foundation modules (finish two modules to review your own)"}. Mixing topics makes you decide which idea applies, which is
         what real problems ask of you.
@@ -83,7 +83,7 @@ export function DrawIndex({ onDraw, onIndex }: { onDraw: (id: string) => void; o
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb onIndex={onIndex} here="Draw the loops" />
-      <h1 className="display text-[32px] md:text-[44px]">Draw the loops</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Draw the loops</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[62ch]">
         Read a short story, connect its variables with causal links and signs, and check your diagram against a model answer. The check tells you which links are right, which signs
         are wrong, what is missing, and which loops your diagram forms.

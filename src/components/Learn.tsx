@@ -208,7 +208,7 @@ export function CurriculumIndex({ onModule, onOpen }: { onModule: (id: string) =
   const next = MODULE_CONTENT.find((m) => !seen.has(doneKey(m.def.id)));
   return (
     <div className={`${wrap} pt-10 md:pt-14`}>
-      <h1 className="display text-[36px] md:text-[48px] max-w-[20ch]">From feedback to models you can trust</h1>
+      <h1 className="display text-[36px] md:text-[40px] max-w-[20ch]">From feedback to models you can trust</h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-foreground/80 max-w-[64ch]">
         {MODULE_CONTENT.length} modules in four levels. Each one sets out what you will be able to do, explains the ideas with diagrams and equations, sends you into the simulator to
         try them, and ends with a short self-check.
@@ -758,7 +758,7 @@ export function ModulePage({ id, onModule, onIndex, onOpen }: { id: string; onMo
             Module {i + 1} of {MODULE_CONTENT.length}, about {m.minutes} min
             <Clock size={13} aria-hidden />
           </p>
-          <h1 className="display text-[32px] md:text-[46px] max-w-[20ch] mt-2">{m.def.title}</h1>
+          <h1 className="display text-[32px] md:text-[38px] max-w-[20ch] mt-2">{m.def.title}</h1>
           <p className="mt-4 text-[18px] leading-[1.6] text-foreground/85 max-w-[60ch]">{m.def.summary}</p>
           {m.def.prereqs.length > 0 && (
             <p className="mt-5 text-[14px] text-muted-foreground">

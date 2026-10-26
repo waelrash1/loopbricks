@@ -56,7 +56,7 @@ export function ReferencesPage({ go }: { go: (h: string) => void }) {
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground">Reading list</span>
       </p>
-      <h1 className="display text-[32px] md:text-[44px]">Reading list</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Reading list</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[66ch]">
         Every source cited in the course, the modelling studio, the methods pages and the application cases: {entries.length} in all, {articles} of them journal articles or
         chapters. Journal articles were matched to their Crossref or PubMed records, and each links to its DOI. Under each source you can see where it is used.

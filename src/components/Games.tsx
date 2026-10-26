@@ -325,7 +325,7 @@ export function GamesIndex({ onGame, onOpen }: { onGame: (id: string) => void; o
   return (
     <div className={`${wrap} pt-10 md:pt-14 pb-16`}>
       <p className="text-[14px] font-semibold text-muted-foreground">Decision games</p>
-      <h1 className="display text-[34px] md:text-[50px] max-w-[18ch] mt-2">Make the decisions yourself</h1>
+      <h1 className="display text-[34px] md:text-[40px] max-w-[18ch] mt-2">Make the decisions yourself</h1>
       <p className="mt-5 text-[17px] leading-[1.6] text-foreground/80 max-w-[64ch]">
         Reading that people ignore delays and feedback is easy. Doing it yourself is more convincing. In each game you make one decision per turn with the information a real manager would
         have. The debrief then shows what the structure did with your decisions, and what a better policy would have done.
@@ -376,7 +376,7 @@ export function GamePage({ id, onIndex, onOpen }: { id: string; onIndex: () => v
         <p className="sheet text-[15px] mt-6">There is no game called “{id}”.</p>
       ) : (
         <>
-          <h1 className="display text-[32px] md:text-[46px] mt-3">{def.title}</h1>
+          <h1 className="display text-[32px] md:text-[38px] mt-3">{def.title}</h1>
           <p className="mt-4 text-[16.5px] leading-[1.6] text-foreground/80 max-w-[66ch]">{def.lede}</p>
           {id === "beer" && <BeerGamePlay onOpen={onOpen} />}
           {id === "fishery" && <FisheryPlay onOpen={onOpen} />}

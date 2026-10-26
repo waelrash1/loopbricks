@@ -48,7 +48,7 @@ export function LiveDemo() {
   }, [applyParams, play, reset, setSpeed, setStopTime, subscribe]);
 
   return (
-    <figure className="sheet min-w-0 shadow-[0_3px_0_hsl(var(--edge))] relative">
+    <figure className="sheet min-w-0 relative">
       {/* anything that moves on its own for more than five seconds needs a way to stop it */}
       <button onClick={sim.toggle} aria-label={sim.running ? "Pause the animation" : "Play the animation"} className="brick brick-w absolute right-3 top-3 z-10 grid place-items-center w-11 h-11 sm:w-9 sm:h-9">
         {sim.running ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
@@ -99,7 +99,7 @@ export default function MoleculeMap({ onTree, missing }: { onTree: () => void; m
       )}
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div>
-          <h1 className="display text-[36px] md:text-[48px]">Library</h1>
+          <h1 className="display text-[36px] md:text-[40px]">Library</h1>
           <p className="mt-3 text-[16px] leading-[1.55] text-foreground/80 max-w-[56ch]">
             {total} molecules in {GROUPS.length} families, from a single stock to whole projects. Open one to run it.
           </p>

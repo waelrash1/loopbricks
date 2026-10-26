@@ -39,7 +39,7 @@ export default function Home({ go }: { go: (hash: string) => void }) {
     <div className="page">
       <section className="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-10 lg:gap-14 items-center pt-10 md:pt-14 pb-14 md:pb-16">
         <div className="min-w-0">
-          <h1 className="display text-[40px] sm:text-[48px] xl:text-[56px] max-w-[14ch]">Big models are built from small molecules.</h1>
+          <h1 className="display text-[32px] sm:text-[38px] xl:text-[42px] max-w-[20ch]">Big models are built from small molecules.</h1>
           <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[40ch]">
             Run, change and combine {total} small feedback models, and see why each behaves as it does.
           </p>

@@ -61,7 +61,7 @@ export function StudioIndex({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} />
-      <h1 className="display text-[32px] md:text-[44px] max-w-[18ch]">Modelling studio</h1>
+      <h1 className="display text-[32px] md:text-[38px] max-w-[18ch]">Modelling studio</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
         Practise the part of modelling that textbooks cover least: turning a messy situation into a clear problem, a defensible boundary and a feedback structure. Each practice brief gives you
         a brief, people who disagree and some data. You work through the first steps of the modelling process and compare your answer with a model answer at every step.
@@ -373,7 +373,7 @@ export function StudioPage({ id, go }: { id: string; go: (h: string) => void }) 
     <article className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here={c.title} />
       <p className="text-[13px] font-semibold text-accent-text">{c.field}</p>
-      <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{c.title}</h1>
+      <h1 className="display text-[30px] md:text-[36px] max-w-[24ch]">{c.title}</h1>
 
       <div className="mt-8 grid lg:grid-cols-[220px_minmax(0,1fr)] gap-8 lg:gap-12">
         <nav aria-label="Stages of this brief" className="hidden lg:block print:hidden">

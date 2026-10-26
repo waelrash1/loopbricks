@@ -37,7 +37,7 @@ export function MethodsIndex({ onPage, onBook }: { onPage: (id: string) => void;
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground font-semibold">Methods</span>
       </p>
-      <h1 className="display text-[38px] md:text-[52px] max-w-[20ch]">Methods for real models</h1>
+      <h1 className="display text-[38px] md:text-[42px] max-w-[20ch]">Methods for real models</h1>
       <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[60ch]">
         How to frame a problem with a reference mode (a sketch of the behaviour over time you want to explain), test a model until you trust it, measure its fit to data, and where machine learning and AI help.
       </p>
@@ -88,7 +88,7 @@ export function MethodsPage({ id, onPage, onOpen }: { id: string; onPage: (id: s
         <span aria-hidden className="mx-2">/</span>
         <span className="text-foreground font-semibold">{p.title}</span>
       </p>
-      <h1 className="display text-[34px] md:text-[48px] max-w-[22ch]">{p.title}</h1>
+      <h1 className="display text-[34px] md:text-[40px] max-w-[22ch]">{p.title}</h1>
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[64ch]">{p.summary}</p>
 
       {p.tryIt && (

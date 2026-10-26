@@ -397,7 +397,7 @@ export default function MoleculeExplorer() {
               </nav>
             </div>
 
-            <h1 className="display text-[30px] sm:text-[36px] md:text-[44px] max-w-[26ch] [overflow-wrap:break-word]">{model.title}</h1>
+            <h1 className="display text-[30px] sm:text-[36px] md:text-[38px] max-w-[26ch] [overflow-wrap:break-word]">{model.title}</h1>
             <p className="mt-3 text-[17px] leading-[1.55] text-foreground/80 max-w-[70ch]">{model.lede}</p>
 
             <div data-runs-host className="mt-7">

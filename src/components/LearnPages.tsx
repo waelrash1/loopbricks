@@ -57,7 +57,7 @@ export function GlossaryPage({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="Glossary" />
-      <h1 className="display text-[32px] md:text-[44px]">Glossary</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Glossary</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[62ch]">{GLOSSARY.length} terms of system dynamics, each with a link to where it is taught or can be run.</p>
       <label className="mt-5 flex items-center gap-2 max-w-[420px] rounded-[10px] border border-border bg-card px-3 h-11">
         <Search size={16} aria-hidden className="text-muted-foreground" />
@@ -110,7 +110,7 @@ export function CheckPage({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="Before and after" />
-      <h1 className="display text-[32px] md:text-[44px]">Before and after</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Before and after</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
         {DIAGNOSTIC.length} questions on mistakes that even well-educated adults make about stocks, flows, delays and feedback. Take it before you start and again when you finish:
         the difference is what you learned. Answers are shown only after you submit.
@@ -229,7 +229,7 @@ export function TeachPage({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="For instructors" />
-      <h1 className="display text-[32px] md:text-[44px]">For instructors</h1>
+      <h1 className="display text-[32px] md:text-[38px]">For instructors</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
         A suggested 12-week course built on the modules, labs, games, modelling studio practice briefs and capstone projects here, with weekly readings, an assessment scheme, links to assign modules, and a way for students to hand in their
         progress. Everything runs in the browser; nothing is sent to a server.
@@ -328,7 +328,7 @@ export function AssignedPage({ ids, go }: { ids: string[]; go: (h: string) => vo
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="Assigned to you" />
-      <h1 className="display text-[32px] md:text-[44px]">Assigned to you</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Assigned to you</h1>
       <p className="mt-3 text-[16px] text-foreground/85">
         {done} of {mods.length} done.
       </p>
@@ -377,7 +377,7 @@ export function ProgressPage({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="My progress" />
-      <h1 className="display text-[32px] md:text-[44px]">My progress</h1>
+      <h1 className="display text-[32px] md:text-[38px]">My progress</h1>
       <ul className="mt-5 grid gap-1.5 text-[15.5px]">
         <li>
           <b>{mods.length}</b> of {MODULES.length} modules done
@@ -406,7 +406,7 @@ export function ProjectsIndex({ go }: { go: (h: string) => void }) {
   return (
     <div className={`${wrap} pt-6 md:pt-8`}>
       <Crumb go={go} here="Capstone projects" />
-      <h1 className="display text-[32px] md:text-[44px]">Capstone projects</h1>
+      <h1 className="display text-[32px] md:text-[38px]">Capstone projects</h1>
       <p className="mt-3 text-[16.5px] leading-[1.6] text-foreground/85 max-w-[64ch]">
         Take one problem through the whole modelling process, from a client's question to policy advice. Each stage says what to do, what to hand in, and how to check your own work.
         Your notes and ticks are saved in this browser.
@@ -459,7 +459,7 @@ export function ProjectPage({ id, go }: { id: string; go: (h: string) => void })
         </button>
       </p>
       <p className="text-[13px] font-semibold text-accent-text">{p.field}</p>
-      <h1 className="display text-[30px] md:text-[42px] max-w-[24ch]">{p.title}</h1>
+      <h1 className="display text-[30px] md:text-[36px] max-w-[24ch]">{p.title}</h1>
       <div className="mt-5 rounded-card bg-card border-l-4 border-accent px-5 py-4 max-w-[80ch]">
         <p className="heading text-[15px]">The brief</p>
         <p className="mt-1.5 text-[15.5px] leading-[1.65]">{p.problem}</p>

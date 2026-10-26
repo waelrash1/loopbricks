@@ -158,7 +158,7 @@ export function AppsIndex({ onDomain, onCase }: Nav) {
   return (
     <div className={wrap}>
       <section className="pt-10 md:pt-14 pb-8">
-        <h1 className="display text-[36px] md:text-[48px]">Cases</h1>
+        <h1 className="display text-[36px] md:text-[40px]">Cases</h1>
         <p className="mt-3 text-[16px] leading-[1.55] text-foreground/80 max-w-[62ch]">
           {ALL_CASES.length} problems from published system dynamics studies, in {DOMAINS.length} fields. Each one runs here
           {checks > 0 ? ", with checks that its small model shows the lesson it claims." : "."}
@@ -256,7 +256,7 @@ export function DomainLibrary({ domain, onCase }: { domain: Domain; onCase: Nav[
     <div className={wrap}>
       <section className="pt-10 md:pt-14 pb-10 grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-10 items-end">
         <div>
-          <h1 className="display text-[40px] sm:text-[52px] xl:text-[60px]">{domain.name}</h1>
+          <h1 className="display text-[40px] sm:text-[42px] xl:text-[48px]">{domain.name}</h1>
           <p className="mt-5 text-[18px] leading-[1.55] text-foreground/80 max-w-[52ch]">
             {domain.cases.length} cases. {domain.blurb}
           </p>
@@ -525,7 +525,7 @@ export function CasePage({ domain, id, onOpen, onCase, onDomain }: { domain: Dom
           <Printer size={15} aria-hidden /> Print as a worksheet
         </button>
       </div>
-      <h1 className="display text-[30px] md:text-[44px] max-w-[30ch] mt-3 [overflow-wrap:anywhere]">{c.title}</h1>
+      <h1 className="display text-[30px] md:text-[38px] max-w-[30ch] mt-3 [overflow-wrap:anywhere]">{c.title}</h1>
       <p className="mt-4 text-[18px] leading-[1.55] text-foreground/80 max-w-[62ch]">{c.summary}</p>
       <p className="mt-6 max-w-[70ch] rounded-card bg-card border-l-4 border-accent px-5 py-4 text-[16px] leading-[1.55]">
         <b>The question: </b>
