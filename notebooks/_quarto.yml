@@ -34,9 +34,9 @@ book:
       chapters:
         - c10-model-to-decision.ipynb
         - c11-models-that-learn.ipynb
-  # ponytail: the 18 app-module notebooks stay as appendices so the app's links to them keep working;
-  # planned appendices (Python in a hurry, the package, the molecule catalogue...) go in front of them when written
+  # ponytail: the 18 app-module notebooks follow the written appendices until A to F are all in place
   appendices:
+    - a01-python.ipynb
     - 01-surprise.ipynb
     - 02-stocks-flows.ipynb
     - 03-loops.ipynb
