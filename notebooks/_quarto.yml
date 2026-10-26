@@ -8,12 +8,12 @@ project:
   render: [index.qmd, "c*.ipynb", "a*.ipynb"] # the NN module notebooks stay out of the book
 
 book:
-  title: "System Dynamics with Python"
+  title: "System Dynamics with Python (AI edition)"
   subtitle: "Building, testing and using feedback models for decisions, with AI at every stage"
   author: "Wael Rashwan"
   repo-url: https://github.com/waelrash1/loopbricks
   repo-subdir: notebooks
-  repo-branch: main
+  repo-branch: book-ai
   repo-actions: [source, issue]
   chapters:
     - index.qmd

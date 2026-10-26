@@ -1,5 +1,9 @@
 # Preface {.unnumbered}
 
+::: {.callout-note}
+**This is the AI edition**, organised by the stages of the modelling process, with generative AI, reasoning models and agents at every stage. The [original edition](https://waelrash1.github.io/loopbricks/book/), organised by topic, stays online.
+:::
+
 A hospital adds clinics and the waiting list still grows. A firm hires to clear a backlog and ends up with too many staff a year later. A policy works for six months and then makes things worse. These are feedback problems: the system responds to what we do, often with a delay, and the response defeats the intention.
 
 System dynamics is a way to model such problems as stocks, flows and feedback loops, test the model against evidence, and use it to find policies that work. This book teaches it in Python, so the models sit next to the data, the statistics and the machine learning that analysts already use.
@@ -32,7 +36,7 @@ The models are built from small, reusable structures, or *molecules*. Each molec
 Every chapter is a Jupyter notebook. Open it in Google Colab with the badge at its top, or install the package on your own machine:
 
 ```
-pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@main#subdirectory=python"
+pip install "loopbricks @ git+https://github.com/waelrash1/loopbricks.git@book-ai#subdirectory=python"
 ```
 
 Try the exercises before opening the worked answers. Predicting first, even wrongly, is what makes the result stick. Every number in the text comes from running the code, and a test runs every chapter on each change.
