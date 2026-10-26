@@ -1,0 +1,62 @@
+{
+ "3a05988ce55c01e3": {
+  "text": "Here are the causal links the post-mortem gives evidence for, using your variable names.\n\n```json\n{\n \"links\": [\n  {\n   \"cause\": \"Work to do\",\n   \"effect\": \"Schedule pressure\",\n   \"sign\": \"+\",\n   \"quote\": \"the backlog looked too big for the weeks left, and the pressure on the team went up\"\n  },\n  {\n   \"cause\": \"Schedule pressure\",\n   \"effect\": \"Overtime\",\n   \"sign\": \"+\",\n   \"quote\": \"We asked for overtime\"\n  },\n  {\n   \"cause\": \"Overtime\",\n   \"effect\": \"Work rate\",\n   \"sign\": \"+\",\n   \"quote\": \"the extra hours got more done each week\"\n  },\n  {\n   \"cause\": \"Overtime\",\n   \"effect\": \"Fatigue\",\n   \"sign\": \"+\",\n   \"quote\": \"After a month of long weeks people were tired\"\n  },\n  {\n   \"cause\": \"Fatigue\",\n   \"effect\": \"Quality\",\n   \"sign\": \"-\",\n   \"quote\": \"tired people made more mistakes\"\n  },\n  {\n   \"cause\": \"Overtime\",\n   \"effect\": \"Quality\",\n   \"sign\": \"-\",\n   \"quote\": \"After a month of long weeks people were tired, and tired people made more mistakes\"\n  },\n  {\n   \"cause\": \"Schedule pressure\",\n   \"effect\": \"Haste\",\n   \"sign\": \"+\",\n   \"quote\": \"Under pressure we also cut corners\"\n  },\n  {\n   \"cause\": \"Haste\",\n   \"effect\": \"Work rate\",\n   \"sign\": \"+\",\n   \"quote\": \"reviews were skipped to go faster\"\n  },\n  {\n   \"cause\": \"Haste\",\n   \"effect\": \"Quality\",\n   \"sign\": \"-\",\n   \"quote\": \"the code that went out was worse\"\n  },\n  {\n   \"cause\": \"Quality\",\n   \"effect\": \"Undiscovered rework\",\n   \"sign\": \"-\",\n   \"quote\": \"Most of those flaws stayed hidden\"\n  },\n  {\n   \"cause\": \"Undiscovered rework\",\n   \"effect\": \"Work to do\",\n   \"sign\": \"+\",\n   \"quote\": \"bugs found in testing went back onto the backlog\"\n  },\n  {\n   \"cause\": \"Schedule pressure\",\n   \"effect\": \"New staff\",\n   \"sign\": \"+\",\n   \"quote\": \"Management answered the delay by hiring\"\n  },\n  {\n   \"cause\": \"New staff\",\n   \"effect\": \"Quality\",\n   \"sign\": \"-\",\n   \"quote\": \"The newcomers made more mistakes than the old hands\"\n  },\n  {\n   \"cause\": \"New staff\",\n   \"effect\": \"Overheads\",\n   \"sign\": \"+\",\n   \"quote\": \"our seniors spent a quarter of their week mentoring and in meetings\"\n  },\n  {\n   \"cause\": \"Overheads\",\n   \"effect\": \"Capacity\",\n   \"sign\": \"+\",\n   \"quote\": \"so the team got less done, not more\"\n  },\n  {\n   \"cause\": \"New staff\",\n   \"effect\": \"Experienced staff\",\n   \"sign\": \"+\",\n   \"quote\": \"When the newcomers had learned the system, months later\"\n  },\n  {\n   \"cause\": \"Experienced staff\",\n   \"effect\": \"Capacity\",\n   \"sign\": \"+\",\n   \"quote\": \"they were a real help\"\n  }\n ]\n}\n```\n\nThe text does not say how work done reduces the backlog, or whether tired people work more slowly, so I have not included those links.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6e58ee30b8339573": {
+  "text": "I worked through the seven rules in order of the decision: time left, the required rate and pressure, the staff needed, the desired staff and the hiring pipeline.\n\n{\n \"criticisms\": [\n  {\n   \"element\": \"Schedule pressure\",\n   \"quote\": \"Required_rate / MAX(Normal_capacity, 0.001)\",\n   \"kind\": \"information\",\n   \"why\": \"Normal capacity is built from Effective staff: headcount after training drain, the rookies' slower pace and communication overhead. Managers see the headcount, not this effective capacity, which they could only infer from throughput over several weeks. The rule gives them perfect, instant knowledge of their own team's productivity.\",\n   \"test\": {\n    \"equation\": \"Required_rate / MAX(Total_staff * Normal_productivity * (1 - QA_share), 0.001)\"\n   },\n   \"prediction\": \"Pressure judged on headcount is lower once new staff arrive, so less overtime and haste late in the project. Expect a slightly later finish, but less rework and less effort.\"\n  },\n  {\n   \"element\": \"Schedule pressure\",\n   \"quote\": \"0.001\",\n   \"kind\": \"constant\",\n   \"why\": \"An unnamed number inside the equation. It is a guard against dividing by zero when nobody is on the project, not a parameter of behaviour, but it should be named or commented so that nobody calibrates it.\",\n   \"test\": null,\n   \"prediction\": \"No effect while capacity is positive.\"\n  },\n  {\n   \"element\": \"Staff needed\",\n   \"quote\": \"Time_left * Normal_productivity\",\n   \"kind\": \"other\",\n   \"why\": \"Managers size the team on the nominal 1 task per person-week. Each person actually delivers less, because Normal capacity also takes off QA time and, through Effective staff, coordination, training and the slower pace of new staff. So the rule asks for too few people, and asks for them late.\",\n   \"test\": {\n    \"equation\": \"Work_to_do / (Time_left * Normal_capacity / MAX(Total_staff, 0.001))\"\n   },\n   \"prediction\": \"Planning on the productivity actually achieved asks for more staff earlier. Expect an earlier finish and more effort.\"\n  },\n  {\n   \"element\": \"Time left\",\n   \"quote\": \"MAX(Deadline - TIME, Minimum_time_left)\",\n   \"kind\": \"constant\",\n   \"why\": \"Minimum time left is 2 weeks with no stated source. Close to and after the deadline it means managers plan to finish all the visible work within 2 weeks, so Staff needed jumps to half the work to do, and the hiring rule chases a target nobody would set.\",\n   \"test\": {\n    \"parameter\": \"Minimum time left\",\n    \"values\": [\n     2,\n     4,\n     8\n    ]\n   },\n   \"prediction\": \"A longer floor caps staff needed near the deadline: less late hiring and less effort, with the finish week changing little.\"\n  },\n  {\n   \"element\": \"Desired staff\",\n   \"quote\": \"MAX(0, Staff_needed - Initial_staff)\",\n   \"kind\": \"units\",\n   \"why\": \"The units balance (people minus people), but the meanings differ: Staff needed counts people at full productivity, while Initial staff and the stock it feeds count heads, rookies included. A new hire is counted as a whole person the day the post is opened.\",\n   \"test\": null,\n   \"prediction\": \"Tends to under-hire while many staff are new.\"\n  },\n  {\n   \"element\": \"Hiring\",\n   \"quote\": \"Staff_needed / Time_to_fill_posts\",\n   \"kind\": \"information\",\n   \"why\": \"Hiring reads Staff needed directly, so it ignores the posts already open and keeps hiring for posts that are already being filled: the supply line is not counted, the classic cause of overshoot in stock management.\",\n   \"test\": null,\n   \"prediction\": \"Overshoot of staff above Desired staff.\"\n  }\n ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "990ba1145e0d65a9": {
+  "text": "{\"thought\": \"Start with the base run, so I have a reference for every later test.\", \"tool\": \"simulate\", \"args\": {\"settings\": {}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c4ea72702898067e": {
+  "text": "{\"thought\": \"The base run finishes in week 70.75 with work conserved and nothing clipped. Check the time step first: if halving it moves the result, every other test is suspect.\", \"tool\": \"halve_dt\", \"args\": {\"settings\": {}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "08fe53fadbd1ddb5": {
+  "text": "{\"thought\": \"The time step does not matter. Now extreme values. Normal quality of 0 means every task is done wrong: the project should never finish, but work must still be conserved.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"normal_quality\", \"value\": 0}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "d25abb727b2297d4": {
+  "text": "{\"thought\": \"That behaves: no finish, work conserved, nothing clipped. The Doing Work protection divides the work to do by the minimum task time; a value of 0 is the obvious way to break it.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"minimum_task_time\", \"value\": 0}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "b2e0739d3a316ed2": {
+  "text": "{\"thought\": \"A failure. It comes at week 58.25, not at the start: with a task time of 0 the protection is Work_to_do / 0, which is harmless while work remains but becomes 0 / 0 once the work to do is empty. Check that a small positive value runs, so the fault is the zero itself.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"minimum_task_time\", \"value\": 0.05}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "947ea8a163cd8031": {
+  "text": "{\"thought\": \"A task time of 0.05 week runs, but it is worse than an error: work is not conserved, Work to do was clipped at zero in week 58.5, and the finish moves to week 65.5. A task time shorter than the time step of 0.125 lets one step drain more than the stock holds. Halve the time step at this setting to confirm.\", \"tool\": \"halve_dt\", \"args\": {\"settings\": {\"minimum_task_time\": 0.05}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "7790738e210e1d27": {
+  "text": "{\"thought\": \"Confirmed: with half the time step the same setting conserves work, clips nothing and finishes in week 70.06. That is a time-step failure, not behaviour. Now the second job: switch rework off and compare the delay with the base run.\", \"tool\": \"knockout\", \"args\": {\"mechanism\": \"rework\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c6e207118bbdcdbd": {
+  "text": "{\"thought\": \"Without rework the project finishes in week 51.0, 1 week late, instead of week 70.75. For scale, switch off fatigue, the next suspect.\", \"tool\": \"knockout\", \"args\": {\"mechanism\": \"fatigue\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "b7876ebe9513b411": {
+  "text": "{\"thought\": \"Without fatigue the project is still 10.5 weeks late, so rework matters far more. I have one failure with two faces and a clear answer on rework.\", \"answer\": \"One failure, in the minimum task time of the Doing Work protection: at 0 the run stops in week 58.25 with 0 / 0 in Accomplishing, and at 0.05 week, shorter than the time step of 0.125, work is not conserved, Work to do is clipped in week 58.5 and the finish moves to week 65.5 (70.06 with half the time step). At the base settings the time step does not matter (week 70.75 against 70.69), and a normal quality of 0 behaves. Rework causes most of the delay: without it the project finishes in week 51.0, 1 week late, against 10.5 weeks late without fatigue. A guard such as MAX(Minimum_task_time, DT) in Accomplishing would remove the failure.\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "7675a1be6f2a95f0": {
+  "text": "The project is running late because work done in a hurry is often done wrong, and the flaws surface only weeks after the work has been reported done. As it is managed now, it finishes in about week 71 and costs about 2,380 person-weeks. The package (more testing from the start, 10 extra people in week 0, no overtime and an honest deadline) will deliver the system in week 62 with about 26% less effort. It beat the present approach on both time and cost in 100% of the 200 plausible worlds we simulated. Banning overtime alone is the cheapest single change that still delivers sooner, at about 1,710 person-weeks.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}

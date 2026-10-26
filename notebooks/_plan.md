@@ -13,7 +13,7 @@ The `book` branch groups chapters by topic. This edition groups them by the **st
 | III Stage 2. Formulate | What exactly is the structure, in equations and decision rules? | 5 to 9 (loops, delays, decisions, swings, patterns) | 10 AI for formulation (c19) |
 | IV Stage 3. Test | Is the model right for the right reasons, and how sure are we? | 11 Learning from data, 12 Testing, 13 Calibration | 14 AI for testing and calibration (c20) |
 | V Stage 4. Decide | Which policy, how robust, and how do we say so? | 15 From model to decision | 16 AI for policy and decisions (c21) |
-| VI Applications | The whole process, start to finish | 17 to 20 (supply chain, epidemic, project, fishery) | (each case: a closing "AI pass", to write) |
+| VI Applications | The whole process, start to finish | 17 to 20 (supply chain, epidemic, project, fishery) | (each case: section 7, an "AI pass" through all four stages) |
 
 The old chapter 12 (Models that learn) is dissolved into the stage AI chapters: its section 1 (drafting a diagram with an LLM) goes to c18, section 2 (structure discovery) to c19, sections 3, 4 and 6 (hybrid models, the forecasting contest, overfitting and leakage) to c20, and section 5 (surrogates) to c21. Machine learning stays where it was useful; it is now beside the language-model material for the same stage.
 

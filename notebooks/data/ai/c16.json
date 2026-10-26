@@ -1,0 +1,92 @@
+{
+ "9b80d7401ce3a046": {
+  "text": "{\"links\": [\n [\"Fish stock\", \"Regrowth\", \"+\", \"More spawning fish means more young fish, up to a point\"],\n [\"Fish stock\", \"Regrowth\", \"-\", \"Near its unfished size the stock hardly grows: there is no room and no food\"],\n [\"Regrowth\", \"Fish stock\", \"+\", \"DEFINITION\"],\n [\"Catch\", \"Fish stock\", \"-\", \"DEFINITION\"],\n [\"Fleet\", \"Catch\", \"+\", \"More boats on the grounds means more fish landed\"],\n [\"Fish stock\", \"Catch per boat\", \"+\", \"Catch rates fall only when the last shoals are gone\"],\n [\"Catch per boat\", \"Profit per boat\", \"+\", \"every trip paid the crew, the fuel and the loan\"],\n [\"Catch\", \"Price\", \"-\", \"When landings are big the price falls\"],\n [\"Price\", \"Profit per boat\", \"+\", \"DEFINITION\"],\n [\"Profit per boat\", \"Perceived profit\", \"+\", \"We lend on last year's accounts, not this week's prices\"],\n [\"Perceived profit\", \"Ordering\", \"+\", \"Orders come in after owners have had a good year or two\"],\n [\"Ordering\", \"Boats on order\", \"+\", \"DEFINITION\"],\n [\"Boats on order\", \"Fleet\", \"+\", \"Boats ordered in the boom were still being delivered in the bust\"],\n [\"Fleet\", \"Ordering\", \"+\", \"A bigger fleet also means more old boats to replace\"],\n [\"Perceived profit\", \"Scrapping\", \"-\", \"When a boat loses money year after year, the owner ties it up and sells it for scrap\"],\n [\"Scrapping\", \"Fleet\", \"-\", \"DEFINITION\"],\n [\"Catch per boat\", \"Price\", \"-\", \"When every boat comes in full, the market is flooded and the price at the auction drops\"]\n]}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "12bdae5f735a8909": {
+  "text": "{\n \"criticisms\": [\n  {\n   \"element\": \"Desired orders\",\n   \"quote\": \"Investment_sensitivity * Profit_signal\",\n   \"kind\": \"information\",\n   \"why\": \"The rule never reads Boats_on_order. Owners who talk to the yards know how many boats are already being built. Ignoring them (a supply line weight of zero) lets orders run on for a whole build time after profits turn.\",\n   \"suggestion\": \"Subtract a share of the boats on order, as in the supply line of Stock Management (stockmgmt), or record that owners ignore the order book as an assumption to test.\"\n  },\n  {\n   \"element\": \"Desired orders\",\n   \"quote\": \"Fleet * (\",\n   \"kind\": \"other\",\n   \"why\": \"Orders are proportional to the fleet, so an empty fishery attracts no boats however rich the stock. Real fisheries draw entrants from outside.\",\n   \"suggestion\": \"Add an entry term that does not depend on the fleet, or state that entry from outside is beyond the boundary.\"\n  },\n  {\n   \"element\": \"Ordering\",\n   \"quote\": \"1000000\",\n   \"kind\": \"constant\",\n   \"why\": \"A sentinel number stands for 'no cap'. It repeats the default of Licence cap without a name, and a cap of a million boats reads like a real setting in a parameter table.\",\n   \"suggestion\": \"Name it No cap, or switch the cap on and off with a 0 or 1 switch, as Quota on does.\"\n  },\n  {\n   \"element\": \"Ordering\",\n   \"quote\": \"- Fleet - Boats_on_order\",\n   \"kind\": \"information\",\n   \"why\": \"The licensing authority counts the registered fleet and the boats on order. Both are in its own register, so this part of the rule uses information it has.\",\n   \"suggestion\": \"None: a confirmation.\"\n  },\n  {\n   \"element\": \"Profit signal\",\n   \"quote\": \"Perceived_profit / (Variable_cost + Fixed_cost)\",\n   \"kind\": \"units\",\n   \"why\": \"EUR thousand/boat/year divided by EUR thousand/boat/year is a fraction, as declared. The units balance.\",\n   \"suggestion\": \"None: a confirmation.\"\n  },\n  {\n   \"element\": \"Updating profit\",\n   \"quote\": \"(Catch_per_boat * Price - Perceived_profit)\",\n   \"kind\": \"information\",\n   \"why\": \"Owners perceive revenue, not profit: the costs are missing, so perceived profit runs above the true profit by the full cost of a boat and investment is too strong.\",\n   \"suggestion\": \"Smooth Profit_per_boat instead of revenue.\"\n  },\n  {\n   \"element\": \"Investment sensitivity\",\n   \"quote\": \"0.25\",\n   \"kind\": \"constant\",\n   \"why\": \"The constant that sets how fast the fleet grows on profit has no stated source, and the size of the boom depends on it.\",\n   \"suggestion\": \"Estimate it from records of orders and accounts, and carry a range, say 0.125 to 0.5 a year, into the tests.\"\n  }\n ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6b7b018eef9698ef": {
+  "text": "{\"thought\": \"Start from the base run, to see how far below 100 kt the stock goes.\", \"tool\": \"simulate\", \"args\": {\"settings\": {}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "06ea9f2327ee4cc2": {
+  "text": "{\"thought\": \"The base run falls to 31.4 kt. The shoal effect is what hides the decline from the fleet, so a weaker one is the likeliest way to break the claim. Try the low end of its range.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"shoal_concentration\", \"value\": 0.5}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4f73d61c381f1258": {
+  "text": "{\"thought\": \"With shoal_concentration at 0.5 the lowest stock is 90.5 kt, close to the limit. Faster regrowth should also help the stock; try the top of regrowth_rate.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"regrowth_rate\", \"value\": 0.45}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "42eca400324bdf47": {
+  "text": "{\"thought\": \"Fast regrowth alone barely helps: 33.8 kt. A slower boom might stop short of a collapse; try the low end of investment_sensitivity.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"investment_sensitivity\", \"value\": 0.125}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "648478b897d1afbd": {
+  "text": "{\"thought\": \"Still a collapse. Owners who see their profit quickly might stop ordering in time; try the low end of perception_time.\", \"tool\": \"extreme\", \"args\": {\"parameter\": \"perception_time\", \"value\": 0.25}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c0610fc0059f97ab": {
+  "text": "{\"thought\": \"Every end tried alone keeps the claim, and only the weak shoal effect came near 100 kt. Combine it with the fastest regrowth.\", \"tool\": \"simulate\", \"args\": {\"settings\": {\"shoal_concentration\": 0.5, \"regrowth_rate\": 0.45}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "a06dc1fb7e9c48db": {
+  "text": "{\"thought\": \"The lowest stock is now far above 100 kt, so the claim fails here. Check that this is not an artefact of the time step.\", \"tool\": \"halve_dt\", \"args\": {\"settings\": {\"shoal_concentration\": 0.5, \"regrowth_rate\": 0.45}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "5250c453640b9db0": {
+  "text": "{\"thought\": \"Halving dt moves the lowest stock by about 1 kt, so the result is not numerical. The claim does not hold everywhere in the ranges.\", \"answer\": {\"holds\": false, \"case\": {\"tool\": \"simulate\", \"args\": {\"settings\": {\"shoal_concentration\": 0.5, \"regrowth_rate\": 0.45}}}, \"report\": \"One parameter at a time, the claim holds at every end I tried; the closest was shoal_concentration 0.5, with a lowest stock of 90.5 kt. With shoal_concentration 0.5 and regrowth_rate 0.45 together, the lowest stock is 317.4 kt and the stock is 419.0 kt in year 50, so there is no collapse. Halving the time step moves that lowest stock only from 316.3 to 317.4 to 317.9 kt, so the result is real: the collapse depends on a strong shoal effect.\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "588f4f729dcaf8c5": {
+  "text": "{\"thought\": \"Start from the chapter's plan, to see how it does against the two limits.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 130, \"target_harvest_rate\": 0.15}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "8c089032cdc48615": {
+  "text": "{\"thought\": \"The lowest stock is below 400 kt, so the harvest rate must come down. Try 0.12 with the same cap.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 130, \"target_harvest_rate\": 0.12}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "0b92a1cbb897a0df": {
+  "text": "{\"thought\": \"Both limits are met. Boats beyond what the stock needs cost profit in the worst case, so try a smaller fleet.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 100, \"target_harvest_rate\": 0.12}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "faf3e7c150e64fef": {
+  "text": "{\"thought\": \"Profit rises a lot and both limits still hold. Try a smaller fleet again.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 90, \"target_harvest_rate\": 0.12}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "e3d376f736df3a29": {
+  "text": "{\"thought\": \"Still within both limits, with more profit. Try 80 boats.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 80, \"target_harvest_rate\": 0.12}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "31e7d981d3d732aa": {
+  "text": "{\"thought\": \"With 80 boats the worst-case catch is below 2,100 kt, so 90 is the smallest cap that meets it. A higher harvest rate might add catch and profit at 90 boats.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 90, \"target_harvest_rate\": 0.13}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "5f48af8190e03f1f": {
+  "text": "{\"thought\": \"A little more profit, and the stock is still above 400 kt. Try one step more.\", \"tool\": \"evaluate\", \"args\": {\"licence_cap\": 90, \"target_harvest_rate\": 0.14}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4b3a48833f190162": {
+  "text": "{\"thought\": \"At 0.14 the lowest stock falls below 400 kt, so 0.13 is the best rate with 90 boats, and 90 is the smallest cap that keeps the catch limit.\", \"answer\": {\"licence_cap\": 90, \"target_harvest_rate\": 0.13, \"brief\": \"A licence cap of 90 boats, with the control rule at a target harvest rate of 0.13 a year, will keep the fish stock at or above 407 kt at every regrowth rate tested. In the worst case the fleet lands 2,150 kt over 50 years and earns EUR 2,360 million, about 52% more than the chapter's plan of 130 boats. At the central regrowth rate it lands 2,260 kt.\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}

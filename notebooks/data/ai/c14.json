@@ -1,0 +1,57 @@
+{
+ "903c506fc1834cba": {
+  "text": "{\"links\": [\n [\"Susceptible\", \"Infection\", \"+\"],\n [\"Infectious\", \"Infection\", \"+\"],\n [\"Contact multiplier\", \"Infection\", \"-\"],\n [\"Infection\", \"Susceptible\", \"-\"],\n [\"Infection\", \"Exposed\", \"+\"],\n [\"Exposed\", \"Becoming infectious\", \"+\"],\n [\"Becoming infectious\", \"Exposed\", \"-\"],\n [\"Becoming infectious\", \"Infectious\", \"+\"],\n [\"Infectious\", \"Recovering at home\", \"+\"],\n [\"Recovering at home\", \"Infectious\", \"-\"],\n [\"Recovering at home\", \"Recovered\", \"+\"],\n [\"Infectious\", \"Admissions\", \"+\"],\n [\"Admissions\", \"In hospital\", \"+\"],\n [\"In hospital\", \"Discharges\", \"+\"],\n [\"Discharges\", \"In hospital\", \"-\"],\n [\"Discharges\", \"Recovered\", \"+\"],\n [\"In hospital\", \"Beds occupied\", \"+\"],\n [\"Beds occupied\", \"Patients without a bed\", \"+\"],\n [\"Bed capacity\", \"Patients without a bed\", \"-\"],\n [\"Beds occupied\", \"Contact multiplier\", \"-\"]\n]}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "1803bc0983463103": {
+  "text": "{\"criticisms\": [\n {\"element\": \"Contact multiplier\",\n  \"quote\": \"STEP(1, Measures_start) - STEP(1, Measures_start + Measures_length)\",\n  \"kind\": \"information\",\n  \"why\": \"The measures switch on and off on calendar dates fixed in advance. The authority sees admissions and beds occupied every day, but the rule reads neither, so the model cannot represent an authority that acts on what it sees. That is fine for comparing dated policies; it is not a decision rule.\",\n  \"suggestion\": \"Add a rule that starts and stops the measures from Beds occupied, perhaps through a reporting delay, and compare it with the dated policies.\"},\n {\"element\": \"Admissions\",\n  \"quote\": \"Hospital_share * Infectious / Infectious_period\",\n  \"kind\": \"constant\",\n  \"why\": \"Hospital share is a single constant with no stated source. Early admissions identify only the share times the number infected, so a wrong share scales the whole bed forecast up or down.\",\n  \"suggestion\": \"State where the share comes from and carry a range through the forecast.\"},\n {\"element\": \"Incubating\",\n  \"quote\": \"Exposed_1 / (Latent_period / 2)\",\n  \"kind\": \"constant\",\n  \"why\": \"The 2 is the number of latent stages, written by hand into Incubating and again into Becoming infectious. If someone changes one and not the other, the mean latent period changes without warning.\",\n  \"suggestion\": \"Name it Latent stages and use the name in both flows.\"},\n {\"element\": \"Bed capacity\",\n  \"quote\": \"Surge_beds * MIN(1, RAMP(1 / Surge_build_time, Surge_start))\",\n  \"kind\": \"units\",\n  \"why\": \"RAMP rises at 1 / Surge_build_time per day, so after t days it is a pure number, and MIN caps it at 1. Surge beds times a fraction is beds, so the units balance.\",\n  \"suggestion\": \"None: the rule is sound.\"},\n {\"element\": \"Effective R\",\n  \"quote\": \"R0 * Contact_multiplier * Susceptible / Population\",\n  \"kind\": \"information\",\n  \"why\": \"Effective R reads the true susceptible share, which the authority cannot see. That is acceptable for an output, but not for an input to any decision rule.\",\n  \"suggestion\": \"Keep it as an output; make sure no policy rule reads it.\"},\n {\"element\": \"Bed capacity\",\n  \"quote\": \"Base_beds * Occupancy_target\",\n  \"kind\": \"constant\",\n  \"why\": \"Hospitals plan to an occupancy of about 85%, so the usable capacity is lower than Base beds, and the 0.85 has no stated source.\",\n  \"suggestion\": \"Name the occupancy target and give its source.\"},\n {\"element\": \"Patients without a bed\",\n  \"quote\": \"MAX(0, Beds_occupied - Bed_capacity)\",\n  \"kind\": \"other\",\n  \"why\": \"Patients above capacity keep the same stay and the same discharge as everyone else, and none die. When beds run out, outcomes would change, so this measures pressure on the hospital, not harm to patients.\",\n  \"suggestion\": \"Say so in the brief, or add worse outcomes for patients without a bed.\"}\n]}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4bc2cf3080080739": {
+  "text": "{\"thought\": \"Start with the turning point at the low end of the R0 range: R0 1.5 is a transmission rate of 0.3 a day.\", \"tool\": \"turning_point\", \"args\": {\"transmission_rate\": 0.3}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "b38398ee5da7e701": {
+  "text": "{\"thought\": \"At R0 1.5 E + I peaks on the day effective R falls below 1, with susceptibles close to N / R0. Now the high end, R0 4.\", \"tool\": \"turning_point\", \"args\": {\"transmission_rate\": 0.8}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "012e7f4d7d72bfa2": {
+  "text": "{\"thought\": \"The turning point holds at both ends. Now the hunt: first the base case, to see that conservation holds at the chapter's settings.\", \"tool\": \"simulate\", \"args\": {\"settings\": {}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "bd7f9ceed6ab3e3d": {
+  "text": "{\"thought\": \"No people created or lost in the base case. The shortest time constant is a latent stage, latent_period / 2. At the low end of the range, 1 day, a stage lasts 0.5 days, twice the time step.\", \"tool\": \"simulate\", \"args\": {\"settings\": {\"latent_period\": 1}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4b9bc800c26e0ad5": {
+  "text": "{\"thought\": \"Still conserved at the end of the range. Beyond it, at latent_period 0.25, a stage lasts 0.125 days, shorter than the 0.25-day step, so one Euler step asks a stage to empty more than it holds.\", \"tool\": \"simulate\", \"args\": {\"settings\": {\"latent_period\": 0.25}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "fe501727f7f252d7": {
+  "text": "{\"thought\": \"That fails: the floor held both exposed stocks and people were created. If the time step is the cause, a smaller dt should remove it.\", \"tool\": \"halve_dt\", \"args\": {\"settings\": {\"latent_period\": 0.25}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c888c4d6804a842f": {
+  "text": "{\"thought\": \"The time step is the cause: at dt 0.125 and below nobody is created and the peak settles. Last, inside the ranges, does the peak depend on dt when growth is fastest?\", \"tool\": \"halve_dt\", \"args\": {\"settings\": {\"transmission_rate\": 0.8}}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "b953f06ffcaa09d2": {
+  "text": "{\"thought\": \"Inside the ranges the peak moves by under 2% as dt halves, and no run creates people. I have a confirmed turning point and one clear failure beyond the range.\", \"answer\": {\"turning_point\": \"confirmed\", \"failure\": {\"tool\": \"simulate\", \"args\": {\"settings\": {\"latent_period\": 0.25}}}, \"report\": \"Effective R falls below 1 on the day E + I peaks, day 197.0 at R0 1.5 and day 59.0 at R0 4, with 665,402 and 249,899 people susceptible against N / R0 of 666,667 and 250,000. Inside the plausible ranges no run creates or loses people, and at transmission_rate 0.8 the peak in beds is 7,594, 7,521 and 7,485 as dt halves. Beyond the range, with latent_period 0.25, the floor held Exposed 1 and Exposed 2 and 77,953.1 people were created at dt 0.25, but none at dt 0.125, where the peak is 7,315 beds instead of 8,743: keep dt below the shortest stage time.\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "87997c74e360fc48": {
+  "text": "Without action, the epidemic would overwhelm the region's 1,000 beds, with occupancy peaking at about 4,800 and about 108,000 patient-days without a bed. Surge beds alone, or a lasting 30% cut in contacts alone, would each roughly halve that shortage. Together, they will cut patient-days without a bed by 94%, to about 6,700, and shorten the time over capacity from about 53 days to 26. Across nine plausible versions of the epidemic, the combined plan does best on average (about 17,300 patient-days without a bed) and in the worst case (70,700, against at least 122,600 for any other plan). These are model results, and the forecast will sharpen as more admissions are seen.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}

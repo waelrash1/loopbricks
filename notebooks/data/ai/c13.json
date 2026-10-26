@@ -1,0 +1,47 @@
+{
+ "20276d5c2aae8313": {
+  "text": "{\n \"links\": [\n  [\n   \"Retailer orders\",\n   \"Wholesaler demand signal\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler demand signal\",\n   \"Wholesaler forecast change\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler forecast change\",\n   \"Wholesaler expected demand\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler expected demand\",\n   \"Wholesaler forecast change\",\n   \"-\"\n  ],\n  [\n   \"Wholesaler expected demand\",\n   \"Wholesaler desired inventory\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler expected demand\",\n   \"Wholesaler desired supply line\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler expected demand\",\n   \"Wholesaler indicated orders\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler desired inventory\",\n   \"Wholesaler indicated orders\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler inventory\",\n   \"Wholesaler indicated orders\",\n   \"-\"\n  ],\n  [\n   \"Wholesaler desired supply line\",\n   \"Wholesaler indicated orders\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler supply line\",\n   \"Wholesaler indicated orders\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler indicated orders\",\n   \"Wholesaler orders\",\n   \"+\"\n  ],\n  [\n   \"Factory inventory\",\n   \"Wholesaler orders\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler orders\",\n   \"Factory backlog\",\n   \"+\"\n  ],\n  [\n   \"Factory backlog\",\n   \"Factory shipments\",\n   \"+\"\n  ],\n  [\n   \"Factory backlog\",\n   \"Wholesaler supply line\",\n   \"+\"\n  ],\n  [\n   \"Factory shipments\",\n   \"Factory orders filled\",\n   \"+\"\n  ],\n  [\n   \"Factory orders filled\",\n   \"Factory backlog\",\n   \"-\"\n  ],\n  [\n   \"Factory shipments\",\n   \"Wholesaler in transit\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler in transit\",\n   \"Wholesaler arrivals\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler arrivals\",\n   \"Wholesaler in transit\",\n   \"-\"\n  ],\n  [\n   \"Wholesaler arrivals\",\n   \"Wholesaler inventory\",\n   \"+\"\n  ],\n  [\n   \"Wholesaler in transit\",\n   \"Wholesaler supply line\",\n   \"+\"\n  ]\n ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "5776bbb8628d7d11": {
+  "text": "{\n \"criticisms\": [\n  {\n   \"element\": \"Wholesaler supply line\",\n   \"quote\": \"Factory_backlog + Wholesaler_in_transit\",\n   \"kind\": \"information\",\n   \"why\": \"The wholesaler does not see inside the factory, yet its supply line reads the factory's backlog directly.\",\n   \"suggestion\": \"Compute the supply line from the wholesaler's own records, orders placed minus goods received, or show that the two are the same.\"\n  },\n  {\n   \"element\": \"Wholesaler lead time\",\n   \"quote\": \"Transit_delay\",\n   \"kind\": \"constant\",\n   \"why\": \"The desired supply line uses a fixed lead time equal to the transit delay. When the factory runs short, orders also wait in its backlog, so the real lead time is longer and the target too small.\",\n   \"suggestion\": \"State the fixed lead time as an assumption, or measure it from the wholesaler's records.\"\n  },\n  {\n   \"element\": \"Wholesaler indicated orders\",\n   \"quote\": \"Supply_line_weight * (Wholesaler_desired_supply_line - Wholesaler_supply_line) / Inventory_adjustment_time\",\n   \"kind\": \"other\",\n   \"why\": \"The supply line gap is closed over the inventory adjustment time. Managers may correct what they have on order at a different speed from their stock, so one constant does two jobs.\",\n   \"suggestion\": \"Add a supply line adjustment time, equal at first to the inventory adjustment time, and test it.\"\n  },\n  {\n   \"element\": \"Wholesaler forecast change\",\n   \"quote\": \"(Wholesaler_demand_signal - Wholesaler_expected_demand) / Inventory_adjustment_time\",\n   \"kind\": \"constant\",\n   \"why\": \"The forecast is smoothed over the inventory adjustment time, so the speed of forecasting and the speed of stock correction cannot be varied separately.\",\n   \"suggestion\": \"Give the forecast its own demand smoothing time.\"\n  }\n ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "7baf9c3b742ae411": {
+  "text": "{\"thought\": \"Start from the chapter's settings, so later runs have a baseline to compare with.\", \"tool\": \"simulate\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "bbe5459c057a5c2b": {
+  "text": "{\"thought\": \"The baseline passes. The hardest case for the stocks should be the largest step with no supply line weight and the fastest correction.\", \"tool\": \"simulate\", \"args\": {\"step_size\": 1, \"supply_line_weight\": 0, \"inventory_adjustment_time\": 0.5}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "5042a839271aa51a": {
+  "text": "{\"thought\": \"Inventories stay well above zero and the books balance even there. Now the time step test at the baseline.\", \"tool\": \"halve_dt\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6b7f19afca765110": {
+  "text": "{\"thought\": \"A 2.0% change passes at a 2-week adjustment time. Euler's error should grow as the adjustment time approaches dt, so try the shortest time allowed.\", \"tool\": \"halve_dt\", \"args\": {\"inventory_adjustment_time\": 0.5}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "bbe061c0974f0669": {
+  "text": "{\"thought\": \"5.4% is over the 5% limit. Check whether the failure holds with the supply line counted in full.\", \"tool\": \"halve_dt\", \"args\": {\"supply_line_weight\": 1, \"inventory_adjustment_time\": 0.5}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "bc25d513037e854e": {
+  "text": "{\"thought\": \"The time step test fails at an adjustment time of 0.5 weeks for both weights tried; the other tests passed in every run.\", \"answer\": \"One test fails: the time step. With inventory_adjustment_time 0.5 weeks, halving dt from 0.125 to 0.0625 changes the factory's amplification by 5.4% (17.13 to 16.26) at supply_line_weight 0.25, and by 6.6% (9.5 to 8.91) at weight 1. At the chapter's 2 weeks the change is 2.0%. No inventory went below zero (lowest 58.7 and 59.0 cases), the floor never acted and the goods gap stayed at or below 2.7e-12 cases, even with step_size 1, no supply line weight and a 0.5-week adjustment time. The failure is numerical, not structural: use a smaller dt when adjustment times are short.\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "899832534be44f5f": {
+  "text": "The swings at the factory are made inside the chain, not by customers: with demand that varies week to week, factory orders varied 5.6 times as much as sales, and at times fell to zero. Counting open orders, sharing shop sales data and halving delivery times each help; together they cut the factory's swing to 1.2 times that of sales and the chain's cost by 18 a week. If only one is possible, share sales data: its worst factory ratio across nine behavioural scenarios is 5.1, against 13.7 as found, but in a lasting 30% surge it raises backlog costs from about 2,460 to 3,650 unless stages also count open orders. With all three measures, factory orders will hold between 77 and 124 cases a week, so the factory can plan steady production.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}
