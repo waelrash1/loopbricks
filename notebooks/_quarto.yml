@@ -1,9 +1,11 @@
-# The book. Chapters are the cNN notebooks; the NN module notebooks (also opened from the app and Colab) are appendices.
+# The book. Chapters are the cNN notebooks and appendices the aNN ones. The NN module notebooks are not in the book;
+# the app opens them in Colab from their files.
 # Build with `npm run book`, which renders and then clears the outputs that rendering saves into the notebooks
 # (or `quarto preview notebooks` while writing).
 project:
   type: book
   output-dir: _book
+  render: [index.qmd, "c*.ipynb", "a*.ipynb"] # the NN module notebooks stay out of the book
 
 book:
   title: "System Dynamics with Python"
@@ -35,27 +37,9 @@ book:
       chapters:
         - c11-model-to-decision.ipynb
         - c12-models-that-learn.ipynb
-  # ponytail: the 18 app-module notebooks follow the written appendices until A to F are all in place
   appendices:
     - a01-python.ipynb
-    - 01-surprise.ipynb
-    - 02-stocks-flows.ipynb
-    - 03-loops.ipynb
-    - 04-patterns.ipynb
-    - 05-first-order.ipynb
-    - 06-delays.ipynb
-    - 07-s-shaped.ipynb
-    - 08-lock-in.ipynb
-    - 09-chains.ipynb
-    - 10-oscillation.ipynb
-    - 11-archetypes.ipynb
-    - 12-process.ipynb
-    - 13-formulation.ipynb
-    - 14-behaviour.ipynb
-    - 15-cycles.ipynb
-    - 16-testing.ipynb
-    - 17-mechanics.ipynb
-    - 18-frontier.ipynb
+    - a02-package.ipynb
 
 bibliography: references.bib
 
