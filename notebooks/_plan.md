@@ -29,8 +29,12 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 | | 10 Data, calibration and uncertainty | Calibrate to the NTPF series; held-out years; uncertainty | (none new) | 16, 18 |
 | IV Models in use | 11 From model to decision | Policy design, robustness, a one-page brief, an interactive simulator; plus a published-model replication | estRemaining, estCompletion | 12, 18 |
 | | 12 Models that learn | ML forecasting contest under a policy change; hybrid curves; structure discovery; LLM-drafted diagrams | (none new) | 18 |
+| V Applications | 13 Case study: a supply chain that amplifies demand | (own case) Bullwhip across three stages; supply line, shared demand, lead times | (uses stockmgmt, lowVisPipeline) | (new) |
+| | 14 Case study: an epidemic and the hospital beds it needs | (own case) SEIR with bed demand; early calibration; timing of measures | (uses diffusion, cascade) | (new) |
+| | 15 Case study: a project that runs late | (own case) Rework cycle, staffing, overtime; Brooks's law | (uses reworkCycle, schedulePressure, overtime, quality, workforce) | (new) |
+| | 16 Case study: a fishery and its fleet | (own case) Overshoot and collapse; quotas, entry limits, harvest rules | (uses tragedyCommons, logistic) | (new) |
 
-Appendices: A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
+Appendices (A and B written; the 18 module notebooks are no longer in the book): A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
 
 ## Chapter template
 

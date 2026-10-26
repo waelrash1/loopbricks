@@ -37,6 +37,12 @@ book:
       chapters:
         - c11-model-to-decision.ipynb
         - c12-models-that-learn.ipynb
+    - part: "Applications"
+      chapters:
+        - c13-supply-chain.ipynb
+        - c14-epidemic.ipynb
+        - c15-project.ipynb
+        - c16-fishery.ipynb
   appendices:
     - a01-python.ipynb
     - a02-package.ipynb
