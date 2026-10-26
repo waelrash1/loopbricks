@@ -47,6 +47,7 @@ book:
     - a01-python.ipynb
     - a02-package.ipynb
     - a03-molecules.ipynb
+    - a04-glossary.ipynb
 
 bibliography: references.bib
 

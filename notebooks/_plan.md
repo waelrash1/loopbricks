@@ -34,7 +34,7 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 | | 15 Case study: a project that runs late | (own case) Rework cycle, staffing, overtime; Brooks's law | (uses reworkCycle, schedulePressure, overtime, quality, workforce) | (new) |
 | | 16 Case study: a fishery and its fleet | (own case) Overshoot and collapse; quotas, entry limits, harvest rules | (uses tragedyCommons, logistic) | (new) |
 
-Appendices (A, B and C written; the 18 module notebooks are no longer in the book): A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
+Appendices (A to D written; the 18 module notebooks are no longer in the book): A Python in a hurry; B The package and equation language; C The molecule catalogue (all 73 with their home chapters; 71 after Hines, while Tragedy of the Commons and Shifting the Burden are our own archetype models); D Glossary; E From Vensim and Stella to Python (PySD, XMILE); F Thesis and project toolkit.
 
 ## Chapter template
 
