@@ -2,6 +2,45 @@
 
 Internal guide for writing the chapters (Quarto ignores files that start with `_`). It records what the editorial review agreed; change it here first, then in the chapters.
 
+## This edition (branch `book-ai`): organised by the modelling process, with AI at every stage
+
+The `book` branch groups chapters by topic. This edition groups them by the **stage of the modelling process** they serve, and gives every stage a chapter on how generative AI, reasoning models and agents help at that stage, and how to check them. The stage names are ours; the process itself is common to the field [@richardson1981; @sterman2000; @martinezmoyano2013].
+
+| Part | Stage question | Chapters | New AI chapter |
+|---|---|---|---|
+| I Foundations | What is a feedback model, and what can an AI partner do? | 1 Why systems push back | 2 Modelling with AI partners (c17) |
+| II Stage 1. Conceptualise | What is the problem, over time, and which feedback could explain it? | 3 From story to diagram | 4 AI for the problem and the hypothesis (c18) |
+| III Stage 2. Formulate | What exactly is the structure, in equations and decision rules? | 5 to 9 (loops, delays, decisions, swings, patterns) | 10 AI for formulation (c19) |
+| IV Stage 3. Test | Is the model right for the right reasons, and how sure are we? | 11 Learning from data, 12 Testing, 13 Calibration | 14 AI for testing and calibration (c20) |
+| V Stage 4. Decide | Which policy, how robust, and how do we say so? | 15 From model to decision | 16 AI for policy and decisions (c21) |
+| VI Applications | The whole process, start to finish | 17 to 20 (supply chain, epidemic, project, fishery) | (each case: a closing "AI pass", to write) |
+
+The old chapter 12 (Models that learn) is dissolved into the stage AI chapters: its section 1 (drafting a diagram with an LLM) goes to c18, section 2 (structure discovery) to c19, sections 3, 4 and 6 (hybrid models, the forecasting contest, overfitting and leakage) to c20, and section 5 (surrogates) to c21. Machine learning stays where it was useful; it is now beside the language-model material for the same stage.
+
+File names no longer give the order; `_quarto.yml` does. Cross-references use labels (`@sec-...`), and prose says "chapter N" only through those labels or numbers that match `_quarto.yml`.
+
+### Three kinds of AI, used on purpose
+
+- **Generative AI** drafts: variable lists, diagrams, equations, briefs, interface code. Drafts are cheap and often wrong in fluent ways.
+- **Reasoning models** think before they answer (`reasoning=True`). Use them to critique: is this problem dynamic, is this polarity right, why did this test fail, what would break this policy.
+- **Agents** act: a model chooses tools (Python functions we write: simulate, check units, run a test, fit) in a loop, and reads the results. The tools compute every number; the model never supplies one.
+
+### The contract, in every AI section
+
+1. **The modeller owns the model.** AI drafts and critiques; a person decides, and says so in the record.
+2. **Check by code, not by eye.** Every AI output meets a check: quotes found in the source, a spec that loads, units that balance, numbers in a brief that match the run.
+3. **Numbers come from tools.** An agent's answer may quote only numbers a tool returned; a check enforces it.
+4. **Record what was asked.** Prompt, model, date and replay key are kept with the output, as for any source.
+5. **Protect people's data.** No confidential interview or patient data goes to an external service without consent and an agreement.
+
+### Replay: how the chapters run offline
+
+All model calls go through `loopbricks.ai` (`ask`, `ask_json`, `agent`, `show`). Each reply is stored in `data/ai/<chapter>.json`, keyed by a hash of the whole request, so chapters run anywhere, free and identically; a changed prompt or tool result raises `MissingReply`. With `LB_AI_LIVE=1` and `ANTHROPIC_API_KEY`, missing replies come from a live model and are recorded. Every record says how it was made (`how`): a live call, or written for the book. Text that shows a reply written for the book says so, as the old chapter 12 did; never present one as a live model's output. Authors without a key use `ai.author(run, replies, replay=..., how=...)`.
+
+### AI chapter template (c17 to c21)
+
+The usual chapter template, plus: each section names the stage task, the kind of AI (generative, reasoning, agent), the prompt or tools, the replayed reply, the **check by code**, and **what stays human**. Each AI chapter ends with a **Failure gallery** (the ways this stage's AI goes wrong, each shown or tested) alongside Check it, Running case, Tell the decision maker, Going further, Mini-project and Further reading.
+
 ## The book
 
 **System Dynamics with Python: Building, Testing and Using Feedback Models for Decisions**
@@ -13,7 +52,7 @@ A hands-on book that teaches analysts to build, test and use system dynamics mod
 - **Stands alone.** The LoopBricks app is a companion, never a prerequisite. Chapters do not open with "the Python companion to".
 - **Running case:** one outpatient waiting list, built up chapter by chapter, from `data/waiting_list.csv`: synthetic monthly counts by time band (2014 to 2023), shaped like published Irish NTPF series (whose reuse licence is unconfirmed); no additions or removals, so the flows must be inferred. Swap in the real series (same columns) once the licence is confirmed.
 
-## Structure
+## Structure (the `book` branch, by topic; kept for the content of each chapter)
 
 | Part | Chapter | Running case step | Home molecules (explained here first; elsewhere only used and referenced) | Draws on old notebooks |
 |---|---|---|---|---|

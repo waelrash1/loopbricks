@@ -1,4 +1,4 @@
-# The book. Chapters are the cNN notebooks and appendices the aNN ones. The NN module notebooks are not in the book;
+# The book, organised by the stages of the modelling process (branch book-ai; see _plan.md). Chapters are the cNN notebooks and appendices the aNN ones. The NN module notebooks are not in the book;
 # the app opens them in Colab from their files.
 # Build with `npm run book`, which renders and then clears the outputs that rendering saves into the notebooks
 # (or `quarto preview notebooks` while writing).
@@ -9,7 +9,7 @@ project:
 
 book:
   title: "System Dynamics with Python"
-  subtitle: "Building, testing and using feedback models for decisions"
+  subtitle: "Building, testing and using feedback models for decisions, with AI at every stage"
   author: "Wael Rashwan"
   repo-url: https://github.com/waelrash1/loopbricks
   repo-subdir: notebooks
@@ -17,27 +17,33 @@ book:
   repo-actions: [source, issue]
   chapters:
     - index.qmd
-    - part: "Getting started"
+    - part: "Foundations"
       chapters:
         - c01-push-back.ipynb
+        - c17-ai-partners.ipynb
+    - part: "Stage 1. Conceptualise: the problem and the hypothesis"
+      chapters:
         - c02-story-to-diagram.ipynb
-    - part: "How structure drives behaviour"
+        - c18-ai-conceptualise.ipynb
+    - part: "Stage 2. Formulate: structure and decision rules"
       chapters:
         - c03-loops.ipynb
         - c04-delays.ipynb
         - c05-decisions.ipynb
         - c06-swings.ipynb
         - c07-patterns.ipynb
-    - part: "Evidence"
+        - c19-ai-formulate.ipynb
+    - part: "Stage 3. Test: evidence, validity and calibration"
       chapters:
         - c08-learning.ipynb
         - c09-testing.ipynb
         - c10-calibration.ipynb
-    - part: "Models in use"
+        - c20-ai-test.ipynb
+    - part: "Stage 4. Decide: policy design and evaluation"
       chapters:
         - c11-model-to-decision.ipynb
-        - c12-models-that-learn.ipynb
-    - part: "Applications"
+        - c21-ai-decide.ipynb
+    - part: "Applications: the whole process, start to finish"
       chapters:
         - c13-supply-chain.ipynb
         - c14-epidemic.ipynb

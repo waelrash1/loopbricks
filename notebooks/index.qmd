@@ -12,17 +12,20 @@ The people who benefit most never read the code: the managers and policy makers 
 
 ## How the book works
 
-The book has five parts and six appendices:
+The book is organised by the stages of a modelling project [@richardson1981; @sterman2000; @martinezmoyano2013], and every stage ends with a chapter on how generative AI, reasoning models and agents help at that stage, and how to check them. It has six parts and six appendices:
 
-1. **Getting started**: why systems push back, and how to go from a story to a diagram.
-2. **How structure drives behaviour**: loops, delays, decision rules, oscillation and the patterns that repeat across fields.
-3. **Evidence**: the statistics and machine learning a modeller needs, then verification and validation, then data, calibration, goodness of fit and uncertainty.
-4. **Models in use**: from model to decision, and how machine learning helps at every stage of a modelling project.
-5. **Applications**: four case studies that take the whole process, from problem to policy brief, into other fields: a supply chain that amplifies demand, an epidemic and the hospital beds it needs, a project that runs late, and a fishery and its fleet.
+1. **Foundations**: why systems push back, and how the book works with AI partners: what language models, reasoning models and agents can do, and the checks that make their help safe to use.
+2. **Stage 1. Conceptualise**: from interviews and data to a causal loop diagram, a reference mode, a model boundary and a dynamic hypothesis.
+3. **Stage 2. Formulate**: loops, delays, decision rules, oscillation and the patterns that repeat across fields, written as stocks, flows and equations.
+4. **Stage 3. Test**: the statistics and machine learning a modeller needs, then verification and validation, then data, calibration, goodness of fit and uncertainty.
+5. **Stage 4. Decide**: policy design, robustness, a brief and a simulator for the people who decide.
+6. **Applications**: four case studies that take the whole process, from problem to policy brief, into other fields: a supply chain that amplifies demand, an epidemic and the hospital beds it needs, a project that runs late, and a fishery and its fleet.
+
+**AI at every stage.** The AI chapters follow one rule: the model drafts, critiques or searches, Python tools compute every number, and code checks the result before a person accepts it. They run offline: every request and the reply it got are kept in a replay file, so the chapters give the same text every time without an account or a key. The replies were written for the book and are labelled so; with a key you can run any chapter against a live model instead.
 
 Appendix A is a fast course in the Python the book uses; Appendix B documents the `loopbricks` package and its equation language; Appendix C catalogues all 73 molecules, with their equations and the chapter that explains each; Appendix D is a glossary of the terms the book uses; Appendix E shows how to bring Vensim and Stella models into Python; Appendix F is a toolkit for a thesis or project, from the first question to the final checklist.
 
-One running case goes through chapters 1 to 12: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 11. The data are synthetic, shaped like published Irish waiting-list counts; chapter 10 explains how they were made and why.
+One running case goes through chapters 1 to 16: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 15, with AI help, checked, at every stage. The data are synthetic, shaped like published Irish waiting-list counts; chapter 13 explains how they were made and why.
 
 The models are built from small, reusable structures, or *molecules*. Each molecule is explained once, in the chapter where it first matters, and used freely afterwards; @sec-molecules lists them all.
 

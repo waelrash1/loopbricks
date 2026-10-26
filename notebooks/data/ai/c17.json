@@ -1,0 +1,67 @@
+{
+ "0e33141bb05d33c9": {
+  "text": "{\n \"stocks\": [\n  {\n   \"name\": \"Waiting list\",\n   \"units\": \"patients\"\n  }\n ],\n \"flows\": [\n  {\n   \"name\": \"Referrals\",\n   \"units\": \"patients/month\",\n   \"to\": \"Waiting list\"\n  },\n  {\n   \"name\": \"Treatments\",\n   \"units\": \"patients/month\",\n   \"from\": \"Waiting list\"\n  }\n ],\n \"auxiliaries\": [\n  {\n   \"name\": \"Normal referrals\",\n   \"units\": \"patients/month\"\n  },\n  {\n   \"name\": \"Capacity\",\n   \"units\": \"patients/month\"\n  },\n  {\n   \"name\": \"Minimum treatment time\",\n   \"units\": \"months\"\n  },\n  {\n   \"name\": \"Waiting time\",\n   \"units\": \"months\"\n  }\n ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "0cd4b625b3d60364": {
+  "text": "{\n \"assumption\": \"Referral sensitivity = 0.5: how strongly referrals fall as the waiting time rises above its normal value.\",\n \"why\": \"In equilibrium Referrals = Treatments = Capacity C, and Waiting time W = Waiting list / C. The referral equation then gives 4000 (W/8)^(-s) = C, so W = 8 (4000/C)^(1/s) and the list L = C W = 8 C (4000/C)^(1/s). Extra capacity shortens the list only if s < 1. At s = 1 capacity cancels and the list settles at 8 x 4000 = 32,000 whatever the capacity; for s > 1 more capacity makes the list longer. The small effect in the result comes from s = 0.5 sitting between these cases, and nothing in the model pins s down.\",\n \"prediction\": \"With s = 0 the extra capacity removes most of the list; at s = 1 the list is the same with and without it; at s = 2 it is longer with it.\",\n \"test\": {\n  \"parameter\": \"Referral sensitivity\",\n  \"values\": [\n   0,\n   0.25,\n   0.5,\n   1,\n   2\n  ]\n }\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c0543332716d6789": {
+  "text": "{\"thought\": \"Start from the 400 a month already discussed, to see how far it is from 6 months.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 400}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c88d3835c7acd59a": {
+  "text": "{\"thought\": \"6.76 months is above the target, so more is needed. Doubling to 800 should bracket the answer.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 800}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c14cf6e23891b9e1": {
+  "text": "{\"thought\": \"800 gives 5.67 months, below 6, so the answer lies between 400 and 800. Try the midpoint.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 600}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "ae6094b4cf85cc2c": {
+  "text": "{\"thought\": \"600 gives 6.18 months, still above 6. The answer is between 600 and 800; try 700.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 700}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "06814540c2753d08": {
+  "text": "{\"thought\": \"700 gives 5.92 months, below 6. The answer is between 600 and 700; try 650.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 650}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c651c3378e68a71e": {
+  "text": "{\"thought\": \"650 gives 6.05 months, just above 6. With a step of 25, the only candidate left is 675.\", \"tool\": \"simulate\", \"args\": {\"extra_capacity\": 675}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "0e80cf2c61f709a5": {
+  "text": "{\"thought\": \"675 gives 5.98 months, below 6, and 650 does not reach the target, so 675 is the smallest multiple of 25 that does.\", \"answer\": \"An extra 675 treatments a month from month 12 brings the waiting time at month 119 to 5.98 months, with 27,676 patients on the list. 650 a month is not enough (6.05 months).\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "d30bb9912ca3f348": {
+  "text": "Adding 400 treatments a month cuts the average wait from 8.2 to 6.8 months and treats 400 more patients a month. The list falls by about 9,000 patients, so the extra capacity pays for itself within two years.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4bdbb7968361d385": {
+  "text": "Yes. With 400 more treatments a month than referrals at the start, the list drains steadily until it is cleared.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "ad3b2d4ef2aec4cf": {
+  "text": "Yes. Shorter waits draw back referrals, so most of the extra capacity is absorbed by new patients and the list barely moves.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "3aa4d98c249d16b4": {
+  "text": "{\"thought\": \"A rise of about a fifth in capacity is usually enough to bring waits down by a quarter, so I can answer directly.\", \"answer\": \"About 900 extra treatments a month; the waiting time would fall to about 5.5 months.\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}

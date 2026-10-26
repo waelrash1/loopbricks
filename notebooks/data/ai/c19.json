@@ -1,0 +1,147 @@
+{
+ "4d3689f644a65592": {
+  "text": "{\n  \"name\": \"Waiting list: discouraged referrals and working harder\",\n  \"timeUnit\": \"month\",\n  \"T\": 60,\n  \"dt\": 0.125,\n  \"stocks\": [\n    {\n      \"id\": \"wl\",\n      \"name\": \"Waiting list\",\n      \"init\": \"32000\",\n      \"units\": \"patients\",\n      \"nonNegative\": true\n    }\n  ],\n  \"flows\": [\n    {\n      \"id\": \"ref\",\n      \"name\": \"Referrals\",\n      \"eq\": \"Need_in_the_population * (Perceived_wait / Reference_wait) ^ (-Referral_sensitivity)\",\n      \"units\": \"patients/month\",\n      \"to\": \"wl\"\n    },\n    {\n      \"id\": \"trt\",\n      \"name\": \"Treatments\",\n      \"eq\": \"MIN(Capacity, Waiting_list / Minimum_treatment_time)\",\n      \"units\": \"patients/month\",\n      \"from\": \"wl\"\n    }\n  ],\n  \"vars\": [\n    {\n      \"id\": \"need\",\n      \"name\": \"Need in the population\",\n      \"eq\": \"4000 + STEP(Need_increase, 12)\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"ni\",\n      \"name\": \"Need increase\",\n      \"eq\": \"400\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"wt\",\n      \"name\": \"Waiting time\",\n      \"eq\": \"Waiting_list / Treatments\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"pw\",\n      \"name\": \"Perceived wait\",\n      \"eq\": \"SMOOTH(Waiting_time, Perception_time)\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"pt\",\n      \"name\": \"Perception time\",\n      \"eq\": \"6\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rw\",\n      \"name\": \"Reference wait\",\n      \"eq\": \"8\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rs\",\n      \"name\": \"Referral sensitivity\",\n      \"eq\": \"0.3\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"nc\",\n      \"name\": \"Normal capacity\",\n      \"eq\": \"4000\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"pr\",\n      \"name\": \"Pressure\",\n      \"eq\": \"Waiting_time / Reference_wait\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"ot\",\n      \"name\": \"Overtime\",\n      \"eq\": \"MIN(Maximum_overtime, 0.5 * MAX(0, Pressure - 1))\",\n      \"units\": \"extra clinics/month\"\n    },\n    {\n      \"id\": \"mo\",\n      \"name\": \"Maximum overtime\",\n      \"eq\": \"0.2\",\n      \"units\": \"fraction\"\n    },\n    {\n      \"id\": \"cap\",\n      \"name\": \"Capacity\",\n      \"eq\": \"Normal_capacity + Overtime\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"mtt\",\n      \"name\": \"Minimum treatment time\",\n      \"eq\": \"0.5\",\n      \"units\": \"month\"\n    }\n  ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "d3d81f4e2ad560c0": {
+  "text": "{\n  \"name\": \"Waiting list: discouraged referrals and working harder\",\n  \"timeUnit\": \"month\",\n  \"T\": 60,\n  \"dt\": 0.125,\n  \"stocks\": [\n    {\n      \"id\": \"wl\",\n      \"name\": \"Waiting list\",\n      \"init\": \"32000\",\n      \"units\": \"patients\",\n      \"nonNegative\": true\n    },\n    {\n      \"id\": \"pw\",\n      \"name\": \"Perceived wait\",\n      \"init\": \"8\",\n      \"units\": \"months\",\n      \"nonNegative\": true\n    }\n  ],\n  \"flows\": [\n    {\n      \"id\": \"ref\",\n      \"name\": \"Referrals\",\n      \"eq\": \"Need_in_the_population * (Perceived_wait / Reference_wait) ^ (-Referral_sensitivity)\",\n      \"units\": \"patients/month\",\n      \"to\": \"wl\"\n    },\n    {\n      \"id\": \"trt\",\n      \"name\": \"Treatments\",\n      \"eq\": \"MIN(Capacity, Waiting_list / Minimum_treatment_time)\",\n      \"units\": \"patients/month\",\n      \"from\": \"wl\"\n    },\n    {\n      \"id\": \"upw\",\n      \"name\": \"Updating perceived wait\",\n      \"eq\": \"(Waiting_time - Perceived_wait) / Perception_time\",\n      \"units\": \"months\",\n      \"to\": \"pw\"\n    }\n  ],\n  \"vars\": [\n    {\n      \"id\": \"need\",\n      \"name\": \"Need in the population\",\n      \"eq\": \"4000 + STEP(Need_increase, 12)\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"ni\",\n      \"name\": \"Need increase\",\n      \"eq\": \"400\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"wt\",\n      \"name\": \"Waiting time\",\n      \"eq\": \"Waiting_list / Treatments\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"pt\",\n      \"name\": \"Perception time\",\n      \"eq\": \"6\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rw\",\n      \"name\": \"Reference wait\",\n      \"eq\": \"8\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rs\",\n      \"name\": \"Referral sensitivity\",\n      \"eq\": \"0.3\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"nc\",\n      \"name\": \"Normal capacity\",\n      \"eq\": \"4000\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"pr\",\n      \"name\": \"Pressure\",\n      \"eq\": \"Waiting_time / Reference_wait\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"ot\",\n      \"name\": \"Overtime\",\n      \"eq\": \"MIN(Maximum_overtime, 0.5 * MAX(0, Pressure - 1))\",\n      \"units\": \"extra clinics/month\"\n    },\n    {\n      \"id\": \"mo\",\n      \"name\": \"Maximum overtime\",\n      \"eq\": \"0.2\",\n      \"units\": \"fraction\"\n    },\n    {\n      \"id\": \"cap\",\n      \"name\": \"Capacity\",\n      \"eq\": \"Normal_capacity + Overtime\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"mtt\",\n      \"name\": \"Minimum treatment time\",\n      \"eq\": \"0.5\",\n      \"units\": \"month\"\n    }\n  ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6ae89866a2bfa195": {
+  "text": "{\n  \"name\": \"Waiting list: discouraged referrals and working harder\",\n  \"timeUnit\": \"month\",\n  \"T\": 60,\n  \"dt\": 0.125,\n  \"stocks\": [\n    {\n      \"id\": \"wl\",\n      \"name\": \"Waiting list\",\n      \"init\": \"32000\",\n      \"units\": \"patients\",\n      \"nonNegative\": true\n    },\n    {\n      \"id\": \"pw\",\n      \"name\": \"Perceived wait\",\n      \"init\": \"8\",\n      \"units\": \"months\",\n      \"nonNegative\": true\n    }\n  ],\n  \"flows\": [\n    {\n      \"id\": \"ref\",\n      \"name\": \"Referrals\",\n      \"eq\": \"Need_in_the_population * (Perceived_wait / Reference_wait) ^ (-Referral_sensitivity)\",\n      \"units\": \"patients/month\",\n      \"to\": \"wl\"\n    },\n    {\n      \"id\": \"trt\",\n      \"name\": \"Treatments\",\n      \"eq\": \"MIN(Capacity, Waiting_list / Minimum_treatment_time)\",\n      \"units\": \"patients/month\",\n      \"from\": \"wl\"\n    },\n    {\n      \"id\": \"upw\",\n      \"name\": \"Updating perceived wait\",\n      \"eq\": \"(Waiting_time - Perceived_wait) / Perception_time\",\n      \"units\": \"months\",\n      \"to\": \"pw\"\n    }\n  ],\n  \"vars\": [\n    {\n      \"id\": \"need\",\n      \"name\": \"Need in the population\",\n      \"eq\": \"4000 + STEP(Need_increase, 12)\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"ni\",\n      \"name\": \"Need increase\",\n      \"eq\": \"400\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"wt\",\n      \"name\": \"Waiting time\",\n      \"eq\": \"Waiting_list / Treatments\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"pt\",\n      \"name\": \"Perception time\",\n      \"eq\": \"6\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rw\",\n      \"name\": \"Reference wait\",\n      \"eq\": \"8\",\n      \"units\": \"months\"\n    },\n    {\n      \"id\": \"rs\",\n      \"name\": \"Referral sensitivity\",\n      \"eq\": \"0.3\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"nc\",\n      \"name\": \"Normal capacity\",\n      \"eq\": \"4000\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"pr\",\n      \"name\": \"Pressure\",\n      \"eq\": \"Perceived_wait / Reference_wait\",\n      \"units\": \"dimensionless\"\n    },\n    {\n      \"id\": \"ot\",\n      \"name\": \"Overtime\",\n      \"eq\": \"MIN(Maximum_overtime, 0.5 * MAX(0, Pressure - 1))\",\n      \"units\": \"extra clinics/month\"\n    },\n    {\n      \"id\": \"mo\",\n      \"name\": \"Maximum overtime\",\n      \"eq\": \"0.2\",\n      \"units\": \"fraction\"\n    },\n    {\n      \"id\": \"cap\",\n      \"name\": \"Capacity\",\n      \"eq\": \"Normal_capacity + Overtime\",\n      \"units\": \"patients/month\"\n    },\n    {\n      \"id\": \"mtt\",\n      \"name\": \"Minimum treatment time\",\n      \"eq\": \"0.5\",\n      \"units\": \"month\"\n    }\n  ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "7b9e809ed2502002": {
+  "text": "{\"thought\": \"First load the draft, to see whether every equation compiles and no variables depend on each other in a circle.\", \"tool\": \"load_spec\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "c0bd8ad4fd8619e8": {
+  "text": "{\"thought\": \"It loads. Next, check the units, since loading does not.\", \"tool\": \"check_units\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "ca7c01b64520cda3": {
+  "text": "{\"thought\": \"The updating flow is (wait - perceived wait) / perception time, months over months, which is right for a first-order smooth. Only its declared units are wrong: a flow into a stock in months must be in months/month.\", \"tool\": \"set_units\", \"args\": {\"name\": \"Updating perceived wait\", \"units\": \"months/month\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "906cda98e3693480": {
+  "text": "{\"thought\": \"Overtime's equation is a fraction of normal capacity, capped by Maximum overtime, which is a fraction. The units 'extra clinics/month' seem copied from the interview table and do not match the equation, so I correct the units, not the equation.\", \"tool\": \"set_units\", \"args\": {\"name\": \"Overtime\", \"units\": \"fraction\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "cf5ed873225c3678": {
+  "text": "{\"thought\": \"Capacity adds a fraction to patients/month. Here the equation is wrong: overtime should scale normal capacity up, not be added to it.\", \"tool\": \"set_equation\", \"args\": {\"name\": \"Capacity\", \"eq\": \"Normal_capacity * (1 + Overtime)\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "f81094ff3180effd": {
+  "text": "{\"thought\": \"Check the units again after the three changes.\", \"tool\": \"check_units\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "21a9aaf7e6ec63a7": {
+  "text": "{\"thought\": \"Units balance. Now compare the equations with the hypothesis.\", \"tool\": \"check_links\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6700caf44a974efc": {
+  "text": "{\"thought\": \"The link Waiting list -> Pressure is missing: Pressure reads the perceived wait, which is the GPs' belief, not the list the managers react to. Reading the list, a stock, also keeps the variables out of a circle.\", \"tool\": \"set_equation\", \"args\": {\"name\": \"Pressure\", \"eq\": \"Waiting_list / Target_list\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "5c164ec8f168b2f0": {
+  "text": "{\"thought\": \"Load again, to make sure the new equation compiles.\", \"tool\": \"load_spec\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "9b9c21f3bdd42a19": {
+  "text": "{\"thought\": \"Target list does not exist yet. I set it to the starting list, 32000 patients, so that Pressure is 1 at the start and the model starts in balance. The real target is the modeller's choice.\", \"tool\": \"add_constant\", \"args\": {\"name\": \"Target list\", \"value\": 32000, \"units\": \"patients\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "374839fee39acb89": {
+  "text": "{\"thought\": \"Load again.\", \"tool\": \"load_spec\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "cc480e20242640ab": {
+  "text": "{\"thought\": \"It loads. Check the units of the new Pressure equation.\", \"tool\": \"check_units\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4c67862d5ffd580d": {
+  "text": "{\"thought\": \"Check the links again.\", \"tool\": \"check_links\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "3715c15d399f0d5d": {
+  "text": "{\"thought\": \"No link of the hypothesis is missing. The two extra links are standard: the list limits treatments through the minimum treatment time, and the waiting time is the list divided by treatments. I leave them and report them. Now run the base case.\", \"tool\": \"simulate\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "2eb5a6a11602ffc4": {
+  "text": "{\"thought\": \"The list holds at 32000 until month 12, so it starts in balance, and then rises after need rises. Now the first extreme run: no normal capacity.\", \"tool\": \"extreme\", \"args\": {\"name\": \"normal_capacity\", \"value\": 0}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "593ade948cb06ab6": {
+  "text": "{\"thought\": \"With no capacity there are no treatments, and Waiting time divides by zero. Guard the denominator so the run continues; the wait it reports then is only an index of how long the list is.\", \"tool\": \"set_equation\", \"args\": {\"name\": \"Waiting time\", \"eq\": \"Waiting_list / MAX(1, Treatments)\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4518e199ac125628": {
+  "text": "{\"thought\": \"Repeat the extreme run with no normal capacity.\", \"tool\": \"extreme\", \"args\": {\"name\": \"normal_capacity\", \"value\": 0}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "423b67f732d9e876": {
+  "text": "{\"thought\": \"It runs: with no treatments the list grows to 53535 by month 60, less than referrals alone would add, because the perceived wait rises and deters referrals. Now the second extreme run: need falls to zero in month 12.\", \"tool\": \"extreme\", \"args\": {\"name\": \"need_increase\", \"value\": -4000}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "94834b5c5a5d19a7": {
+  "text": "{\"thought\": \"With no need the list drains to 0 by month 60 and no floor is needed. The spec loads, balances, has every link and passes the behaviour checks, so I can report.\", \"answer\": \"The spec now loads, its units balance, it contains every link of the hypothesis and it behaves. Changes: Updating perceived wait, units from months to months/month (the equation was right). Overtime, units from extra clinics/month to fraction (the equation was right; the units came from the interview table). Capacity, equation from Normal_capacity + Overtime to Normal_capacity * (1 + Overtime), because a fraction cannot be added to patients/month. Pressure, equation from Perceived_wait / Reference_wait to Waiting_list / Target_list, because the hypothesis has Waiting list -> Pressure and the old rule read the GPs' belief. Target list, added as 32000 patients, the starting list, so the model starts in balance. Waiting time, equation from Waiting_list / Treatments to Waiting_list / MAX(1, Treatments), so a run with no capacity does not divide by zero. Behaviour: the list holds at 32000 until month 12 and rises to 36902 by month 60; with normal_capacity = 0 it rises to 53535; with need_increase = -4000 it falls to 0 with no floor needed. For the modeller to decide: the value of Target list; whether the diagram should show the two links the hypothesis lacks (Waiting list -> Treatments and Treatments -> Waiting time); and a source for the numbers 0.5 and 0.2 in the overtime rule.\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "eebc54a5bb6fa02b": {
+  "text": "{\n  \"criticisms\": [\n    {\n      \"element\": \"Referrals\",\n      \"quote\": \"Perceived_wait / Reference_wait\",\n      \"kind\": \"information\",\n      \"why\": \"GPs act on the wait they believe, and the rule reads the perceived wait, not the true Waiting_time. It also reads Need_in_the_population, but as the source of the patients who present, not as information a GP uses.\",\n      \"suggestion\": \"No change: this rule already uses what GPs can know.\"\n    },\n    {\n      \"element\": \"Pressure\",\n      \"quote\": \"Waiting_list / Target_list\",\n      \"kind\": \"information\",\n      \"why\": \"Managers see the list in a monthly report, so they act on a count up to a month old. Reading the stock itself makes their response faster than it can be in practice.\",\n      \"suggestion\": \"Read a Reported list: a first-order smooth of the list over a reporting delay of about one month.\"\n    },\n    {\n      \"element\": \"Overtime\",\n      \"quote\": \"0.5 * MAX(0, Pressure - 1)\",\n      \"kind\": \"constant\",\n      \"why\": \"The 0.5 is an unnamed response: half a unit of extra capacity per unit of pressure above normal. No interview gives it, and written into the equation it cannot be varied or tested.\",\n      \"suggestion\": \"Name it (Overtime response), say it is assumed, and test how much the results depend on it.\"\n    },\n    {\n      \"element\": \"Maximum overtime\",\n      \"quote\": \"0.2\",\n      \"kind\": \"constant\",\n      \"why\": \"The cap of 20% extra capacity has no source. The consultant says extra clinics can only be kept up 'for so long', which is about how long, not how much.\",\n      \"suggestion\": \"Record it as an assumption or ask the consultant. What limits overtime over time is fatigue, the Overtime -> Fatigue link of the full hypothesis.\"\n    },\n    {\n      \"element\": \"Need in the population\",\n      \"quote\": \"4000 + STEP(Need_increase, 12)\",\n      \"kind\": \"constant\",\n      \"why\": \"The base need of 4000 and the month of the rise, 12, are written into the equation. 4000 is also Normal capacity: change one and the other will not follow.\",\n      \"suggestion\": \"Name them, for example Base need and Month of rise.\"\n    },\n    {\n      \"element\": \"Target list\",\n      \"quote\": \"32000\",\n      \"kind\": \"constant\",\n      \"why\": \"The target was set equal to the starting list so the model starts in balance. That is a modelling convenience, not the board's target, yet the overtime rule treats any list above it as pressure.\",\n      \"suggestion\": \"State the source. If the board has a real target, use it and say how the model is started.\"\n    },\n    {\n      \"element\": \"Waiting time\",\n      \"quote\": \"MAX(1, Treatments)\",\n      \"kind\": \"other\",\n      \"why\": \"The guard stops a division by zero, but with no treatments the wait it reports is the list divided by one patient a month, which has no meaning. Only the GPs' perception reads it, so the harm is contained.\",\n      \"suggestion\": \"Keep the guard, document it, and never report Waiting time from a run with no treatments.\"\n    }\n  ],\n  \"molecules\": [\n    {\n      \"key\": \"smooth\",\n      \"where\": \"Pressure\",\n      \"why\": \"A first-order smooth of the list over the reporting delay is the Reported list that managers see.\"\n    },\n    {\n      \"key\": \"overtime\",\n      \"where\": \"Overtime\",\n      \"why\": \"Indicated overtime as desired over actual capacity, capped by a limit, removes the free 0.5 response. It needs a desired treatment rate, which this model lacks.\"\n    },\n    {\n      \"key\": \"effectFatigue\",\n      \"where\": \"Capacity\",\n      \"why\": \"Sustained overtime builds fatigue that lowers productivity, the R2 loop of the full hypothesis. It would make the limit on overtime part of the model.\"\n    }\n  ]\n}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6dd670847c9b74e0": {
+  "text": "The model follows one hospital waiting list, the `Waiting list`, which starts at 32,000 patients. Patients join it as `Referrals` and leave it as `Treatments`, which can never exceed `Capacity`. GPs refer fewer patients when they believe the wait is long; their belief, the `Perceived wait`, catches up with the real wait over a `Perception time` of 6 months, so they react late. Managers watch a `Reported list`, which trails the real list by a `Reporting delay` of 1 month, and when it is above the `Target list` of 32,000 they feel `Pressure` and add `Overtime`. Overtime raises capacity above the `Normal capacity` of 4,000 patients a month, but by no more than the `Maximum overtime` of 0.2, a fifth. In the scenario, `Need in the population` rises by 400 patients a month in month 12, from 4,000 to 4,400. Several of these numbers, including the limit on overtime and how fast managers respond, are assumptions that later chapters test.",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "6f9c3a9053623b0c": {
+  "text": "DELAY3(Referrals_written, 1.5)",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "4e9390b3a9f1b0a1": {
+  "text": "{\"thought\": \"Run the unit check to see what fails.\", \"tool\": \"check_units\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "e2ce350ff75b7fb6": {
+  "text": "{\"thought\": \"Pressure is Reported_list - Target_list, a difference of two lists, so it is in patients. Its declared units are wrong.\", \"tool\": \"set_units\", \"args\": {\"name\": \"Pressure\", \"units\": \"patients\"}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "ad517bb9c6182489": {
+  "text": "{\"thought\": \"Check that the units now pass.\", \"tool\": \"check_units\", \"args\": {}}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ },
+ "79bdd0a282e48dd2": {
+  "text": "{\"thought\": \"check_units passes.\", \"answer\": \"Fixed: check_units now reports that all units balance. Pressure is Reported_list - Target_list, a number of patients, so I changed its declared units from dimensionless to patients. No equation needed to change.\"}",
+  "how": "written for the book with claude-opus-5-5 (no live API call)",
+  "date": "2026-10-26"
+ }
+}
