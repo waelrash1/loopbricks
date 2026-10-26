@@ -30,4 +30,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install "./python[test]"
       - run: python -m ipykernel install --user --name python3
-      - run: pytest -q -n 4 python/tests
+      # on failure, name each failing test and its error as an annotation, readable without signing in
+      - run: |
+          set -o pipefail
+          pytest -q -n 4 -rf --tb=line python/tests 2>&1 | tee pytest.log
+      - if: failure()
+        run: |
+          sed 's/\x1b\[[0-9;]*m//g' pytest.log | grep -E "^(FAILED|E +[A-Za-z]*(Error|Exception|Reply))" | head -20 | sed 's/^/::error::/'
