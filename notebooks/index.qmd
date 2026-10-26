@@ -12,7 +12,7 @@ The people who benefit most never read the code: the managers and policy makers 
 
 ## How the book works
 
-The book has five parts and four appendices:
+The book has five parts and five appendices:
 
 1. **Getting started**: why systems push back, and how to go from a story to a diagram.
 2. **How structure drives behaviour**: loops, delays, decision rules, oscillation and the patterns that repeat across fields.
@@ -20,7 +20,7 @@ The book has five parts and four appendices:
 4. **Models in use**: from model to decision, and how machine learning helps at every stage of a modelling project.
 5. **Applications**: four case studies that take the whole process, from problem to policy brief, into other fields: a supply chain that amplifies demand, an epidemic and the hospital beds it needs, a project that runs late, and a fishery and its fleet.
 
-Appendix A is a fast course in the Python the book uses; Appendix B documents the `loopbricks` package and its equation language; Appendix C catalogues all 73 molecules, with their equations and the chapter that explains each; Appendix D is a glossary of the terms the book uses.
+Appendix A is a fast course in the Python the book uses; Appendix B documents the `loopbricks` package and its equation language; Appendix C catalogues all 73 molecules, with their equations and the chapter that explains each; Appendix D is a glossary of the terms the book uses; Appendix E shows how to bring Vensim and Stella models into Python.
 
 One running case goes through chapters 1 to 12: an outpatient waiting list, built up from a single stock in chapter 1 to a calibrated policy model in chapter 11. The data are synthetic, shaped like published Irish waiting-list counts; chapter 10 explains how they were made and why.
 

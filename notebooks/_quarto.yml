@@ -48,6 +48,7 @@ book:
     - a02-package.ipynb
     - a03-molecules.ipynb
     - a04-glossary.ipynb
+    - a05-vensim-stella.ipynb
 
 bibliography: references.bib
 
