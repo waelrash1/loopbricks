@@ -49,6 +49,7 @@ book:
     - a03-molecules.ipynb
     - a04-glossary.ipynb
     - a05-vensim-stella.ipynb
+    - a06-toolkit.ipynb
 
 bibliography: references.bib
 
