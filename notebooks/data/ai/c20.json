@@ -54,32 +54,32 @@
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "b06a1f028012a4b1": {
+ "f982ded40e88447b": {
   "text": "{\n \"thought\": \"Training improves to 472, but referral_growth sits on the bound of its range at 0.05, a warning that the data are trading the two growth rates against each other. Check validation before deciding.\",\n \"tool\": \"validate\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"referral_growth\",\n   \"capacity_0\",\n   \"capacity_growth\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "4dd5063adbf22a1b": {
+ "b90c61fc83f29d33": {
   "text": "{\n \"thought\": \"Validation is worse, 976 against 919, and an estimate is on a bound: the growth rates stay at their reported values. The 2020 shock is in the training years, so its recovery time may be identified; free it with the levels.\",\n \"tool\": \"fit\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"recovery_time\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "043d54166aaf2b55": {
+ "6e15c2d12ed37f30": {
   "text": "{\n \"thought\": \"Training 459, recovery_time 10.34 months, inside its range and close to the reported 9. Validate it.\",\n \"tool\": \"validate\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"recovery_time\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "94d3882d97b4e8c4": {
+ "3d346a41bd8debbc": {
   "text": "{\n \"thought\": \"Validation falls to 445 from 919, a large gain, with no estimate on a bound. One more candidate: the depth of the shock, activity_at_worst, freed as well.\",\n \"tool\": \"fit\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"activity_at_worst\",\n   \"recovery_time\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "c4ada2b4199c8181": {
-  "text": "{\n \"thought\": \"Training improves a little, to 452, and activity_at_worst moves to 0.2729, far from the reported 0.35. Validate before accepting it.\",\n \"tool\": \"validate\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"activity_at_worst\",\n   \"recovery_time\"\n  ]\n }\n}",
+ "876c25f8e768d7e8": {
+  "text": "{\n \"thought\": \"Training improves a little, to 452, and activity_at_worst moves to 0.273, far from the reported 0.35. Validate before accepting it.\",\n \"tool\": \"validate\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"activity_at_worst\",\n   \"recovery_time\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "b6437a3b73a82c7b": {
+ "e216dc78d27ce466": {
   "text": "{\n \"thought\": \"Validation worsens to 730 from 445, so freeing the depth of the shock fits the training years at the cost of the next year. The best supported set is the two levels and the recovery time.\",\n \"answer\": {\n  \"free\": [\n   \"referrals_0\",\n   \"capacity_0\",\n   \"recovery_time\"\n  ],\n  \"reasons\": \"Freeing referrals_0, capacity_0 and recovery_time gives a training RMSE of 459 and the best validation RMSE, 445, with recovery_time at 10.34 months and no estimate on a bound. Freeing the growth rates as well put referral_growth on its bound at 0.05 and worsened validation from 919 to 976. Freeing activity_at_worst improved training to 452 but worsened validation to 730, so it stays at its reported value.\"\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
@@ -94,17 +94,17 @@
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "4e2e1e233d824575": {
+ "3fca160dc4bb6691": {
   "text": "{\n \"thought\": \"Down to 472. The shock parameters should improve the fit around 2020.\",\n \"tool\": \"fit\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"referral_growth\",\n   \"capacity_0\",\n   \"capacity_growth\",\n   \"activity_at_worst\",\n   \"recovery_time\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "956277268a3fc014": {
+ "c9e371ac886ecac4": {
   "text": "{\n \"thought\": \"Down to 442. Free the last parameter as well, the initiative boost, in case it lowers the error further.\",\n \"tool\": \"fit\",\n \"args\": {\n  \"free\": [\n   \"referrals_0\",\n   \"referral_growth\",\n   \"capacity_0\",\n   \"capacity_growth\",\n   \"activity_at_worst\",\n   \"recovery_time\",\n   \"initiative_boost\"\n  ]\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
  },
- "9ae98bf6518fe1f5": {
+ "f034b8d4f7645a08": {
   "text": "{\n \"thought\": \"All seven parameters free gives a training RMSE of 442, the lowest, so that is the best calibration.\",\n \"answer\": {\n  \"free\": [\n   \"referrals_0\",\n   \"referral_growth\",\n   \"capacity_0\",\n   \"capacity_growth\",\n   \"activity_at_worst\",\n   \"recovery_time\",\n   \"initiative_boost\"\n  ],\n  \"reasons\": \"Freeing all seven parameters gives the lowest training RMSE, 442 patients.\"\n }\n}",
   "how": "written for the book with claude-opus-5-5 (no live API call)",
   "date": "2026-10-26"
